@@ -8,7 +8,7 @@
         <!-- Tab panes -->
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane fade in active" id="chart">
-                <div id="chartContainer"></div>
+                {!! $chart !!}
             </div>
             <div role="tabpanel" class="tab-pane fade" id="strategy">
                 
@@ -42,5 +42,5 @@
 </div>
 @endsection
 @section('pagescripts')
-<script src="{{ mix('/js/chart.js') }}"></script>
+{!! $scripts !!}
 @endsection

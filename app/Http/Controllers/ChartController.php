@@ -52,11 +52,12 @@ class ChartController extends Controller
         //unset($c);
         //$c = Candle::where('time', 1485797340)->first();
         //Util::dump($c);
-        $candles = new Series(['resolution' => 3600, 'limit' => 259]);
+        $candles = new Series(['resolution' => 3600, 'limit' => 200]);
         //$candles->reset();
         //while ($c = $candles->next())
         //    echo $c->time.'<br />';
         $strategy = Strategy::make();
+        $strategy->setParam('config_file', 'test.fann');
         $strategy->setCandles($candles);
         $chart = Chart::make(null, ['candles' => $candles, 'strategy' => $strategy]);
         //$chart->set('start', 0);
@@ -73,7 +74,7 @@ class ChartController extends Controller
         $strategy->addIndicator('FannSignals');
         //$strategy->calculateIndicators();
         //dd($candles);
-        $plot = $chart->toHtml(['width' => $request->width, 'height' => $request->height]);
+        $plot = $chart->render(['width' => $request->width, 'height' => $request->height]);
         
         //debug($candles); exit();
         //dd(xdebug_get_headers());

@@ -10,6 +10,7 @@ if (!extension_loaded('fann')) throw new \Exception('FANN extension not loaded')
 
 class Fann extends Strategy 
 {
+    protected $_signals_indicator_class = 'FannSignals';
 
     private $_num_samples;              // # candles to sample for input
     private $_num_input;                // # neurons in input layer, $_num_samples * 4 - 3

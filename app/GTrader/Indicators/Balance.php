@@ -21,14 +21,9 @@ class Balance extends Indicator
 
         $owner = $this->getOwner();
         
-        // TODO get indicator class name from owner
-        $indicator = 'FannSignals';
-        if (!$owner->hasIndicator($indicator))
-            $owner->addIndicator($indicator, ['display' => ['visible' => false]]);
-        if (!($trade_ind = $owner->getIndicator($indicator)))
-            throw new \Exception('Could not add indicator '.$indicator);
-        $trade_sig = $trade_ind->getSignature();
-        $trade_ind->checkAndRun();
+        $signal_ind = $owner->getSignalsIndicator();
+        $signal_sig = $signal_ind->getSignature();
+        $signal_ind->checkAndRun();
         
         $signature = $this->getSignature();
 
@@ -40,12 +35,11 @@ class Balance extends Indicator
         $fee_multiplier = $e->getParam('fee_multiplier');
         $leverage = $e->getParam('leverage');
         $liquidated = false;
-        $prev_trade = false;
+        $prev_signal = false;
 
         $candles = $this->getCandles();
         $candles->reset();
 
-        $prev_trade = false;
         while ($candle = $candles->next()) 
         {
             if ($liquidated) 
@@ -54,46 +48,46 @@ class Balance extends Indicator
                 continue;
             }
 
-            if ($prev_trade) 
+            if ($prev_signal) 
             { // update UPL
-                if ($candle->close != $prev_trade['price']) // avoid division by zero
-                    if ($prev_trade['signal'] == 'buy')
-                        $upl = $stake / $prev_trade['price'] * 
-                                ($candle->close - $prev_trade['price']) * $leverage;
-                    else if ($prev_trade['signal'] == 'sell')
-                        $upl = $stake / $prev_trade['price'] * 
-                                ($prev_trade['price'] - $candle->close) * $leverage;
+                if ($candle->close != $prev_signal['price']) // avoid division by zero
+                    if ($prev_signal['signal'] == 'buy')
+                        $upl = $stake / $prev_signal['price'] * 
+                                ($candle->close - $prev_signal['price']) * $leverage;
+                    else if ($prev_signal['signal'] == 'sell')
+                        $upl = $stake / $prev_signal['price'] * 
+                                ($prev_signal['price'] - $candle->close) * $leverage;
             }
 
-            if ($trade = $candle->$trade_sig)
+            if ($signal = $candle->$signal_sig)
             {
-                if ($trade['signal'] == 'buy' && $capital > 0) 
+                if ($signal['signal'] == 'buy' && $capital > 0) 
                 { // go long
-                    if ($prev_trade && $prev_trade['signal'] == 'sell') 
+                    if ($prev_signal && $prev_signal['signal'] == 'sell') 
                     { // close last short
-                        if ($prev_trade['price']) // avoid division by zero
-                            $capital += $stake / $prev_trade['price'] * ($prev_trade['price'] 
-                                        - $trade['price']) * $leverage;
+                        if ($prev_signal['price']) // avoid division by zero
+                            $capital += $stake / $prev_signal['price'] * ($prev_signal['price'] 
+                                        - $signal['price']) * $leverage;
                         $upl = 0;
                     }
                     if ($mode == 'dynamic') $stake = $capital * $position_size;
                     // open long
                     $capital -= $stake * $fee_multiplier;
                 }
-                else if ($trade['signal'] == 'sell' && $capital > 0) 
+                else if ($signal['signal'] == 'sell' && $capital > 0) 
                 { // go short
-                    if ($prev_trade && $prev_trade['signal'] == 'buy') 
+                    if ($prev_signal && $prev_signal['signal'] == 'buy') 
                     { // close last long
-                        if ($prev_trade['price']) // avoid division by zero
-                            $capital += $stake / $prev_trade['price'] * ($trade['price'] 
-                                        - $prev_trade['price']) * $leverage;
+                        if ($prev_signal['price']) // avoid division by zero
+                            $capital += $stake / $prev_signal['price'] * ($signal['price'] 
+                                        - $prev_signal['price']) * $leverage;
                         $upl = 0;
                     }
                     if ($mode == 'dynamic') $stake = $capital * $position_size;
                     // open short
                     $capital -= $stake * $fee_multiplier;
                 }
-                $prev_trade = $trade;
+                $prev_signal = $signal;
             }
             $new_balance = $capital + $upl;
             if ($new_balance <= 0) {

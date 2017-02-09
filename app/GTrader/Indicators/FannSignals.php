@@ -16,8 +16,8 @@ class FannSignals extends Indicator
 
         $owner = $this->getOwner();
         $candles = $this->getCandles();
-        
-        // TODO get indicator name from owner
+
+                
         $indicator = 'FannPrediction';
         if (!$owner->hasIndicator($indicator))
             $owner->addIndicator($indicator, ['display' => ['visible' => false]]);

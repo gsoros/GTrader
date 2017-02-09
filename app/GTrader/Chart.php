@@ -6,9 +6,11 @@ abstract class Chart extends Skeleton {
     use HasCandles;
 
     
-    protected $_strategy = null;
+    protected $_strategy;
     
     public abstract function toHtml(array $params = []);
+    public abstract function render(array $params = []);
+    public function scripts() {}
     
     public function __construct(array $params = [])
     {
@@ -22,6 +24,7 @@ abstract class Chart extends Skeleton {
             $this->setStrategy($params['strategy']);
             unset($params['strategy']);
         }
+        $this->setParam('id', uniqid($this->getShortClass().'_'));
         parent::__construct($params);
     }
     

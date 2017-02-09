@@ -26,6 +26,13 @@ class Skeleton
         return $conf;
     }
     
+
+    public function getShortClass()
+    {
+        $reflect = new \ReflectionClass($this);
+        return $reflect->getShortName();
+    }
+    
     
     public static function make(string $class = null, array $params = [])
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use GTrader\Exchange;
+use GTrader\Chart;
 use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Indicator;
@@ -70,8 +71,13 @@ class HomeController extends Controller
         //$autoloader = require "../vendor/autoload.php";
         //$autoloader->loadClass("\GTrader\TestClass");
         //$debug = var_export($autoloader, true);
+        $chart = Chart::make();
+        $candles = Series::make();
+        $chart->setCandles($candles);
         
-        $viewData = ['debug' => $debug];
+        $viewData = [   'chart'     => $chart->toHtml(),
+                        'scripts'   => $chart->scripts(),
+                        'debug'     => $debug];
 
         return view('dashboard')->with($viewData);
     }

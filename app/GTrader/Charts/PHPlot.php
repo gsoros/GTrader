@@ -8,11 +8,24 @@ use PHPlot_truecolor;
 class PHPlot extends Chart {
     
     
-    
     public function toHtml(array $params = [])
     {
-        $width = isset($params['width']) ? $params['width'] : $this->getParam('width');
-        $height = isset($params['height']) ? $params['height'] : $this->getParam('height');
+        $script = '<script>var '.$this->getParam('id')
+                    .' = '.json_encode($this->getJSO())
+                    .";</script>\n";
+        return view('Charts/PHPlot', [
+                    'id' => $this->getParam('id'), 
+                    'script' => $script]);
+    }
+    
+    public function render(array $params = [])
+    {
+        $width = isset($params['width']) ? 
+                    $params['width'] : 
+                    $this->getParam('width');
+        $height = isset($params['height']) ? 
+                    $params['height'] : 
+                    $this->getParam('height');
         $plot = new PHPlot_truecolor($width, $height);
         $plot->SetPrintImage(false);
         $plot->SetFailureImage(false);
@@ -22,15 +35,35 @@ class PHPlot extends Chart {
         foreach ($this->getIndicatorsVisibleSorted() as $ind)
         {
             //echo 'Plotting: '.$ind->getSignature();
-            $ind->calculate();
+            $ind->checkAndRun();
             if ($ind->getParam('display.name') === 'Signals')
                 $this->plotSignals($plot, $ind);
             else
                 $this->plotIndicator($plot, $ind);
         }
-        return $image_map.'<img class="img-responsive" src="'.$plot->EncodeImage().'" usemap="#map1">';
+        return $image_map.'<img class="img-responsive" src="'.
+                $plot->EncodeImage().'" usemap="#map1">';
     }
 
+
+    public function scripts()
+    {
+        return '<script src="'.mix('/js/PHPlot.js').'"></script>';
+    }
+
+
+    private function getJSO()
+    {
+        $o = new \stdClass();
+        $o->id = $this->getParam('id');
+        $o->start = $this->getCandles()->getParam('start');
+        $o->end = $this->getCandles()->getParam('end');
+        $o->resolution = $this->getCandles()->getParam('resolution');
+        $o->limit = $this->getCandles()->getParam('limit');
+        $o->exchange = $this->getCandles()->getParam('exchange');
+        $o->symbol = $this->getCandles()->getParam('symbol');
+        return $o;
+    }  
 
     protected function plotCandles(&$plot, &$image_map = null)
     {
@@ -56,19 +89,23 @@ class PHPlot extends Chart {
         $plot->setPointShapes('none');
         $plot->SetCallback('data_points', 
             function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) 
-                        use (&$image_map, $times) {
+                        use (&$image_map, $times, $price) {
                 if (!$image_map) return null;
                 //dump($row.$image_map);
                 # Title, also tool-tip text:
                 $title = gmdate('Y-m-d H:i', $times[$row]);
-                # Required alt-text:
-                $alt = $title;
+                $title .= ('rect' == $shape) ?
+                            "\nO: ".$price[$row][2]
+                            ."\nH: ".$price[$row][3]
+                            ."\nL: ".$price[$row][4]
+                            ."\nC: ".$price[$row][5] :
+                            "\nC: ".$price[$row][2];
                 # Link URL, for demonstration only:
                 $href = "javascript:console.log('".$times[$row]."')";
                 if ('rect' == $shape)
                 {
                     # Convert coordinates to integers:
-                    $coords = sprintf("%d,%d,%d,%d", $x1, $y1, $x2, $y2);
+                    $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
                 }
                 else
                 {
@@ -78,7 +115,7 @@ class PHPlot extends Chart {
                 }
                 # Append the record for this data point shape to the image map string:
                 $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
-                           .  " title=\"$title\" alt=\"$alt\" href=\"$href\">\n";
+                           .  " title=\"$title\" href=\"$href\">\n";
             });
         $plot->SetMarginsPixels(30, 30, 15);
         $plot->SetXTickLabelPos('plotdown');

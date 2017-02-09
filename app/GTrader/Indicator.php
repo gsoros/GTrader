@@ -16,8 +16,7 @@ abstract class Indicator extends Skeleton
     
     public function getSignature()
     {
-        $reflect = new \ReflectionClass($this);
-        $class = $reflect->getShortName();
+        $class = $this->getShortClass();
         $params = $this->getParam('indicator');
         $param_str = count($params) ? join('_', $params) : null;
         return $param_str ? $class.'_'.$param_str : $class;
