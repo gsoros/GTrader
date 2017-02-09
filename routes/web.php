@@ -20,3 +20,4 @@ Auth::routes();
 //});
 
 Route::get('/', 'HomeController@dashboard');
+Route::get('/plot', 'ChartController@plot');

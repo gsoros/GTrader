@@ -10,14 +10,24 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Test redirect from / to /login.
      *
      * @return void
      */
-    public function testBasicTest()
+    public function testRedirect()
     {
         $response = $this->get('/');
+        $response->assertRedirect('/login');
+    }
 
+    /**
+     * Test /login status 200.
+     *
+     * @return void
+     */
+    public function testLogin()
+    {
+        $response = $this->get('/login');
         $response->assertStatus(200);
     }
 }

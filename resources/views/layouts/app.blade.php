@@ -23,7 +23,8 @@
 <body>
     <div id="app">
         <nav class="navbar navbar-default navbar-static-top">
-            <div class="container">
+            <div class="container-fluid">
+                
                 <div class="navbar-header">
 
                     <!-- Collapsed Hamburger -->
@@ -33,18 +34,29 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-
-                    <!-- Branding Image -->
-                    <a class="navbar-brand" href="{{ url('/') }}">
-                        {{ config('app.name', 'GTrader') }}
-                    </a>
+                    
                 </div>
 
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
                     <!-- Left Side Of Navbar -->
-                    <ul class="nav navbar-nav">
-                        &nbsp;
+
+                    <!-- Nav tabs -->
+                    <ul class="nav navbar-nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#chart" aria-controls="chart" role="tab" data-toggle="tab">Chart</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#strategy" aria-controls="strategy" role="tab" data-toggle="tab">Strategy</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#bot" aria-controls="Bot" role="tab" data-toggle="tab">Bot</a>
+                        </li>
                     </ul>
+
+
 
                     <!-- Right Side Of Navbar -->
                     <ul class="nav navbar-nav navbar-right">
@@ -82,6 +94,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/js/app.js"></script>
+    <script src="{{ mix('/js/app.js') }}"></script>
+    @yield('pagescripts')
 </body>
 </html>
