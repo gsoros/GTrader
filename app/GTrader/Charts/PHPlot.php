@@ -8,17 +8,13 @@ use PHPlot_truecolor;
 class PHPlot extends Chart {
     
     
-    public function toHtml(array $params = [])
+    public function toHTML(array $params = [])
     {
-        $script = '<script>var '.$this->getParam('id')
-                    .' = '.json_encode($this->getJSO())
-                    .";</script>\n";
         return view('Charts/PHPlot', [
-                    'id' => $this->getParam('id'), 
-                    'script' => $script]);
+                    'id' => $this->getParam('id')]);
     }
     
-    public function render(array $params = [])
+    public function toJSON(array $params = [])
     {
         $width = isset($params['width']) ? 
                     $params['width'] : 
@@ -41,19 +37,8 @@ class PHPlot extends Chart {
             else
                 $this->plotIndicator($plot, $ind);
         }
-        return $image_map.'<img class="img-responsive" src="'.
+        $html = $image_map.'<img class="img-responsive" src="'.
                 $plot->EncodeImage().'" usemap="#map1">';
-    }
-
-
-    public function scripts()
-    {
-        return '<script src="'.mix('/js/PHPlot.js').'"></script>';
-    }
-
-
-    private function getJSO()
-    {
         $o = new \stdClass();
         $o->id = $this->getParam('id');
         $o->start = $this->getCandles()->getParam('start');
@@ -62,8 +47,16 @@ class PHPlot extends Chart {
         $o->limit = $this->getCandles()->getParam('limit');
         $o->exchange = $this->getCandles()->getParam('exchange');
         $o->symbol = $this->getCandles()->getParam('symbol');
-        return $o;
-    }  
+        $o->html = $html;
+        return json_encode($o);
+    }
+
+
+    public function scripts()
+    {
+        return '<script src="'.mix('/js/PHPlot.js').'"></script>';
+    }
+
 
     protected function plotCandles(&$plot, &$image_map = null)
     {

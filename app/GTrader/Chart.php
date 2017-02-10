@@ -8,8 +8,8 @@ abstract class Chart extends Skeleton {
     
     protected $_strategy;
     
-    public abstract function toHtml(array $params = []);
-    public abstract function render(array $params = []);
+    public abstract function toHTML(array $params = []);
+    public abstract function toJSON(array $params = []);
     public function scripts() {}
     
     public function __construct(array $params = [])

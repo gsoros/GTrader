@@ -74,7 +74,7 @@ class ChartController extends Controller
         $strategy->addIndicator('FannSignals');
         //$strategy->calculateIndicators();
         //dd($candles);
-        $plot = $chart->render(['width' => $request->width, 'height' => $request->height]);
+        $json = $chart->toJSON(['width' => $request->width, 'height' => $request->height]);
         
         //debug($candles); exit();
         //dd(xdebug_get_headers());
@@ -82,7 +82,7 @@ class ChartController extends Controller
         //$candles->reset();
         //dd($candles->last());
         
-        return response($plot, 200);
+        return response($json, 200);
         //->header('Content-Type', 'image/png');
         
     }

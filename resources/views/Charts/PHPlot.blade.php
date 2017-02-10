@@ -1,6 +1,5 @@
 <div id="{{ $id }}" class="PHPlot"></div>
-{!! $script !!}
-<div class="text-center">
+<div class="text-center" id="controls_{{ $id }}">
     <div class="btn-group">
         <button type="button" class="btn btn-primary">
             <span class="glyphicon glyphicon-backward"></span>

@@ -19,9 +19,14 @@ function requestPlot(id) {
     setChartLoading(id, true);
     var container = $('#' + id);
     var url = '/plot?width=' + (container.width()) + '&height=' + (container.height());
-    $.ajax({url: url, success: function(result){
-        container.html(result);
-    }});
+    $.ajax({url: url,
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function(result) {
+            //console.log(result);
+            window[result.id] = result;
+            container.html(result.html);
+        }});
 };
 
 function updateAllPlots() {
