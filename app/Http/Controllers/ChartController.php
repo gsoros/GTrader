@@ -59,7 +59,10 @@ class ChartController extends Controller
         $strategy = Strategy::make();
         $strategy->setParam('config_file', 'test.fann');
         $strategy->setCandles($candles);
-        $chart = Chart::make(null, ['candles' => $candles, 'strategy' => $strategy]);
+        $chart = Chart::make(null, [
+                    'id' => $request->id, 
+                    'candles' => $candles, 
+                    'strategy' => $strategy]);
         //$chart->set('start', 0);
         //$chart->setCandles($candles);
         //$chart->setStrategy($strategy);
@@ -74,7 +77,8 @@ class ChartController extends Controller
         $strategy->addIndicator('FannSignals');
         //$strategy->calculateIndicators();
         //dd($candles);
-        $json = $chart->toJSON(['width' => $request->width, 'height' => $request->height]);
+        $chart->handleRequest($request);
+        $json = $chart->toJSON();
         
         //debug($candles); exit();
         //dd(xdebug_get_headers());

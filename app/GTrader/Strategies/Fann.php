@@ -215,7 +215,7 @@ class Fann extends Strategy
         
         $candles = $this->getCandles();
         
-        if (!$candles->size()) throw new \Exception('next pack: no candles');
+        if (!$candles->size()) return null;
         
         $target_pack_size = $size ? $size : $this->_num_samples + $this->getParam('target_distance');
         //echo ' '.$this->_pack_iterator;

@@ -2,6 +2,8 @@
 
 namespace GTrader;
 
+use Illuminate\Http\Request;
+
 abstract class Chart extends Skeleton {
     use HasCandles;
 
@@ -11,6 +13,7 @@ abstract class Chart extends Skeleton {
     public abstract function toHTML(array $params = []);
     public abstract function toJSON(array $params = []);
     public function scripts() {}
+    public function handleRequest(Request $request) {}
     
     public function __construct(array $params = [])
     {
@@ -24,7 +27,10 @@ abstract class Chart extends Skeleton {
             $this->setStrategy($params['strategy']);
             unset($params['strategy']);
         }
-        $this->setParam('id', uniqid($this->getShortClass().'_'));
+        $id = isset($params['id']) ? 
+                    $params['id'] : 
+                    uniqid($this->getShortClass());
+        $this->setParam('id', $id);
         parent::__construct($params);
     }
     

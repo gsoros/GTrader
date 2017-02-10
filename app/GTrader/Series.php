@@ -17,6 +17,7 @@ class Series extends Collection {
     
     function __construct(array $params = [])
     {
+        $exchange = Exchange::make();
         foreach (['resolution'    => 'resolution', 
                     'name_sql'    => 'exchange', 
                     'symbol_sql'  => 'symbol'] as 
@@ -25,7 +26,7 @@ class Series extends Collection {
             $this->setParam($varname, 
                             isset($params[$varname]) ?
                             $params[$varname] :
-                            Exchange::make()->getParam($confname));
+                            $exchange->getParam($confname));
         }
 
         $this->setParam('limit', isset($params['limit']) ? $params['limit'] : 200);
@@ -154,9 +155,14 @@ class Series extends Collection {
                         ->reverse()
                         ->values();
 
-        if ($candles->isEmpty()) throw new \Exception('Empty result');
+        //if ($candles->isEmpty()) throw new \Exception('Empty result');
+        if (!count($candles->items)) return $this;
 
         $this->items = $candles->items;
+        $this->reset();
+        $this->setParam('start', $this->next()->time);
+        $this->setParam('end', $this->last()->time);
+        return $this;
     }
     
     

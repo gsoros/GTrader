@@ -2,6 +2,7 @@
 
 namespace GTrader\Charts;
 
+use Illuminate\Http\Request;
 use GTrader\Chart;
 use PHPlot_truecolor;
 
@@ -14,15 +15,10 @@ class PHPlot extends Chart {
                     'id' => $this->getParam('id')]);
     }
     
+    
     public function toJSON(array $params = [])
     {
-        $width = isset($params['width']) ? 
-                    $params['width'] : 
-                    $this->getParam('width');
-        $height = isset($params['height']) ? 
-                    $params['height'] : 
-                    $this->getParam('height');
-        $plot = new PHPlot_truecolor($width, $height);
+        $plot = new PHPlot_truecolor($this->getParam('width'), $this->getParam('height'));
         $plot->SetPrintImage(false);
         $plot->SetFailureImage(false);
         $image_map = '<map name="map1">';
@@ -58,9 +54,35 @@ class PHPlot extends Chart {
     }
 
 
+    public function handleRequest(Request $request) 
+    {
+        $this->setParam('width', isset($request->width) ? $request->width : 800);
+        $this->setParam('height', isset($request->height) ? $request->height : 600);
+        if (isset($request->method)) 
+            $this->handleMethod($request->method, $request->param);
+        $candles = $this->getCandles();
+        foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
+            if (isset($request->$param))
+                $candles->setParam($param, $request->$param);
+                
+    }
+    
+    
+    private function handleMethod(string $method, string $param = null)
+    {
+        switch ($method) 
+        {
+            case 'zoomIn':
+                error_log('zoomIn');
+                break;
+        }
+    }
+
     protected function plotCandles(&$plot, &$image_map = null)
     {
         $candles = $this->getCandles();
+        if (!$candles->size())
+            return $this;
         $candles->reset();
         $title = 'R: '.$this->getParam('resolution').' '.
                  date('Y-m-d H:i', $candles->next()->time).' - '.

@@ -1,16 +1,16 @@
 <div id="{{ $id }}" class="PHPlot"></div>
 <div class="text-center" id="controls_{{ $id }}">
     <div class="btn-group">
-        <button type="button" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" id="backward_{{ $id }}">
             <span class="glyphicon glyphicon-backward"></span>
         </button>
-        <button type="button" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" id="zoomIn_{{ $id }}">
             <span class="glyphicon glyphicon-zoom-in"></span>
         </button>
-        <button type="button" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" id="zoomOut_{{ $id }}">
             <span class="glyphicon glyphicon-zoom-out"></span>
         </button>
-        <button type="button" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" id="forward_{{ $id }}">
             <span class="glyphicon glyphicon-forward"></span>
         </button>
     </div>
