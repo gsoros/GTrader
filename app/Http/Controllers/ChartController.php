@@ -13,7 +13,7 @@ use GTrader\Indicator;
 
 class ChartController extends Controller
 {
-    
+
     /**
      * Create a new controller instance.
      *
@@ -23,8 +23,8 @@ class ChartController extends Controller
     {
         $this->middleware('auth');
     }
-    
-    
+
+
     public function JSON(Request $request)
     {
         //$u = new Updater;
@@ -52,7 +52,7 @@ class ChartController extends Controller
         //unset($c);
         //$c = Candle::where('time', 1485797340)->first();
         //Util::dump($c);
-        $candles = new Series(['resolution' => 3600, 'limit' => 200]);
+        $candles = new Series(['resolution' => 3600]);
         //$candles->reset();
         //while ($c = $candles->next())
         //    echo $c->time.'<br />';
@@ -60,8 +60,8 @@ class ChartController extends Controller
         $strategy->setParam('config_file', 'test.fann');
         $strategy->setCandles($candles);
         $chart = Chart::make(null, [
-                    'id' => $request->id, 
-                    'candles' => $candles, 
+                    'id' => $request->id,
+                    'candles' => $candles,
                     'strategy' => $strategy]);
         //$chart->set('start', 0);
         //$chart->setCandles($candles);
@@ -78,15 +78,15 @@ class ChartController extends Controller
         //$strategy->calculateIndicators();
         //dd($candles);
         $json = $chart->handleJSONRequest($request);
-        
+
         //debug($candles); exit();
         //dd(xdebug_get_headers());
         //dd($chart);
         //$candles->reset();
         //dd($candles->last());
-        
+
         return response($json, 200);
         //->header('Content-Type', 'image/png');
-        
+
     }
 }

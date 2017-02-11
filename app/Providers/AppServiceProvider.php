@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         DB::listen(function ($query) {
-            
+
             $replace = function ($sql, $bindings)
             {
                 $needle = '?';

@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 abstract class Chart extends Skeleton {
     use HasCandles;
 
-    
+
     protected $_strategy;
-    
-    public abstract function toHTML(array $params = []);
-    public abstract function toJSON(array $params = []);
+
+    public function toHTML() {}
+    public function toJSON($options = 0) {}
     public function scripts() {}
     public function handleJSONRequest(Request $request) {}
-    
+
     public function __construct(array $params = [])
     {
         if (isset($params['candles']))
@@ -27,38 +27,38 @@ abstract class Chart extends Skeleton {
             $this->setStrategy($params['strategy']);
             unset($params['strategy']);
         }
-        $id = isset($params['id']) ? 
-                    $params['id'] : 
+        $id = isset($params['id']) ?
+                    $params['id'] :
                     uniqid($this->getShortClass());
         $this->setParam('id', $id);
         parent::__construct($params);
     }
-    
-        
+
+
     public function getStrategy()
     {
         return $this->_strategy;
     }
-    
+
     public function setStrategy(&$strategy)
     {
         $this->_strategy = $strategy;
         return $this;
     }
-    
+
 
     public function getIndicators()
     {
         return array_merge($this->getCandles()->getIndicators(),
                             $this->getStrategy()->getIndicators());
     }
-    
+
 
     public function getIndicatorsVisibleSorted()
     {
         $ind_sorted = [];
         $all_ind = $this->getIndicators();
-       
+
         foreach ($all_ind as $ind)
         {
             $func = false;
@@ -73,6 +73,6 @@ abstract class Chart extends Skeleton {
         }
         return $ind_sorted;
     }
-    
+
 
 }

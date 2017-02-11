@@ -7,16 +7,16 @@ use GTrader\Chart;
 use PHPlot_truecolor;
 
 class PHPlot extends Chart {
-    
-    
-    public function toHTML(array $params = [])
+
+
+    public function toHTML()
     {
         return view('Charts/PHPlot', [
                     'id' => $this->getParam('id')]);
     }
-    
-    
-    public function toJSON(array $params = [])
+
+
+    public function toJSON($options = 0)
     {
         $plot = new PHPlot_truecolor($this->getParam('width'), $this->getParam('height'));
         $plot->SetPrintImage(false);
@@ -44,7 +44,7 @@ class PHPlot extends Chart {
         $o->exchange = $this->getCandles()->getParam('exchange');
         $o->symbol = $this->getCandles()->getParam('symbol');
         $o->html = $html;
-        return json_encode($o);
+        return json_encode($o, $options);
     }
 
 
@@ -54,7 +54,7 @@ class PHPlot extends Chart {
     }
 
 
-    public function handleJSONRequest(Request $request) 
+    public function handleJSONRequest(Request $request)
     {
         $this->setParam('width', isset($request->width) ? $request->width : 800);
         $this->setParam('height', isset($request->height) ? $request->height : 600);
@@ -62,13 +62,13 @@ class PHPlot extends Chart {
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
-        if (isset($request->method)) 
+        if (isset($request->method))
             $this->handleMethod($request->method, $request->param);
         return $this->toJSON();
-                
+
     }
-    
-    
+
+
     private function handleMethod(string $method, string $param = null)
     {
         $candles = $this->getCandles();
@@ -77,7 +77,7 @@ class PHPlot extends Chart {
         $resolution = $candles->getParam('resolution');
         $live = $end > time() - $resolution;
         error_log('Live: '.$live);
-        switch ($method) 
+        switch ($method)
         {
             case 'backward':
                 $epoch = $candles->getEpoch();
@@ -87,7 +87,7 @@ class PHPlot extends Chart {
                     $start = $epoch;
                 $end = $start + $limit;
                 break;
-                
+
             case 'forward':
                 $limit = $end - $start;
                 $end += floor($limit / 2);
@@ -95,7 +95,7 @@ class PHPlot extends Chart {
                     $end = time();
                 $start = $end - $limit;
                 break;
-                
+
             case 'zoomIn':
                 if ($live)
                     $start = $end - floor(($end - $start) / 2);
@@ -108,7 +108,7 @@ class PHPlot extends Chart {
                     $end = $mid + $fourth;
                 }
                 break;
-                
+
             case 'zoomOut':
                 if ($live)
                     $start = $end - ($end - $start) * 2;
@@ -130,7 +130,7 @@ class PHPlot extends Chart {
         $candles->setParam('end', $end);
         $candles->setParam('limit', $end - $start);
     }
-    
+
 
     protected function plotCandles(&$plot, &$image_map = null)
     {
@@ -146,22 +146,22 @@ class PHPlot extends Chart {
         $candles->reset();
         while ($c = $candles->next())
         {
-            $price[] = ('candles' === $plot_type) ? 
+            $price[] = ('candles' === $plot_type) ?
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:
                 ['', $c->time, $c->close];
                 $times[] = $c->time;
         }
         $plot->setTitle($title);
         $plot->SetDataColors(
-                    'candles' === $plot_type ? 
+                    'candles' === $plot_type ?
                     ['red:30', 'DarkGreen:20','grey:90', 'grey:90']:
                     'DarkGreen');
         $plot->SetDataType('data-data');
         $plot->SetDataValues($price);
         $plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
         $plot->setPointShapes('none');
-        $plot->SetCallback('data_points', 
-            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) 
+        $plot->SetCallback('data_points',
+            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
                         use (&$image_map, $times, $price) {
                 if (!$image_map) return null;
                 //dump($row.$image_map);
@@ -193,7 +193,7 @@ class PHPlot extends Chart {
         $plot->SetMarginsPixels(30, 30, 15);
         $plot->SetXTickLabelPos('plotdown');
         $plot->SetLegend('candles' === $plot_type ? ['Price', ''] : ['Price']);
-        $plot->SetLegendPixels(35, Chart::nextLegendY());
+        $plot->SetLegendPixels(35, $this->nextLegendY());
         $plot->SetDrawXGrid(true);
         $plot->SetBackgroundColor('black');
         $plot->SetGridColor('DarkGreen:100');
@@ -208,18 +208,18 @@ class PHPlot extends Chart {
         $plot->DrawGraph();
         $plot->RemoveCallback('data_points');
         if ('candles' === $plot_type)
-            self::nextLegendY();
+            $this->nextLegendY();
         return $this;
     }
-    
-    
+
+
     protected function plotIndicator(&$plot, $indicator)
     {
         $display = $indicator->getParam('display');
         $params = $indicator->getParam('indicator');
         $sig = $indicator->getSignature();
         $color = self::nextColor();
-        
+
         $candles = $this->getCandles();
         $candles->reset();
         $data = [];
@@ -246,12 +246,12 @@ class PHPlot extends Chart {
         $plot->DrawGraph();
         return $this;
     }
-    
-    
+
+
     public function plotSignals(&$plot, $indicator)
     {
         $sig = $indicator->getSignature();
-        
+
         $candles = $this->getCandles();
         $candles->reset();
         $data = $signals = [];
@@ -286,8 +286,8 @@ class PHPlot extends Chart {
         $plot->RemoveCallback('data_color');
         return $this;
     }
-    
-    
+
+
     public static function nextColor()
     {
         static $index = 0;
@@ -297,7 +297,7 @@ class PHPlot extends Chart {
         if ($index >= count($colors)) $index = 0;
         return $color;
     }
-    
+
     public static function nextLegendY()
     {
         static $y = 20;

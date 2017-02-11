@@ -1,5 +1,5 @@
 function setChartSize(id) {
-    $('#' + id).width($(window).width() - 2).height($(window).height() - 120);
+    $('#' + id).width($(window).width()).height($(window).height() - 100);
 };
 
 function setChartLoading(id, loading) {
@@ -21,7 +21,7 @@ function requestPlot(id, method, param) {
     var plot = window[id];
     console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
     var url = '/plot.json?id=' + id +
-                '&width=' + container.width() + 
+                '&width=' + container.width() +
                 '&height=' + container.height();
     if (undefined !== method)
         url += '&method=' + method;
@@ -77,7 +77,7 @@ var waitForFinalEvent = (function() {
     };
 })();
 
-$(window).ready(function() { 
+$(window).ready(function() {
     updateAllPlots();
     registerHandlers();
 });

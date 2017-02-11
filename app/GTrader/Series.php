@@ -10,24 +10,28 @@ use GTrader\Util;
 
 class Series extends Collection {
     use HasParams, HasIndicators;
-    
+
     private $_loaded;
     private $_iter = 0;
-    
-    
+
+
     function __construct(array $params = [])
     {
         $exchange = Exchange::make();
-        foreach (['resolution'    => 'resolution', 
-                    'name_sql'    => 'exchange', 
-                    'symbol_sql'  => 'symbol'] as 
-                    $confname     => $varname)
-        {
-            $this->setParam($varname, 
-                            isset($params[$varname]) ?
-                            $params[$varname] :
-                            $exchange->getParam($confname));
-        }
+        if (isset($params['exchange']))
+            $this->setParam('exchange', $params['exchange']);
+        if (!$this->getParam('exchange'))
+            $this->setParam('exchange', $exchange->getDefaultExchange());
+
+        if (isset($params['symbol']))
+            $this->setParam('symbol', $params['symbol']);
+        if (!$this->getParam('symbol'))
+            $this->setParam('symbol', $exchange->getDefaultSymbol());
+
+        if (isset($params['resolution']))
+            $this->setParam('resolution', $params['resolution']);
+        if (!$this->getParam('resolution'))
+            $this->setParam('resolution', $exchange->getDefaultResolution());
 
         $this->setParam('limit', isset($params['limit']) ? $params['limit'] : 200);
         $this->setParam('start', isset($params['start']) ? $params['start'] : 0);
@@ -35,8 +39,8 @@ class Series extends Collection {
         $this->setParam('resolution', intval($this->getParam('resolution')));
         parent::__construct();
     }
-    
-    
+
+
     public function getCandles()
     {
         $this->_load();
@@ -50,14 +54,14 @@ class Series extends Collection {
         $this->items = $candles->items;
         return $this;
     }
-    
-    public function byKey($key) 
+
+    public function byKey($key)
     {
         $this->_load();
         return isset($this->items[$key]) ? $this->items[$key] : null;
     }
-    
-    
+
+
     public function next($advance_iterator = true)
     {
         $this->_load();
@@ -65,9 +69,9 @@ class Series extends Collection {
         if ($advance_iterator) $this->_iter++;
         return $ret;
     }
-    
-    
-    public function prev($stepback = 1, $redvance_iterator = false) 
+
+
+    public function prev($stepback = 1, $redvance_iterator = false)
     {
         $this->_load();
         $ret = isset($this->items[$this->_iter-$stepback-1]) ?
@@ -76,9 +80,9 @@ class Series extends Collection {
         if ($redvance_iterator) $this->_iter -= $stepback+1;
         return $ret;
     }
-    
-    
-    public function set($candle = null) 
+
+
+    public function set($candle = null)
     {
         if (!is_object($candle)) throw new \Exception('set needs candle object');
         $this->_load();
@@ -89,58 +93,58 @@ class Series extends Collection {
         }
         return false;
     }
-    
 
-    
-    
-    public function all() 
+
+
+
+    public function all()
     {
         $this->_load();
         return $this->items;
     }
-    
-    
-    public function size() 
+
+
+    public function size()
     {
         $this->_load();
         return count($this->items);
     }
-    
-    
-    function add($candle) 
+
+
+    function add($candle)
     {
         $this->items[] = $candle;
     }
-    
-    
-    function reset() 
+
+
+    function reset()
     {
         $this->_iter = 0;
         return $this;
     }
-    
-    
-    function clean() 
+
+
+    function clean()
     {
         $this->items = array();
         $this->_loaded = false;
         $this->reset();
     }
-    
-    
-    private function _load() 
+
+
+    private function _load()
     {
         if ($this->_loaded) return false;
         $this->_loaded = true;
-        
+
         $start = $this->getParam('start');
         if ($start < 0) $start = 0;
         $end = $this->getParam('end') ? $this->getParam('end') : time();
         $limit = $this->getParam('limit');
         $no_limit = $limit < 1 ? true : false;
-                
+
         if (count($this->items)) return;
-        
+
         $candles = Candle::select('time', 'open', 'high', 'low', 'close', 'volume')
                         ->where('resolution', strval($this->getParam('resolution')))
                         ->where('symbol', $this->getParam('symbol'))
@@ -164,57 +168,57 @@ class Series extends Collection {
         $this->setParam('end', $this->last()->time);
         return $this;
     }
-    
-    
-    public function save() 
+
+
+    public function save()
     {
         $this->reset();
         while ($candle = $this->next())
             $candle->save();
         return true;
     }
-    
-    
-    public function getEpoch($resolution = null, $symbol = null, $exchange = null) 
+
+
+    public function getEpoch($resolution = null, $symbol = null, $exchange = null)
     {
         static $cache = [];
-        
+
         $query = Candle::select('time');
-        foreach ([  'resolution'    => 'resolution', 
-                    'symbol'        => 'symbol_sql', 
-                    'exchange'      => 'name_sql'] as 
-                    $param          => $config)
+
+        foreach ([ 'resolution', 'symbol', 'exchange'] as $param)
         {
             if (is_null($$param))
-                if (!($$param = $this->getParam($param)))
-                    $$param = Exchange::getInstance()->getParam($config);
+                $$param = $this->getParam($param);
             $query = $query->where($param, $$param);
         }
+
         if (isset($cache[$exchange][$symbol][$resolution]))
             return $cache[$exchange][$symbol][$resolution];
+
         $query = $query->orderBy('time')->first();
         $epoch = isset($query->time) ? $query->time : null;
         $cache[$exchange][$symbol][$resolution] = $epoch;
+
         return $epoch;
     }
-    
 
 
-    
-    
+
+
+
     /** Simple Moving Average */
-    public function sma($len = 0, $price = 'close') 
+    public function sma($len = 0, $price = 'close')
     {
         $len = intval($len);
         if ($len <= 1) throw new \Exception('sma needs int len > 1');
-        if (!in_array($price, array('open', 'high', 'low', 'close'))) 
+        if (!in_array($price, array('open', 'high', 'low', 'close')))
             throw new \Exception('sma needs valid price');
-        
+
         $indicator = 'sma_'.$len.'_'.$price;
         if (isset($this->_indicators[$indicator]))
           return $this;
         $this->_indicators[$indicator] = true;
-        
+
         $this->reset();
         while ($candle = $this->next()) {
           //echo 'candle: '; dump($candle);
@@ -231,35 +235,35 @@ class Series extends Collection {
         //dump($this->_candles);
         return $this;
     }
-    
-    
 
-    
-    
+
+
+
+
     /** Relative Strength Index */
     public function rsi($len = 0, $price = 'close')
     {
         $len = intval($len);
-        if ($len <= 1) 
+        if ($len <= 1)
             throw new \Exception('rsi needs int len > 1');
-        if (!in_array($price, array('open', 'high', 'low', 'close'))) 
+        if (!in_array($price, array('open', 'high', 'low', 'close')))
             throw new \Exception('rsi needs valid price');
-        
+
         $indicator = 'rsi_'.$len.'_'.$price;
-        if (isset($this->_indicators[$indicator])) 
+        if (isset($this->_indicators[$indicator]))
             return $this;
         $this->_indicators[$indicator] = true;
-        
+
         $this->reset();
-        
+
         // forward $len, add up gain/loss, set rsi to 50
         $sum_gain = $sum_loss = 0;
         $prev_candle = null;
-        for ($i=0; $i<$len; $i++) 
+        for ($i=0; $i<$len; $i++)
         {
-            if (!($candle = $this->next())) 
+            if (!($candle = $this->next()))
                 throw new \Exception('series is shorter than '.$len);
-            if ($prev_candle) 
+            if ($prev_candle)
             {
                 $diff = $candle->$price - $prev_candle->$price;
                 if ($diff > 0) $sum_gain += $diff;
@@ -269,7 +273,7 @@ class Series extends Collection {
             $this->set($candle);
             $prev_candle = $candle;
         }
-    
+
         // first rsi value is based on avg prev $len gain/loss
         $prev_avg_gain = $sum_gain / $len;
         $prev_avg_loss = $sum_loss / $len;
@@ -277,7 +281,7 @@ class Series extends Collection {
         if ($divider == -1) $divider = 0;
         $candle->$indicator = 100 - (100 / (1 + $divider));
         $this->set($candle);
-        
+
         // subsequent rsi values are based on prev avgs and current gain/loss
         while ($candle = $this->next()) {
             $diff = $candle->$price - $prev_candle->$price;
@@ -294,30 +298,30 @@ class Series extends Collection {
             $prev_avg_gain = $avg_gain;
             $prev_avg_loss = $avg_loss;
         }
-        
+
         return $this;
     }
-    
-    
+
+
     /** Deviation Squared */
-    public function dev_sq($smalen = 20, $price = 'close') 
+    public function dev_sq($smalen = 20, $price = 'close')
     {
         $smalen = intval($smalen);
-        if ($smalen <= 1) 
+        if ($smalen <= 1)
             throw new \Exception('need int smalen > 1');
-        if (!in_array($price, array('open', 'high', 'low', 'close'))) 
+        if (!in_array($price, array('open', 'high', 'low', 'close')))
             throw new \Exception('need valid price');
-        
+
         $indicator = 'dev_sq_'.$smalen.'_'.$price;
         if (isset($this->_indicators[$indicator]))
           return $this;
         $this->_indicators[$indicator] = true;
-        
+
         $series = $this->sma($smalen, $price);
         $indicator_sma = 'sma_'.$smalen.'_'.$price;
         $series->reset();
-        
-        while ($candle = $series->next()) 
+
+        while ($candle = $series->next())
         {
             $sma = isset($candle->$indicator_sma) ? $candle->$indicator_sma : $candle[$price];
             $candle->$indicator = pow($candle->$price - $sma, 2);
@@ -326,8 +330,8 @@ class Series extends Collection {
         }
         return $series;
     }
-    
-    
+
+
     /** Midrate */
     public static function ohlc4(Candle $candle)
     {
@@ -335,8 +339,8 @@ class Series extends Collection {
             return ($candle->open + $candle->high + $candle->low + $candle->close) / 4;
         else throw new \Exception('Candle component missing');
     }
-    
-    
+
+
     /** Bollinger Bands */
     function bb($len = 20, $stdev = 2, $price = 'close')
     {
@@ -345,19 +349,19 @@ class Series extends Collection {
         $stdev = floatval($stdev);
         if ($stdev < 1) throw new \Exception('bb needs float stdev >= 1');
         if (!in_array($price, array('open', 'high', 'low', 'close'))) throw new \Exception('bb needs valid price');
-        
+
         $indicator1 = 'bb_high_'.$len.'_'.$stdev.'_'.$price;
         $indicator2 = 'bb_low_'.$len.'_'.$stdev.'_'.$price;
         if (isset($this->_indicators[$indicator1]) && isset($this->_indicators[$indicator2])) return $this;
         $this->_indicators[$indicator1] = $this->_indicators[$indicator2] = true;
-        
+
         $series = $this->dev_sq($len, $price);
         $indicator_sma = 'sma_'.$len.'_'.$price;
         $indicator_dev_sq = 'dev_sq_'.$len.'_'.$price;
         $series->reset();
-        
+
         $dev_sq_arr = array();
-        while ($candle = $series->next()) 
+        while ($candle = $series->next())
         {
             array_push($dev_sq_arr, $candle->$indicator_dev_sq);
             if (count($dev_sq_arr) > $len) array_shift($dev_sq_arr);
@@ -369,12 +373,12 @@ class Series extends Collection {
         }
         return $series;
     }
-    
-    
+
+
     // Series::crossover($prev_candle, $candle, 'rsi_4_close', 50)
     // Series::crossunder($prev_candle, $candle, 'close', 'bb_low_58_2_close')
     public static function crossover($prev_candle, $candle, $fish, $sea, $direction = 'over') {
-    
+
     if (is_numeric($fish)) $fish1 = $fish2 = $fish + 0;
     else if (is_string($fish))
     {
@@ -384,9 +388,9 @@ class Series extends Collection {
       else throw new \Exception('Could not find fish2');
     }
     else throw new \Exception('Fish must either be string or numeric');
-    
+
     if (is_numeric($sea)) $sea1 = $sea2 = $sea+0;
-    else if (is_string($sea)) 
+    else if (is_string($sea))
     {
       if (isset($prev_candle->$sea)) $sea1 = $prev_candle->$sea;
       else throw new \Exception('Could not find sea1');
@@ -394,20 +398,20 @@ class Series extends Collection {
       else throw new \Exception('Could not find sea2');
     }
     else throw new \Exception('Sea must either be string or numeric');
-    
+
     return $direction == 'under' ?
       $fish1 > $sea1 && $fish2 < $sea2:
       $fish1 < $sea1 && $fish2 > $sea2;
     }
-    
-    
-    public static function crossunder($prev_candle, $candle, $fish, $sea) 
+
+
+    public static function crossunder($prev_candle, $candle, $fish, $sea)
     {
         return self::crossover($prev_candle, $candle, $fish, $sea, 'under');
     }
-    
-    
-    public static function normalize($in, $in_min, $in_max, $out_min = -1, $out_max = 1) 
+
+
+    public static function normalize($in, $in_min, $in_max, $out_min = -1, $out_max = 1)
     {
         if ($in_max - $in_min == 0) return $out_max - $out_min;
         //throw new \Exception('Division by zero: '.$in.' '.$in_min.'-'.$in_max.' '.$out_min.'-'.$out_max);

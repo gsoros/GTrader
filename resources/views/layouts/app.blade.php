@@ -24,7 +24,7 @@
     <div id="app">
         <nav class="navbar navbar-default navbar-static-top">
             <div class="container-fluid">
-                
+
                 <div class="navbar-header">
 
                     <!-- Collapsed Hamburger -->
@@ -34,7 +34,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    
+
                 </div>
 
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">

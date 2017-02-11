@@ -17,8 +17,8 @@ class Candle extends Model
 
     public function save(array $options = [])
     {
-        
-        $attributes = ['id', 'time', 'exchange', 'symbol', 'resolution', 
+
+        $attributes = ['id', 'time', 'exchange', 'symbol', 'resolution',
                         'open', 'high', 'low', 'close', 'volume'];
 
         foreach ($this->attributes as $k => $v)
@@ -30,7 +30,7 @@ class Candle extends Model
             }
         }
 
-        if (isset($this->resolution)) 
+        if (isset($this->resolution))
             $this->resolution = strval($this->resolution);
 
         $q = self::select('id');
@@ -60,13 +60,13 @@ class Candle extends Model
     * @param prev_candle Candle
     * @return Candle
     * retains any additional attributes in $candle */
-    public static function heikinashi(Candle $candle, Candle $prev_candle = null) 
+    public static function heikinashi(Candle $candle, Candle $prev_candle = null)
     {
         //dump($candle); dump($prev_candle); exit();
         if (!is_object($prev_candle)) return $candle;
         if (!$prev_candle->open || !$prev_candle->high ||
               !$prev_candle->low || !$prev_candle->close) return $candle;
-        
+
         $candle->attributes = array_merge($candle->attributes, array(
             'open' => ($prev_candle->open + $prev_candle->close) / 2,
             'high' => max($candle->open, $candle->high, $candle->close),
@@ -82,8 +82,8 @@ class Candle extends Model
         return max($this->open, $this->high, $this->low, $this->close);
     }
 
-        
-    public function min() 
+
+    public function min()
     {
         return min($this->open, $this->high, $this->low, $this->close);
     }
