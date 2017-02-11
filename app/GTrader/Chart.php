@@ -13,7 +13,7 @@ abstract class Chart extends Skeleton {
     public abstract function toHTML(array $params = []);
     public abstract function toJSON(array $params = []);
     public function scripts() {}
-    public function handleRequest(Request $request) {}
+    public function handleJSONRequest(Request $request) {}
     
     public function __construct(array $params = [])
     {

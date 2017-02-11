@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 return $sql;
             };
             $sql = $replace($query->sql, $query->bindings);
-            //dump($sql);
+            //error_log($sql);
 
         });
     }

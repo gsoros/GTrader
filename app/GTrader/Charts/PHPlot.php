@@ -54,29 +54,83 @@ class PHPlot extends Chart {
     }
 
 
-    public function handleRequest(Request $request) 
+    public function handleJSONRequest(Request $request) 
     {
         $this->setParam('width', isset($request->width) ? $request->width : 800);
         $this->setParam('height', isset($request->height) ? $request->height : 600);
-        if (isset($request->method)) 
-            $this->handleMethod($request->method, $request->param);
         $candles = $this->getCandles();
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
+        if (isset($request->method)) 
+            $this->handleMethod($request->method, $request->param);
+        return $this->toJSON();
                 
     }
     
     
     private function handleMethod(string $method, string $param = null)
     {
+        $candles = $this->getCandles();
+        $start = $candles->getParam('start');
+        $end = $candles->getParam('end');
+        $resolution = $candles->getParam('resolution');
+        $live = $end > time() - $resolution;
+        error_log('Live: '.$live);
         switch ($method) 
         {
+            case 'backward':
+                $epoch = $candles->getEpoch();
+                $limit = $end - $start;
+                $start -= floor($limit / 2);
+                if ($start < $epoch)
+                    $start = $epoch;
+                $end = $start + $limit;
+                break;
+                
+            case 'forward':
+                $limit = $end - $start;
+                $end += floor($limit / 2);
+                if ($end > time())
+                    $end = time();
+                $start = $end - $limit;
+                break;
+                
             case 'zoomIn':
-                error_log('zoomIn');
+                if ($live)
+                    $start = $end - floor(($end - $start) / 2);
+                else
+                {
+                    $limit = $end - $start;
+                    $mid = $start + floor($limit / 2);
+                    $fourth = floor($limit / 4);
+                    $start = $mid - $fourth;
+                    $end = $mid + $fourth;
+                }
+                break;
+                
+            case 'zoomOut':
+                if ($live)
+                    $start = $end - ($end - $start) * 2;
+                else
+                {
+                    $epoch = $candles->getEpoch();
+                    $limit = $end - $start;
+                    $mid = $start + floor($limit / 2);
+                    $start = $mid - $limit;
+                    if ($start < $epoch)
+                        $start = $epoch;
+                    $end = $start + $limit * 2;
+                    if ($end > time())
+                        $end = time();
+                }
                 break;
         }
+        $candles->setParam('start', $start);
+        $candles->setParam('end', $end);
+        $candles->setParam('limit', $end - $start);
     }
+    
 
     protected function plotCandles(&$plot, &$image_map = null)
     {
@@ -98,6 +152,10 @@ class PHPlot extends Chart {
                 $times[] = $c->time;
         }
         $plot->setTitle($title);
+        $plot->SetDataColors(
+                    'candles' === $plot_type ? 
+                    ['red:30', 'DarkGreen:20','grey:90', 'grey:90']:
+                    'DarkGreen');
         $plot->SetDataType('data-data');
         $plot->SetDataValues($price);
         $plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
@@ -143,7 +201,6 @@ class PHPlot extends Chart {
         $plot->setTitleColor('DimGrey:80');
         $plot->SetTickColor('DarkGreen');
         $plot->SetTextColor('grey');
-        $plot->SetDataColors(['red:30', 'DarkGreen:20','grey:90', 'grey:90']);
         //$plot->SetLineWidths([1, 1, 1, 1]);
         $plot->SetXLabelType('time', '%m-%d %H:%M');
         $plot->SetLineWidths('candles' === $plot_type ? 1 : 2);

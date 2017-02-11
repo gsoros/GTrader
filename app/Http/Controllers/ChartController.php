@@ -25,7 +25,7 @@ class ChartController extends Controller
     }
     
     
-    public function plot(Request $request)
+    public function JSON(Request $request)
     {
         //$u = new Updater;
         //$u->fetchCandles();
@@ -77,8 +77,7 @@ class ChartController extends Controller
         $strategy->addIndicator('FannSignals');
         //$strategy->calculateIndicators();
         //dd($candles);
-        $chart->handleRequest($request);
-        $json = $chart->toJSON();
+        $json = $chart->handleJSONRequest($request);
         
         //debug($candles); exit();
         //dd(xdebug_get_headers());

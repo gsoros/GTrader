@@ -175,23 +175,27 @@ class Series extends Collection {
     }
     
     
-    public function getStartOnly($resolution = null, $symbol = null) 
+    public function getEpoch($resolution = null, $symbol = null, $exchange = null) 
     {
-        if (is_null($resolution)) 
-            $resolution = $this->getParam('resolution') ? 
-                        $this->getParam('resolution') : 
-                        \Config::get('exchange.default_resolution');
-        if (is_null($symbol)) 
-            $symbol = $this->getParam('symbol') ? 
-                        $this->getParam('symbol') : 
-                        \Config::get('exchange.symbol_sql');
+        static $cache = [];
         
-        $c = Candle::select('time')
-                    ->where('symbol', $symbol)
-                    ->where('resolution', $resolution)
-                    ->orderBy('time')
-                    ->first();
-        return isset($c->time) ? $c->time : null;
+        $query = Candle::select('time');
+        foreach ([  'resolution'    => 'resolution', 
+                    'symbol'        => 'symbol_sql', 
+                    'exchange'      => 'name_sql'] as 
+                    $param          => $config)
+        {
+            if (is_null($$param))
+                if (!($$param = $this->getParam($param)))
+                    $$param = Exchange::getInstance()->getParam($config);
+            $query = $query->where($param, $$param);
+        }
+        if (isset($cache[$exchange][$symbol][$resolution]))
+            return $cache[$exchange][$symbol][$resolution];
+        $query = $query->orderBy('time')->first();
+        $epoch = isset($query->time) ? $query->time : null;
+        $cache[$exchange][$symbol][$resolution] = $epoch;
+        return $epoch;
     }
     
 

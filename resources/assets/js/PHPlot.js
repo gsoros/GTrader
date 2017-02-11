@@ -20,23 +20,17 @@ function requestPlot(id, method, param) {
     var container = $('#' + id);
     var plot = window[id];
     console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
-    var url = '/plot?id=' + id +
+    var url = '/plot.json?id=' + id +
                 '&width=' + container.width() + 
                 '&height=' + container.height();
     if (undefined !== method)
         url += '&method=' + method;
     if (undefined !== param)
         url += '&param=' + param;
-    if (undefined !== plot.start)
-        url += '&start=' + plot.start;
-    if (undefined !== plot.end)
-        url += '&end=' + plot.end;
-    if (undefined !== plot.resolution)
-        url += '&resolution=' + plot.resolution;
-    if (undefined !== plot.symbol)
-        url += '&symbol=' + plot.symbol;
-    if (undefined !== plot.exchange)
-        url += '&exchange=' + plot.exchange;
+    ['start', 'end', 'limit', 'resolution', 'symbol', 'exchange'].forEach(function(prop) {
+        if (undefined !== plot[prop])
+            url += '&' + prop + '=' + plot[prop];
+    });
     console.log('url: ' + url);
     $.ajax({url: url,
         contentType: 'application/json',
