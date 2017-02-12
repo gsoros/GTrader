@@ -30,7 +30,7 @@ class Aggregator
             {
                 echo 'Symbol: '.$symbol_local."\n";
                 if (!is_array($symbol['resolutions'])) continue;
-                foreach ($symbol['resolutions'] as $resolution)
+                foreach ($symbol['resolutions'] as $resolution => $res_name)
                 {
 
                     set_time_limit(59);
@@ -51,6 +51,9 @@ class Aggregator
                                 'size'          => 100000]; //Last ID: 1364210
                     $candles = $exchange->getCandles($params);
                     //dd($candles);
+
+                    if (!is_array($candles)) continue;
+                    if (!count($candles)) continue;
 
                     $counter = 0;
                     foreach($candles as $candle) {

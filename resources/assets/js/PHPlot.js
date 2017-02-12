@@ -19,7 +19,7 @@ function requestPlot(id, method, param) {
     setChartLoading(id, true);
     var container = $('#' + id);
     var plot = window[id];
-    console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
+    //console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
     var url = '/plot.json?id=' + id +
                 '&width=' + container.width() +
                 '&height=' + container.height();
@@ -27,20 +27,22 @@ function requestPlot(id, method, param) {
         url += '&method=' + method;
     if (undefined !== param)
         url += '&param=' + param;
-    ['start', 'end', 'limit', 'resolution', 'symbol', 'exchange'].forEach(function(prop) {
-        if (undefined !== plot[prop])
+    ['start', 'end', 'limit', 'resolution', 'symbol', 'exchange']
+    .forEach(function(prop) {
+        if (undefined !== plot[prop] && null !== plot[prop])
             url += '&' + prop + '=' + plot[prop];
     });
-    console.log('url: ' + url);
+    console.log('request url: ' + url);
     $.ajax({url: url,
         contentType: 'application/json',
         dataType: 'json',
         success: function(response) {
-            //console.log('response id:' + response.id);
-            console.log('response.start:' + response.start);
-            console.log('response.end:' + response.end)
+            //console.log(response);
+            //console.log('response.start:' + response.start);
+            //console.log('response.end:' + response.end)
             window[response.id] = response;
             container.html(response.html);
+            updateESR(response.id);
         }});
 };
 
@@ -61,25 +63,96 @@ function registerHandlers() {
                 requestPlot(split[1], split[0]);
             });
         });
+        ['exchange_' + id, 'symbol_' + id, 'resolution_' + id].forEach(function(id) {
+            //console.log(id);
+            $('#' + id).on('change', function() {
+                var split = this.id.split('_');
+                window[split[1]][split[0]] = $('#' + id).val();
+                updateESR(split[1]);
+                getSelectedESR(split[1]);
+            });
+        });
+    });
+};
+
+function getSelectedESR(id) {
+    console.log('getSelectedESR(' + id + ')');
+    var success = 0;
+    ['exchange_' + id, 'symbol_' + id, 'resolution_' + id].forEach(function(select) {
+        var val = $('#' + select).val();
+        if (null === val) {
+            console.log(select + ' val is null');
+            //console.log($('#' + select));;
+            waitForFinalEvent(function() {
+                console.log('timeout for ' + id);
+                getSelectedESR(id);
+                }, 500, 'getSelectedESR', id);
+            //debugger;
+            //val = $('#' + id + ' option')[0].value;
+        }
+        else {
+            var split = select.split('_');
+            window[split[1]][split[0]] = val;
+            success++;
+        }
+    });
+    requestPlot(id);
+};
+
+function updateESR(id) {
+    console.log('updateESR(' + id + ')');
+    var opts_exchange = '',
+        opts_symbol = '',
+        opts_resolution = '';
+    window['ESR_' + id].forEach(function(exchange) {
+        opts_exchange += '<option ';
+        if (window[id].exchange === exchange.name || 1 == window['ESR_' + id].length) {
+            opts_exchange += 'selected ';
+            exchange.symbols.forEach(function(symbol) {
+                opts_symbol += '<option ';
+                if (window[id].symbol === symbol.name || 1 == exchange.symbols.length) {
+                    opts_symbol += 'selected ';
+                    for (var resolution in symbol.resolutions) {
+                        opts_resolution += '<option ';
+                        if (window[id].resolution == resolution || 1 == symbol.resolutions.length)
+                            opts_resolution += 'selected ';
+                        opts_resolution += 'value="' + resolution + '">' + symbol.resolutions[resolution] + '</option>';
+                    }
+                }
+                opts_symbol += 'value="' + symbol.name + '">' + symbol.long_name + '</option>';
+            });
+        }
+        opts_exchange += 'value="' + exchange.name + '">' + exchange.long_name + '</option>';
+    });
+    $('#exchange_' + id).html(opts_exchange);
+    $('#symbol_' + id).html(opts_symbol);
+    $('#resolution_' + id).html(opts_resolution);
+    console.log('options updated');
+};
+
+function updateAllESRs() {
+    $('.PHPlot').each(function() {
+        updateESR($( this ).attr('id'));
     });
 };
 
 var waitForFinalEvent = (function() {
     var timers = {};
-    return function (callback, ms, uniqueId) {
+    return function (callback, ms, uniqueId, arg) {
         if (!uniqueId) {
             uniqueId = "uniqueId";
         }
         if (timers[uniqueId]) {
             clearTimeout(timers[uniqueId]);
         }
-        timers[uniqueId] = setTimeout(callback, ms);
+        timers[uniqueId] = setTimeout(callback, ms, arg);
     };
 })();
 
 $(window).ready(function() {
     updateAllPlots();
     registerHandlers();
+    //console.log(esr);
 });
 
 

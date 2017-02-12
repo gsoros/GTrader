@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'long_name' => 'OKCoin Futures',
+    'long_name' => 'OKCoin Futures Exchange',
     'short_name' => 'OKCF',
-    'local_name' => 'okcoin_futures',                       // used in the local database
+    'local_name' => 'okcoin_futures',                           // used in the local database
     'symbols' => [
         'btc_usd_3m' =>                                         // used in the local database, same as local_name
             [
@@ -11,11 +11,23 @@ return [
             'short_name' => 'BTCUSD3M',                         // used for displaying in lists
             'local_name' => 'btc_usd_3m',                       // used in the local database, same as the key
             'remote_name' => 'btc_usd',                         // used when querying the remote data
-            'resolutions' => [60, 180, 300, 900, 1800, 3600,
-                7200, 14400, 21600, 43200, 86400, 259200, 604800],
+            'resolutions'=> [60     => '1 minute',
+                            180     => '3 minutes',
+                            300     => '5 minutes',
+                            900     => '15 minutes',
+                            1800    => '30 minutes',
+                            3600    => '1 hour',
+                            7200    => '2 hours',
+                            14400   => '4 hours',
+                            21600   => '6 hours',
+                            43200   => '12 hours',
+                            86400   => '1 day',
+                            259200  => '3 days',
+                            604800  => '1 week'],
             'contract_type' => 'quarter',                       // used when querying the remote data
             ],
     ],
+    /* OKCoin-specific resolution strings */
     'resolution_names'=> [  60      => '1min',
                             180     => '3min',   //       3*60
                             300     => '5min',   //       5*60

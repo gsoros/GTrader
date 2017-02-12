@@ -1,27 +1,12 @@
 <div id="{{ $id }}" class="PHPlot"></div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" id="esr_{{ $id }}">
             <form class="form-inline">
                 <div class="form-group">
-                    <select class="form-control btn-primary" id="exchange">
-                        <option>OKCoin Futures</option>
-                        <option>Kraken</option>
-                        <option>Bitfinex</option>
-                        <option>Another Exchange with a long name</option>
-                    </select>
-                    <select class="form-control btn-primary" id="symbol">
-                        <option>BTC_USD</option>
-                        <option>LTC</option>
-                    </select>
-                    <select class="form-control btn-primary" id="resolution">
-                        <option>1 min</option>
-                        <option>5 min</option>
-                        <option>15 min</option>
-                        <option>30 min</option>
-                        <option>1 hour</option>
-                        <option>2 hours</option>
-                    </select>
+                    <select class="form-control btn-primary btn-sm" id="exchange_{{ $id }}"></select>
+                    <select class="form-control btn-primary btn-sm" id="symbol_{{ $id }}"></select>
+                    <select class="form-control btn-primary btn-sm" id="resolution_{{ $id }}"></select>
                 </div>
             </form>
         </div>

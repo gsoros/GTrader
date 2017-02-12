@@ -30,7 +30,7 @@ class HomeController extends Controller
      */
     public function dashboard()
     {
-              
+
         //$viewData = ['debug' => var_export(Exchange::getTicker(), true)];
         //$ema = Indicator::make('ema', ['length' => 10]);
         //$ema->setCandles($candles);
@@ -62,26 +62,27 @@ class HomeController extends Controller
         //$test = new TestClass('b_val_new');
         //$test->setParam('sub_1.c', 'c_val');
         //$debug = Util::getDump($test->getParamsExcept('sub_1.a'))
-        $e = Exchange::make();
+        //$e = Exchange::make();
         //$e = TestClass::make('TestChild', ['param1' => 'val1']);
         //$e = TestClass::make();
         //$e = TestClass::someMethod();
-        $debug = Util::getDump($e);
-        
+        //$debug = Util::getDump($e);
+        $debug = var_export(Exchange::getESR(), true);
+
         //$autoloader = require "../vendor/autoload.php";
         //$autoloader->loadClass("\GTrader\TestClass");
         //$debug = var_export($autoloader, true);
         $chart = Chart::make();
         $candles = Series::make();
         $chart->setCandles($candles);
-        
+
         $viewData = [   'chart'     => $chart->toHtml(),
-                        'scripts'   => $chart->scripts(),
+                        'scripts'   => $chart->getScriptsHtml(),
                         'debug'     => $debug];
 
         return view('dashboard')->with($viewData);
     }
-    
-    
-   
+
+
+
 }

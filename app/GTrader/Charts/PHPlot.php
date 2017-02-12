@@ -4,37 +4,54 @@ namespace GTrader\Charts;
 
 use Illuminate\Http\Request;
 use GTrader\Chart;
+use GTrader\Exchange;
 use PHPlot_truecolor;
 
 class PHPlot extends Chart {
 
+    protected $_scripts = [];
+    protected $_plot;
+    protected $_image_map;
+
+
 
     public function toHTML()
     {
+        $id = $this->getParam('id');
+
+        $this->addSingleScript(
+                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
+
+        $this->addScript(
+                    '<script> var ESR_'.$id.' = '.json_encode(Exchange::getESR()).'; </script>');
+
         return view('Charts/PHPlot', [
-                    'id' => $this->getParam('id')]);
+                    'id' => $id]);
     }
 
 
     public function toJSON($options = 0)
     {
-        $plot = new PHPlot_truecolor($this->getParam('width'), $this->getParam('height'));
-        $plot->SetPrintImage(false);
-        $plot->SetFailureImage(false);
-        $image_map = '<map name="map1">';
-        $this->plotCandles($plot, $image_map);
-        $image_map .= '</map>';
+        $this->_plot = new PHPlot_truecolor(
+                            $this->getParam('width'),
+                            $this->getParam('height'));
+        $this->_plot->SetPrintImage(false);
+        $this->_plot->SetFailureImage(false);
+        $this->_image_map = '<map name="map1">';
+        $this->plotCandles();
+        $this->_image_map .= '</map>';
         foreach ($this->getIndicatorsVisibleSorted() as $ind)
         {
             //echo 'Plotting: '.$ind->getSignature();
             $ind->checkAndRun();
             if ($ind->getParam('display.name') === 'Signals')
-                $this->plotSignals($plot, $ind);
+                $this->plotSignals($ind);
             else
-                $this->plotIndicator($plot, $ind);
+                $this->plotIndicator($ind);
         }
-        $html = $image_map.'<img class="img-responsive" src="'.
-                $plot->EncodeImage().'" usemap="#map1">';
+        $html = $this->_image_map.'<img class="img-responsive" src="'.
+                $this->_plot->EncodeImage().'" usemap="#map1">';
+
         $o = new \stdClass();
         $o->id = $this->getParam('id');
         $o->start = $this->getCandles()->getParam('start');
@@ -44,14 +61,31 @@ class PHPlot extends Chart {
         $o->exchange = $this->getCandles()->getParam('exchange');
         $o->symbol = $this->getCandles()->getParam('symbol');
         $o->html = $html;
+
         return json_encode($o, $options);
     }
 
 
-    public function scripts()
+    public function getScriptsHtml()
     {
-        return '<script src="'.mix('/js/PHPlot.js').'"></script>';
+        return join("\n", $this->_scripts);
     }
+
+
+    protected function addScript($script)
+    {
+        $this->_scripts[] = $script;
+        return $this;
+    }
+
+    protected function addSingleScript($script)
+    {
+        foreach ($this->_scripts as $existing_script)
+            if ($script === $existing_script)
+                return $this;
+        return $this->addScript($script);
+    }
+
 
 
     public function handleJSONRequest(Request $request)
@@ -59,6 +93,7 @@ class PHPlot extends Chart {
         $this->setParam('width', isset($request->width) ? $request->width : 800);
         $this->setParam('height', isset($request->height) ? $request->height : 600);
         $candles = $this->getCandles();
+        $request = $this->sanityCheck($request);
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
@@ -66,6 +101,15 @@ class PHPlot extends Chart {
             $this->handleMethod($request->method, $request->param);
         return $this->toJSON();
 
+    }
+
+
+    private function sanityCheck(Request $request)
+    {
+        $size = $request->end - $request->start;
+        if ($size < $request->resolution * 10)
+        $request->start = $request->end - $request->resolution * 10;
+        return $request;
     }
 
 
@@ -92,7 +136,7 @@ class PHPlot extends Chart {
                 $limit = $end - $start;
                 $end += floor($limit / 2);
                 if ($end > time())
-                    $end = time();
+                    $end = $candles->getParam('end');
                 $start = $end - $limit;
                 break;
 
@@ -132,13 +176,13 @@ class PHPlot extends Chart {
     }
 
 
-    protected function plotCandles(&$plot, &$image_map = null)
+    protected function plotCandles()
     {
         $candles = $this->getCandles();
         if (!$candles->size())
             return $this;
         $candles->reset();
-        $title = 'R: '.$this->getParam('resolution').' '.
+        $title = 'R: '.$candles->getParam('resolution').' '.
                  date('Y-m-d H:i', $candles->next()->time).' - '.
                  date('Y-m-d H:i', $candles->last()->time);
         $plot_type = $candles->size() < 260 ? 'candles' : 'line';
@@ -151,16 +195,17 @@ class PHPlot extends Chart {
                 ['', $c->time, $c->close];
                 $times[] = $c->time;
         }
-        $plot->setTitle($title);
-        $plot->SetDataColors(
+        $this->_plot->setTitle($title);
+        $this->_plot->SetDataColors(
                     'candles' === $plot_type ?
                     ['red:30', 'DarkGreen:20','grey:90', 'grey:90']:
                     'DarkGreen');
-        $plot->SetDataType('data-data');
-        $plot->SetDataValues($price);
-        $plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
-        $plot->setPointShapes('none');
-        $plot->SetCallback('data_points',
+        $this->_plot->SetDataType('data-data');
+        $this->_plot->SetDataValues($price);
+        $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
+        $this->_plot->setPointShapes('none');
+        $image_map = $this->_image_map;
+        $this->_plot->SetCallback('data_points',
             function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
                         use (&$image_map, $times, $price) {
                 if (!$image_map) return null;
@@ -190,30 +235,31 @@ class PHPlot extends Chart {
                 $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
                            .  " title=\"$title\" href=\"$href\">\n";
             });
-        $plot->SetMarginsPixels(30, 30, 15);
-        $plot->SetXTickLabelPos('plotdown');
-        $plot->SetLegend('candles' === $plot_type ? ['Price', ''] : ['Price']);
-        $plot->SetLegendPixels(35, $this->nextLegendY());
-        $plot->SetDrawXGrid(true);
-        $plot->SetBackgroundColor('black');
-        $plot->SetGridColor('DarkGreen:100');
-        $plot->SetLightGridColor('DimGrey:120');
-        $plot->setTitleColor('DimGrey:80');
-        $plot->SetTickColor('DarkGreen');
-        $plot->SetTextColor('grey');
+        $this->_image_map = $image_map;
+        $this->_plot->SetMarginsPixels(30, 30, 15);
+        $this->_plot->SetXTickLabelPos('plotdown');
+        $this->_plot->SetLegend('candles' === $plot_type ? ['Price', ''] : ['Price']);
+        $this->_plot->SetLegendPixels(35, $this->nextLegendY());
+        $this->_plot->SetDrawXGrid(true);
+        $this->_plot->SetBackgroundColor('black');
+        $this->_plot->SetGridColor('DarkGreen:100');
+        $this->_plot->SetLightGridColor('DimGrey:120');
+        $this->_plot->setTitleColor('DimGrey:80');
+        $this->_plot->SetTickColor('DarkGreen');
+        $this->_plot->SetTextColor('grey');
         //$plot->SetLineWidths([1, 1, 1, 1]);
-        $plot->SetXLabelType('time', '%m-%d %H:%M');
-        $plot->SetLineWidths('candles' === $plot_type ? 1 : 2);
-        $plot->TuneYAutoRange(0);
-        $plot->DrawGraph();
-        $plot->RemoveCallback('data_points');
+        $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
+        $this->_plot->SetLineWidths('candles' === $plot_type ? 1 : 2);
+        $this->_plot->TuneYAutoRange(0);
+        $this->_plot->DrawGraph();
+        $this->_plot->RemoveCallback('data_points');
         if ('candles' === $plot_type)
             $this->nextLegendY();
         return $this;
     }
 
 
-    protected function plotIndicator(&$plot, $indicator)
+    protected function plotIndicator($indicator)
     {
         $display = $indicator->getParam('display');
         $params = $indicator->getParam('indicator');
@@ -227,28 +273,28 @@ class PHPlot extends Chart {
             $data[] = ['', $candle->time, isset($candle->$sig) ? $candle->$sig : ''];
         if (!count($data))
             return $this;
-        $plot->SetDataValues($data);
-        $plot->SetLineWidths(2);
-        $plot->setPlotType('lines');
-        $plot->SetDataColors([$color]);
+        $this->_plot->SetDataValues($data);
+        $this->_plot->SetLineWidths(2);
+        $this->_plot->setPlotType('lines');
+        $this->_plot->SetDataColors([$color]);
         if (isset($display['y_axis_pos']))
             if ($display['y_axis_pos'] === 'right')
             {
-                $plot->SetPlotAreaWorld();
-                $plot->SetYTickPos('plotright');
-                $plot->SetYTickLabelPos('plotright');
-                $plot->TuneYAutoRange(0);
+                $this->_plot->SetPlotAreaWorld();
+                $this->_plot->SetYTickPos('plotright');
+                $this->_plot->SetYTickLabelPos('plotright');
+                $this->_plot->TuneYAutoRange(0);
             }
-        $plot->SetLegendPixels(35, self::nextLegendY());
+        $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $legend = $display['name'];
         if (count($params)) $legend .= ' ('.join(', ', $params).')';
-        $plot->SetLegend([$legend]);
-        $plot->DrawGraph();
+        $this->_plot->SetLegend([$legend]);
+        $this->_plot->DrawGraph();
         return $this;
     }
 
 
-    public function plotSignals(&$plot, $indicator)
+    public function plotSignals($indicator)
     {
         $sig = $indicator->getSignature();
 
@@ -265,25 +311,25 @@ class PHPlot extends Chart {
         //dd($signals);
         if (!count($data))
             return $this;
-        $plot->SetDataColors(['green:50', 'red:50']);
-        $plot->SetCallback('data_color',
+        $this->_plot->SetDataColors(['green:50', 'red:50']);
+        $this->_plot->SetCallback('data_color',
                function($img, $junk, $row, $col, $extra = 0) use ($signals) {
                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
                    if ('buy' === $signals[$row]) return (0 === $extra) ? 1 : 0;
                    else if ('sell' === $signals[$row]) return (0 === $extra) ? 0 : 1;
                    else throw new \Exception('Oops, unmatched signal');
                });
-        $plot->SetDataValues($data);
-        $plot->SetLineWidths(1);
-        $plot->SetPlotType('linepoints');
-        $plot->SetPointShapes('dot');
-        $plot->SetLineStyles(['dashed']);
-        $plot->SetPointSizes(14);
-        $plot->SetYDataLabelPos('plotin');
-        $plot->DrawGraph();
-        $plot->SetYDataLabelPos('none');
-        $plot->SetLineStyles(['solid']);
-        $plot->RemoveCallback('data_color');
+        $this->_plot->SetDataValues($data);
+        $this->_plot->SetLineWidths(1);
+        $this->_plot->SetPlotType('linepoints');
+        $this->_plot->SetPointShapes('dot');
+        $this->_plot->SetLineStyles(['dashed']);
+        $this->_plot->SetPointSizes(14);
+        $this->_plot->SetYDataLabelPos('plotin');
+        $this->_plot->DrawGraph();
+        $this->_plot->SetYDataLabelPos('none');
+        $this->_plot->SetLineStyles(['solid']);
+        $this->_plot->RemoveCallback('data_color');
         return $this;
     }
 

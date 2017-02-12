@@ -3,17 +3,20 @@
 namespace GTrader;
 
 use Illuminate\Http\Request;
+use GTrader\Exchange;
+
 
 abstract class Chart extends Skeleton {
     use HasCandles;
 
-
     protected $_strategy;
+
 
     public function toHTML() {}
     public function toJSON($options = 0) {}
-    public function scripts() {}
+    public function getScriptsHtml() {}
     public function handleJSONRequest(Request $request) {}
+
 
     public function __construct(array $params = [])
     {
@@ -73,6 +76,5 @@ abstract class Chart extends Skeleton {
         }
         return $ind_sorted;
     }
-
 
 }
