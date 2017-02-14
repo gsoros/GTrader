@@ -1,7 +1,7 @@
 <?php
 
 return [
-
+    'signals_indicator_class'       => 'FannSignals',
     'config_file'                   => 'run.fann',
     'path'                          => env('FANN_PATH',        storage_path('fann')),
     'num_samples'                   => env('FANN_NUM_SAMPLES', 10), // # candles to sample for input

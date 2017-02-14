@@ -37,17 +37,26 @@ abstract class Chart extends Skeleton {
     }
 
 
+    public function __sleep()
+    {
+        return ['_params', '_candles', '_strategy'];
+    }
+    public function __wakeup()
+    {
+    }
+
+
     public function toJSON($options = 0)
     {
+        $candles = $this->getCandles();
         $o = new \stdClass();
         $o->id = $this->getParam('id');
-        $o->start = $this->getCandles()->getParam('start');
-        $o->end = $this->getCandles()->getParam('end');
-        $o->resolution = $this->getCandles()->getParam('resolution');
-        $o->limit = $this->getCandles()->getParam('limit');
-        $o->exchange = $this->getCandles()->getParam('exchange');
-        $o->symbol = $this->getCandles()->getParam('symbol');
-        //$o->refresh = function(){};
+        //$o->start = $candles->getParam('start');
+        //$o->end = $candles->getParam('end');
+        //$o->limit = $candles->getParam('limit');
+        $o->exchange = $candles->getParam('exchange');
+        $o->symbol = $candles->getParam('symbol');
+        $o->resolution = $candles->getParam('resolution');
         return json_encode($o, $options);
     }
 

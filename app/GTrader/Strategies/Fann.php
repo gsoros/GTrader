@@ -10,30 +10,29 @@ if (!extension_loaded('fann')) throw new \Exception('FANN extension not loaded')
 
 class Fann extends Strategy
 {
-    protected $_signals_indicator_class = 'FannSignals';
 
-    private $_num_samples;              // # candles to sample for input
-    private $_num_input;                // # neurons in input layer, $_num_samples * 4 - 3
-    private $_num_output = 1;           // # neurons in output layer
-    private $_fann = null;              // fann resource
-    private $_data = [];
-    private $_pack_iterator = 0;
-    private $_callback_type = false;
-    private $_callback_iterator = 0;
-    private $_fann_loaded_from_file = false;
-    private $_bias = null;
+    protected $_fann = null;              // fann resource
+    protected $_data = [];
+    protected $_pack_iterator = 0;
+    protected $_callback_type = false;
+    protected $_callback_iterator = 0;
+    protected $_fann_loaded_from_file = false;
+    protected $_bias = null;
 
 
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->_num_samples = $this->getParam('num_samples');
-        $this->_num_input = $this->_num_samples * 4 - 3;
-        //dd($this);
+        $num_samples = $this->getParam('num_samples');
+        $this->setParam('num_input', $num_samples * 4 - 3);
+        $this->setParam('num_output', 1);
     }
 
 
-
+    public function __wakeup()
+    {
+        $this->create_fann();
+    }
 
 
 
@@ -50,7 +49,7 @@ class Fann extends Strategy
         if ($config_file = $this->getParam('config_file'))
         {
             $config_path = $this->getParam('path').DIRECTORY_SEPARATOR.$config_file;
-            error_log('config file is '.$config_path);
+            //error_log('config file is '.$config_path);
             if (is_file($config_path))
             {
                 error_log('creating fann from '.$config_path);
@@ -64,9 +63,9 @@ class Fann extends Strategy
             {
                 $params = array_merge(
                             [$this->getParam('num_layers')],
-                            [$this->_num_input],
+                            [$this->getParam('num_input')],
                             $this->getParam('hidden_array'),
-                            [$this->_num_output]);
+                            [$this->getParam('num_output')]);
                 //error_log('calling fann_create_standard('.join(', ', $params).')');
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
@@ -74,8 +73,8 @@ class Fann extends Strategy
             else if ($this->_fann_type == 'cascade')
                 $this->_fann = fann_create_shortcut(
                                 $this->getParam('num_layers'),
-                                $this->_num_input,
-                                $this->_num_output);
+                                $this->getParam('num_input'),
+                                $this->getParam('num_output'));
             else throw new \Exception('Unknown fann type');
             //fann_randomize_weights($this->_fann, -0.2, 0.2);
         }
@@ -189,7 +188,7 @@ class Fann extends Strategy
             return 0; // bias disabled
         if (!is_null($this->_bias))
             return $this->_bias * $this->getParam('bias_compensation');
-        $this->_bias = fann_run($this->get_fann(), array_fill(0, $this->_num_input, 0))[0];
+        $this->_bias = fann_run($this->get_fann(), array_fill(0, $this->getParam('num_input'), 0))[0];
         //error_log('bias: '.$this->_bias);
         return $this->_bias * $this->getParam('bias_compensation');
     }
@@ -217,7 +216,7 @@ class Fann extends Strategy
 
         if (!$candles->size()) return null;
 
-        $target_pack_size = $size ? $size : $this->_num_samples + $this->getParam('target_distance');
+        $target_pack_size = $size ? $size : $this->getParam('num_samples') + $this->getParam('target_distance');
         //echo ' '.$this->_pack_iterator;
         while ($candle = $candles->byKey($this->_pack_iterator))
         {
@@ -246,9 +245,9 @@ class Fann extends Strategy
         while ($pack = $this->next_pack())
         { //echo " DEBUG stop candles_to_data\n"; return false;
             $input = array();
-            for ($i=0; $i<$this->_num_samples; $i++)
+            for ($i=0; $i<$this->getParam('num_samples'); $i++)
             {
-                if ($i < $this->_num_samples - 1)
+                if ($i < $this->getParam('num_samples') - 1)
                 {
                     $input[] = floatval($pack[$i]->open);
                     $input[] = floatval($pack[$i]->high);
@@ -322,7 +321,7 @@ class Fann extends Strategy
         $test_data = fann_create_train_from_callback(
                         count($this->_data['test']),
                         $this->getParam('num_input'),
-                        $this->_num_output,
+                        $this->getParam('num_output'),
                         array($this, 'create_callback'));
 
         $mse = fann_test_data($this->get_fann(), $test_data);
@@ -342,7 +341,7 @@ class Fann extends Strategy
         $training_data = fann_create_train_from_callback(
                             count($this->_data['train']),
                             $this->getParam('num_input'),
-                            $this->_num_output,
+                            $this->getParam('num_output'),
                             array($this, 'create_callback'));
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
 
@@ -411,23 +410,23 @@ class Fann extends Strategy
 
     public function getNumSamples()
     {
-        return $this->_num_samples;
+        return $this->getParam('num_samples');
     }
 
     public function setNumSamples(int $num)
     {
-        $this->_num_samples = $num;
+        $this->setParam('num_samples', $num);
         return $this;
     }
 
     public function getNumInput()
     {
-        return $this->_num_input;
+        return $this->getParam('num_input');
     }
 
     public function setNumInput(int $num)
     {
-        $this->_num_input = $num;
+        $this->setParam('num_input', $num);
         return $this;
     }
 }

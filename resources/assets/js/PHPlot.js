@@ -8,15 +8,17 @@ function setChartLoading(id, loading) {
     if (true === loading) {
         var container = $('#' + id);
         if (0 === $('#loading-' + id).length)
-            container.append('<img style="position: absolute" id="loading-' + id + '" src="/img/ajax-loader.gif">');
-        $('#loading-' + id).css('top', container.height() / 2 - 20);
-        $('#loading-' + id).css('left', container.width() / 2 - 20);
+            container.append('<img id="loading-' + id + '" src="/img/ajax-loader.gif">');
+        $('#loading-' + id).css({
+                position: 'absolute',
+                top: (container.height() / 2 - 20) + 'px',
+                left: (container.width() / 2 - 20) + 'px'});
     }
     else
         $('#loading-' + id).remove();
 };
 
-function requestPlot(id, method, param) {
+function requestPlot(id, command, args) {
     setChartLoading(id, true);
     var container = $('#' + id);
     var plot = window[id];
@@ -25,16 +27,16 @@ function requestPlot(id, method, param) {
     var url = '/plot.json?id=' + id +
                 '&width=' + container.width() +
                 '&height=' + container.height();
-    if (undefined !== method)
-        url += '&method=' + method;
-    if (undefined !== param)
-        url += '&param=' + param;
-    ['start', 'end', 'limit', 'resolution', 'symbol', 'exchange']
-    .forEach(function(prop) {
-        if (undefined !== plot[prop] && null !== plot[prop])
-            url += '&' + prop + '=' + plot[prop];
-    });
-    console.log('request url: ' + url);
+    if (undefined !== command)
+        url += '&command=' + command;
+    if (undefined !== args)
+        url += '&args=' + args;
+    //['start', 'end', 'limit', 'resolution', 'symbol', 'exchange']
+    //.forEach(function(prop) {
+    //    if (undefined !== plot[prop] && null !== plot[prop])
+    //        url += '&' + prop + '=' + plot[prop];
+    //});
+    //console.log('request url: ' + url);
     $.ajax({url: url,
         contentType: 'application/json',
         dataType: 'json',
@@ -68,7 +70,7 @@ function registerPanZoomHandler(id) {
 };
 
 function registerRefreshFunc(id) {
-    console.log('registering refresh() for window.' + id);
+    //console.log('registering refresh() for window.' + id);
     // Register a refresh func
     window[id].refresh = function (command, args) {
         requestPlot(id, command, args);

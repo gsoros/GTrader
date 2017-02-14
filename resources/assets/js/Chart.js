@@ -94,10 +94,10 @@ function getSelectedESR(id) {
 
 // Register handlers for Exchange, Symbol, Resolution dropdowns
 function registerESRHandlers(id) {
-    console.log('registerESRHandlers(' + id + ')');
+    //console.log('registerESRHandlers(' + id + ')');
     // For each dropdown ...
     ['exchange_' + id, 'symbol_' + id, 'resolution_' + id].forEach(function(id) {
-        console.log('registering ESR handlers for ' + id);
+        //console.log('registering ESR handlers for ' + id);
         // Register onChange func
         $('#' + id).on('change', function() {
             var split = this.id.split('_');
@@ -106,9 +106,9 @@ function registerESRHandlers(id) {
             // Update dropdowns
             updateESR(split[1], split[0]);
             // Send refresh command to the chart
-            console.log('sending refresh() to window.' + split[1]);
+            //console.log('sending refresh() to window.' + split[1]);
             //console.log(window[split[1]].refresh);
-            window[split[1]].refresh('ESR', getSelectedESR(split[1]));
+            window[split[1]].refresh('ESR', JSON.stringify(getSelectedESR(split[1])));
         });
     });
 };

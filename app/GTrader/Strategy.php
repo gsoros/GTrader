@@ -6,17 +6,16 @@ abstract class Strategy extends Skeleton
 {
     use HasCandles, HasIndicators;
 
-    protected $_signals_indicator_class;
-    
-    
+
     public function getSignalsIndicator()
     {
+        $class = $this->getParam('signals_indicator_class');
         foreach ($this->_indicators as $indicator)
-            if ($this->_signals_indicator_class === $indicator->getShortClass())
+            if ($class === $indicator->getShortClass())
                 return $indicator;
-        $indicator = Indicator::make($this->_signals_indicator_class);
+        $indicator = Indicator::make($class);
         $this->addIndicator($indicator);
         return $indicator;
     }
-    
+
 }

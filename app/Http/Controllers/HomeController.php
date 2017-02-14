@@ -28,62 +28,36 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-
-        //$viewData = ['debug' => var_export(Exchange::getTicker(), true)];
-        //$ema = Indicator::make('ema', ['length' => 10]);
-        //$ema->setCandles($candles);
-        //$candles = new Series(20);
-        //$candles->addIndicator('ema');
-        //$candles->addIndicator('ema', ['length' => 20]);
-        //$candles->addIndicator('ema', ['price' => 'prediction_fixed']);
-        //dd($candles);
-        //$strategy = Strategy::make('Fann', $candles, ['fann.config_file' => 'run.fann']);
-        //$strategy->addIndicator('fannPrediction');
-        //$strategy->addIndicator('fannTrades');
-        //$strategy->addIndicator('balance');
-        //$strategy->calculateIndicators();
-        //$c = $strategy->getCandles();
-        //$c->addIndicator('ema', ['price' => 'fannprediction', 'length' => 20]);
-        //dump($c);
-        //$c->calculateIndicators();
-        //$strategy->getCandles()->calculateIndicators();
-        //$ind = $strategy->findIndicator('balance_fixed');
-        //dd($strategy);
-        /*
-        $p = $strategy->getIndicators()[0];
-        $pa = $p->getOwner();
-        dump($pa);
-        $pa->set_bias_compensation(999);
-        dump($p->getOwner());
-        exit();
-        */
-        //$test = new TestClass('b_val_new');
-        //$test->setParam('sub_1.c', 'c_val');
-        //$debug = Util::getDump($test->getParamsExcept('sub_1.a'))
-        //$e = Exchange::make();
-        //$e = TestClass::make('TestChild', ['param1' => 'val1']);
-        //$e = TestClass::make();
-        //$e = TestClass::someMethod();
-        //$debug = Util::getDump($e);
-        //$debug = var_export(Exchange::getESR(), true);
-
-        //$autoloader = require "../vendor/autoload.php";
-        //$autoloader->loadClass("\GTrader\TestClass");
-        //$debug = var_export($autoloader, true);
-        //$chart = Chart::make('Dummy', ['id' => 'mainchart']);
-        $chart = Chart::make(null, ['id' => 'mainchart']);
+        if (! $chart = session('mainchart'))
+        {
+            error_log('home: no mainchart in session, creating new');
+            $candles = new Series();
+            $strategy = Strategy::make();
+            $strategy->setParam('config_file', 'test.fann');
+            $strategy->setCandles($candles);
+            $balance = Indicator::make('Balance');
+            $strategy->addIndicator($balance);
+            $candles->addIndicator('Ema');;
+            $strategy->addIndicator('FannPrediction');
+            $strategy->addIndicator('FannSignals');
+            $chart = Chart::make(null, [
+                        'id' => $request->id,
+                        'candles' => $candles,
+                        'strategy' => $strategy,
+                        'id' => 'mainchart']);
+        }
+        else error_log('home: mainchart found in session');
+        //dump($chart);
         $debug = serialize($chart);
-        //$candles = Series::make();
-        //$chart->setCandles($candles);
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'stylesheets'       => $chart->getPageElements('stylesheets'),
                         'scripts_top'       => $chart->getPageElements('scripts_top'),
                         'scripts_bottom'    => $chart->getPageElements('scripts_bottom'),
                         'debug'             => $debug];
-
+        session(['mainchart' => $chart]);
         return view('dashboard')->with($viewData);
     }
 

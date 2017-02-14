@@ -75,8 +75,8 @@ class PHPlot extends Chart {
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
-        if (isset($request->method))
-            $this->handleMethod($request->method, $request->param);
+        if (isset($request->command))
+            $this->handleCommand($request->command, (array)json_decode($request->args));
         return $this->toJSON();
 
     }
@@ -84,23 +84,30 @@ class PHPlot extends Chart {
 
     private function sanityCheckRequest(Request $request)
     {
-        $size = $request->end - $request->start;
-        if ($size < $request->resolution * 10)
-        $request->start = $request->end - $request->resolution * 10;
         return $request;
     }
 
 
-    private function handleMethod(string $method, string $param = null)
+    private function handleCommand(string $command, array $args = [])
     {
+        error_log('Command: '.$command.' args: '.serialize($args));
         $candles = $this->getCandles();
         $start = $candles->getParam('start');
         $end = $candles->getParam('end');
+        $limit = $end - $start;
         $resolution = $candles->getParam('resolution');
-        $live = $end > time() - $resolution;
-        error_log('Live: '.$live);
-        switch ($method)
+        $live = $end > $candles->getLastInSeries() - $resolution;
+        error_log('handleCommand live: '.$live.' start: '.$start.' end: '.$end);
+        switch ($command)
         {
+            case 'ESR':;
+                $start = 0;
+                $new_limit = floor($limit / $resolution);
+                foreach (['exchange', 'symbol', 'resolution'] as $arg)
+                    if (isset($args[$arg]))
+                        $candles->setParam($arg, $args[$arg]);
+                break;
+
             case 'backward':
                 $epoch = $candles->getEpoch();
                 $start -= floor($limit / 2);
@@ -110,10 +117,10 @@ class PHPlot extends Chart {
                 break;
 
             case 'forward':
-                $limit = $end - $start;
+                $last = $candles->getLastInSeries();
                 $end += floor($limit / 2);
-                if ($end > time())
-                    $end = $candles->getParam('end');
+                if ($end > $last)
+                    $end = $last;
                 $start = $end - $limit;
                 break;
 
@@ -122,7 +129,6 @@ class PHPlot extends Chart {
                     $start = $end - floor(($end - $start) / 2);
                 else
                 {
-                    $limit = $end - $start;
                     $mid = $start + floor($limit / 2);
                     $fourth = floor($limit / 4);
                     $start = $mid - $fourth;
@@ -132,11 +138,13 @@ class PHPlot extends Chart {
 
             case 'zoomOut':
                 if ($live)
+                {
                     $start = $end - ($end - $start) * 3;
+                    $new_limit = floor($limit / $resolution) * 3;
+                }
                 else
                 {
                     $epoch = $candles->getEpoch();
-                    $limit = $end - $start;
                     $mid = $start + floor($limit / 2);
                     $start = $mid - $limit;
                     if ($start < $epoch)
@@ -149,8 +157,8 @@ class PHPlot extends Chart {
         }
         $candles->setParam('start', $start);
         $candles->setParam('end', $end);
-        $candles->setParam('limit', $end - $start);
-        error_log('('.date('Y-m-d H:i', $candles->getEpoch()).') '.date('Y-m-d H:i', $start).' - '.date('Y-m-d H:i', $end));
+        if (isset($new_limit)) $candles->setParam('limit', $new_limit);
+        //error_log('('.date('Y-m-d H:i', $candles->getEpoch()).') '.date('Y-m-d H:i', $start).' - '.date('Y-m-d H:i', $end));
     }
 
 

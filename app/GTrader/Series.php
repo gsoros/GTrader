@@ -41,6 +41,16 @@ class Series extends Collection {
     }
 
 
+    public function __sleep()
+    {
+        return ['_params', '_indicators'];
+    }
+    public function __wakeup()
+    {
+        //$this->_load();
+    }
+
+
     public function getCandles()
     {
         $this->_load();
@@ -203,6 +213,28 @@ class Series extends Collection {
     }
 
 
+    public function getLastInSeries($resolution = null, $symbol = null, $exchange = null)
+    {
+        static $cache = [];
+
+        $query = Candle::select('time');
+
+        foreach ([ 'resolution', 'symbol', 'exchange'] as $param)
+        {
+            if (is_null($$param))
+                $$param = $this->getParam($param);
+            $query = $query->where($param, $$param);
+        }
+
+        if (isset($cache[$exchange][$symbol][$resolution]))
+            return $cache[$exchange][$symbol][$resolution];
+
+        $query = $query->orderBy('time', 'desc')->first();
+        $last = isset($query->time) ? $query->time : null;
+        $cache[$exchange][$symbol][$resolution] = $last;
+
+        return $last;
+    }
 
 
 
