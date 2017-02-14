@@ -12,6 +12,7 @@
 
     <!-- Styles -->
     <link href="/css/app.css" rel="stylesheet">
+    @yield('stylesheets')
 
     <!-- Scripts -->
     <script>
@@ -19,6 +20,7 @@
             'csrfToken' => csrf_token(),
         ]) !!};
     </script>
+    @yield('scripts_top')
 </head>
 <body>
     <div id="app">
@@ -95,6 +97,6 @@
 
     <!-- Scripts -->
     <script src="{{ mix('/js/app.js') }}"></script>
-    @yield('pagescripts')
+    @yield('scripts_bottom')
 </body>
 </html>

@@ -19,3 +19,16 @@ require('./bootstrap');
 //    el: '#app'
 //});
 
+
+window.waitForFinalEvent = (function() {
+    var timers = {};
+    return function (callback, ms, uniqueId, arg) {
+        if (!uniqueId) {
+            uniqueId = "uniqueId";
+        }
+        if (timers[uniqueId]) {
+            clearTimeout(timers[uniqueId]);
+        }
+        timers[uniqueId] = setTimeout(callback, ms, arg);
+    };
+})();

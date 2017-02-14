@@ -42,10 +42,10 @@ class Aggregator
                             ->latest('time')
                             ->first();
                     $time = is_object($time) ? $time->time : 0;
-                    echo 'Res: '.$resolution.' Last: '.gmdate('Y-m-d H:i', $time)."\n";
+                    echo 'Res: '.$resolution.' Last: '.date('Y-m-d H:i', $time)."\n";
                     //if ($time > time() - $resolution) continue;
 
-                    $params = [ 'since'         => $time - 1 * $resolution - 1,
+                    $params = [ 'since'         => $time - 2 * $resolution - 1,
                                 'resolution'    => $resolution,
                                 'symbol'        => $symbol_local,
                                 'size'          => 100000]; //Last ID: 1364210

@@ -9,24 +9,25 @@ use PHPlot_truecolor;
 
 class PHPlot extends Chart {
 
-    protected $_scripts = [];
     protected $_plot;
     protected $_image_map;
 
 
 
-    public function toHTML()
+    public function toHTML(string $content = '')
     {
-        $id = $this->getParam('id');
 
-        $this->addSingleScript(
-                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
+        $this->addPageElement('stylesheets',
+                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">', true);
 
-        $this->addScript(
-                    '<script> var ESR_'.$id.' = '.json_encode(Exchange::getESR()).'; </script>');
+        $content = view('Charts/PHPlot', ['id' => $this->getParam('id')]);
 
-        return view('Charts/PHPlot', [
-                    'id' => $id]);
+        $content = parent::toHTML($content);
+
+        $this->addPageElement('scripts_bottom',
+                    '<script src="'.mix('/js/PHPlot.js').'"></script>', true);
+
+        return $content;
     }
 
 
@@ -52,39 +53,16 @@ class PHPlot extends Chart {
         $html = $this->_image_map.'<img class="img-responsive" src="'.
                 $this->_plot->EncodeImage().'" usemap="#map1">';
 
-        $o = new \stdClass();
-        $o->id = $this->getParam('id');
-        $o->start = $this->getCandles()->getParam('start');
-        $o->end = $this->getCandles()->getParam('end');
-        $o->resolution = $this->getCandles()->getParam('resolution');
-        $o->limit = $this->getCandles()->getParam('limit');
-        $o->exchange = $this->getCandles()->getParam('exchange');
-        $o->symbol = $this->getCandles()->getParam('symbol');
+        $o = json_decode(parent::toJSON($options));
+
         $o->html = $html;
 
         return json_encode($o, $options);
     }
 
 
-    public function getScriptsHtml()
-    {
-        return join("\n", $this->_scripts);
-    }
 
 
-    protected function addScript($script)
-    {
-        $this->_scripts[] = $script;
-        return $this;
-    }
-
-    protected function addSingleScript($script)
-    {
-        foreach ($this->_scripts as $existing_script)
-            if ($script === $existing_script)
-                return $this;
-        return $this->addScript($script);
-    }
 
 
 
@@ -93,7 +71,7 @@ class PHPlot extends Chart {
         $this->setParam('width', isset($request->width) ? $request->width : 800);
         $this->setParam('height', isset($request->height) ? $request->height : 600);
         $candles = $this->getCandles();
-        $request = $this->sanityCheck($request);
+        $request = $this->sanityCheckRequest($request);
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
@@ -104,7 +82,7 @@ class PHPlot extends Chart {
     }
 
 
-    private function sanityCheck(Request $request)
+    private function sanityCheckRequest(Request $request)
     {
         $size = $request->end - $request->start;
         if ($size < $request->resolution * 10)
@@ -125,7 +103,6 @@ class PHPlot extends Chart {
         {
             case 'backward':
                 $epoch = $candles->getEpoch();
-                $limit = $end - $start;
                 $start -= floor($limit / 2);
                 if ($start < $epoch)
                     $start = $epoch;
@@ -155,7 +132,7 @@ class PHPlot extends Chart {
 
             case 'zoomOut':
                 if ($live)
-                    $start = $end - ($end - $start) * 2;
+                    $start = $end - ($end - $start) * 3;
                 else
                 {
                     $epoch = $candles->getEpoch();
@@ -173,6 +150,7 @@ class PHPlot extends Chart {
         $candles->setParam('start', $start);
         $candles->setParam('end', $end);
         $candles->setParam('limit', $end - $start);
+        error_log('('.date('Y-m-d H:i', $candles->getEpoch()).') '.date('Y-m-d H:i', $start).' - '.date('Y-m-d H:i', $end));
     }
 
 
@@ -209,9 +187,9 @@ class PHPlot extends Chart {
             function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
                         use (&$image_map, $times, $price) {
                 if (!$image_map) return null;
-                //dump($row.$image_map);
+                //error_log($row.$image_map);
                 # Title, also tool-tip text:
-                $title = gmdate('Y-m-d H:i', $times[$row]);
+                $title = date('Y-m-d H:i', $times[$row]);
                 $title .= ('rect' == $shape) ?
                             "\nO: ".$price[$row][2]
                             ."\nH: ".$price[$row][3]
@@ -235,7 +213,6 @@ class PHPlot extends Chart {
                 $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
                            .  " title=\"$title\" href=\"$href\">\n";
             });
-        $this->_image_map = $image_map;
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetXTickLabelPos('plotdown');
         $this->_plot->SetLegend('candles' === $plot_type ? ['Price', ''] : ['Price']);
@@ -252,6 +229,7 @@ class PHPlot extends Chart {
         $this->_plot->SetLineWidths('candles' === $plot_type ? 1 : 2);
         $this->_plot->TuneYAutoRange(0);
         $this->_plot->DrawGraph();
+        $this->_image_map = $image_map;
         $this->_plot->RemoveCallback('data_points');
         if ('candles' === $plot_type)
             $this->nextLegendY();

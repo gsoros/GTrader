@@ -67,18 +67,22 @@ class HomeController extends Controller
         //$e = TestClass::make();
         //$e = TestClass::someMethod();
         //$debug = Util::getDump($e);
-        $debug = var_export(Exchange::getESR(), true);
+        //$debug = var_export(Exchange::getESR(), true);
 
         //$autoloader = require "../vendor/autoload.php";
         //$autoloader->loadClass("\GTrader\TestClass");
         //$debug = var_export($autoloader, true);
-        $chart = Chart::make();
-        $candles = Series::make();
-        $chart->setCandles($candles);
+        //$chart = Chart::make('Dummy', ['id' => 'mainchart']);
+        $chart = Chart::make(null, ['id' => 'mainchart']);
+        $debug = serialize($chart);
+        //$candles = Series::make();
+        //$chart->setCandles($candles);
 
-        $viewData = [   'chart'     => $chart->toHtml(),
-                        'scripts'   => $chart->getScriptsHtml(),
-                        'debug'     => $debug];
+        $viewData = [   'chart'             => $chart->toHtml(),
+                        'stylesheets'       => $chart->getPageElements('stylesheets'),
+                        'scripts_top'       => $chart->getPageElements('scripts_top'),
+                        'scripts_bottom'    => $chart->getPageElements('scripts_bottom'),
+                        'debug'             => $debug];
 
         return view('dashboard')->with($viewData);
     }

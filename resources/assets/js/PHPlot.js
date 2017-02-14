@@ -1,5 +1,7 @@
-function setChartSize(id) {
-    $('#' + id).width($(window).width()).height($(window).height() - 100);
+
+
+function setPanZoomPosition(id) {
+    $('#panzoom_' + id).css({left: ($(window).width() / 2 - 68) + 'px'});
 };
 
 function setChartLoading(id, loading) {
@@ -15,10 +17,10 @@ function setChartLoading(id, loading) {
 };
 
 function requestPlot(id, method, param) {
-    setChartSize(id);
     setChartLoading(id, true);
     var container = $('#' + id);
     var plot = window[id];
+    //console.log('res: ' + plot.resolution);
     //console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
     var url = '/plot.json?id=' + id +
                 '&width=' + container.width() +
@@ -40,119 +42,55 @@ function requestPlot(id, method, param) {
             //console.log(response);
             //console.log('response.start:' + response.start);
             //console.log('response.end:' + response.end)
-            window[response.id] = response;
+            window[response.id].start = response.start;
+            window[response.id].end = response.end;
             container.html(response.html);
-            updateESR(response.id);
+            //updateESR(response.id);
         }});
 };
 
 function updateAllPlots() {
-    $('.PHPlot').each(function() {
-            //console.log($( this ).attr('id'));
-            requestPlot($( this ).attr('id'));
-        });
-};
-
-function registerHandlers() {
-    $('.PHPlot').each(function() {
+    $('.GTraderChart').each(function() {
         var id = $( this ).attr('id');
-        ['zoomIn_' + id, 'zoomOut_' + id, 'backward_' + id, 'forward_' + id].forEach(function(id) {
-            //console.log(id);
-            $('#' + id).on('click', function() {
-                var split = this.id.split('_');
-                requestPlot(split[1], split[0]);
-            });
-        });
-        ['exchange_' + id, 'symbol_' + id, 'resolution_' + id].forEach(function(id) {
-            //console.log(id);
-            $('#' + id).on('change', function() {
-                var split = this.id.split('_');
-                window[split[1]][split[0]] = $('#' + id).val();
-                updateESR(split[1]);
-                getSelectedESR(split[1]);
-            });
+        requestPlot(id);
+        setPanZoomPosition(id);
+    });
+};
+
+function registerPanZoomHandler(id) {
+    ['zoomIn_' + id, 'zoomOut_' + id, 'backward_' + id, 'forward_' + id].forEach(function(id) {
+        //console.log(id);
+        $('#' + id).on('click', function() {
+            var split = this.id.split('_');
+            requestPlot(split[1], split[0]);
         });
     });
 };
 
-function getSelectedESR(id) {
-    console.log('getSelectedESR(' + id + ')');
-    var success = 0;
-    ['exchange_' + id, 'symbol_' + id, 'resolution_' + id].forEach(function(select) {
-        var val = $('#' + select).val();
-        if (null === val) {
-            console.log(select + ' val is null');
-            //console.log($('#' + select));;
-            waitForFinalEvent(function() {
-                console.log('timeout for ' + id);
-                getSelectedESR(id);
-                }, 500, 'getSelectedESR', id);
-            //debugger;
-            //val = $('#' + id + ' option')[0].value;
-        }
-        else {
-            var split = select.split('_');
-            window[split[1]][split[0]] = val;
-            success++;
-        }
-    });
-    requestPlot(id);
-};
-
-function updateESR(id) {
-    console.log('updateESR(' + id + ')');
-    var opts_exchange = '',
-        opts_symbol = '',
-        opts_resolution = '';
-    window['ESR_' + id].forEach(function(exchange) {
-        opts_exchange += '<option ';
-        if (window[id].exchange === exchange.name || 1 == window['ESR_' + id].length) {
-            opts_exchange += 'selected ';
-            exchange.symbols.forEach(function(symbol) {
-                opts_symbol += '<option ';
-                if (window[id].symbol === symbol.name || 1 == exchange.symbols.length) {
-                    opts_symbol += 'selected ';
-                    for (var resolution in symbol.resolutions) {
-                        opts_resolution += '<option ';
-                        if (window[id].resolution == resolution || 1 == symbol.resolutions.length)
-                            opts_resolution += 'selected ';
-                        opts_resolution += 'value="' + resolution + '">' + symbol.resolutions[resolution] + '</option>';
-                    }
-                }
-                opts_symbol += 'value="' + symbol.name + '">' + symbol.long_name + '</option>';
-            });
-        }
-        opts_exchange += 'value="' + exchange.name + '">' + exchange.long_name + '</option>';
-    });
-    $('#exchange_' + id).html(opts_exchange);
-    $('#symbol_' + id).html(opts_symbol);
-    $('#resolution_' + id).html(opts_resolution);
-    console.log('options updated');
-};
-
-function updateAllESRs() {
-    $('.PHPlot').each(function() {
-        updateESR($( this ).attr('id'));
-    });
-};
-
-var waitForFinalEvent = (function() {
-    var timers = {};
-    return function (callback, ms, uniqueId, arg) {
-        if (!uniqueId) {
-            uniqueId = "uniqueId";
-        }
-        if (timers[uniqueId]) {
-            clearTimeout(timers[uniqueId]);
-        }
-        timers[uniqueId] = setTimeout(callback, ms, arg);
+function registerRefreshFunc(id) {
+    console.log('registering refresh() for window.' + id);
+    // Register a refresh func
+    window[id].refresh = function (command, args) {
+        requestPlot(id, command, args);
     };
-})();
+    //console.log(window[id].refresh);
+};
+
+
+
+
+
 
 $(window).ready(function() {
     updateAllPlots();
-    registerHandlers();
-    //console.log(esr);
+    // For each chart ...
+    $('.GTraderChart').each(function() {
+        // Ask for ID
+        var id = $( this ).attr('id');
+        registerRefreshFunc(id);
+        registerPanZoomHandler(id);
+        setPanZoomPosition(id);
+    });
 });
 
 

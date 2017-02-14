@@ -10,4 +10,55 @@
 
 .navbar {
     margin-bottom: 0;
+    min-height: 0;
+}
+
+.navbar-nav li a {
+    margin-top: 2px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    line-height: 17px;
+}
+
+select.btn-mini {
+    height: 30px;
+    font-size: 11px;
+}
+
+select.btn {
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+    padding-right: 16px;
+}
+
+select.btn-mini + .caret {
+    margin-left: -20px;
+    margin-top: 2px;
+}
+
+.modal-header {
+    background-color: #222;
+    -webkit-border-radius: 5px 5px 0 0;
+       -moz-border-radius: 5px 5px 0 0;
+            border-radius: 5px 5px 0 0;
+    color: #ccc;
+    border-bottom: 1px solid #333;
+}
+
+.modal-content {
+    background-color: #222;
+    color: #ccc;
+}
+
+.modal-footer {
+    border-top: 1px solid #333;
+}
+
+.npl {
+    padding-left: 0;
+}
+
+.npr {
+    padding-right: 0;
 }

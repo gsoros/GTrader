@@ -8,6 +8,13 @@ trait HasParams
 {
     protected $_params = [];
 
+    /*
+    public function __sleep()
+    {
+        return ['_params'];
+    }
+    */
+
 
     public function getParam(string $key, $default = null)
     {

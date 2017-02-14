@@ -32,7 +32,8 @@ abstract class Exchange extends Skeleton
         $symbols = $exchange->getParam('symbols');
         $first_symbol = reset($symbols);
         $resolutions = $first_symbol['resolutions'];
-        return reset($resolutions);
+        reset($resolutions);
+        return key($resolutions);
     }
 
 
