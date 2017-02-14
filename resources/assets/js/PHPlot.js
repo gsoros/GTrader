@@ -22,8 +22,6 @@ function requestPlot(id, command, args) {
     setChartLoading(id, true);
     var container = $('#' + id);
     var plot = window[id];
-    //console.log('res: ' + plot.resolution);
-    //console.log('requestPlot(' + id + ', ' + method + ', ' + param + ')');
     var url = '/plot.json?id=' + id +
                 '&width=' + container.width() +
                 '&height=' + container.height();
@@ -31,23 +29,13 @@ function requestPlot(id, command, args) {
         url += '&command=' + command;
     if (undefined !== args)
         url += '&args=' + args;
-    //['start', 'end', 'limit', 'resolution', 'symbol', 'exchange']
-    //.forEach(function(prop) {
-    //    if (undefined !== plot[prop] && null !== plot[prop])
-    //        url += '&' + prop + '=' + plot[prop];
-    //});
-    //console.log('request url: ' + url);
     $.ajax({url: url,
         contentType: 'application/json',
         dataType: 'json',
         success: function(response) {
-            //console.log(response);
-            //console.log('response.start:' + response.start);
-            //console.log('response.end:' + response.end)
             window[response.id].start = response.start;
             window[response.id].end = response.end;
             container.html(response.html);
-            //updateESR(response.id);
         }});
 };
 
@@ -61,7 +49,6 @@ function updateAllPlots() {
 
 function registerPanZoomHandler(id) {
     ['zoomIn_' + id, 'zoomOut_' + id, 'backward_' + id, 'forward_' + id].forEach(function(id) {
-        //console.log(id);
         $('#' + id).on('click', function() {
             var split = this.id.split('_');
             requestPlot(split[1], split[0]);
