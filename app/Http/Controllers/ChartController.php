@@ -27,19 +27,29 @@ class ChartController extends Controller
 
     public function JSON(Request $request)
     {
-
-        if (! $chart = session('mainchart'))
+        if (! $chart = session($request->id))
         {
-            error_log('json: no mainchart in session');
-            //$chart = Chart::make(null, ['id' => 'mainchart']);
+            error_log('JSON: no chart in session');
+            return response('No such chart in session.', 403);
         }
-        else error_log('json: mainchart found in session');
 
         $json = $chart->handleJSONRequest($request);
-        session(['mainchart' => $chart]);
-
+        session([$request->id => $chart]);
 
         return response($json, 200);
+    }
 
+
+    public function settings_form(Request $request)
+    {
+        if (! $chart = session($request->id))
+        {
+            error_log('settings_form: no chart in session');
+            return response('No such chart in session.', 403);
+        }
+        $form = $chart->handleSettingsFormRequest($request);
+        session([$request->id => $chart]);
+
+        return response($form, 200);
     }
 }

@@ -10,6 +10,16 @@ abstract class Indicator extends Skeleton
 
     protected $_calculated = false;
 
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (!$this->getParam('display.y_axis_pos'))
+            $this->setParam('display.y_axis_pos', 'left');
+    }
+
+
     public abstract function calculate();
 
 
@@ -26,6 +36,17 @@ abstract class Indicator extends Skeleton
         return $param_str ? $class.'_'.$param_str : $class;
     }
 
+    public function getDisplaySignature()
+    {
+        $name = $this->getParam('display.name');
+        $param_arr = [];
+        $p = $this->getParam('indicator');
+        if (is_array($p))
+            foreach ($p as $k => $v)
+                $param_arr[] = $k.' = '.$v;
+        $param_str = count($param_arr) ? join(', ', $param_arr) : null;
+        return $param_str ? $name.' ('.$param_str.')' : $name;
+    }
 
     public function getCandles()
     {

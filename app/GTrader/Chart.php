@@ -5,10 +5,10 @@ namespace GTrader;
 use Illuminate\Http\Request;
 use GTrader\Exchange;
 use GTrader\Strategy;
-
+use GTrader\Indicator;
 
 abstract class Chart extends Skeleton {
-    use HasCandles;
+    use HasCandles, HasIndicators;
 
     protected $_strategy;
     protected $_page_elements = [
@@ -33,6 +33,7 @@ abstract class Chart extends Skeleton {
                     $params['id'] :
                     uniqid($this->getShortClass());
         $this->setParam('id', $id);
+        $this->_indicators[] = 'this array should not be used';
         parent::__construct($params);
     }
 
@@ -43,6 +44,28 @@ abstract class Chart extends Skeleton {
     }
     public function __wakeup()
     {
+    }
+
+
+    public function handleSettingsFormRequest(Request $request)
+    {
+        $form = '<h2>Indicators:</h2>';
+        $prev_section = null;
+        foreach ($this->getIndicatorsVisibleSorted() as $ind)
+        {
+            if ($ind->getOwner() === $this->getCandles() && 'candles' != $prev_section)
+            {
+                $form .= '<h3>Candles</h3>';
+                $prev_section = 'candles';
+            }
+            else if ($ind->getOwner() === $this->getStrategy() && 'strategy' != $prev_section)
+            {
+                $form .= '<h3>Strategy</h3>';
+                $prev_section = 'strategy';
+            }
+            $form .= '<p>'.$ind->getDisplaySignature().'</p>';
+        }
+        return $form;
     }
 
 
@@ -116,6 +139,28 @@ abstract class Chart extends Skeleton {
     }
 
 
+    public function addIndicator($indicator, array $params = [])
+    {
+        if (!is_object($indicator))
+            $indicator = Indicator::make($indicator, $params);
+        if ($this->hasIndicator($indicator->getSignature()))
+            return $this;
+        $candles = $this->getCandles();
+        if ($indicator->canBeOwnedBy($candles))
+        {
+            $candles->addIndicator($indicator);
+            return $this;
+        }
+        $strategy = $this->getStrategy();
+        if ($indicator->canBeOwnedBy($strategy))
+        {
+            $strategy->addIndicator($indicator);
+            return $this;
+        }
+        return $this;
+    }
+
+
     public function getIndicators()
     {
         return array_merge($this->getCandles()->getIndicators(),
@@ -125,22 +170,9 @@ abstract class Chart extends Skeleton {
 
     public function getIndicatorsVisibleSorted()
     {
-        $ind_sorted = [];
-        $all_ind = $this->getIndicators();
-
-        foreach ($all_ind as $ind)
-        {
-            $func = false;
-            if (true === $ind->getParam('display.visible'))
-            {
-                $func = 'array_unshift';
-                if ('right' === $ind->getParam('display.y_axis_pos'))
-                    $func = 'array_push';
-            }
-            if ($func)
-                $func($ind_sorted, $ind);
-        }
-        return $ind_sorted;
+        return $this->getIndicatorsFilteredSorted(
+                    ['display.visible' => true],
+                    ['display.y_axis_pos' => 'left', 'display.name']);
     }
 
 }

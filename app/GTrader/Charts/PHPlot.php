@@ -43,7 +43,7 @@ class PHPlot extends Chart {
         $this->_image_map .= '</map>';
         foreach ($this->getIndicatorsVisibleSorted() as $ind)
         {
-            //echo 'Plotting: '.$ind->getSignature();
+            error_log('Plotting: '.$ind->getSignature());
             $ind->checkAndRun();
             if ($ind->getParam('display.name') === 'Signals')
                 $this->plotSignals($ind);
@@ -303,7 +303,7 @@ class PHPlot extends Chart {
                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
                    if ('buy' === $signals[$row]) return (0 === $extra) ? 1 : 0;
                    else if ('sell' === $signals[$row]) return (0 === $extra) ? 0 : 1;
-                   else throw new \Exception('Oops, unmatched signal');
+                   else error_log('Unmatched signal');
                });
         $this->_plot->SetDataValues($data);
         $this->_plot->SetLineWidths(1);

@@ -73,13 +73,23 @@ $(window).ready(function() {
         ['exchange', 'symbol', 'resolution'].forEach(function(select) {
             // Register onChange func
             $('#' + select + '_' + id).on('change', function() {
-                var split = this.id.split('_');
                 // Get selected values
                 chartObj[select] = $('#' + select + '_' + id).val();
                 // Update dropdowns
                 chartObj.updateESR(select);
                 // Send refresh command to the chart
                 chartObj.refresh('ESR', JSON.stringify(chartObj.getSelectedESR()));
+            });
+        });
+
+        /* Register click handler for settings button */
+        $('#settings_' + id).on('click', function() {
+            // Request settings form from backend
+            $.ajax({
+                url: '/settings.form?id=' + id,
+                success: function(response) {
+                    $('#settings_content').html(response);
+                }
             });
         });
     });

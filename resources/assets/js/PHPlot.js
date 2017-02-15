@@ -36,7 +36,8 @@ function requestPlot(id, command, args) {
             window[response.id].start = response.start;
             window[response.id].end = response.end;
             container.html(response.html);
-        }});
+        }
+    });
 };
 
 function updateAllPlots() {

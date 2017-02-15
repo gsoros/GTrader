@@ -19,5 +19,6 @@ Auth::routes();
 //    return view('dashboard');
 //});
 
-Route::get('/', 'HomeController@dashboard');
-Route::get('/plot.json', 'ChartController@JSON');
+Route::get('/',                 'HomeController@dashboard');
+Route::get('/plot.json',        'ChartController@JSON');
+Route::get('/settings.form',    'ChartController@settings_form');

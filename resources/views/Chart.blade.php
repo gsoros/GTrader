@@ -17,7 +17,7 @@
             <div class="btn-group">
 
                 <!-- Modal -->
-                <button type="button" class="btn btn-primary btn-sm" id="options_{{ $id }}"
+                <button type="button" class="btn btn-primary btn-sm" id="settings_{{ $id }}"
                         data-toggle="modal" data-target=".bs-modal-lg">
                     <span class="glyphicon glyphicon-wrench"></span>
                 </button>
