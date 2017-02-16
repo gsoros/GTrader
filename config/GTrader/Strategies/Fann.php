@@ -13,7 +13,7 @@ return [
         /* Output scaling of 1.0 will produce output of 1 for a 1% delta,
         0.5 will produce 1 for 2% delta, 4.0 will produce 1 for 0.25% delta  */
     'output_scaling'                => 4,
-    'prediction_ema'                => 2,                   // apply ema to the prediction
+    'prediction_ema'                => 0,                   // apply ema to the prediction
      // trade only if prediction is over this fraction of candle open price
     'prediction_long_threshold'     => 200,
     // trade only if prediction is under this fraction of candle open price

@@ -37,6 +37,11 @@ select.btn-mini + .caret {
     margin-top: 2px;
 }
 
+.modal-dialog {
+    min-width: 310px;
+    width: 50%;
+}
+
 .modal-header {
     background-color: #222;
     -webkit-border-radius: 5px 5px 0 0;
@@ -61,4 +66,8 @@ select.btn-mini + .caret {
 
 .npr {
     padding-right: 0;
+}
+
+label {
+    font-weight: normal;
 }

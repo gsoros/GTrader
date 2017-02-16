@@ -52,7 +52,7 @@ class PHPlot extends Chart {
             else
                 $this->plotIndicator($ind);
         }
-        $html = $this->_image_map.'<img class="img-responsive" src="'.
+        $html = $this->_image_map.'<img class="img" src="'.
                 $this->_plot->EncodeImage().'" usemap="#map1">';
 
         $o = json_decode(parent::toJSON($options));

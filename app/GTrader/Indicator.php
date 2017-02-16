@@ -42,10 +42,13 @@ abstract class Indicator extends Skeleton
         $name = $this->getParam('display.name');
         $param_arr = [];
         $p = $this->getParam('indicator');
+        /*
         if (is_array($p))
             foreach ($p as $k => $v)
                 $param_arr[] = $k.': '.$v;
         $param_str = count($param_arr) ? join(', ', $param_arr) : null;
+        */
+        $param_str = (is_array($p)) ? join(', ', $p) : null;
         return $param_str ? $name.' ('.$param_str.')' : $name;
     }
 
