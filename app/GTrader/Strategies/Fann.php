@@ -60,7 +60,7 @@ class Fann extends Strategy
                                                 'length' => $ema_len],
                              'display' => [     'visible' => false],
                              'depends' => [     $indicator]]);
-error_log('Pred Ind Sig: '.$indicator->getSignature());
+
             $candles->addIndicator($indicator);
             $indicator = $candles->getIndicator($indicator->getSignature());
         }

@@ -40,19 +40,39 @@ trait HasIndicators
     }
 
 
-    public function hasIndicatorClass(string $class)
+    public function hasIndicatorClass(string $class, array $filters = [])
     {
+        error_log('hasIndicatorClass('.$class.', '.serialize($filters).')');
         foreach ($this->getIndicators() as $indicator)
             if ($indicator->getShortClass() === $class)
-                return true;
+                if ($num_filters = count($filters))
+                {
+                    $num_matched = 0;
+                    foreach ($filters as $conf => $val)
+                        if ($indicator->getParam($conf) === $val)
+                            $num_matched++;
+                    if ($num_matched === $num_filters)
+                        return true;
+                }
+                else return true;
     }
 
 
-    public function unsetIndicator(string $signature)
+
+    public function unsetIndicator(Indicator $indicator)
     {
-        foreach ($this->_indicators as $key => $indicator)
-            if ($indicator->getSignature() === $signature)
+        foreach ($this->_indicators as $key => $existing)
+            if ($indicator === $existing)
                 unset($this->_indicators[$key]);
+        return $this;
+    }
+
+
+    public function unsetIndicators(string $signature)
+    {
+        foreach ($this->getIndicators() as $indicator)
+            if ($indicator->getSignature() === $signature)
+                $this->unsetIndicator($indicator);
         return $this;
     }
 
@@ -109,7 +129,7 @@ trait HasIndicators
     }
 
 
-    public function unsetIndicators()
+    public function unsetAllIndicators()
     {
         $this->_indicators = [];
         return $this;

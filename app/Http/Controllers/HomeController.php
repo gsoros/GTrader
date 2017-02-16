@@ -41,7 +41,7 @@ class HomeController extends Controller
         $d = '';
         foreach ($chart->getIndicators() as $i)
             $d .= 'I: '.$i->getSignature().' V: '.$i->getParam('display.visible')."\n";
-        $debug = $d; //print_r($chart, true);
+        $debug = $d;
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'stylesheets'       => $chart->getPageElements('stylesheets'),

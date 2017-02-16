@@ -97,7 +97,7 @@ abstract class Chart extends Skeleton {
     public function handleIndicatorDeleteRequest(Request $request)
     {
         $indicator = $this->getIndicator($request->signature);
-        $indicator->getOwner()->unsetIndicator($indicator->getSignature());
+        $indicator->getOwner()->unsetIndicators($indicator->getSignature());
         return $this->handleSettingsFormRequest($request);
     }
 
@@ -109,6 +109,19 @@ abstract class Chart extends Skeleton {
         foreach ($indicator->getParam('indicator') as $param => $val)
             if (isset($jso->$param))
                 $indicator->setParam('indicator.'.$param, $jso->$param);
+
+        $this->unsetIndicators($indicator->getSignature());
+        $indicator->setParam('display.visible', true);
+        $this->addIndicator($indicator);
+        /*
+        if ($this->hasIndicator($indicator->getSignature()))
+        {
+            $existing = $this->getIndicator($indicator->getSignature());
+            $existing->setParam('display.visible', true);
+            if ($indicator !== $existing)
+                $this->unsetIndicator($indicator);
+        }
+        */
         return $this->handleSettingsFormRequest($request);
     }
 
@@ -134,7 +147,7 @@ abstract class Chart extends Skeleton {
         $available = [];
         foreach ($config as $class => $params)
         {
-            $exists = $this->hasIndicatorClass($class);
+            $exists = $this->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple']))
             {
                 $indicator = Indicator::make($class);
@@ -248,6 +261,16 @@ abstract class Chart extends Skeleton {
                             $this->getStrategy()->getIndicators());
     }
 
+
+    public function unsetIndicator(Indicator $indicator)
+    {
+        $signature = $indicator->getSignature();
+        if ($this->getCandles()->hasIndicator($signature))
+            $this->getCandles()->unsetIndicator($indicator);
+        else if ($this->getStrategy()->hasIndicator($signature))
+            $this->getStrategy()->unsetIndicator($indicator);
+        return $this;
+    }
 
     public function getIndicatorsVisibleSorted()
     {
