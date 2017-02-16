@@ -67,9 +67,11 @@ class Skeleton
             if (!$class)
                 throw new \Exception('No default child class for '.get_called_class());
         }
+
         $class = __NAMESPACE__.'\\'
                     .self::getClassConf($called, 'children_ns').'\\'
                     .$class;
+
         return new $class($params);
     }
 

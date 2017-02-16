@@ -4,6 +4,7 @@ namespace GTrader\Strategies;
 
 use GTrader\Strategy;
 use GTrader\Series;
+use GTrader\Indicator;
 use GTrader\Util;
 
 if (!extension_loaded('fann')) throw new \Exception('FANN extension not loaded');
@@ -35,6 +36,37 @@ class Fann extends Strategy
     }
 
 
+
+    public function getPredictionIndicator()
+    {
+        $class = $this->getParam('prediction_indicator_class');
+
+        $indicator = null;
+        foreach ($this->getIndicators() as $candidate)
+            if ($class === $candidate->getShortClass())
+                $indicator = $candidate;
+        if (is_null($indicator))
+        {
+            $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
+            $this->addIndicator($indicator);
+        }
+
+        $ema_len = $this->getParam('prediction_ema');
+        if ($ema_len > 1)
+        {
+            $candles = $this->getCandles();
+            $indicator = Indicator::make('Ema',
+                            ['indicator' => [   'price' => $indicator->getSignature(),
+                                                'length' => $ema_len],
+                             'display' => [     'visible' => false],
+                             'depends' => [     $indicator]]);
+error_log('Pred Ind Sig: '.$indicator->getSignature());
+            $candles->addIndicator($indicator);
+            $indicator = $candles->getIndicator($indicator->getSignature());
+        }
+
+        return $indicator;
+    }
 
 
 

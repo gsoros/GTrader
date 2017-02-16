@@ -37,8 +37,11 @@ class HomeController extends Controller
             $chart = Chart::make(null, ['id' => 'mainchart']);
         }
         else error_log('home: mainchart found in session');
-        //dump($chart);
-        $debug = ''; //print_r($chart, true);
+
+        $d = '';
+        foreach ($chart->getIndicators() as $i)
+            $d .= 'I: '.$i->getSignature().' V: '.$i->getParam('display.visible')."\n";
+        $debug = $d; //print_r($chart, true);
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'stylesheets'       => $chart->getPageElements('stylesheets'),

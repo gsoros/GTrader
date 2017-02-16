@@ -11,9 +11,9 @@ abstract class Indicator extends Skeleton
     protected $_calculated = false;
 
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
 
         if (!$this->getParam('display.y_axis_pos'))
             $this->setParam('display.y_axis_pos', 'left');
@@ -61,10 +61,23 @@ abstract class Indicator extends Skeleton
     }
 
 
+    public function createDependencies()
+    {
+        return $this;
+    }
+
+
     public function checkAndRun(bool $force_rerun = false)
     {
         if (!$force_rerun && $this->_calculated)
             return $this;
+
+        $depends = $this->getParam('depends');
+        if (is_array($depends))
+            if (count($depends))
+                foreach ($depends as $indicator)
+                    $indicator->checkAndRun($force_rerun);
+
         $this->_calculated = true;
         return $this->calculate();
     }

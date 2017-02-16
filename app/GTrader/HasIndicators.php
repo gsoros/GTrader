@@ -11,10 +11,16 @@ trait HasIndicators
     {
         if (!is_object($indicator))
             $indicator = Indicator::make($indicator, $params);
+
         if ($this->hasIndicator($indicator->getSignature()))
             return $this;
+
         $indicator->setOwner($this);
+
         $this->_indicators[] = $indicator;
+
+        $indicator->createDependencies();
+
         return $this;
     }
 

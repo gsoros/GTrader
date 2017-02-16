@@ -10,11 +10,14 @@ abstract class Strategy extends Skeleton
     public function getSignalsIndicator()
     {
         $class = $this->getParam('signals_indicator_class');
-        foreach ($this->_indicators as $indicator)
+
+        foreach ($this->getIndicators() as $indicator)
             if ($class === $indicator->getShortClass())
                 return $indicator;
-        $indicator = Indicator::make($class);
+
+        $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
         $this->addIndicator($indicator);
+
         return $indicator;
     }
 

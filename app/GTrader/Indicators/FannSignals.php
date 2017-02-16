@@ -8,7 +8,16 @@ use GTrader\Series;
 class FannSignals extends Indicator
 {
     protected $_allowed_owners = ['GTrader\\Strategies\\Fann'];
-                    
+
+
+    public function createDependencies()
+    {
+        $owner = $this->getOwner();
+        if (is_object($owner))
+            $owner->getPredictionIndicator(); /* just calling the owner's method will create the dependency */
+        return $this;
+    }
+
 
     public function calculate()
     {
@@ -17,32 +26,17 @@ class FannSignals extends Indicator
         $owner = $this->getOwner();
         $candles = $this->getCandles();
 
-                
-        $indicator = 'FannPrediction';
-        if (!$owner->hasIndicator($indicator))
-            $owner->addIndicator($indicator, ['display' => ['visible' => false]]);
-        $owner->getIndicator($indicator)->checkAndRun();
-        
-        $prediction_ema = $owner->getParam('prediction_ema');
-        if ($prediction_ema >= 1) 
-        {
-            $ema = Indicator::make('Ema', 
-                            ['indicator' => ['price' => $indicator, 'length' => $prediction_ema],
-                             'display' => ['visible' => false]]);
-            if (!$candles->hasIndicator($ema->getSignature()))
-                $candles->addIndicator($ema);
-            $ema = $candles->getIndicator($ema->getSignature());
-            $ema->checkAndRun();
-            //dd($candles);
-        }
+        $indicator = $this->getOwner()->getPredictionIndicator();
+        $indicator->checkAndRun();
+        $indicator_sig = $indicator->getSignature();
 
         $last = ['time' => 0, 'signal' => ''];
         $candles_seen = 0;
-        
+
         //$trade_indicator = 'open';
         //$trade_indicator = 'ohlc4';
         //$this->_candles->ohlc4()->reset();
-        
+
         $spitfire = $owner->getParam('spitfire');
         $long_threshold = $owner->getParam('prediction_long_threshold');
         $short_threshold = $owner->getParam('prediction_short_threshold');
@@ -50,28 +44,28 @@ class FannSignals extends Indicator
             throw new \Exception('Threshold is zero');
         $min_distance = $owner->getParam('min_trade_distance');
         $resolution = $candles->getParam('resolution');
-        
+
         $candles->reset();
-        while ($candle = $candles->next()) 
+        while ($candle = $candles->next())
         {
             $candles_seen++;
             if ($candles_seen < $owner->getNumInput()) continue; // skip trading while inside the first sample
-            if (isset($candle->$indicator)) 
-            {   
+            if (isset($candle->$indicator_sig))
+            {
                 // skip trade if last trade was recent
-                if ($last['time'] >= $candle->time - $min_distance * $resolution) 
+                if ($last['time'] >= $candle->time - $min_distance * $resolution)
                     continue;
-                
+
                 $price_buy = $price_sell = $candle->open;
-                
-                if ($candle->$indicator > $candle->open + $candle->open / $long_threshold &&
+
+                if ($candle->$indicator_sig > $candle->open + $candle->open / $long_threshold &&
                                                     ($last['signal'] != 'buy' || $spitfire))
                 {
                     $candle->$signature = ['signal' => 'buy', 'price' => $price_buy];
                     $last = ['time' => $candle->time, 'signal' => 'buy'];
                 }
-                else if ($candle->$indicator < $candle->open - $candle->open / $short_threshold &&
-                                                    ($last['signal'] != 'sell' || $spitfire)) 
+                else if ($candle->$indicator_sig < $candle->open - $candle->open / $short_threshold &&
+                                                    ($last['signal'] != 'sell' || $spitfire))
                 {
                     $candle->$signature = ['signal' => 'sell', 'price' => $price_sell];
                     $last = ['time' => $candle->time, 'signal' => 'sell'];

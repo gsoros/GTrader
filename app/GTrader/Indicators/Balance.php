@@ -10,6 +10,14 @@ class Balance extends Indicator
     protected $_allowed_owners = ['GTrader\\Strategy'];
 
 
+    public function createDependencies()
+    {
+        $owner = $this->getOwner();
+        if (is_object($owner))
+            $owner->getSignalsIndicator(); /* just calling the owner's method will create the dependency */
+        return $this;
+    }
+
 
     public function calculate()
     {
@@ -20,11 +28,11 @@ class Balance extends Indicator
             throw new \Exception('Mode must be either dynamic or fixed.');
 
         $owner = $this->getOwner();
-        
+
         $signal_ind = $owner->getSignalsIndicator();
         $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun();
-        
+
         $signature = $this->getSignature();
 
         $capital = $params['initial_capital'];
@@ -40,33 +48,33 @@ class Balance extends Indicator
         $candles = $this->getCandles();
         $candles->reset();
 
-        while ($candle = $candles->next()) 
+        while ($candle = $candles->next())
         {
-            if ($liquidated) 
+            if ($liquidated)
             {
                 $candle->$signature = 0;
                 continue;
             }
 
-            if ($prev_signal) 
+            if ($prev_signal)
             { // update UPL
                 if ($candle->close != $prev_signal['price']) // avoid division by zero
                     if ($prev_signal['signal'] == 'buy')
-                        $upl = $stake / $prev_signal['price'] * 
+                        $upl = $stake / $prev_signal['price'] *
                                 ($candle->close - $prev_signal['price']) * $leverage;
                     else if ($prev_signal['signal'] == 'sell')
-                        $upl = $stake / $prev_signal['price'] * 
+                        $upl = $stake / $prev_signal['price'] *
                                 ($prev_signal['price'] - $candle->close) * $leverage;
             }
 
             if ($signal = $candle->$signal_sig)
             {
-                if ($signal['signal'] == 'buy' && $capital > 0) 
+                if ($signal['signal'] == 'buy' && $capital > 0)
                 { // go long
-                    if ($prev_signal && $prev_signal['signal'] == 'sell') 
+                    if ($prev_signal && $prev_signal['signal'] == 'sell')
                     { // close last short
                         if ($prev_signal['price']) // avoid division by zero
-                            $capital += $stake / $prev_signal['price'] * ($prev_signal['price'] 
+                            $capital += $stake / $prev_signal['price'] * ($prev_signal['price']
                                         - $signal['price']) * $leverage;
                         $upl = 0;
                     }
@@ -74,12 +82,12 @@ class Balance extends Indicator
                     // open long
                     $capital -= $stake * $fee_multiplier;
                 }
-                else if ($signal['signal'] == 'sell' && $capital > 0) 
+                else if ($signal['signal'] == 'sell' && $capital > 0)
                 { // go short
-                    if ($prev_signal && $prev_signal['signal'] == 'buy') 
+                    if ($prev_signal && $prev_signal['signal'] == 'buy')
                     { // close last long
                         if ($prev_signal['price']) // avoid division by zero
-                            $capital += $stake / $prev_signal['price'] * ($signal['price'] 
+                            $capital += $stake / $prev_signal['price'] * ($signal['price']
                                         - $prev_signal['price']) * $leverage;
                         $upl = 0;
                     }
@@ -97,6 +105,6 @@ class Balance extends Indicator
             $candle->$signature = $new_balance;
         }
         return $this;
-       
+
    }
-}    
+}

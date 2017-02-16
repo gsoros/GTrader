@@ -73,9 +73,23 @@ abstract class Chart extends Skeleton {
 
     public function handleIndicatorNewRequest(Request $request)
     {
-        $indicator = Indicator::make($request->signature);
-        if (!$this->hasIndicator($indicator->getSignature()))
-            $this->addIndicator($indicator);
+        if (!$request->signature)
+        {
+            error_log('handleIndicatorNewRequest without signature');
+        }
+        else
+        {
+            $indicator = Indicator::make($request->signature);
+            if ($this->hasIndicator($indicator->getSignature()))
+            {
+                $indicator = $this->getIndicator($indicator->getSignature());
+                $indicator->setParam('display.visible', true);
+            }
+            else
+            {
+                $this->addIndicator($indicator);
+            }
+        }
         return $this->handleSettingsFormRequest($request);
     }
 
@@ -209,20 +223,21 @@ abstract class Chart extends Skeleton {
     {
         if (!is_object($indicator))
             $indicator = Indicator::make($indicator, $params);
+
         if ($this->hasIndicator($indicator->getSignature()))
             return $this;
+
         $candles = $this->getCandles();
         if ($indicator->canBeOwnedBy($candles))
-        {
             $candles->addIndicator($indicator);
-            return $this;
-        }
-        $strategy = $this->getStrategy();
-        if ($indicator->canBeOwnedBy($strategy))
+        else
         {
-            $strategy->addIndicator($indicator);
-            return $this;
+            $strategy = $this->getStrategy();
+            if ($indicator->canBeOwnedBy($strategy))
+                $strategy->addIndicator($indicator);
         }
+
+        $indicator->createDependencies();
         return $this;
     }
 
