@@ -92,6 +92,48 @@ $(window).ready(function() {
                 }
             });
         });
+
+        /* Requests the edit form for an indicator and inserts it into the DOM */
+        chartObj.requestIndicatorEditForm = function(signature) {
+            $.ajax({url: '/indicator.form?id=' + id + '&signature=' + signature,
+                success: function(response) {
+                    $('#form_' + signature).html(response);
+                }
+            });
+        };
+
+        /* Requests deletion for an indicator and inserts the resulting form into the modal */
+        chartObj.requestIndicatorDelete = function(signature) {
+            $.ajax({url: '/indicator.delete?id=' + id + '&signature=' + signature,
+                success: function(response) {
+                    $('#settings_content').html(response);
+                    chartObj.refresh();
+                }
+            });
+        };
+
+        /* Requests creation of a new indicator and inserts the resultins into the modal */
+        chartObj.requestIndicatorNew = function(signature) {
+            $.ajax({url: '/indicator.new?id=' + id + '&signature=' + signature,
+                success: function(response) {
+                    $('#settings_content').html(response);
+                    chartObj.refresh();
+                }
+            });
+        };
+
+        /* Sends an edited indicator and inserts the reply into the modal */
+        chartObj.requestIndicatorSaveForm = function(signature, params) {
+            params = JSON.stringify(params);
+            $.ajax({url: '/indicator.save?id=' + id +
+                            '&signature=' + signature +
+                            '&params=' + params,
+                success: function(response) {
+                    $('#settings_content').html(response);
+                    chartObj.refresh();
+                }
+            });
+        };
     });
 });
 

@@ -28,6 +28,7 @@ abstract class Indicator extends Skeleton
         $this->_calculated = false;
     }
 
+
     public function getSignature()
     {
         $class = $this->getShortClass();
@@ -43,7 +44,7 @@ abstract class Indicator extends Skeleton
         $p = $this->getParam('indicator');
         if (is_array($p))
             foreach ($p as $k => $v)
-                $param_arr[] = $k.' = '.$v;
+                $param_arr[] = $k.': '.$v;
         $param_str = count($param_arr) ? join(', ', $param_arr) : null;
         return $param_str ? $name.' ('.$param_str.')' : $name;
     }

@@ -33,9 +33,11 @@ class PHPlot extends Chart {
 
     public function toJSON($options = 0)
     {
-        $this->_plot = new PHPlot_truecolor(
-                            $this->getParam('width'),
-                            $this->getParam('height'));
+        $width = $this->getParam('width');
+        if ($width < 100) $width = 100;
+        $height = $this->getParam('height');
+        if ($height < 100) $height = 100;
+        $this->_plot = new PHPlot_truecolor($width, $height);
         $this->_plot->SetPrintImage(false);
         $this->_plot->SetFailureImage(false);
         $this->_image_map = '<map name="map1">';

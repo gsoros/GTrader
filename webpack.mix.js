@@ -16,4 +16,5 @@ mix.js('resources/assets/js/app.js', 'public/js')
     .js('resources/assets/js/PHPlot.js', 'public/js')
     .js('resources/assets/js/Dummy.js', 'public/js')
     .sass('resources/assets/sass/app.scss', 'public/css')
+    .sass('resources/assets/sass/Chart.scss', 'public/css')
     .sass('resources/assets/sass/PHPlot.scss', 'public/css');

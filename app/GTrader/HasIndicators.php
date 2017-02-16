@@ -34,9 +34,17 @@ trait HasIndicators
     }
 
 
+    public function hasIndicatorClass(string $class)
+    {
+        foreach ($this->getIndicators() as $indicator)
+            if ($indicator->getShortClass() === $class)
+                return true;
+    }
+
+
     public function unsetIndicator(string $signature)
     {
-        foreach ($this->_indicators as $indicator)
+        foreach ($this->_indicators as $key => $indicator)
             if ($indicator->getSignature() === $signature)
                 unset($this->_indicators[$key]);
         return $this;

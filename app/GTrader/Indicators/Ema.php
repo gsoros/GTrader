@@ -8,8 +8,8 @@ use GTrader\Indicator;
 class Ema extends Indicator
 {
     protected $_allowed_owners = ['GTrader\\Series'];
-    
-    
+
+
     public function calculate()
     {
         $params = $this->getParam('indicator');
@@ -18,10 +18,16 @@ class Ema extends Indicator
         $price = $params['price'];
 
         if ($length <= 1)
-            throw new \Exception('Ema needs int length > 1');
-        if (!in_array($price, array('open', 'high', 'low', 'close', 'FannPrediction')))
-            throw new \Exception('Ema needs valid price');
-        
+        {
+            error_log('Ema needs int length > 1');
+            return $this;
+        }
+        if (!in_array($price, array('open', 'high', 'low', 'close', 'volume', 'FannPrediction')))
+        {
+            error_log('Ema needs valid price');
+            return $this;
+        }
+
         $signature = $this->getSignature();
 
         $candles = $this->getCandles();
@@ -41,15 +47,15 @@ class Ema extends Indicator
             //echo 'candle: '; dump($candle);
             $prev_candle = $candles->prev();
             //echo 'prev candle: '; dump($prev_candle);
-            if (is_object($prev_candle)) 
+            if (is_object($prev_candle))
             {
                 $prev_candle_sig = 0;
-                if (isset($prev_candle->$signature)) 
+                if (isset($prev_candle->$signature))
                 {
                     $prev_candle_sig = $prev_candle->$signature;
 
                 }
-                else 
+                else
                 {
                     // TODO handle the error
                     //throw new \Exception('Ema: prev_candle->'.$signature.' is not set');
@@ -59,7 +65,7 @@ class Ema extends Indicator
                     ($candle_price - $prev_candle_sig) * (2 / ($length + 1))
                     + $prev_candle_sig;
             }
-            else 
+            else
             {
                 // start with the first candle's price as a basis for the ema
                 $candle->$signature = $candle_price;
@@ -69,4 +75,4 @@ class Ema extends Indicator
         //dd($candles);
         return $this;
     }
-}    
+}

@@ -29,6 +29,11 @@ abstract class Chart extends Skeleton {
             $this->setStrategy($params['strategy']);
             unset($params['strategy']);
         }
+
+        $candles = $this->getCandles();
+        if ($candles !== $this->getStrategy()->getCandles())
+            $this->getStrategy()->setCandles($candles);
+
         $id = isset($params['id']) ?
                     $params['id'] :
                     uniqid($this->getShortClass());
@@ -49,23 +54,81 @@ abstract class Chart extends Skeleton {
 
     public function handleSettingsFormRequest(Request $request)
     {
-        $form = '<h2>Indicators:</h2>';
-        $prev_section = null;
+        return view('ChartSettings', [
+                        'indicators' => $this->getIndicatorsVisibleSorted(),
+                        'available' => $this->getIndicatorsAvailable(),
+                        'id' => $this->getParam('id')]);
+    }
+
+
+    public function handleIndicatorFormRequest(Request $request)
+    {
+        $indicator = $this->getIndicator($request->signature);
+        return view('Indicators/'.$indicator->getShortClass(), [
+                                        'id' => $this->getParam('id'),
+                                        'indicator' => $indicator,
+                                        'chart'     => $this]);
+    }
+
+
+    public function handleIndicatorNewRequest(Request $request)
+    {
+        $indicator = Indicator::make($request->signature);
+        if (!$this->hasIndicator($indicator->getSignature()))
+            $this->addIndicator($indicator);
+        return $this->handleSettingsFormRequest($request);
+    }
+
+
+    public function handleIndicatorDeleteRequest(Request $request)
+    {
+        $indicator = $this->getIndicator($request->signature);
+        $indicator->getOwner()->unsetIndicator($indicator->getSignature());
+        return $this->handleSettingsFormRequest($request);
+    }
+
+
+    public function handleIndicatorSaveRequest(Request $request)
+    {
+        $indicator = $this->getIndicator($request->signature);
+        $jso = json_decode($request->params);
+        foreach ($indicator->getParam('indicator') as $param => $val)
+            if (isset($jso->$param))
+                $indicator->setParam('indicator.'.$param, $jso->$param);
+        return $this->handleSettingsFormRequest($request);
+    }
+
+
+    public function getPricesAvailable(string $except_signature = null)
+    {
+        $prices = ['open' => 'Open',
+                    'high' => 'High',
+                    'low' => 'Low',
+                    'close' => 'Close',
+                    'volume' => 'Volume'];
         foreach ($this->getIndicatorsVisibleSorted() as $ind)
+            if ($except_signature != $ind->getSignature())
+                $prices[$ind->getSignature()] = $ind->getParam('display.name');
+        return $prices;
+    }
+
+
+    public function getIndicatorsAvailable()
+    {
+        $indicator = Indicator::make();
+        $config = $indicator->getParam('available');
+        $available = [];
+        foreach ($config as $class => $params)
         {
-            if ($ind->getOwner() === $this->getCandles() && 'candles' != $prev_section)
+            $exists = $this->hasIndicatorClass($class);
+            if (!$exists || ($exists && true === $params['allow_multiple']))
             {
-                $form .= '<h3>Candles</h3>';
-                $prev_section = 'candles';
+                $indicator = Indicator::make($class);
+                $available[$class] = $indicator->getParam('display.name');
             }
-            else if ($ind->getOwner() === $this->getStrategy() && 'strategy' != $prev_section)
-            {
-                $form .= '<h3>Strategy</h3>';
-                $prev_section = 'strategy';
-            }
-            $form .= '<p>'.$ind->getDisplaySignature().'</p>';
         }
-        return $form;
+        error_log(serialize($available));
+        return $available;
     }
 
 
@@ -92,6 +155,9 @@ abstract class Chart extends Skeleton {
 
     public function toHTML(string $content = '')
     {
+        $this->addPageElement('stylesheets',
+                    '<link href="'.mix('/css/Chart.css').'" rel="stylesheet">', true);
+
         $this->addPageElement('scripts_top',
                     '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>', true);
 

@@ -59,7 +59,7 @@ class Fann extends Strategy
         }
         if (!$this->_fann)
         {
-            if ($this->getParam('ann_type') === 'fixed')
+            if ($this->getParam('fann_type') === 'fixed')
             {
                 $params = array_merge(
                             [$this->getParam('num_layers')],
@@ -70,7 +70,7 @@ class Fann extends Strategy
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
             }
-            else if ($this->_fann_type == 'cascade')
+            else if ($this->getParam('fann_type') == 'cascade')
                 $this->_fann = fann_create_shortcut(
                                 $this->getParam('num_layers'),
                                 $this->getParam('num_input'),

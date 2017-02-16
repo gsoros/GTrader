@@ -21,4 +21,8 @@ Auth::routes();
 
 Route::get('/',                 'HomeController@dashboard');
 Route::get('/plot.json',        'ChartController@JSON');
-Route::get('/settings.form',    'ChartController@settings_form');
+Route::get('/settings.form',    'ChartController@settingsForm');
+Route::get('/indicator.form',   'ChartController@indicatorForm');
+Route::get('/indicator.new',    'ChartController@indicatorNew');
+Route::get('/indicator.delete',  'ChartController@indicatorDelete');
+Route::get('/indicator.save',   'ChartController@indicatorSave');
