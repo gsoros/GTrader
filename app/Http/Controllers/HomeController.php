@@ -40,7 +40,9 @@ class HomeController extends Controller
 
         $d = '';
         foreach ($chart->getIndicators() as $i)
-            $d .= 'I: '.$i->getSignature().' V: '.$i->getParam('display.visible')."\n";
+            $d .= 'I: '.$i->getSignature().
+                    ' V: '.$i->getParam('display.visible').
+                    ' D: '.serialize($i->getParam('depends'))."\n";
         $debug = $d;
 
         $viewData = [   'chart'             => $chart->toHtml(),

@@ -104,24 +104,25 @@ abstract class Chart extends Skeleton {
 
     public function handleIndicatorSaveRequest(Request $request)
     {
-        $indicator = $this->getIndicator($request->signature);
-        $jso = json_decode($request->params);
-        foreach ($indicator->getParam('indicator') as $param => $val)
-            if (isset($jso->$param))
-                $indicator->setParam('indicator.'.$param, $jso->$param);
-
-        $this->unsetIndicators($indicator->getSignature());
-        $indicator->setParam('display.visible', true);
-        $this->addIndicator($indicator);
-        /*
-        if ($this->hasIndicator($indicator->getSignature()))
+        if ($indicator = $this->getIndicator($request->signature))
         {
-            $existing = $this->getIndicator($indicator->getSignature());
-            $existing->setParam('display.visible', true);
-            if ($indicator !== $existing)
-                $this->unsetIndicator($indicator);
+            $jso = json_decode($request->params);
+            foreach ($indicator->getParam('indicator') as $param => $val)
+                if (isset($jso->$param))
+                {
+                    $indicator->setParam('indicator.'.$param, $jso->$param);
+                    if ($param === 'price')
+                    {   error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
+                        $indicator->setParam('depends', []);
+                        $dependency = $this->getIndicator($jso->$param);
+                        if (is_object($dependency))
+                            $indicator->setParam('depends', [$dependency]);
+                    }
+                }
+            $this->unsetIndicators($indicator->getSignature());
+            $indicator->setParam('display.visible', true);
+            $this->addIndicator($indicator);
         }
-        */
         return $this->handleSettingsFormRequest($request);
     }
 

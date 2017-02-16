@@ -41,8 +41,7 @@ class Ema extends Indicator
             }
             else
             {
-                // TODO handle the error
-                //throw new \Exception('Ema: candle->'.$price.' is not set');
+                error_log('Ema::calculate() '.$signature.' candle->'.$price.' is not set');
             }
             //echo 'candle: '; dump($candle);
             $prev_candle = $candles->prev();

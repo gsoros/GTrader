@@ -314,7 +314,13 @@ class PHPlot extends Chart {
         $this->_plot->SetLineStyles(['dashed']);
         $this->_plot->SetPointSizes(14);
         $this->_plot->SetYDataLabelPos('plotin');
+        $this->_plot->SetLegendPixels(35, self::nextLegendY());
+        $legend = $indicator->getParam('display.name');
+        $params = $indicator->getParam('indicator');
+        if (count($params)) $legend .= ' ('.join(', ', $params).')';
+        $this->_plot->SetLegend([$legend, '']);
         $this->_plot->DrawGraph();
+        self::nextLegendY();
         $this->_plot->SetYDataLabelPos('none');
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->RemoveCallback('data_color');
