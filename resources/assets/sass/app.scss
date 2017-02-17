@@ -20,6 +20,10 @@
     line-height: 17px;
 }
 
+.container-fluid {
+    padding-left: 0;
+}
+
 .btn-mini {
     height: 30px;
     font-size: 11px;
@@ -70,4 +74,8 @@ select.btn-mini + .caret {
 
 label {
     font-weight: normal;
+}
+
+.lm10 {
+    margin-left: 10px;
 }

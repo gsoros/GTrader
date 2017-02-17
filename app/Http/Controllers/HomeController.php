@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use GTrader\Page;
 use GTrader\Exchange;
 use GTrader\Chart;
 use GTrader\Series;
@@ -33,22 +34,25 @@ class HomeController extends Controller
         if (! $chart = session('mainchart'))
         {
             error_log('home: no mainchart in session, creating new');
-
             $chart = Chart::make(null, ['id' => 'mainchart']);
         }
-        else error_log('home: mainchart found in session');
+        if (! $strategy = $chart->getStrategy())
+        {
+            error_log('home: no strategy in chart, creating new');
+            $strategy = Strategy::make();
+        }
 
-        $d = '';
+        $debug = '';
         foreach ($chart->getIndicators() as $i)
-            $d .= 'I: '.$i->getSignature().
+            $debug .= 'I: '.$i->getSignature().
                     ' V: '.$i->getParam('display.visible').
                     ' D: '.serialize($i->getParam('depends'))."\n";
-        $debug = $d;
 
         $viewData = [   'chart'             => $chart->toHtml(),
-                        'stylesheets'       => $chart->getPageElements('stylesheets'),
-                        'scripts_top'       => $chart->getPageElements('scripts_top'),
-                        'scripts_bottom'    => $chart->getPageElements('scripts_bottom'),
+                        'strategy'          => $strategy->toHtml(),
+                        'stylesheets'       => Page::getElements('stylesheets'),
+                        'scripts_top'       => Page::getElements('scripts_top'),
+                        'scripts_bottom'    => Page::getElements('scripts_bottom'),
                         'debug'             => $debug];
 
         session(['mainchart' => $chart]);

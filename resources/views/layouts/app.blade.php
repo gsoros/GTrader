@@ -45,16 +45,16 @@
                     <!-- Nav tabs -->
                     <ul class="nav navbar-nav nav-tabs" role="tablist">
                         <li role="presentation" class="active">
-                            <a href="#chart" aria-controls="chart" role="tab" data-toggle="tab">Chart</a>
+                            <a href="#chartTab" aria-controls="chartTab" role="tab" data-toggle="tab">Chart</a>
                         </li>
                         <li role="presentation">
-                            <a href="#strategy" aria-controls="strategy" role="tab" data-toggle="tab">Strategy</a>
+                            <a href="#strategyTab" aria-controls="strategyTab" role="tab" data-toggle="tab">Strategy</a>
                         </li>
                         <li role="presentation">
-                            <a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a>
+                            <a href="#settingsTab" aria-controls="settingsTab" role="tab" data-toggle="tab">Settings</a>
                         </li>
                         <li role="presentation">
-                            <a href="#bot" aria-controls="Bot" role="tab" data-toggle="tab">Bot</a>
+                            <a href="#botTab" aria-controls="botTab" role="tab" data-toggle="tab">Bots</a>
                         </li>
                     </ul>
 

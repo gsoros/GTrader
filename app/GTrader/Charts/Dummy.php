@@ -3,6 +3,7 @@
 namespace GTrader\Charts;
 
 use GTrader\Chart;
+use GTrader\Page;
 
 class Dummy extends Chart {
 
@@ -10,7 +11,7 @@ class Dummy extends Chart {
     {
         $html = parent::toHTML();
 
-        $this->addPageElement('scripts_bottom',
+        Page::addElement('scripts_bottom',
                     '<script src="'.mix('/js/Dummy.js').'"></script>', true);
 
         return $html;

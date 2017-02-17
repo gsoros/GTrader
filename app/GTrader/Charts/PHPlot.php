@@ -5,6 +5,7 @@ namespace GTrader\Charts;
 use Illuminate\Http\Request;
 use GTrader\Chart;
 use GTrader\Exchange;
+use GTrader\Page;
 use PHPlot_truecolor;
 
 class PHPlot extends Chart {
@@ -17,14 +18,14 @@ class PHPlot extends Chart {
     public function toHTML(string $content = '')
     {
 
-        $this->addPageElement('stylesheets',
+        Page::addElement('stylesheets',
                     '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">', true);
 
         $content = view('Charts/PHPlot', ['id' => $this->getParam('id')]);
 
         $content = parent::toHTML($content);
 
-        $this->addPageElement('scripts_bottom',
+        Page::addElement('scripts_bottom',
                     '<script src="'.mix('/js/PHPlot.js').'"></script>', true);
 
         return $content;
@@ -34,26 +35,29 @@ class PHPlot extends Chart {
     public function toJSON($options = 0)
     {
         $width = $this->getParam('width');
-        if ($width < 100) $width = 100;
         $height = $this->getParam('height');
-        if ($height < 100) $height = 100;
-        $this->_plot = new PHPlot_truecolor($width, $height);
-        $this->_plot->SetPrintImage(false);
-        $this->_plot->SetFailureImage(false);
-        $this->_image_map = '<map name="map1">';
-        $this->plotCandles();
-        $this->_image_map .= '</map>';
-        foreach ($this->getIndicatorsVisibleSorted() as $ind)
+        error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
+        if ($width > 0 && $height > 0)
         {
-            error_log('Plotting: '.$ind->getSignature());
-            $ind->checkAndRun();
-            if ($ind->getParam('display.name') === 'Signals')
-                $this->plotSignals($ind);
-            else
-                $this->plotIndicator($ind);
+            $this->_plot = new PHPlot_truecolor($width, $height);
+            $this->_plot->SetPrintImage(false);
+            $this->_plot->SetFailureImage(false);
+            $this->_image_map = '<map name="map1">';
+            $this->plotCandles();
+            $this->_image_map .= '</map>';
+            foreach ($this->getIndicatorsVisibleSorted() as $ind)
+            {
+                error_log('Plotting: '.$ind->getSignature());
+                $ind->checkAndRun();
+                if ($ind->getParam('display.name') === 'Signals')
+                    $this->plotSignals($ind);
+                else
+                    $this->plotIndicator($ind);
+            }
+            $html = $this->_image_map.'<img class="img-responsive" src="'.
+                    $this->_plot->EncodeImage().'" usemap="#map1">';
         }
-        $html = $this->_image_map.'<img class="img" src="'.
-                $this->_plot->EncodeImage().'" usemap="#map1">';
+        else $html = '';
 
         $o = json_decode(parent::toJSON($options));
 
@@ -70,8 +74,8 @@ class PHPlot extends Chart {
 
     public function handleJSONRequest(Request $request)
     {
-        $this->setParam('width', isset($request->width) ? $request->width : 800);
-        $this->setParam('height', isset($request->height) ? $request->height : 600);
+        $this->setParam('width', isset($request->width) ? $request->width : 0);
+        $this->setParam('height', isset($request->height) ? $request->height : 0);
         $candles = $this->getCandles();
         $request = $this->sanityCheckRequest($request);
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)

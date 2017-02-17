@@ -10,24 +10,27 @@ abstract class Exchange extends Skeleton
     abstract public function getTicker(array $params = []);
     abstract public function getCandles(array $params = []);
 
+
     public static function getDefaultExchange()
     {
-        $exchange = Exchange::getInstance();
+        $exchange = Exchange::singleton();
         return $exchange->getParam('local_name');
     }
 
+
     public static function getDefaultSymbol()
     {
-        $exchange = Exchange::getInstance();
+        $exchange = Exchange::singleton();
         // reset() returns the first element
         $symbols = $exchange->getParam('symbols');
         $first_symbol = reset($symbols);
         return $first_symbol['local_name'];
     }
 
+
     public static function getDefaultResolution()
     {
-        $exchange = Exchange::getInstance();
+        $exchange = Exchange::singleton();
         // reset() returns the first element
         $symbols = $exchange->getParam('symbols');
         $first_symbol = reset($symbols);
@@ -40,7 +43,7 @@ abstract class Exchange extends Skeleton
     public static function getESR()
     {
         $esr = [];
-        $default_exchange = Exchange::getInstance();
+        $default_exchange = Exchange::singleton();
         foreach ($default_exchange->getParam('available_exchanges') as $class)
         {
             $exchange = Exchange::make($class);

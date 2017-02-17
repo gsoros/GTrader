@@ -7,16 +7,16 @@
 
         <!-- Tab panes -->
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="chart">
+            <div role="tabpanel" class="tab-pane fade in active" id="chartTab">
                 {!! $chart !!}
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="strategy">
-                Strategy Settings
+            <div role="tabpanel" class="tab-pane fade" id="strategyTab">
+                {!! $strategy !!}
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="settings">
+            <div role="tabpanel" class="tab-pane fade" id="settingsTab">
                 Debug: <pre>{{ $debug }}</pre>
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="bot">
+            <div role="tabpanel" class="tab-pane fade" id="botTab">
                 Bot Settings
             </div>
         </div>

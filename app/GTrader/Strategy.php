@@ -7,6 +7,12 @@ abstract class Strategy extends Skeleton
     use HasCandles, HasIndicators;
 
 
+    public function toHTML(string $content = null)
+    {
+        return view('Strategy', ['strategy' => $this, 'content' => $content]);
+    }
+
+
     public function getSignalsIndicator()
     {
         $class = $this->getParam('signals_indicator_class');

@@ -15,7 +15,7 @@ class Aggregator
                                     DIRECTORY_SEPARATOR.'lock-'.basename(__FILE__));
         $lockfile = fopen($lockfile_path, 'c+');
         if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB)) {
-            throw new \Exception('Another process is running.');
+            error_log('Another process is running.');
             exit();
         }
 

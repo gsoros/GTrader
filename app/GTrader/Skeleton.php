@@ -65,10 +65,14 @@ class Skeleton
         {
             $class = self::getClassConf($called, 'default_child');
             if (!$class)
-                throw new \Exception('No default child class for '.get_called_class());
-        }
+            {
+                error_log('No default child class for '.get_called_class());
+                $class = $called;
+            }
 
-        $class = __NAMESPACE__.'\\'
+        }
+        if ($class !== $called)
+            $class = __NAMESPACE__.'\\'
                     .self::getClassConf($called, 'children_ns').'\\'
                     .$class;
 
@@ -77,17 +81,17 @@ class Skeleton
 
 
     /**
-     * Create a new instance.
+     * Create and return a singleton.
      *
      * @return \GTrader\*
      */
-    public static function getInstance()
+    public static function singleton()
     {
-        static $instance;
+        static $singleton;
 
-        if (!is_object($instance))
-            $instance = self::make();
-        return $instance;
+        if (!is_object($singleton))
+            $singleton = self::make();
+        return $singleton;
     }
 
 
@@ -98,11 +102,11 @@ class Skeleton
      */
     public static function __callStatic($method, $params)
     {
-        $instance = self::getInstance();
-        //dump('callStatic: '.get_class($instance).'->'.$method.'()');
-        if (!is_callable([$instance, $method]))
-            throw new \Exception(get_class($instance).'->'.$method.'() is not callable.');
+        $singleton = self::singleton();
+        error_log('callStatic: '.get_class($singleton).'->'.$method.'('.serialize($params).')');
+        if (!is_callable([$singleton, $method]))
+            throw new \Exception(get_class($singleton).'->'.$method.'() is not callable.');
         $params = isset($params[0]) ? $params[0] : [];
-        return $instance->$method($params);
+        return $singleton->$method($params);
     }
 }

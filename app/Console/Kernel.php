@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-         $schedule->command('candles:fetch')->everyMinute()->withoutOverlapping();
+         $schedule->command('candles:fetch')->everyMinute();//->withoutOverlapping();
     }
 
     /**

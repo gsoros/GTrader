@@ -36,6 +36,11 @@ class Fann extends Strategy
     }
 
 
+    public function toHTML(string $content = null)
+    {
+        return parent::toHTML(view('Strategies/Fann', ['strategy' => $this]));
+    }
+
 
     public function getPredictionIndicator()
     {
