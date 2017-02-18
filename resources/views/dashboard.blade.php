@@ -17,7 +17,7 @@
                 Debug: <pre>{{ $debug }}</pre>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="botTab">
-                Bot Settings
+                Your Bots will appear here.
             </div>
         </div>
 

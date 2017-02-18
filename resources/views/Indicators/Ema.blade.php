@@ -6,7 +6,7 @@
 
 <h5>Ema</h5>
 <div class="row">
-    <div class="col-xs-5">
+    <div class="col-sm-5">
         <label for="length">Length</label>
         <select class="btn-primary btn btn-mini"
                 id="length_{{ $sig }}"
@@ -20,7 +20,7 @@
             @endfor
         </select>
     </div>
-    <div class="col-xs-5">
+    <div class="col-sm-5">
         <label for="price">Price</label>
         <select class="btn-primary btn btn-mini"
                 id="price_{{ $sig }}"
@@ -34,7 +34,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-xs-2">
+    <div class="col-sm-2">
         <button id="save_{{ $sig }}"
                 class="btn btn-primary btn-sm trans"
                 title="Save changes"

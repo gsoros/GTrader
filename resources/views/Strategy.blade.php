@@ -4,11 +4,11 @@
     $active = $strategy->getShortClass();
 @endphp
 <div class="container-fluid">
-    <div class="row lm10">
-        <div class="col-xs-8">
-            <h4>Active strategy: {{ $active }}</h4>
+    <div class="row" id="active_strategy">
+        <div class="col-sm-8">
+            <h3>Active strategy: {{ $active }}</h3>
         </div>
-        <div class="col-xs-4 editable">
+        <div class="col-sm-4 editable">
             <label for="strategy_select">Change strategy:</label>
             <select class="btn-primary btn btn-mini"
                     id="strategy_select"
@@ -37,9 +37,7 @@
             return false;
         };
     </script>
-    <div class="row lm10">
-        <div class="col-xs-12">
-            {{ $content }}
-        </div>
+    <div id="selected_strategy">
+        {!! $selected_strategy_settings !!}
     </div>
 </div>

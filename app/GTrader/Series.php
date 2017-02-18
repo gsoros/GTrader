@@ -156,9 +156,11 @@ class Series extends Collection {
         if (count($this->items)) return;
 
         $candles = Candle::select('time', 'open', 'high', 'low', 'close', 'volume')
-                        ->where('resolution', strval($this->getParam('resolution')))
-                        ->where('symbol', $this->getParam('symbol'))
-                        ->where('exchange', $this->getParam('exchange'))
+                        ->where('resolution', intval($this->getParam('resolution')))
+                        ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
+                        ->where('exchanges.name', $this->getParam('exchange'))
+                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->where('symbols.name', $this->getParam('symbol'))
                         ->where('time', '>=', $start)
                         ->where('time', '<=', $end)
                         ->orderBy('time', 'desc')
@@ -193,20 +195,22 @@ class Series extends Collection {
     {
         static $cache = [];
 
-        $query = Candle::select('time');
-
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param)
-        {
             if (is_null($$param))
                 $$param = $this->getParam($param);
-            $query = $query->where($param, $$param);
-        }
 
         if (isset($cache[$exchange][$symbol][$resolution]))
             return $cache[$exchange][$symbol][$resolution];
 
-        $query = $query->orderBy('time')->first();
-        $epoch = isset($query->time) ? $query->time : null;
+        $candle = Candle::select('time')
+                        ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
+                        ->where('exchanges.name', $exchange)
+                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->where('symbols.name', $symbol)
+                        ->where('resolution', $resolution)
+                        ->orderBy('time')->first();
+
+        $epoch = isset($candle->time) ? $candle->time : null;
         $cache[$exchange][$symbol][$resolution] = $epoch;
 
         return $epoch;
@@ -217,24 +221,30 @@ class Series extends Collection {
     {
         static $cache = [];
 
-        $query = Candle::select('time');
-
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param)
-        {
             if (is_null($$param))
                 $$param = $this->getParam($param);
-            $query = $query->where($param, $$param);
-        }
 
         if (isset($cache[$exchange][$symbol][$resolution]))
             return $cache[$exchange][$symbol][$resolution];
 
-        $query = $query->orderBy('time', 'desc')->first();
-        $last = isset($query->time) ? $query->time : null;
+        $candle = Candle::select('time')
+                        ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
+                        ->where('exchanges.name', $exchange)
+                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->where('symbols.name', $symbol)
+                        ->where('resolution', $resolution)
+                        ->orderBy('time', 'desc')->first();
+
+        $last = isset($candle->time) ? $candle->time : null;
         $cache[$exchange][$symbol][$resolution] = $last;
 
         return $last;
     }
+
+
+
+
 
 
 

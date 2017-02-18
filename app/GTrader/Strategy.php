@@ -9,7 +9,7 @@ abstract class Strategy extends Skeleton
 
     public function toHTML(string $content = null)
     {
-        return view('Strategy', ['strategy' => $this, 'content' => $content]);
+        return view('Strategy', ['strategy' => $this, 'selected_strategy_settings' => $content]);
     }
 
 

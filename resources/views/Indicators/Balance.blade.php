@@ -6,7 +6,7 @@
 
 <h5>Balance</h5>
 <div class="row">
-    <div class="col-xs-5">
+    <div class="col-sm-5">
         <label for="length">Mode</label>
         <select class="btn-primary btn btn-mini"
                 id="mode_{{ $sig }}"
@@ -20,7 +20,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-xs-5">
+    <div class="col-sm-5">
         <label for="price">Initial Capital</label>
         <input class="btn-primary btn btn-mini"
                 type="text"
@@ -29,7 +29,7 @@
                 title="Select the initial cap for the indicator"
                 value="{{ $initial_capital }}">
     </div>
-    <div class="col-xs-2">
+    <div class="col-sm-2">
         <button id="save_{{ $sig }}"
                 class="btn btn-primary btn-sm trans"
                 title="Save changes"

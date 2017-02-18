@@ -1,18 +1,14 @@
-* Get rid of the ugly ENUMs in the candles table.
-    - Move exchange and symbol to reference tables, change resolution to int.
-
 * Chart settings UI
     - Select charting engine
     - Select chart type: candlesticks, OHLC, Heikin-Ashi, line...
-    - Add, remove and edit indicators
 
 * Strategy settings UI
-    - Select active strategy
-    - Edit strategy params
+    - Add/remove strategies
+    - Edit strategy
     - Train fann strategy
 
 * Bot
-    - Create bot from active strategy and selected ESR
+    - Create bot
     - Run, pause, edit and delete bot
 
 * More indicators

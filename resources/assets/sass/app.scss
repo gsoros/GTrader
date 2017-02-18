@@ -20,10 +20,6 @@
     line-height: 17px;
 }
 
-.container-fluid {
-    padding-left: 0;
-}
-
 .btn-mini {
     height: 30px;
     font-size: 11px;
@@ -76,6 +72,19 @@ label {
     font-weight: normal;
 }
 
+.lm5 {
+    margin-left: 5px;
+}
+
 .lm10 {
     margin-left: 10px;
+}
+
+.row.bdr-rad {
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #111;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
 }

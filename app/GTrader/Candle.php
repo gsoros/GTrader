@@ -18,7 +18,7 @@ class Candle extends Model
     public function save(array $options = [])
     {
 
-        $attributes = ['id', 'time', 'exchange', 'symbol', 'resolution',
+        $attributes = ['id', 'time', 'exchange_id', 'symbol_id', 'resolution',
                         'open', 'high', 'low', 'close', 'volume'];
 
         foreach ($this->attributes as $k => $v)
@@ -31,11 +31,11 @@ class Candle extends Model
         }
 
         if (isset($this->resolution))
-            $this->resolution = strval($this->resolution);
+            $this->resolution = intval($this->resolution);
 
         $q = self::select('id');
 
-        foreach (['time', 'exchange', 'symbol', 'resolution'] as $k)
+        foreach (['time', 'exchange_id', 'symbol_id', 'resolution'] as $k)
         {
             if (!isset($this->$k))
                 throw new \Exception('Cannot save without '.$k);

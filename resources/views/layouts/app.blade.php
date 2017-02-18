@@ -48,7 +48,7 @@
                             <a href="#chartTab" aria-controls="chartTab" role="tab" data-toggle="tab">Chart</a>
                         </li>
                         <li role="presentation">
-                            <a href="#strategyTab" aria-controls="strategyTab" role="tab" data-toggle="tab">Strategy</a>
+                            <a href="#strategyTab" aria-controls="strategyTab" role="tab" data-toggle="tab">Strategies</a>
                         </li>
                         <li role="presentation">
                             <a href="#settingsTab" aria-controls="settingsTab" role="tab" data-toggle="tab">Settings</a>
