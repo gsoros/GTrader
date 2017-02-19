@@ -1,14 +1,14 @@
-<div id="{{ $id }}" class="GTraderChart"></div>
+<div id="{{ $name }}" class="GTraderChart"></div>
 {!! $content !!}
 <div class="container-fluid">
     <div class="row">
         <!-- Exchange, Symbol, Resolution Selectors -->
-        <div class="col-xs-11 npl" id="esr_{{ $id }}">
+        <div class="col-xs-11 npl" id="esr_{{ $name }}">
             <form class="form-inline">
                 <div class="form-group">
-                    <select class="btn-primary btn btn-mini" id="exchange_{{ $id }}"></select>
-                    <select class="btn-primary btn btn-mini" id="symbol_{{ $id }}"></select>
-                    <select class="btn-primary btn btn-mini" id="resolution_{{ $id }}"></select>
+                    <select class="btn-primary btn btn-mini" id="exchange_{{ $name }}"></select>
+                    <select class="btn-primary btn btn-mini" id="symbol_{{ $name }}"></select>
+                    <select class="btn-primary btn btn-mini" id="resolution_{{ $name }}"></select>
                 </div>
             </form>
         </div>
@@ -17,7 +17,7 @@
             <div class="btn-group">
 
                 <!-- Modal -->
-                <button type="button" class="btn btn-primary btn-sm" id="settings_{{ $id }}"
+                <button type="button" class="btn btn-primary btn-sm" id="settings_{{ $name }}"
                         data-toggle="modal" data-target=".bs-modal-lg">
                     <span class="glyphicon glyphicon-wrench"></span>
                 </button>

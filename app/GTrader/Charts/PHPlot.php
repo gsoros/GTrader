@@ -18,15 +18,15 @@ class PHPlot extends Chart {
     public function toHTML(string $content = '')
     {
 
-        Page::addElement('stylesheets',
-                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">', true);
+        Page::add('stylesheets',
+                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
 
-        $content = view('Charts/PHPlot', ['id' => $this->getParam('id')]);
+        $content = view('Charts/PHPlot', ['name' => $this->getParam('name')]);
 
         $content = parent::toHTML($content);
 
-        Page::addElement('scripts_bottom',
-                    '<script src="'.mix('/js/PHPlot.js').'"></script>', true);
+        Page::add('scripts_bottom',
+                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
 
         return $content;
     }
@@ -257,7 +257,6 @@ class PHPlot extends Chart {
         $params = $indicator->getParam('indicator');
         $sig = $indicator->getSignature();
         $color = self::nextColor();
-
         $candles = $this->getCandles();
         $candles->reset();
         $data = [];

@@ -13,7 +13,7 @@ class Page extends Skeleton
     }
 
 
-    public static function getElements(string $element)
+    public static function get(string $element)
     {
         $singleton = self::singleton();
         $elements = $singleton->getParam($element);
@@ -21,16 +21,14 @@ class Page extends Skeleton
     }
 
 
-    public static function addElement(string $element, string $content, bool $single_instance = false)
+    public static function add(string $element, string $content)
     {
         $singleton = self::singleton();
         $elements = $singleton->getParam($element);
         if (!is_array($elements))
             return false;
-        if ($single_instance)
-            foreach ($elements as $existing_element)
-                if ($content === $existing_element)
-                    return true;
+        if (in_array($content, $elements))
+            return true;
         $elements[] = $content;
         $singleton->setParam($element, $elements);
         return true;

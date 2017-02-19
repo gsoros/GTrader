@@ -2,21 +2,21 @@ $(window).ready(function() {
 
     // For each chart ...
     $('.GTraderChart').each(function() {
-        var id = $( this ).attr('id');
-        var chartObj = window[id];
+        var name = $( this ).attr('id');
+        var chartObj = window[name];
 
         /* Set chart size */
         chartObj.setChartSize = function() {
-            $('#' + this.id).width($(window).width()).height($(window).height() - 100);
+            $('#' + this.name).width($(window).width()).height($(window).height() - 100);
         };
         chartObj.setChartSize();
 
         /* Get selected Exchange, Symbol, Resolution values */
         chartObj.getSelectedESR = function() {
             var ret = {};
-            var id = this.id;
+            var name = this.name;
             ['exchange', 'symbol', 'resolution'].forEach(function(select) {
-                ret[select] = $('#' + select + '_' + id).val();
+                ret[select] = $('#' + select + '_' + name).val();
             });
             return ret;
         };
@@ -63,18 +63,18 @@ $(window).ready(function() {
                 opts.exchange += 'value="' + exchange.name + '">'
                                     + exchange.long_name + '</option>';
             });
-            $('#exchange_' + id).html(opts.exchange);
-            $('#symbol_' + id).html(opts.symbol);
-            $('#resolution_' + id).html(opts.resolution);
+            $('#exchange_' + name).html(opts.exchange);
+            $('#symbol_' + name).html(opts.symbol);
+            $('#resolution_' + name).html(opts.resolution);
         };
         chartObj.updateESR();
 
         /* Register handlers for Exchange, Symbol, Resolution dropdowns */
         ['exchange', 'symbol', 'resolution'].forEach(function(select) {
             // Register onChange func
-            $('#' + select + '_' + id).on('change', function() {
+            $('#' + select + '_' + name).on('change', function() {
                 // Get selected values
-                chartObj[select] = $('#' + select + '_' + id).val();
+                chartObj[select] = $('#' + select + '_' + name).val();
                 // Update dropdowns
                 chartObj.updateESR(select);
                 // Send refresh command to the chart
@@ -83,10 +83,10 @@ $(window).ready(function() {
         });
 
         /* Register click handler for settings button */
-        $('#settings_' + id).on('click', function() {
+        $('#settings_' + name).on('click', function() {
             // Request settings form from backend
             $.ajax({
-                url: '/settings.form?id=' + id,
+                url: '/settings.form?name=' + name,
                 success: function(response) {
                     $('#settings_content').html(response);
                 }
@@ -95,7 +95,7 @@ $(window).ready(function() {
 
         /* Requests the edit form for an indicator and inserts it into the DOM */
         chartObj.requestIndicatorEditForm = function(signature) {
-            $.ajax({url: '/indicator.form?id=' + id + '&signature=' + signature,
+            $.ajax({url: '/indicator.form?name=' + name + '&signature=' + signature,
                 success: function(response) {
                     $('#form_' + signature).html(response);
                 }
@@ -104,7 +104,7 @@ $(window).ready(function() {
 
         /* Requests deletion for an indicator and inserts the resulting form into the modal */
         chartObj.requestIndicatorDelete = function(signature) {
-            $.ajax({url: '/indicator.delete?id=' + id + '&signature=' + signature,
+            $.ajax({url: '/indicator.delete?name=' + name + '&signature=' + signature,
                 success: function(response) {
                     $('#settings_content').html(response);
                     chartObj.refresh();
@@ -114,7 +114,7 @@ $(window).ready(function() {
 
         /* Requests creation of a new indicator and inserts the resultins into the modal */
         chartObj.requestIndicatorNew = function(signature) {
-            $.ajax({url: '/indicator.new?id=' + id + '&signature=' + signature,
+            $.ajax({url: '/indicator.new?name=' + name + '&signature=' + signature,
                 success: function(response) {
                     $('#settings_content').html(response);
                     chartObj.refresh();
@@ -125,7 +125,7 @@ $(window).ready(function() {
         /* Sends an edited indicator and inserts the reply into the modal */
         chartObj.requestIndicatorSaveForm = function(signature, params) {
             params = JSON.stringify(params);
-            $.ajax({url: '/indicator.save?id=' + id +
+            $.ajax({url: '/indicator.save?name=' + name +
                             '&signature=' + signature +
                             '&params=' + params,
                 success: function(response) {

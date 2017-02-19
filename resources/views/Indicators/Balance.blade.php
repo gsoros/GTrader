@@ -44,7 +44,7 @@
         var params = {
                 mode: $('#mode_{{ $sig }}').val(),
                 initial_capital: Math.abs(parseInt($('#initial_capital_{{ $sig }}').val()))};
-        window.{{ $id }}.requestIndicatorSaveForm('{{ $sig }}', params);
+        window.{{ $name }}.requestIndicatorSaveForm('{{ $sig }}', params);
         return false;
     };
 </script>

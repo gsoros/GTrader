@@ -11,8 +11,8 @@ class Dummy extends Chart {
     {
         $html = parent::toHTML();
 
-        Page::addElement('scripts_bottom',
-                    '<script src="'.mix('/js/Dummy.js').'"></script>', true);
+        Page::add('scripts_bottom',
+                    '<script src="'.mix('/js/Dummy.js').'"></script>');
 
         return $html;
     }

@@ -25,12 +25,12 @@
         <select class="btn-primary btn btn-mini"
                 id="price_{{ $sig }}"
                 title="Select the index for the indicator">
-            @foreach ($chart->getPricesAvailable($sig) as $signature => $name)
+            @foreach ($chart->getPricesAvailable($sig) as $signature => $display_name)
                 <option
                 @if ($signature === $price)
                     selected
                 @endif
-                value="{{ $signature }}">{{ $name }}</option>
+                value="{{ $signature }}">{{ $display_name }}</option>
             @endforeach
         </select>
     </div>
@@ -49,7 +49,7 @@
         var params = {
                 length: $('#length_{{ $sig }}').val(),
                 price: $('#price_{{ $sig }}').val()};
-        window.{{ $id }}.requestIndicatorSaveForm('{{ $sig }}', params);
+        window.{{ $name }}.requestIndicatorSaveForm('{{ $sig }}', params);
         return false;
     };
 </script>

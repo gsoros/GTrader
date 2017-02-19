@@ -1,28 +1,28 @@
 
 
-function setPanZoomPosition(id) {
-    $('#panzoom_' + id).css({left: ($(window).width() / 2 - 68) + 'px'});
+function setPanZoomPosition(name) {
+    $('#panzoom_' + name).css({left: ($(window).width() / 2 - 68) + 'px'});
 };
 
-function setChartLoading(id, loading) {
+function setChartLoading(name, loading) {
     if (true === loading) {
-        var container = $('#' + id);
-        if (0 === $('#loading-' + id).length)
-            container.append('<img id="loading-' + id + '" src="/img/ajax-loader.gif">');
-        $('#loading-' + id).css({
+        var container = $('#' + name);
+        if (0 === $('#loading-' + name).length)
+            container.append('<img id="loading-' + name + '" src="/img/ajax-loader.gif">');
+        $('#loading-' + name).css({
                 position: 'absolute',
                 top: (container.height() / 2 - 20) + 'px',
                 left: (container.width() / 2 - 20) + 'px'});
     }
     else
-        $('#loading-' + id).remove();
+        $('#loading-' + name).remove();
 };
 
-function requestPlot(id, command, args) {
-    setChartLoading(id, true);
-    var container = $('#' + id);
-    var plot = window[id];
-    var url = '/plot.json?id=' + id +
+function requestPlot(name, command, args) {
+    setChartLoading(name, true);
+    var container = $('#' + name);
+    var plot = window[name];
+    var url = '/plot.json?name=' + name +
                 '&width=' + container.width() +
                 '&height=' + container.height();
     if (undefined !== command)
@@ -33,8 +33,8 @@ function requestPlot(id, command, args) {
         contentType: 'application/json',
         dataType: 'json',
         success: function(response) {
-            window[response.id].start = response.start;
-            window[response.id].end = response.end;
+            window[response.name].start = response.start;
+            window[response.name].end = response.end;
             container.html(response.html);
         }
     });
@@ -42,28 +42,28 @@ function requestPlot(id, command, args) {
 
 function updateAllPlots() {
     $('.GTraderChart').each(function() {
-        var id = $( this ).attr('id');
-        requestPlot(id);
-        setPanZoomPosition(id);
+        var name = $( this ).attr('id');
+        requestPlot(name);
+        setPanZoomPosition(name);
     });
 };
 
-function registerPanZoomHandler(id) {
-    ['zoomIn_' + id, 'zoomOut_' + id, 'backward_' + id, 'forward_' + id].forEach(function(id) {
-        $('#' + id).on('click', function() {
+function registerPanZoomHandler(name) {
+    ['zoomIn_' + name, 'zoomOut_' + name, 'backward_' + name, 'forward_' + name].forEach(function(name) {
+        $('#' + name).on('click', function() {
             var split = this.id.split('_');
             requestPlot(split[1], split[0]);
         });
     });
 };
 
-function registerRefreshFunc(id) {
-    //console.log('registering refresh() for window.' + id);
+function registerRefreshFunc(name) {
+    //console.log('registering refresh() for window.' + name);
     // Register a refresh func
-    window[id].refresh = function (command, args) {
-        requestPlot(id, command, args);
+    window[name].refresh = function (command, args) {
+        requestPlot(name, command, args);
     };
-    //console.log(window[id].refresh);
+    //console.log(window[name].refresh);
 };
 
 
@@ -76,10 +76,10 @@ $(window).ready(function() {
     // For each chart ...
     $('.GTraderChart').each(function() {
         // Ask for ID
-        var id = $( this ).attr('id');
-        registerRefreshFunc(id);
-        registerPanZoomHandler(id);
-        setPanZoomPosition(id);
+        var name = $( this ).attr('id');
+        registerRefreshFunc(name);
+        registerPanZoomHandler(name);
+        setPanZoomPosition(name);
     });
 });
 

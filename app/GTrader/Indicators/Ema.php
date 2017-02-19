@@ -22,11 +22,6 @@ class Ema extends Indicator
             error_log('Ema needs int length > 1');
             return $this;
         }
-        if (!in_array($price, array('open', 'high', 'low', 'close', 'volume', 'FannPrediction')))
-        {
-            error_log('Ema needs valid price');
-            return $this;
-        }
 
         $signature = $this->getSignature();
 

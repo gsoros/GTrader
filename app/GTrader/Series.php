@@ -159,7 +159,10 @@ class Series extends Collection {
                         ->where('resolution', intval($this->getParam('resolution')))
                         ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
                         ->where('exchanges.name', $this->getParam('exchange'))
-                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->join('symbols', function ($join) {
+                                    $join->on('candles.symbol_id', '=', 'symbols.id')
+                                        ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
+                                })
                         ->where('symbols.name', $this->getParam('symbol'))
                         ->where('time', '>=', $start)
                         ->where('time', '<=', $end)
@@ -205,7 +208,10 @@ class Series extends Collection {
         $candle = Candle::select('time')
                         ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
                         ->where('exchanges.name', $exchange)
-                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->join('symbols', function ($join) {
+                                    $join->on('candles.symbol_id', '=', 'symbols.id')
+                                        ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
+                                })
                         ->where('symbols.name', $symbol)
                         ->where('resolution', $resolution)
                         ->orderBy('time')->first();
@@ -231,7 +237,10 @@ class Series extends Collection {
         $candle = Candle::select('time')
                         ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
                         ->where('exchanges.name', $exchange)
-                        ->join('symbols', 'candles.symbol_id', '=', 'symbols.id')
+                        ->join('symbols', function ($join) {
+                                    $join->on('candles.symbol_id', '=', 'symbols.id')
+                                        ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
+                                })
                         ->where('symbols.name', $symbol)
                         ->where('resolution', $resolution)
                         ->orderBy('time', 'desc')->first();

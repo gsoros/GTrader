@@ -2,6 +2,8 @@
 
 namespace GTrader;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Exchange;
 use GTrader\Strategy;
@@ -30,10 +32,10 @@ abstract class Chart extends Skeleton {
         if ($candles !== $this->getStrategy()->getCandles())
             $this->getStrategy()->setCandles($candles);
 
-        $id = isset($params['id']) ?
-                    $params['id'] :
+        $name = isset($params['name']) ?
+                    $params['name'] :
                     uniqid($this->getShortClass());
-        $this->setParam('id', $id);
+        $this->setParam('name', $name);
         $this->_indicators[] = 'this array should not be used';
         parent::__construct($params);
     }
@@ -48,12 +50,82 @@ abstract class Chart extends Skeleton {
     }
 
 
+    public static function load(string $name = null)
+    {
+        if ($chart = self::loadFromSession($name))
+            return $chart;
+
+        if ($chart = self::loadFromDB($name))
+            return $chart;
+
+        $chart = Chart::make(null, ['name' => $name]);
+        return $chart;
+    }
+
+
+    public static function loadFromDB(string $name = null)
+    {
+        $query = DB::table('charts')
+                ->select('chart')
+                ->where('user_id', Auth::id())
+                ->where('name', $name)
+                ->first();
+
+        if (is_object($query))
+            return unserialize($query->chart);
+    }
+
+
+    public static function loadFromSession(string $name = null)
+    {
+        return ($chart = session($name)) ? $chart : null;
+    }
+
+
+    public function save()
+    {
+        if (! $name = $this->getParam('name'))
+        {
+            error_log('Chart::save() called but we have no name.');
+            return this;
+        }
+        $basequery = DB::table('charts')
+                        ->where('user_id', Auth::id())
+                        ->where('name', $name);
+        $query = $basequery->select('id')->first();
+
+        if (is_object($query))
+            if ($id = $query->id)
+            {
+                $basequery->update(['chart' => serialize($this)]);
+                return $this;
+            }
+
+        DB::table('charts')->insert([ 'user_id' => Auth::id(),
+                                        'name'  => $name,
+                                        'chart' => serialize($this)]);
+        return $this;
+    }
+
+
+    public function saveToSession()
+    {
+        if (! $name = $this->getParam('name'))
+        {
+            error_log('Chart::saveToSession() called but we have no name.');
+            return this;
+        }
+        session([$name => $chart]);
+        return $this;
+    }
+
+
     public function handleSettingsFormRequest(Request $request)
     {
         return view('ChartSettings', [
                         'indicators' => $this->getIndicatorsVisibleSorted(),
                         'available' => $this->getIndicatorsAvailable(),
-                        'id' => $this->getParam('id')]);
+                        'name' => $this->getParam('name')]);
     }
 
 
@@ -61,7 +133,7 @@ abstract class Chart extends Skeleton {
     {
         $indicator = $this->getIndicator($request->signature);
         return view('Indicators/'.$indicator->getShortClass(), [
-                                        'id' => $this->getParam('id'),
+                                        'name' => $this->getParam('name'),
                                         'indicator' => $indicator,
                                         'chart'     => $this]);
     }
@@ -108,7 +180,8 @@ abstract class Chart extends Skeleton {
                 {
                     $indicator->setParam('indicator.'.$param, $jso->$param);
                     if ($param === 'price')
-                    {   error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
+                    {
+                        error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
                         $indicator->setParam('depends', []);
                         $dependency = $this->getIndicator($jso->$param);
                         if (is_object($dependency))
@@ -160,7 +233,7 @@ abstract class Chart extends Skeleton {
     {
         $candles = $this->getCandles();
         $o = new \stdClass();
-        $o->id = $this->getParam('id');
+        $o->name = $this->getParam('name');
         //$o->start = $candles->getParam('start');
         //$o->end = $candles->getParam('end');
         //$o->limit = $candles->getParam('limit');
@@ -179,19 +252,19 @@ abstract class Chart extends Skeleton {
 
     public function toHTML(string $content = '')
     {
-        Page::addElement('stylesheets',
-                    '<link href="'.mix('/css/Chart.css').'" rel="stylesheet">', true);
+        Page::add('stylesheets',
+                    '<link href="'.mix('/css/Chart.css').'" rel="stylesheet">');
 
-        Page::addElement('scripts_top',
-                    '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>', true);
+        Page::add('scripts_top',
+                    '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>');
 
-        Page::addElement('scripts_bottom',
-                    '<script src="'.mix('/js/Chart.js').'"></script>', true);
+        Page::add('scripts_bottom',
+                    '<script src="'.mix('/js/Chart.js').'"></script>');
 
-        Page::addElement('scripts_top',
-                    '<script> window.'.$this->getParam('id').' = '.$this->toJSON().'; </script>');
+        Page::add('scripts_top',
+                    '<script> window.'.$this->getParam('name').' = '.$this->toJSON().'; </script>');
 
-        return view('Chart', ['id' => $this->getParam('id'), 'content' => $content]);
+        return view('Chart', ['name' => $this->getParam('name'), 'content' => $content]);
     }
 
 

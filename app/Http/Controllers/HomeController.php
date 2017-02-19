@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Page;
 use GTrader\Exchange;
@@ -31,11 +33,8 @@ class HomeController extends Controller
      */
     public function dashboard(Request $request)
     {
-        if (! $chart = session('mainchart'))
-        {
-            error_log('home: no mainchart in session, creating new');
-            $chart = Chart::make(null, ['id' => 'mainchart']);
-        }
+        $chart = Chart::load('mainchart');
+
         if (! $strategy = $chart->getStrategy())
         {
             error_log('home: no strategy in chart, creating new');
@@ -50,12 +49,13 @@ class HomeController extends Controller
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'strategy'          => $strategy->toHtml(),
-                        'stylesheets'       => Page::getElements('stylesheets'),
-                        'scripts_top'       => Page::getElements('scripts_top'),
-                        'scripts_bottom'    => Page::getElements('scripts_bottom'),
+                        'stylesheets'       => Page::get('stylesheets'),
+                        'scripts_top'       => Page::get('scripts_top'),
+                        'scripts_bottom'    => Page::get('scripts_bottom'),
                         'debug'             => $debug];
 
         session(['mainchart' => $chart]);
+        $chart->save();
 
         return view('dashboard')->with($viewData);
     }

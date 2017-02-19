@@ -21,7 +21,7 @@ class CreateExchangesSymbolsCandlesTables extends Migration
 
         Schema::create('symbols', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('exchange_id')->unsigned();
+            $table->integer('exchange_id')->unsigned()->index();
             $table->string('name')->index();
             $table->string('long_name');
         });
