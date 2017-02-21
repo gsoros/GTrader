@@ -40,6 +40,22 @@ class ChartController extends Controller
     }
 
 
+    public function strategySelector(Request $request)
+    {
+        if (! $chart = Chart::loadFromSession($request->name))
+        {
+            error_log('settingsForm: no chart in session');
+            return response('No such chart in session.', 403);
+        }
+        $chart_name = $request->name;
+        if ($strategy = $chart->getStrategy())
+            $selected_strategy = $strategy->getParam('id');
+        else $selected_strategy = null;
+        $selector = Strategy::getSelector($chart_name, $selected_strategy);
+        return response($selector, 200);
+    }
+
+
     public function settingsForm(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name))

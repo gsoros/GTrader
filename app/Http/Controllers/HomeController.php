@@ -48,7 +48,7 @@ class HomeController extends Controller
                     ' D: '.serialize($i->getParam('depends'))."\n";
 
         $viewData = [   'chart'             => $chart->toHtml(),
-                        'strategy'          => $strategy->toHtml(),
+                        'strategy'          => Strategy::getList(),
                         'stylesheets'       => Page::get('stylesheets'),
                         'scripts_top'       => Page::get('scripts_top'),
                         'scripts_bottom'    => Page::get('scripts_bottom'),

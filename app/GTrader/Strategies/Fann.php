@@ -2,6 +2,7 @@
 
 namespace GTrader\Strategies;
 
+use Illuminate\Http\Request;
 use GTrader\Strategy;
 use GTrader\Series;
 use GTrader\Indicator;
@@ -38,7 +39,19 @@ class Fann extends Strategy
 
     public function toHTML(string $content = null)
     {
-        return parent::toHTML(view('Strategies/Fann', ['strategy' => $this]));
+        return parent::toHTML(
+                view('Strategies/'.$this->getShortClass(),
+                        ['strategy' => $this]));
+    }
+
+
+    public function handleSaveRequest(Request $request)
+    {
+        foreach (['config_file'] as $param)
+            if (isset($request->$param))
+                $this->setParam($param, $request->$param);
+
+        return parent::handleSaveRequest($request);
     }
 
 

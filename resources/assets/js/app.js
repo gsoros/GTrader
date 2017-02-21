@@ -20,6 +20,9 @@ require('./bootstrap');
 //});
 
 
+/**
+ * Helps avoiding frequent events e.g. on resize
+ */
 window.waitForFinalEvent = (function() {
     var timers = {};
     return function (callback, ms, uniqueId, arg) {
@@ -32,3 +35,15 @@ window.waitForFinalEvent = (function() {
         timers[uniqueId] = setTimeout(callback, ms, arg);
     };
 })();
+
+
+/**
+ * Add CSRF header to all ajax requests
+ */
+/*
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+*/

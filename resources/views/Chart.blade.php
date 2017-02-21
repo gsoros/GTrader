@@ -3,7 +3,7 @@
 <div class="container-fluid">
     <div class="row">
         <!-- Exchange, Symbol, Resolution Selectors -->
-        <div class="col-xs-11 npl" id="esr_{{ $name }}">
+        <div class="col-sm-8 npl" id="esr_{{ $name }}">
             <form class="form-inline">
                 <div class="form-group">
                     <select class="btn-primary btn btn-mini" id="exchange_{{ $name }}"></select>
@@ -12,8 +12,12 @@
                 </div>
             </form>
         </div>
+        <!-- Strategy Selector -->
+        <div class="col-sm-3 text-right" id="strategy_{{ $name }}">
+            Strategy Selector
+        </div>
         <!-- Chart Settings Button -->
-        <div class="col-xs-1 text-right">
+        <div class="col-sm-1 text-right">
             <div class="btn-group">
 
                 <!-- Modal -->

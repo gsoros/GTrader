@@ -8,9 +8,11 @@ use GTrader\Strategy;
 class Dummy extends Strategy
 {
 
-    public function toHTML()
+    public function toHTML(string $content = null)
     {
-        return parent::toHTML('Dummy Strategy Settings');
+        return parent::toHTML(
+                view('Strategies/'.$this->getShortClass(),
+                        ['strategy' => $this]));
     }
 
 }

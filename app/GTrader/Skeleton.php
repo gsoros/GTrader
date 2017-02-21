@@ -100,6 +100,7 @@ class Skeleton
      *
      * @return mixed
      */
+    /*
     public static function __callStatic($method, $params)
     {
         $singleton = self::singleton();
@@ -109,4 +110,5 @@ class Skeleton
         $params = isset($params[0]) ? $params[0] : [];
         return $singleton->$method($params);
     }
+    */
 }
