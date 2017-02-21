@@ -12,13 +12,17 @@ trait HasIndicators
         if (!is_object($indicator))
             $indicator = Indicator::make($indicator, $params);
 
+        //error_log('addIndicator() '.$indicator->getSignature());
         if ($this->hasIndicator($indicator->getSignature()))
+        {
+            //error_log('addIndicator() we already have it, updating params');
+            $existing = $this->getIndicator($indicator->getSignature());
+            $existing->setParams($indicator->getParams());
             return $this;
+        }
 
         $indicator->setOwner($this);
-
         $this->_indicators[] = $indicator;
-
         $indicator->createDependencies();
 
         return $this;

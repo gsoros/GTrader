@@ -13,8 +13,12 @@
             </form>
         </div>
         <!-- Strategy Selector -->
-        <div class="col-sm-3 text-right" id="strategy_{{ $name }}">
-            Strategy Selector
+        <div class="col-sm-3 npl" id="esr_{{ $name }}">
+            <form class="form-inline">
+                <div class="col-sm-3 text-right" id="strategy_{{ $name }}">
+                    <select class="btn-primary btn btn-mini" id="strategy_select_{{ $name }}"></select>
+                </div>
+            </form>
         </div>
         <!-- Chart Settings Button -->
         <div class="col-sm-1 text-right">

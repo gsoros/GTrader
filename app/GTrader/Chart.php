@@ -115,7 +115,7 @@ abstract class Chart extends Skeleton {
             error_log('Chart::saveToSession() called but we have no name.');
             return this;
         }
-        session([$name => $chart]);
+        session([$name => $this]);
         return $this;
     }
 
@@ -270,13 +270,15 @@ abstract class Chart extends Skeleton {
 
     public function getStrategy()
     {
-        if (!is_object($this->_strategy))
-            $this->_strategy = Strategy::make();
+        //if (!is_object($this->_strategy))
+        //    $this->_strategy = Strategy::make();
         return $this->_strategy;
     }
 
     public function setStrategy(&$strategy)
     {
+        $candles = $this->getCandles();
+        $strategy->setCandles($candles);
         $this->_strategy = $strategy;
         return $this;
     }

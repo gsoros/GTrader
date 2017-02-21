@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use GTrader\Util;
 use GTrader\Series;
 use GTrader\Strategy;
@@ -34,25 +35,55 @@ class ChartController extends Controller
         }
 
         $json = $chart->handleJSONRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
 
         return response($json, 200);
     }
 
 
-    public function strategySelector(Request $request)
+    public function strategySelectorOptions(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name))
         {
-            error_log('settingsForm: no chart in session');
+            error_log('strategySelectorOptions: no chart in session');
             return response('No such chart in session.', 403);
         }
         $chart_name = $request->name;
         if ($strategy = $chart->getStrategy())
             $selected_strategy = $strategy->getParam('id');
         else $selected_strategy = null;
-        $selector = Strategy::getSelector($chart_name, $selected_strategy);
+        $selector = Strategy::getSelectorOptions($chart_name, $selected_strategy);
         return response($selector, 200);
+    }
+
+
+    public function strategySelect(Request $request)
+    {
+        if (! $chart = Chart::loadFromSession($request->name))
+        {
+            error_log('strategySelect: no chart in session');
+            return response('No such chart in session.', 403);
+        }
+        if (! ($strategy = Strategy::load($request->strategy)))
+        {
+            error_log('strategySelect: could not load strategy');
+            return response('Strategy not found.', 403);
+        }
+         if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('strategySelect: strategy owner mismatch');
+            return response('Strategy not found.', 403);
+        }
+        error_log('strategySelect() copying indicators');
+        if ($old_strategy = $chart->getStrategy())
+        {
+            foreach ($old_strategy->getIndicators() as $indicator)
+                $strategy->addIndicator($indicator);
+        }
+        $chart->setStrategy($strategy);
+        $chart->saveToSession();
+        $chart->save();
+        return response('Chart successfully updated.', 200);
     }
 
 
@@ -64,7 +95,7 @@ class ChartController extends Controller
             return response('No such chart in session.', 403);
         }
         $form = $chart->handleSettingsFormRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
 
         return response($form, 200);
     }
@@ -83,7 +114,7 @@ class ChartController extends Controller
             return response('No such indicator in that chart.', 403);
         }
         $form = $chart->handleIndicatorFormRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
 
         return response($form, 200);
     }
@@ -97,7 +128,7 @@ class ChartController extends Controller
             return response('No such chart in session.', 403);
         }
         $form = $chart->handleIndicatorNewRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
         $chart->save();
 
         return response($form, 200);
@@ -117,7 +148,7 @@ class ChartController extends Controller
             return response('No such indicator in that chart.', 403);
         }
         $form = $chart->handleIndicatorDeleteRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
         $chart->save();
 
         return response($form, 200);
@@ -132,7 +163,7 @@ class ChartController extends Controller
             return response('No such chart in session.', 403);
         }
         $form = $chart->handleIndicatorSaveRequest($request);
-        session([$request->name => $chart]);
+        $chart->saveToSession();
         $chart->save();
 
         return response($form, 200);

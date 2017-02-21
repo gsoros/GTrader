@@ -91,6 +91,22 @@ $(window).ready(function() {
         });
 
         /**
+        * Register change handler Strategy dropdown
+        */
+        $('#strategy_select_' + name).on('change', function() {
+            console.log('#strategy_select_' + name + '.change()');
+            // Send strategy change request to backend
+            $.ajax({
+                url: '/strategy.select?name=' + name
+                        + '&strategy=' + $('#strategy_select_' + name).val(),
+                success: function(response) {
+                    // Send refresh command to the chart
+                    chartObj.refresh();
+                }
+            });
+        });
+
+        /**
         * Register click handler for settings button
         */
         $('#settings_' + name).on('click', function() {
@@ -108,13 +124,12 @@ $(window).ready(function() {
         * Requests the strategy dropdown and inserts it into the DOM
         */
         chartObj.updateStrategySelector = function() {
-            $.ajax({url: '/strategy.selector?name=' + name,
+            $.ajax({url: '/strategy.selectorOptions?name=' + name,
                 success: function(response) {
-                    $('#strategy_' + name).html(response);
+                    $('#strategy_select_' + name).html(response);
                 }
             });
         };
-        chartObj.updateStrategySelector();
 
         /**
         * Requests the edit form for an indicator and inserts it into the DOM
@@ -169,7 +184,18 @@ $(window).ready(function() {
             });
         };
     });
+
+    /**
+    * Updates all strategy selectors
+    */
+    window.updateAllStrategySelectors = function() {
+        $('.GTraderChart').each(function() {
+            window[$( this ).attr('id')].updateStrategySelector();
+        });
+    };
+    window.updateAllStrategySelectors();
 });
+
 
 $(window).resize(function() {
     waitForFinalEvent(function() {

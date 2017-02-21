@@ -98,7 +98,9 @@ class Strategy extends Skeleton
     }
 
 
-    public static function getSelector(string $chart_name = null, int $selected_strategy = null)
+    public static function getSelectorOptions(
+                                string $chart_name = null,
+                                int $selected_strategy = null)
     {
         $strategies = DB::table('strategies')
                         ->select('id', 'name')
@@ -106,7 +108,7 @@ class Strategy extends Skeleton
                         ->orderBy('name')
                         ->get();
 
-        return view('StrategySelector', [
+        return view('StrategySelectorOptions', [
                         'chart_name' => $chart_name,
                         'selected_strategy' => $selected_strategy,
                         'strategies' => $strategies]);
