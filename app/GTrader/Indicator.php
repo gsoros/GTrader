@@ -54,7 +54,9 @@ abstract class Indicator extends Skeleton
 
     public function getCandles()
     {
-        return $this->getOwner()->getCandles();
+        if ($owner = $this->getOwner())
+            return $owner->getCandles();
+        return null;
     }
 
 

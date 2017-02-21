@@ -8,11 +8,13 @@ trait HasCandles
 {
     protected $_candles;
 
+
     public function setCandles(Series &$candles)
     {
         $this->_candles = $candles;
         return $this;
     }
+
 
     public function getCandles()
     {
@@ -20,6 +22,7 @@ trait HasCandles
             $this->_candles = new Series();
         return $this->_candles;
     }
+
 
     public function unsetCandles()
     {

@@ -9,6 +9,7 @@ trait HasParams
     protected $_params = [];
 
 
+
     public function getParam(string $key, $default = null)
     {
         return Arr::get($this->_params, $key, $default);

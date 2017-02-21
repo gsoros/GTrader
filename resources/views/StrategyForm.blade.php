@@ -28,8 +28,7 @@
                         title="Discard Changes">
                     <span class="glyphicon glyphicon-remove"></span> Discard Changes
                 </button>
-                <button onClick="window.strategyRequest('save', $('#strategyForm').serialize(), 'POST');
-                                    window.updateAllStrategySelectors()"
+                <button onClick="window.strategyRequest('save', $('#strategyForm').serialize(), 'POST')"
                         type="button"
                         id="save_strategy"
                         class="btn btn-primary btn-sm trans"

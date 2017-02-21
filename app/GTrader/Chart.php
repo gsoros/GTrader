@@ -11,7 +11,7 @@ use GTrader\Indicator;
 use GTrader\Page;
 
 abstract class Chart extends Skeleton {
-    use HasCandles, HasIndicators;
+    use HasCandles, HasIndicators, HasStrategy;
 
     protected $_strategy;
 
@@ -28,9 +28,10 @@ abstract class Chart extends Skeleton {
             unset($params['strategy']);
         }
 
-        $candles = $this->getCandles();
-        if ($candles !== $this->getStrategy()->getCandles())
-            $this->getStrategy()->setCandles($candles);
+        if ($candles = $this->getCandles())
+            if ($strategy = $this->getStrategy())
+                if ($candles !== $strategy->getCandles())
+                    $strategy->setCandles($candles);
 
         $name = isset($params['name']) ?
                     $params['name'] :
@@ -45,8 +46,21 @@ abstract class Chart extends Skeleton {
     {
         return ['_params', '_candles', '_strategy'];
     }
+
+
     public function __wakeup()
     {
+        // we need a strategy fresh from the db on each wakeup
+        if (!($old_strategy = $this->getStrategy()))
+            return;
+        if (!($strategy_id = $old_strategy->getParam('id')))
+            return;
+        if (!($new_strategy = Strategy::load($strategy_id)))
+            return;
+        if ($indicators = $old_strategy->getIndicators())
+            foreach ($indicators as $indicator)
+                $new_strategy->addIndicator($indicator);
+        $this->setStrategy($new_strategy);
     }
 
 
@@ -268,20 +282,6 @@ abstract class Chart extends Skeleton {
     }
 
 
-    public function getStrategy()
-    {
-        //if (!is_object($this->_strategy))
-        //    $this->_strategy = Strategy::make();
-        return $this->_strategy;
-    }
-
-    public function setStrategy(&$strategy)
-    {
-        $candles = $this->getCandles();
-        $strategy->setCandles($candles);
-        $this->_strategy = $strategy;
-        return $this;
-    }
 
 
     public function addIndicator($indicator, array $params = [])
@@ -309,8 +309,15 @@ abstract class Chart extends Skeleton {
 
     public function getIndicators()
     {
-        return array_merge($this->getCandles()->getIndicators(),
-                            $this->getStrategy()->getIndicators());
+        $candles_ind = [];
+        if ($candles = $this->getCandles())
+            $candles_ind = $candles->getIndicators();
+
+        $strat_ind = [];
+        if ($strategy = $this->getStrategy())
+            $strat_ind = $strategy->getIndicators();
+
+        return array_merge($candles_ind, $strat_ind);
     }
 
 

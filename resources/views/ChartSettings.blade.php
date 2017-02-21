@@ -24,7 +24,7 @@
         </div>
     </div>
 @endforeach
-<div class="editable trans">
+<div class="editable trans text-right">
     New indicator:
     <select class="btn-primary btn btn-mini"
             id="new_indicator_{{ $name }}"

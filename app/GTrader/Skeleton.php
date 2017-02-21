@@ -42,6 +42,7 @@ class Skeleton
     }
 
 
+
     protected static function getClassConf(string $class, $key = null)
     {
         //dump('getClassConf('.$class.', '.$key.')');

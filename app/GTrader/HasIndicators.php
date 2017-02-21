@@ -12,6 +12,9 @@ trait HasIndicators
         if (!is_object($indicator))
             $indicator = Indicator::make($indicator, $params);
 
+        if (!$indicator->canBeOwnedBy($this))
+            return $this;
+
         //error_log('addIndicator() '.$indicator->getSignature());
         if ($this->hasIndicator($indicator->getSignature()))
         {

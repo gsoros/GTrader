@@ -25,7 +25,9 @@ class Ema extends Indicator
 
         $signature = $this->getSignature();
 
-        $candles = $this->getCandles();
+        if (!($candles = $this->getCandles()))
+            return $this;
+
         $candles->reset();
         while ($candle = $candles->next())
         {
