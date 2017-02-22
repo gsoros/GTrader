@@ -32,7 +32,7 @@ class StrategyController extends Controller
     public function strategyNew(Request $request)
     {
         $user_id = Auth::id();
-        $name = 'My New '.$request->strategyClass.' Strategy';
+        $name = $request->strategyClass.' Strategy';
         $i = 2;
         while (true)
         {
@@ -43,7 +43,7 @@ class StrategyController extends Controller
                         ->first();
             if (!is_object($query))
                 break;
-            $name = 'My New '.$request->strategyClass.' Strategy #'.$i;
+            $name = $request->strategyClass.' Strategy #'.$i;
             $i++;
         }
         $strategy = Strategy::make($request->strategyClass,

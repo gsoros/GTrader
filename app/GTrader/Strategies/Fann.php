@@ -7,8 +7,10 @@ use GTrader\Strategy;
 use GTrader\Series;
 use GTrader\Indicator;
 use GTrader\Util;
+use GTrader\Chart;
 
-if (!extension_loaded('fann')) throw new \Exception('FANN extension not loaded');
+if (!extension_loaded('fann'))
+    throw new \Exception('FANN extension not loaded');
 
 class Fann extends Strategy
 {
@@ -18,36 +20,37 @@ class Fann extends Strategy
     protected $_pack_iterator = 0;
     protected $_callback_type = false;
     protected $_callback_iterator = 0;
-    protected $_fann_loaded_from_file = false;
+    protected $_fannLoadedFromFile = false;
     protected $_bias = null;
 
 
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $num_samples = $this->getParam('num_samples');
-        $this->setParam('num_input', $num_samples * 4 - 3);
         $this->setParam('num_output', 1);
     }
 
 
     public function __wakeup()
     {
-        $this->create_fann();
+        $this->createFann();
     }
 
 
     public function toHTML(string $content = null)
     {
+        //$training_chart = Chart::make(null, ['name' => 'trainingChart']);
+        $training_chart = 'Training Chart';
         return parent::toHTML(
-                view('Strategies/'.$this->getShortClass(),
-                        ['strategy' => $this]));
+                view('Strategies/'.$this->getShortClass(), [
+                            'strategy' => $this,
+                            'training_chart' => $training_chart]));
     }
 
 
     public function handleSaveRequest(Request $request)
     {
-        foreach (['config_file'] as $param)
+        foreach (['config_file', 'num_samples'] as $param)
             if (isset($request->$param))
                 $this->setParam($param, $request->$param);
 
@@ -87,13 +90,12 @@ class Fann extends Strategy
     }
 
 
-
-    public function create_fann($config_file = false)
+    public function createFann($config_file = false)
     {
 
-        //error_log('create_fann('.$config_file.')');
+        //error_log('createFann('.$config_file.')');
         if (is_resource($this->_fann))
-            throw new \Exception('create_fann called but _fann is already a resource');
+            throw new \Exception('createFann called but _fann is already a resource');
         if ($config_file)
             $this->setParam('config_file', $config_file);
         if ($config_file = $this->getParam('config_file'))
@@ -104,7 +106,7 @@ class Fann extends Strategy
             {
                 error_log('creating fann from '.$config_path);
                 $this->_fann = fann_create_from_file($config_path);
-                $this->_fann_loaded_from_file = $config_file;
+                $this->_fannLoadedFromFile = $config_file;
             }
         }
         if (!$this->_fann)
@@ -113,7 +115,7 @@ class Fann extends Strategy
             {
                 $params = array_merge(
                             [$this->getParam('num_layers')],
-                            [$this->getParam('num_input')],
+                            [$this->getNumInput()],
                             $this->getParam('hidden_array'),
                             [$this->getParam('num_output')]);
                 //error_log('calling fann_create_standard('.join(', ', $params).')');
@@ -123,23 +125,23 @@ class Fann extends Strategy
             else if ($this->getParam('fann_type') == 'cascade')
                 $this->_fann = fann_create_shortcut(
                                 $this->getParam('num_layers'),
-                                $this->getParam('num_input'),
+                                $this->getNumInput(),
                                 $this->getParam('num_output'));
             else throw new \Exception('Unknown fann type');
             //fann_randomize_weights($this->_fann, -0.2, 0.2);
         }
-        $this->init_fann();
+        $this->initFann();
         return true;
     }
 
 
-    public function fann_loaded_from_file()
+    public function fannLoadedFromFile()
     {
-        return $this->_fann_loaded_from_file;
+        return $this->_fannLoadedFromFile;
     }
 
 
-    public function init_fann()
+    public function initFann()
     {
         if (!is_resource($this->_fann)) throw new \Exception('Cannot init fann, not a resource');
         fann_set_activation_function_hidden($this->_fann, FANN_SIGMOID_SYMMETRIC);
@@ -162,32 +164,32 @@ class Fann extends Strategy
     }
 
 
-    public function get_fann()
+    public function getFann()
     {
-        if (!is_resource($this->_fann)) $this->create_fann();
+        if (!is_resource($this->_fann)) $this->createFann();
         return $this->_fann;
     }
 
 
-    public function copy_fann()
+    public function copyFann()
     {
-        return fann_copy($this->get_fann());
+        return fann_copy($this->getFann());
     }
 
 
-    public function set_fann($fann)
+    public function setFann($fann)
     {
         if (!is_resource($fann)) throw new \Exception('supplied fann is not a resource');
-        //error_log('set_fann('.get_resource_type($fann).')');
+        //error_log('setFann('.get_resource_type($fann).')');
         //var_dump(debug_backtrace());
-        //if (is_resource($this->_fann)) $this->destroy_fann(); // do not destroy, it may have a reference
+        //if (is_resource($this->_fann)) $this->destroyFann(); // do not destroy, it may have a reference
         $this->_fann = $fann;
-        $this->init_fann();
+        $this->initFann();
         return true;
     }
 
 
-    public function save_fann($config_file = false, $update_config_file = true)
+    public function saveFann($config_file = false, $update_config_file = true)
     {
 
         if ($config_file)
@@ -198,13 +200,13 @@ class Fann extends Strategy
         else $config_file = $this->getParam('config_file');
         if (!$config_file)
         {
-            throw new \Exception('save_fann: no config file');
+            throw new \Exception('saveFann: no config file');
             return false;
         }
         $fn = $this->getParam('path').DIRECTORY_SEPARATOR.$config_file;
-        if (!fann_save($this->get_fann(), $fn))
+        if (!fann_save($this->getFann(), $fn))
         {
-            error_log('save_fann to '.$fn.' failed');
+            error_log('saveFann to '.$fn.' failed');
             return false;
         }
         if (!chmod($fn, 0666))
@@ -216,7 +218,7 @@ class Fann extends Strategy
     }
 
 
-    public function destroy_fann()
+    public function destroyFann()
     {
         if (is_resource($this->_fann))
             return fann_destroy($this->_fann);
@@ -224,35 +226,35 @@ class Fann extends Strategy
     }
 
 
-    public function run_fann($input, $ignore_bias = false)
+    public function runFann($input, $ignore_bias = false)
     {
-        $output = fann_run($this->get_fann(), $input);
-        if (!$ignore_bias) $output[0] -= $this->get_bias();
+        $output = fann_run($this->getFann(), $input);
+        if (!$ignore_bias) $output[0] -= $this->getBias();
         return $output[0];
     }
 
 
-    public function get_bias()
+    public function getBias()
     {
         if (!$this->getParam('bias_compensation'))
             return 0; // bias disabled
         if (!is_null($this->_bias))
             return $this->_bias * $this->getParam('bias_compensation');
-        $this->_bias = fann_run($this->get_fann(), array_fill(0, $this->getParam('num_input'), 0))[0];
+        $this->_bias = fann_run($this->getFann(), array_fill(0, $this->getNumInput(), 0))[0];
         //error_log('bias: '.$this->_bias);
         return $this->_bias * $this->getParam('bias_compensation');
     }
 
 
-    public function reset_pack()
+    public function resetPack()
     {
         $this->_pack_iterator = 0;
-        $this->next_pack(null, 'reset');
+        $this->nextPack(null, 'reset');
         return true;
     }
 
 
-    public function next_pack($size = null, $reset = false)
+    public function nextPack($size = null, $reset = false)
     {
         static $___pack = array();
 
@@ -284,16 +286,16 @@ class Fann extends Strategy
     }
 
 
-    public function candles_to_data($name, $force = false)
+    public function candlesToData($name, $force = false)
     {
 
         if (isset($this->_data[$name]) && !$force) return true;
         $data = array();
         $images = 0;
 
-        $this->reset_pack();
-        while ($pack = $this->next_pack())
-        { //echo " DEBUG stop candles_to_data\n"; return false;
+        $this->resetPack();
+        while ($pack = $this->nextPack())
+        { //echo " DEBUG stop candlesToData\n"; return false;
             $input = array();
             for ($i=0; $i<$this->getParam('num_samples'); $i++)
             {
@@ -365,17 +367,17 @@ class Fann extends Strategy
 
     public function test()
     {
-        $this->candles_to_data('test');
+        $this->candlesToData('test');
         $this->_callback_type = 'test';
         $this->_callback_iterator = 0;
         $test_data = fann_create_train_from_callback(
                         count($this->_data['test']),
-                        $this->getParam('num_input'),
+                        $this->getNumInput(),
                         $this->getParam('num_output'),
-                        array($this, 'create_callback'));
+                        array($this, 'createCallback'));
 
-        $mse = fann_test_data($this->get_fann(), $test_data);
-        //$bit_fail = fann_get_bit_fail($this->get_fann());
+        $mse = fann_test_data($this->getFann(), $test_data);
+        //$bit_fail = fann_get_bit_fail($this->getFann());
         //echo '<br />MSE: '.$mse.' Bit fail: '.$bit_fail.'<br />';
         return $mse;
     }
@@ -385,14 +387,14 @@ class Fann extends Strategy
     {
 
         $t = time();
-        $this->candles_to_data('train'); //echo " DEBUG stop that train\n"; return false;
+        $this->candlesToData('train'); //echo " DEBUG stop that train\n"; return false;
         $this->_callback_type = 'train';
         $this->_callback_iterator = 0;
         $training_data = fann_create_train_from_callback(
                             count($this->_data['train']),
-                            $this->getParam('num_input'),
+                            $this->getNumInput(),
                             $this->getParam('num_output'),
-                            array($this, 'create_callback'));
+                            array($this, 'createCallback'));
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
 
         $desired_error = 0.0000001;
@@ -408,13 +410,13 @@ class Fann extends Strategy
 
         //echo 'Training... '; flush();
         if ($this->getParam('fann_type') === 'fixed')
-            $res = fann_train_on_data($this->get_fann(),
+            $res = fann_train_on_data($this->getFann(),
                                         $training_data,
                                         $max_epochs,
                                         $epochs_between_reports,
                                         $desired_error);
         else if ($this->getParam('fann_type') === 'cascade')
-            $res = fann_cascadetrain_on_data($this->get_fann(),
+            $res = fann_cascadetrain_on_data($this->getFann(),
                                         $training_data,
                                         $max_neurons,
                                         $neurons_between_reports,
@@ -425,15 +427,15 @@ class Fann extends Strategy
 
         if ($res)
         {
-            //echo 'done in '.(time()-$t).'s. Connections: '.count(fann_get_connection_array($this->get_fann())).
-            //      ', MSE: '.fann_get_MSE($this->get_fann()).'<br />';
+            //echo 'done in '.(time()-$t).'s. Connections: '.count(fann_get_connection_array($this->getFann())).
+            //      ', MSE: '.fann_get_MSE($this->getFann()).'<br />';
             return true;
         }
         return false;
     }
 
 
-    public function create_callback($num_data, $num_input, $num_output)
+    public function createCallback($num_data, $num_input, $num_output)
     {
 
         if (!$this->_callback_type) throw new \Exception('callback type not set');
@@ -450,18 +452,20 @@ class Fann extends Strategy
 
 
     /** Mean Squared Error Reciprocal */
-    public function get_MSER()
+    public function getMSER()
     {
-        $mse = fann_get_MSE($this->get_fann());
+        $mse = fann_get_MSE($this->getFann());
         //error_log('MSER: '.$mse);
         if ($mse) return 1 / $mse;
         return 0;
     }
 
+
     public function getNumSamples()
     {
         return $this->getParam('num_samples');
     }
+
 
     public function setNumSamples(int $num)
     {
@@ -469,14 +473,11 @@ class Fann extends Strategy
         return $this;
     }
 
+
     public function getNumInput()
     {
-        return $this->getParam('num_input');
+        // last sample has only open
+        return $this->getParam('num_samples') * 4 - 3;
     }
 
-    public function setNumInput(int $num)
-    {
-        $this->setParam('num_input', $num);
-        return $this;
-    }
 }

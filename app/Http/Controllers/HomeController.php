@@ -35,24 +35,13 @@ class HomeController extends Controller
     {
         $chart = Chart::load('mainchart');
 
-        if (! $strategy = $chart->getStrategy())
-        {
-            error_log('home: no strategy in chart, creating new');
-            $strategy = Strategy::make();
-        }
-
-        $debug = '';
-        foreach ($chart->getIndicators() as $i)
-            $debug .= 'I: '.$i->getSignature().
-                    ' V: '.$i->getParam('display.visible').
-                    ' D: '.serialize($i->getParam('depends'))."\n";
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'strategy'          => Strategy::getList(),
                         'stylesheets'       => Page::get('stylesheets'),
                         'scripts_top'       => Page::get('scripts_top'),
                         'scripts_bottom'    => Page::get('scripts_bottom'),
-                        'debug'             => $debug];
+                        'debug'             => null];
 
         session(['mainchart' => $chart]);
         $chart->save();

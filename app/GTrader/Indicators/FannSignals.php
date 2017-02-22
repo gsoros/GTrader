@@ -44,12 +44,13 @@ class FannSignals extends Indicator
             throw new \Exception('Threshold is zero');
         $min_distance = $owner->getParam('min_trade_distance');
         $resolution = $candles->getParam('resolution');
+        $num_input = $owner->getNumInput();
 
         $candles->reset();
         while ($candle = $candles->next())
         {
             $candles_seen++;
-            if ($candles_seen < $owner->getNumInput()) continue; // skip trading while inside the first sample
+            if ($candles_seen < $num_input) continue; // skip trading while inside the first sample
             if (isset($candle->$indicator_sig))
             {
                 // skip trade if last trade was recent

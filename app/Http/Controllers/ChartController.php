@@ -36,7 +36,7 @@ class ChartController extends Controller
 
         $json = $chart->handleJSONRequest($request);
         $chart->saveToSession();
-
+        $chart->save();
         return response($json, 200);
     }
 
@@ -74,12 +74,10 @@ class ChartController extends Controller
             error_log('strategySelect: strategy owner mismatch');
             return response('Strategy not found.', 403);
         }
-        error_log('strategySelect() copying indicators');
+        //error_log('strategySelect() copying indicators');
         if ($old_strategy = $chart->getStrategy())
-        {
             foreach ($old_strategy->getIndicators() as $indicator)
                 $strategy->addIndicator($indicator);
-        }
         $chart->setStrategy($strategy);
         $chart->saveToSession();
         $chart->save();

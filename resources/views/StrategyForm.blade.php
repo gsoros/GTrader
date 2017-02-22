@@ -7,7 +7,7 @@
         <div class="col-sm-3">
             <div class="editable">
                 <label for="setting1">Name</label>
-                <input class="btn-primary btn btn-mini"
+                <input class="btn-primary"
                         type="text"
                         size="20"
                         id="name"

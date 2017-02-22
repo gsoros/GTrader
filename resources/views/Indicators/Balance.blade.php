@@ -22,7 +22,7 @@
     </div>
     <div class="col-sm-5">
         <label for="price">Initial Capital</label>
-        <input class="btn-primary btn btn-mini"
+        <input class="btn-primary btn-mini"
                 type="text"
                 size="5"
                 id="initial_capital_{{ $sig }}"

@@ -3,7 +3,6 @@
     - Select chart type: candlesticks, OHLC, Heikin-Ashi, line...
 
 * Strategy settings UI
-    - Add/remove strategies
     - Edit strategy
     - Train fann strategy
 

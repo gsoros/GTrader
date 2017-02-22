@@ -103,6 +103,9 @@ abstract class Chart extends Skeleton {
             error_log('Chart::save() called but we have no name.');
             return this;
         }
+        // don't save dimensions
+        $this->setParam('width', 0);
+        $this->setParam('height', 0);
         $basequery = DB::table('charts')
                         ->where('user_id', Auth::id())
                         ->where('name', $name);
@@ -195,7 +198,7 @@ abstract class Chart extends Skeleton {
                     $indicator->setParam('indicator.'.$param, $jso->$param);
                     if ($param === 'price')
                     {
-                        error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
+                        //error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
                         $indicator->setParam('depends', []);
                         $dependency = $this->getIndicator($jso->$param);
                         if (is_object($dependency))
@@ -228,6 +231,8 @@ abstract class Chart extends Skeleton {
     {
         $indicator = Indicator::make();
         $config = $indicator->getParam('available');
+        $candles = $this->getCandles();
+        $strategy = $this->getStrategy();
         $available = [];
         foreach ($config as $class => $params)
         {
@@ -235,14 +240,28 @@ abstract class Chart extends Skeleton {
             if (!$exists || ($exists && true === $params['allow_multiple']))
             {
                 $indicator = Indicator::make($class);
-                $available[$class] = $indicator->getParam('display.name');
+                if (is_object($strategy))
+                    if ($indicator->canBeOwnedBy($strategy))
+                    {
+                        $available[$class] = $indicator->getParam('display.name');
+                        continue;
+                    }
+                if (is_object($candles))
+                    if ($indicator->canBeOwnedBy($candles))
+                        $available[$class] = $indicator->getParam('display.name');
             }
         }
-        error_log(serialize($available));
+        //error_log(serialize($available));
         return $available;
     }
 
 
+    /**
+     * Get JSON representation of the chart.
+     *
+     * @param $options options for json_encode()
+     * @return string JSON string
+     */
     public function toJSON($options = 0)
     {
         $candles = $this->getCandles();
@@ -264,6 +283,12 @@ abstract class Chart extends Skeleton {
     }
 
 
+    /**
+     * Get HTML representation of the chart.
+     *
+     * @param $content
+     * @return string
+     */
     public function toHTML(string $content = '')
     {
         Page::add('stylesheets',

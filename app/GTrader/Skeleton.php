@@ -67,7 +67,7 @@ class Skeleton
             $class = self::getClassConf($called, 'default_child');
             if (!$class)
             {
-                error_log('No default child class for '.get_called_class());
+                //error_log('No default child class for '.get_called_class());
                 $class = $called;
             }
 
@@ -95,21 +95,4 @@ class Skeleton
         return $singleton;
     }
 
-
-    /**
-     * Provide support for magic static calls.
-     *
-     * @return mixed
-     */
-    /*
-    public static function __callStatic($method, $params)
-    {
-        $singleton = self::singleton();
-        error_log('callStatic: '.get_class($singleton).'->'.$method.'('.serialize($params).')');
-        if (!is_callable([$singleton, $method]))
-            throw new \Exception(get_class($singleton).'->'.$method.'() is not callable.');
-        $params = isset($params[0]) ? $params[0] : [];
-        return $singleton->$method($params);
-    }
-    */
 }

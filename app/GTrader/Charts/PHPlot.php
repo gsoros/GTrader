@@ -36,7 +36,7 @@ class PHPlot extends Chart {
     {
         $width = $this->getParam('width');
         $height = $this->getParam('height');
-        error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
+        //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
         if ($width > 0 && $height > 0)
         {
             $this->_plot = new PHPlot_truecolor($width, $height);
@@ -47,7 +47,7 @@ class PHPlot extends Chart {
             $this->_image_map .= '</map>';
             foreach ($this->getIndicatorsVisibleSorted() as $ind)
             {
-                error_log('Plotting: '.$ind->getSignature());
+                //error_log('Plotting: '.$ind->getSignature());
                 $ind->checkAndRun();
                 if ($ind->getParam('display.name') === 'Signals')
                     $this->plotSignals($ind);
@@ -96,14 +96,14 @@ class PHPlot extends Chart {
 
     private function handleCommand(string $command, array $args = [])
     {
-        error_log('Command: '.$command.' args: '.serialize($args));
+        //error_log('Command: '.$command.' args: '.serialize($args));
         $candles = $this->getCandles();
         $start = $candles->getParam('start');
         $end = $candles->getParam('end');
         $limit = $end - $start;
         $resolution = $candles->getParam('resolution');
         $live = $end > $candles->getLastInSeries() - $resolution;
-        error_log('handleCommand live: '.$live.' start: '.$start.' end: '.$end);
+        //error_log('handleCommand live: '.$live.' start: '.$start.' end: '.$end);
         switch ($command)
         {
             case 'ESR':;

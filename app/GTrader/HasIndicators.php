@@ -49,7 +49,7 @@ trait HasIndicators
 
     public function hasIndicatorClass(string $class, array $filters = [])
     {
-        error_log('hasIndicatorClass('.$class.', '.serialize($filters).')');
+        //error_log('hasIndicatorClass('.$class.', '.serialize($filters).')');
         foreach ($this->getIndicators() as $indicator)
             if ($indicator->getShortClass() === $class)
                 if ($num_filters = count($filters))
