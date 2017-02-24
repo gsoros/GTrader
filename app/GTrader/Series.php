@@ -17,25 +17,18 @@ class Series extends Collection {
 
     function __construct(array $params = [])
     {
-        $exchange = Exchange::make();
-        if (isset($params['exchange']))
-            $this->setParam('exchange', $params['exchange']);
-        if (!$this->getParam('exchange'))
-            $this->setParam('exchange', $exchange->getDefaultExchange());
 
-        if (isset($params['symbol']))
-            $this->setParam('symbol', $params['symbol']);
-        if (!$this->getParam('symbol'))
-            $this->setParam('symbol', $exchange->getDefaultSymbol());
+        foreach (['exchange', 'symbol', 'resolution'] as $param)
+        {
+            if (isset($params[$param]))
+                $this->setParam($param, $params[$param]);
+            if (!$this->getParam($param))
+                $this->setParam($param, Exchange::getDefault($param));
+        }
 
-        if (isset($params['resolution']))
-            $this->setParam('resolution', $params['resolution']);
-        if (!$this->getParam('resolution'))
-            $this->setParam('resolution', $exchange->getDefaultResolution());
-
-        $this->setParam('limit', isset($params['limit']) ? $params['limit'] : 200);
-        $this->setParam('start', isset($params['start']) ? $params['start'] : 0);
-        $this->setParam('end', isset($params['end']) ? intval($params['end']) : time());
+        $this->setParam('limit', isset($params['limit']) ? intval($params['limit']) : 200);
+        $this->setParam('start', isset($params['start']) ? intval($params['start']) : 0);
+        $this->setParam('end', isset($params['end']) ? intval($params['end']) : 0);
         $this->setParam('resolution', intval($this->getParam('resolution')));
         parent::__construct();
     }
@@ -91,6 +84,12 @@ class Series extends Collection {
         return $ret;
     }
 
+
+    //public function last()
+    //{
+        //$this->_load();
+        //return $this->items[$this->size()-1];
+    //}
 
     public function set($candle = null)
     {
@@ -149,7 +148,7 @@ class Series extends Collection {
 
         $start = $this->getParam('start');
         if ($start < 0) $start = 0;
-        $end = $this->getParam('end') ? $this->getParam('end') : time();
+        $end = $this->getParam('end');
         $limit = $this->getParam('limit');
         $no_limit = $limit < 1 ? true : false;
 
@@ -164,12 +163,16 @@ class Series extends Collection {
                                         ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
                                 })
                         ->where('symbols.name', $this->getParam('symbol'))
-                        ->where('time', '>=', $start)
-                        ->where('time', '<=', $end)
+                        ->when($start, function ($query) use ($start) {
+                                return $query->where('time', '>=', $start);
+                            })
+                        ->when($end, function ($query) use ($end) {
+                                return $query->where('time', '<=', $end);
+                            })
                         ->orderBy('time', 'desc')
                         ->when(!$no_limit, function ($query) use ($limit) {
-                            return $query->limit($limit);
-                        })
+                                return $query->limit($limit);
+                            })
                         ->get()
                         ->reverse()
                         ->values();
@@ -178,10 +181,9 @@ class Series extends Collection {
         if (!count($candles->items)) return $this;
 
         $this->items = $candles->items;
-        $this->reset();
-        $this->setParam('start', $this->next()->time);
-        $this->setParam('end', $this->last()->time);
-        return $this;
+        //$this->setParam('start', $this->next()->time);
+        //$this->setParam('end', $this->last()->time);
+        return $this->reset();
     }
 
 
@@ -469,7 +471,3 @@ class Series extends Collection {
         return ($out_max - $out_min) / ($in_max - $in_min) * ($in - $in_max) + $out_max;
     }
 }
-
-
-
-?>

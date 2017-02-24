@@ -11,33 +11,28 @@ abstract class Exchange extends Skeleton
     abstract public function getCandles(array $params = []);
 
 
-    public static function getDefaultExchange()
+    public static function getDefault(string $param)
     {
         $exchange = Exchange::singleton();
-        return $exchange->getParam('local_name');
+        if ('exchange' === $param)
+            return $exchange->getParam('local_name');
+        if ('symbol' === $param)
+        {
+            $symbols = $exchange->getParam('symbols');
+            $first_symbol = reset($symbols);
+            return $first_symbol['local_name'];
+        }
+        if ('resolution' === $param)
+        {
+            $symbols = $exchange->getParam('symbols');
+            $first_symbol = reset($symbols);
+            $resolutions = $first_symbol['resolutions'];
+            reset($resolutions);
+            return key($resolutions);
+        }
+        return null;
     }
 
-
-    public static function getDefaultSymbol()
-    {
-        $exchange = Exchange::singleton();
-        // reset() returns the first element
-        $symbols = $exchange->getParam('symbols');
-        $first_symbol = reset($symbols);
-        return $first_symbol['local_name'];
-    }
-
-
-    public static function getDefaultResolution()
-    {
-        $exchange = Exchange::singleton();
-        // reset() returns the first element
-        $symbols = $exchange->getParam('symbols');
-        $first_symbol = reset($symbols);
-        $resolutions = $first_symbol['resolutions'];
-        reset($resolutions);
-        return key($resolutions);
-    }
 
 
     public static function getESR()

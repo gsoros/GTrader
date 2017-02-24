@@ -8,7 +8,7 @@ $(window).ready(function() {
         // Register a refresh func
         window[name].refresh = function (command, args) {
             // Just display received command and args
-            $('#' + name).html('refresh(' + command + ', ' + JSON.stringify(args) +')');
+            $('#' + name).html('refresh("' + command + '", ' + JSON.stringify(args) +')');
         };
     });
 });

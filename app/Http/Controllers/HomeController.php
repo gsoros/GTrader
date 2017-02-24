@@ -33,18 +33,25 @@ class HomeController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $chart = Chart::load('mainchart');
+        $chart = Chart::load(Auth::id(), 'mainchart');
 
+        Page::add('scripts_top',
+                    '<script src="'.mix('/js/Mainchart.js').'"></script>');
+        $chart->addPageElements();
+
+        Page::add('stylesheets',
+                    '<link href="/css/nouislider.min.css" rel="stylesheet">');
+        Page::add('scripts_bottom',
+                    '<script src="/js/nouislider.min.js"></script>');
 
         $viewData = [   'chart'             => $chart->toHtml(),
-                        'strategy'          => Strategy::getList(),
+                        'strategy'          => Strategy::getListOfUser(Auth::id()),
                         'stylesheets'       => Page::get('stylesheets'),
                         'scripts_top'       => Page::get('scripts_top'),
                         'scripts_bottom'    => Page::get('scripts_bottom'),
-                        'debug'             => null];
+                        'debug'             => var_export($chart->getCandles()->getParams(), true)];
 
-        session(['mainchart' => $chart]);
-        $chart->save();
+        $chart->saveToSession()->save();
 
         return view('dashboard')->with($viewData);
     }

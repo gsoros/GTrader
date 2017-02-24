@@ -1,7 +1,23 @@
-<div id="{{ $name }}" class="GTraderChart"></div>
+<div id="{{ $name }}" class="GTraderChart"
+@if ($height)
+    style="height: {{ $height }}px"
+@endif
+></div>
+<script>
+    window.{{ $name }} = {!! $JSON !!};
+    if (window.Chart)
+        window.Chart.register('{{ $name }}');
+    else {
+        $(function() {
+            window.Chart.register('{{ $name }}');
+        });
+    }
+</script>
 {!! $content !!}
 <div class="container-fluid">
     <div class="row">
+
+        @if (!in_array('esr', $disabled))
         <!-- Exchange, Symbol, Resolution Selectors -->
         <div class="col-sm-8 npl" id="esr_{{ $name }}">
             <form class="form-inline">
@@ -18,8 +34,11 @@
                 </div>
             </form>
         </div>
+        @endif
+
+        @if (!in_array('strategy', $disabled))
         <!-- Strategy Selector -->
-        <div class="col-sm-3 npl">
+        <div class="col-sm-2 npl">
             <form class="form-inline">
                 <div class="col-sm-3 text-right" id="strategy_{{ $name }}">
                     <select title="Strategy Selector"
@@ -28,21 +47,32 @@
                 </div>
             </form>
         </div>
+        @endif
+
+        @if (!in_array('settings', $disabled))
         <!-- Chart Settings Button -->
-        <div class="col-sm-1 text-right">
-            <div class="btn-group">
-
-                <!-- Modal -->
-                <button type="button"
-                        class="btn btn-primary btn-sm"
-                        id="settings_{{ $name }}"
-                        data-toggle="modal"
-                        data-target=".bs-modal-lg">
-                    <span class="glyphicon glyphicon-wrench"></span>
-                </button>
-
-
-            </div>
+        <div class="col-sm-2 text-right">
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    id="settings_{{ $name }}"
+                    data-toggle="modal"
+                    data-target=".bs-modal-lg">
+                <span class="glyphicon glyphicon-wrench"></span>
+                Chart Settings
+            </button>
         </div>
+        @endif
+
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+

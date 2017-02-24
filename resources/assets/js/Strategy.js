@@ -3,6 +3,7 @@ $(window).ready(function() {
     * Requests an action and inserts the result into the Strategy Tab
     */
     window.strategyRequest = function(request, params, type) {
+        window.setLoading('strategyTab', true);
         if (!type) type = 'GET';
         var url = '/strategy.' + request;
         var data = null;
@@ -31,8 +32,10 @@ $(window).ready(function() {
             headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             success: function(response) {
                 $('#strategyTab').html(response);
-                window.updateAllStrategySelectors();
-                window.mainchart.refresh();
+                if (request !== 'list' && request !== 'form') {
+                    window.Chart.updateAllStrategySelectors();
+                    window.mainchart.refresh();
+                }
             }
         });
     };

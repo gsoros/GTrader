@@ -19,7 +19,10 @@ trait HasCandles
     public function getCandles()
     {
         if (!is_object($this->_candles))
-            $this->_candles = new Series();
+        {
+            $candles = new Series();
+            $this->setCandles($candles);
+        }
         return $this->_candles;
     }
 

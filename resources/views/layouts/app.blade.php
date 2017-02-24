@@ -11,8 +11,8 @@
     <title>{{ config('app.name', 'GTrader') }}</title>
 
     <!-- Styles -->
-    <link href="/css/app.css" rel="stylesheet">
     @yield('stylesheets')
+    <link href="/css/app.css" rel="stylesheet">
 
     <!-- Scripts -->
     <script>
@@ -21,6 +21,7 @@
         ]) !!};
     </script>
     @yield('scripts_top')
+    <script src="{{ mix('/js/app.js') }}"></script>
 </head>
 <body>
     <div id="app">
@@ -96,7 +97,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="{{ mix('/js/app.js') }}"></script>
     @yield('scripts_bottom')
 </body>
 </html>

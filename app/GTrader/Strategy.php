@@ -3,7 +3,6 @@
 namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Page;
 
@@ -81,14 +80,14 @@ class Strategy extends Skeleton
     }
 
 
-    public static function getList()
+    public static function getListOfUser(int $user_id)
     {
         Page::add('scripts_bottom',
                     '<script src="'.mix('/js/Strategy.js').'"></script>');
 
         $strategies = DB::table('strategies')
                         ->select('id', 'name')
-                        ->where('user_id', Auth::id())
+                        ->where('user_id', $user_id)
                         ->orderBy('name')
                         ->get();
 
@@ -99,12 +98,13 @@ class Strategy extends Skeleton
 
 
     public static function getSelectorOptions(
+                                int $user_id,
                                 string $chart_name = null,
                                 int $selected_strategy = null)
     {
         $strategies = DB::table('strategies')
                         ->select('id', 'name')
-                        ->where('user_id', Auth::id())
+                        ->where('user_id', $user_id)
                         ->orderBy('name')
                         ->get();
 
@@ -120,9 +120,7 @@ class Strategy extends Skeleton
         foreach (['name'] as $param)
             if (isset($request->$param))
                 $this->setParam($param, $request->$param);
-
-        $this->save();
-        return $this->getList();
+        return $this;
     }
 
 

@@ -22,6 +22,7 @@ Auth::routes();
 Route::get('/',                         'HomeController@dashboard');
 
 Route::get('/plot.json',                'ChartController@JSON');
+Route::get('/plot.image',               'ChartController@image');
 Route::get('/settings.form',            'ChartController@settingsForm');
 Route::get('/strategy.selectorOptions', 'ChartController@strategySelectorOptions');
 Route::get('/strategy.select',          'ChartController@strategySelect');

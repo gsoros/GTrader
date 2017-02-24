@@ -17,23 +17,19 @@ class PHPlot extends Chart {
 
     public function toHTML(string $content = '')
     {
-
-        Page::add('stylesheets',
-                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
-
-        $content = view('Charts/PHPlot', ['name' => $this->getParam('name')]);
+        $content = view('Charts/PHPlot', [
+                    'name' => $this->getParam('name'),
+                    'disabled' => $this->getParam('disabled', [])
+                    ]);
 
         $content = parent::toHTML($content);
-
-        Page::add('scripts_bottom',
-                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
 
         return $content;
     }
 
 
-    public function toJSON($options = 0)
-    {
+    public function getImage() {
+
         $width = $this->getParam('width');
         $height = $this->getParam('height');
         //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
@@ -42,7 +38,8 @@ class PHPlot extends Chart {
             $this->_plot = new PHPlot_truecolor($width, $height);
             $this->_plot->SetPrintImage(false);
             $this->_plot->SetFailureImage(false);
-            $this->_image_map = '<map name="map1">';
+            $map_name = 'map-'.$this->getParam('name');
+            $this->_image_map = '<map name="'.$map_name.'">';
             $this->plotCandles();
             $this->_image_map .= '</map>';
             foreach ($this->getIndicatorsVisibleSorted() as $ind)
@@ -54,117 +51,98 @@ class PHPlot extends Chart {
                 else
                     $this->plotIndicator($ind);
             }
-            $html = $this->_image_map.'<img class="img-responsive" src="'.
-                    $this->_plot->EncodeImage().'" usemap="#map1">';
+            return $this->_image_map.'<img class="img-responsive" src="'.
+                    $this->_plot->EncodeImage().'" usemap="#'.$map_name.'">';
         }
-        else $html = '';
+        return '';
+    }
 
-        $o = json_decode(parent::toJSON($options));
 
-        $o->html = $html;
+    public Function addPageElements()
+    {
+        parent::addPageElements();
 
-        return json_encode($o, $options);
+        Page::add('stylesheets',
+                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
+        Page::add('scripts_top',
+                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
+        return $this;
     }
 
 
 
-
-
-
-
-    public function handleJSONRequest(Request $request)
+    public function handleImageRequest(Request $request)
     {
         $this->setParam('width', isset($request->width) ? $request->width : 0);
         $this->setParam('height', isset($request->height) ? $request->height : 0);
         $candles = $this->getCandles();
-        $request = $this->sanityCheckRequest($request);
         foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
             if (isset($request->$param))
                 $candles->setParam($param, $request->$param);
         if (isset($request->command))
             $this->handleCommand($request->command, (array)json_decode($request->args));
-        return $this->toJSON();
+        return $this->getImage();
 
     }
 
 
-    private function sanityCheckRequest(Request $request)
-    {
-        return $request;
-    }
 
 
     private function handleCommand(string $command, array $args = [])
     {
         //error_log('Command: '.$command.' args: '.serialize($args));
         $candles = $this->getCandles();
-        $start = $candles->getParam('start');
         $end = $candles->getParam('end');
-        $limit = $end - $start;
+        $limit = $candles->getParam('limit');
         $resolution = $candles->getParam('resolution');
-        $live = $end > $candles->getLastInSeries() - $resolution;
-        //error_log('handleCommand live: '.$live.' start: '.$start.' end: '.$end);
+        $live = ($end == 0) || $end > $candles->getLastInSeries() - $resolution;
+        error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command)
         {
             case 'ESR':;
-                $start = 0;
-                $new_limit = floor($limit / $resolution);
                 foreach (['exchange', 'symbol', 'resolution'] as $arg)
                     if (isset($args[$arg]))
                         $candles->setParam($arg, $args[$arg]);
                 break;
 
             case 'backward':
-                $epoch = $candles->getEpoch();
-                $start -= floor($limit / 2);
-                if ($start < $epoch)
-                    $start = $epoch;
-                $end = $start + $limit;
+                if ($limit)
+                {
+                    $epoch = $candles->getEpoch();
+                    if (!$end)
+                        $end = $candles->getLastInSeries();
+                    $end -= floor($limit * $resolution / 2);
+                    if (($end - $limit * $resolution) < $epoch)
+                        $end = $epoch + $limit * $resolution;
+                }
                 break;
 
             case 'forward':
-                $last = $candles->getLastInSeries();
-                $end += floor($limit / 2);
-                if ($end > $last)
-                    $end = $last;
-                $start = $end - $limit;
+                if ($end)
+                {
+                    $last = $candles->getLastInSeries();
+                    $end += floor($limit * $resolution / 2);
+                    if ($end > $last)
+                        $end = 0;
+                }
                 break;
 
             case 'zoomIn':
-                if ($live)
-                    $start = $end - floor(($end - $start) / 2);
-                else
+                if (!$limit && $resolution)
                 {
-                    $mid = $start + floor($limit / 2);
-                    $fourth = floor($limit / 4);
-                    $start = $mid - $fourth;
-                    $end = $mid + $fourth;
+                    $candles->reset();
+                    $first = $candles->next()->time;
+                    $limit = floor(($candles->last()->time - $first) / $resolution);
                 }
+                $limit = ceil($limit / 2);
                 break;
 
             case 'zoomOut':
-                if ($live)
-                {
-                    $start = $end - ($end - $start) * 3;
-                    $new_limit = floor($limit / $resolution) * 3;
-                }
-                else
-                {
-                    $epoch = $candles->getEpoch();
-                    $mid = $start + floor($limit / 2);
-                    $start = $mid - $limit;
-                    if ($start < $epoch)
-                        $start = $epoch;
-                    $end = $start + $limit * 2;
-                    if ($end > time())
-                        $end = time();
-                }
+                $limit = $limit * 2;
                 break;
         }
-        $candles->setParam('start', $start);
+        $candles->setParam('limit', $limit);
         $candles->setParam('end', $end);
-        if (isset($new_limit)) $candles->setParam('limit', $new_limit);
-        //error_log('('.date('Y-m-d H:i', $candles->getEpoch()).') '.date('Y-m-d H:i', $start).' - '.date('Y-m-d H:i', $end));
     }
 
 
@@ -173,8 +151,9 @@ class PHPlot extends Chart {
         $candles = $this->getCandles();
         if (!$candles->size())
             return $this;
-        $candles->reset();
-        $title = 'R: '.$candles->getParam('resolution').' '.
+        $candles->reset(); // loads
+        $title = in_array('title', $this->getParam('disabled', [])) ? '' :
+            'R: '.$candles->getParam('resolution').' '.
                  date('Y-m-d H:i', $candles->next()->time).' - '.
                  date('Y-m-d H:i', $candles->last()->time);
         $plot_type = $candles->size() < 260 ? 'candles' : 'line';

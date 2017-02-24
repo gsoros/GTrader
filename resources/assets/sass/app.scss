@@ -88,3 +88,26 @@ label {
        -moz-border-radius: 5px;
             border-radius: 5px;
 }
+
+.noUi-target {
+    background-color: #222;
+    border: 1px solid #444;
+    box-shadow: none;
+}
+
+.noUi-handle {
+    width: 20px !important;
+    height: 20px !important;
+    background-color: #000;
+    border: 1px solid #555;
+    box-shadow: none;
+}
+
+.noUi-handle:before,
+.noUi-handle:after {
+    display: none;
+}
+
+.noUi-connect {
+    background-color: #663;
+}

@@ -3,6 +3,7 @@
 namespace GTrader\Strategies;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use GTrader\Strategy;
 use GTrader\Series;
 use GTrader\Indicator;
@@ -26,6 +27,7 @@ class Fann extends Strategy
 
     public function __construct(array $params = [])
     {
+        error_log('Fann::__construct()');
         parent::__construct($params);
         $this->setParam('num_output', 1);
     }
@@ -33,18 +35,24 @@ class Fann extends Strategy
 
     public function __wakeup()
     {
+        error_log('Fann::__wakeup()');
         $this->createFann();
     }
 
 
     public function toHTML(string $content = null)
     {
-        //$training_chart = Chart::make(null, ['name' => 'trainingChart']);
-        $training_chart = 'Training Chart';
+        $candles = new Series(['limit' => 0]);
+        $training_chart = Chart::make(null, [
+                            'candles' => $candles,
+                            'name' => 'trainingChart',
+                            'height' => 200,
+                            'disabled' => ['title', 'panZoom', 'strategy', 'settings']]);
+        $training_chart->saveToSession();
         return parent::toHTML(
                 view('Strategies/'.$this->getShortClass(), [
                             'strategy' => $this,
-                            'training_chart' => $training_chart]));
+                            'training_chart' => $training_chart->toHTML()]));
     }
 
 
@@ -54,7 +62,8 @@ class Fann extends Strategy
             if (isset($request->$param))
                 $this->setParam($param, $request->$param);
 
-        return parent::handleSaveRequest($request);
+        parent::handleSaveRequest($request);
+        return $this;
     }
 
 
@@ -92,8 +101,8 @@ class Fann extends Strategy
 
     public function createFann($config_file = false)
     {
-
-        //error_log('createFann('.$config_file.')');
+        //$e = new \Exception;
+        //error_log(var_export($e->getTraceAsString(), true));
         if (is_resource($this->_fann))
             throw new \Exception('createFann called but _fann is already a resource');
         if ($config_file)

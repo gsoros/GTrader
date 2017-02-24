@@ -28,6 +28,7 @@ class ChartController extends Controller
 
     public function JSON(Request $request)
     {
+        error_log('ChartController::JSON()');
         if (! $chart = Chart::loadFromSession($request->name))
         {
             error_log('JSON: no chart in session');
@@ -36,8 +37,24 @@ class ChartController extends Controller
 
         $json = $chart->handleJSONRequest($request);
         $chart->saveToSession();
-        $chart->save();
+        //$chart->save();
         return response($json, 200);
+    }
+
+
+    public function image(Request $request)
+    {
+        error_log('ChartController::image()');
+        if (! $chart = Chart::loadFromSession($request->name))
+        {
+            error_log('image: no chart in session');
+            return response('No such chart in session.', 403);
+        }
+
+        $image = $chart->handleImageRequest($request);
+        $chart->saveToSession();
+        //$chart->save();
+        return response($image, 200);
     }
 
 
@@ -52,7 +69,7 @@ class ChartController extends Controller
         if ($strategy = $chart->getStrategy())
             $selected_strategy = $strategy->getParam('id');
         else $selected_strategy = null;
-        $selector = Strategy::getSelectorOptions($chart_name, $selected_strategy);
+        $selector = Strategy::getSelectorOptions(Auth::id(), $chart_name, $selected_strategy);
         return response($selector, 200);
     }
 

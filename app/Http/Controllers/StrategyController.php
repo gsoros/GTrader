@@ -25,7 +25,7 @@ class StrategyController extends Controller
 
     public function strategyList(Request $request)
     {
-        return response(Strategy::getList(), 200);
+        return response(Strategy::getListOfUser(Auth::id()), 200);
     }
 
 
@@ -88,7 +88,7 @@ class StrategyController extends Controller
             return response('Strategy not found.', 403);
         }
         $strategy->delete();
-        return response(Strategy::getList(), 200);
+        return response(Strategy::getListOfUser(Auth::id()), 200);
     }
 
 
@@ -105,7 +105,9 @@ class StrategyController extends Controller
             error_log('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
-        return response($strategy->handleSaveRequest($request), 200);
+        $strategy->handleSaveRequest($request);
+        $strategy->save();
+        return response(Strategy::getListOfUser(Auth::id()), 200);
     }
 
 

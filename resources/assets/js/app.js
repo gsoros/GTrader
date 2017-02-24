@@ -37,6 +37,21 @@ window.waitForFinalEvent = (function() {
 })();
 
 
+window.setLoading = function (element, loading) {
+    console.log('setLoading(' + element + ')');
+    if (true === loading) {
+        var container = $('#' + element);
+        if (0 === $('#loading-' + element).length)
+            container.append('<img id="loading-' + element + '" src="/img/ajax-loader.gif">');
+        $('#loading-' + element).css({
+                position: 'absolute',
+                top: (container.height() / 2 - 20) + 'px',
+                left: (container.width() / 2 - 20) + 'px'});
+    }
+    else
+        $('#loading-' + element).remove();
+};
+
 /**
  * Add CSRF header to all ajax requests
  */
