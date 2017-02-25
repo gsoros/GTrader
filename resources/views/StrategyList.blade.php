@@ -2,31 +2,34 @@
 @endphp
 <div class="container-fluid">
     @foreach ($strategies as $strategy)
-    <div class="row editable" id="strategy_{{ $strategy->id }}">
-        <div class="col-sm-10">
-            {{ $strategy->name }}
-        </div>
-        <div class="col-sm-2">
-            <div class="form-group editbuttons">
-                <button id="edit_{{ $strategy->id }}"
-                        type="button"
-                        class="btn btn-primary btn-sm editbutton trans"
-                        title="Edit Strategy"
-                        onClick="window.strategyRequest(
-                                    'form', {id: {{ $strategy->id }}})">
-                    <span class="glyphicon glyphicon-wrench"></span>
-                </button>
-                <button id="delete_{{ $strategy->id }}"
-                        type="button"
-                        class="btn btn-primary btn-sm editbutton trans"
-                        title="Delete Strategy"
-                        onClick="window.strategyRequest(
-                                    'delete', {id: {{ $strategy->id }}})">
-                    <span class="glyphicon glyphicon-trash"></span>
-                </button>
+        @php
+            $id = $strategy->getParam('id');
+        @endphp
+        <div class="row editable" id="strategy_{{ $id }}">
+            <div class="col-sm-10">
+                {!! $strategy->listItem() !!}
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group editbuttons">
+                    <button id="edit_{{ $id }}"
+                            type="button"
+                            class="btn btn-primary btn-sm editbutton trans"
+                            title="Edit Strategy"
+                            onClick="window.strategyRequest(
+                                        'form', {id: {{ $id }}})">
+                        <span class="glyphicon glyphicon-wrench"></span>
+                    </button>
+                    <button id="delete_{{ $id }}"
+                            type="button"
+                            class="btn btn-primary btn-sm editbutton trans"
+                            title="Delete Strategy"
+                            onClick="window.strategyRequest(
+                                        'delete', {id: {{ $id }}})">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
     @endforeach
 
     <div class="row" id="new_strategy">

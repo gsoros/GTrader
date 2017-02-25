@@ -5,6 +5,7 @@ namespace GTrader;
 use Illuminate\Support\Facades\DB;
 use GTrader\Exchange;
 use GTrader\Candle;
+use GTrader\Lock;
 
 class Aggregator
 {
@@ -12,11 +13,10 @@ class Aggregator
     {
 
         ignore_user_abort(true);
-        $lockfile_path = storage_path(DIRECTORY_SEPARATOR.'tmp'.
-                                    DIRECTORY_SEPARATOR.'lock-'.basename(__FILE__));
-        $lockfile = fopen($lockfile_path, 'c+');
-        if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB)) {
-            error_log('Another process is running.');
+
+        if (!Lock::obtain(basename(__FILE__)))
+        {
+            error_log('Another aggregator process is running.');
             exit();
         }
 
@@ -108,9 +108,7 @@ class Aggregator
             }
         }
 
-        flock($lockfile, LOCK_UN);
-        fclose($lockfile);
-        unlink($lockfile_path);
+        Lock::release(basename(__FILE__));
 
     }
 }

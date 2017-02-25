@@ -42,17 +42,25 @@ class Fann extends Strategy
 
     public function toHTML(string $content = null)
     {
-        $candles = new Series(['limit' => 0]);
+        return parent::toHTML(
+                view('Strategies/'.$this->getShortClass().'Form', ['strategy' => $this]));
+    }
+
+
+    public function getTrainingChart()
+    {
+        $resolution = 0;
+        $mainchart = session('mainchart');
+        if (is_object($mainchart))
+            $resolution = $mainchart->getCandles()->getParam('resolution');
+        $candles = new Series(['limit' => 0, 'resolution' => $resolution]);
         $training_chart = Chart::make(null, [
                             'candles' => $candles,
                             'name' => 'trainingChart',
                             'height' => 200,
-                            'disabled' => ['title', 'panZoom', 'strategy', 'settings']]);
+                            'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings']]);
         $training_chart->saveToSession();
-        return parent::toHTML(
-                view('Strategies/'.$this->getShortClass(), [
-                            'strategy' => $this,
-                            'training_chart' => $training_chart->toHTML()]));
+        return $training_chart;
     }
 
 
@@ -64,6 +72,12 @@ class Fann extends Strategy
 
         parent::handleSaveRequest($request);
         return $this;
+    }
+
+
+    public function listItem()
+    {
+        return view('Strategies/FannListItem', ['strategy' => $this]);
     }
 
 

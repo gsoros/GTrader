@@ -7,7 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Strategy;
-
+use GTrader\Exchange;
 
 class StrategyController extends Controller
 {
@@ -23,13 +23,13 @@ class StrategyController extends Controller
     }
 
 
-    public function strategyList(Request $request)
+    public function list(Request $request)
     {
         return response(Strategy::getListOfUser(Auth::id()), 200);
     }
 
 
-    public function strategyNew(Request $request)
+    public function new(Request $request)
     {
         $user_id = Auth::id();
         $name = $request->strategyClass.' Strategy';
@@ -56,7 +56,7 @@ class StrategyController extends Controller
     }
 
 
-    public function strategyForm(Request $request)
+    public function form(Request $request)
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id)))
@@ -74,7 +74,7 @@ class StrategyController extends Controller
     }
 
 
-    public function strategyDelete(Request $request)
+    public function delete(Request $request)
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id)))
@@ -92,7 +92,7 @@ class StrategyController extends Controller
     }
 
 
-    public function strategySave(Request $request)
+    public function save(Request $request)
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id)))
@@ -108,6 +108,56 @@ class StrategyController extends Controller
         $strategy->handleSaveRequest($request);
         $strategy->save();
         return response(Strategy::getListOfUser(Auth::id()), 200);
+    }
+
+
+    public function trainForm(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id)))
+        {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        //sleep(5);
+        $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
+        return response($html, 200);
+    }
+
+
+    public function trainStart(Request $request)
+    {
+        error_log('trainStart '.var_export($request->all(), true));
+
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id)))
+        {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        if (!($exchange_id = Exchange::getIdByName($request->exchange)))
+        {
+            error_log('Exchange not found ');
+            return response('Exchange not found.', 403);
+        }
+        if (!($symbol_id = Exchange::getSymbolIdByExchangeSymbolName($request->exchange, $request->symbol)))
+        {
+            error_log('Symbol not found ');
+            return response('Symbol not found.', 403);
+        }
+        error_log('trainStart Ex:'.$exchange_id.' Sy: '.$symbol_id);
+        $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
+        return response($html, 200);;
     }
 
 

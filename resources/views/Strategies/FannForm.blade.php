@@ -32,22 +32,5 @@
         </div>
     </div>
 </div>
-<div class="row bdr-rad">
-    <div class="col-sm-12">
-        <h4>Training</h4>
-        {!! $training_chart !!}
-        <div id="slider" class="center-block" style="width: 90%; height: 10px"></div>
-        <script>
-            var slider = document.getElementById('slider');
-            noUiSlider.create(slider, {
-                start: [50, 100],
-                connect: true,
-                range: {
-                    'min': 0,
-                    'max': 100
-                }
-            });
-        </script>
-    </div>
-</div>
+
 

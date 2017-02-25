@@ -85,17 +85,25 @@ class Strategy extends Skeleton
         Page::add('scripts_bottom',
                     '<script src="'.mix('/js/Strategy.js').'"></script>');
 
-        $strategies = DB::table('strategies')
-                        ->select('id', 'name')
+        $strategies_db = DB::table('strategies')
+                        ->select('strategy')
                         ->where('user_id', $user_id)
                         ->orderBy('name')
                         ->get();
+        $strategies = [];
+        foreach ($strategies_db as $strategy)
+            $strategies[] = unserialize($strategy->strategy);
 
         return view('StrategyList', [
                         'available' => self::singleton()->getParam('available'),
                         'strategies' => $strategies]);
     }
 
+
+    public function listItem()
+    {
+        return $this->getParam('name');
+    }
 
     public static function getSelectorOptions(
                                 int $user_id,

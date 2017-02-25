@@ -2,9 +2,10 @@ $(window).ready(function() {
     /**
     * Requests an action and inserts the result into the Strategy Tab
     */
-    window.strategyRequest = function(request, params, type) {
-        window.setLoading('strategyTab', true);
+    window.strategyRequest = function(request, params, type, target) {
         if (!type) type = 'GET';
+        if (!target) target = 'strategyTab';
+        window.setLoading(target, true);
         var url = '/strategy.' + request;
         var data = null;
         if (type === 'POST') {
@@ -31,8 +32,8 @@ $(window).ready(function() {
             data: data,
             headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             success: function(response) {
-                $('#strategyTab').html(response);
-                if (request !== 'list' && request !== 'form') {
+                $('#' + target).html(response);
+                if (-1 == ['list', 'form', 'trainForm', 'trainStart'].indexOf(request)) {
                     window.Chart.updateAllStrategySelectors();
                     window.mainchart.refresh();
                 }

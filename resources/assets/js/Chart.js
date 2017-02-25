@@ -44,7 +44,7 @@ $(function() {
                                 chartObj.symbol = symbol.name
                                 for (var resolution in symbol.resolutions) {    // loop through all supported resolutions
                                     opts.resolution += '<option ';
-                                    if ((chartObj.resolution === resolution     // selected resolution
+                                    if ((chartObj.resolution == resolution      // selected resolution
                                             || 1 === symbol.resolutions.length  // or only one resolution
                                             || 'exchange' === changed           // or a different exchange was selected, so we select the first resolution
                                             || 'symbol' === changed)            // or a different symbol was selected, so we select the first resolution
@@ -163,7 +163,7 @@ $(function() {
                 $.ajax({
                     url: '/strategy.select?name=' + name
                             + '&strategy=' + $('#strategy_select_' + name).val(),
-                    success: function(response) {
+                    success: function() {
                         // Send refresh command to the chart
                         chartObj.refresh();
                     }

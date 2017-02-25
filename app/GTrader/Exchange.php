@@ -2,6 +2,7 @@
 
 Namespace GTrader;
 
+use Illuminate\Support\Facades\DB;
 use GTrader\Exchange;
 
 abstract class Exchange extends Skeleton
@@ -27,13 +28,40 @@ abstract class Exchange extends Skeleton
             $symbols = $exchange->getParam('symbols');
             $first_symbol = reset($symbols);
             $resolutions = $first_symbol['resolutions'];
+            if (isset($resolutions[3600])) // prefer 1-hour
+                return 3600;
             reset($resolutions);
-            return key($resolutions);
+            return key($resolutions); // return first res
         }
         return null;
     }
 
 
+    public static function getIdByName(string $name)
+    {
+        $query = DB::table('exchanges')
+                    ->select('id')
+                    ->where('name', $name)
+                    ->first();
+        if (is_object($query))
+            return $query->id;
+        return null;
+    }
+
+    public static function getSymbolIdByExchangeSymbolName(string $exchange_name, string $symbol_name)
+    {
+        $query = DB::table('symbols')
+                    ->select('symbols.id')
+                    ->join('exchanges', function ($join) use ($exchange_name) {
+                                $join->on('exchanges.id', '=', 'symbols.exchange_id')
+                                    ->where('exchanges.name', $exchange_name);
+                            })
+                    ->where('symbols.name', $symbol_name)
+                    ->first();
+        if (is_object($query))
+            return $query->id;
+        return null;
+    }
 
     public static function getESR()
     {

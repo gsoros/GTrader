@@ -17,7 +17,15 @@
     margin-top: 2px;
     padding-top: 3px;
     padding-bottom: 3px;
-    line-height: 17px;
+    line-height: 21px;
+}
+
+.btn-primary {;
+    border: 1px solid #222;
+}
+
+.btn-primary:hover {
+    background-color: #333;
 }
 
 .btn-mini {
@@ -90,16 +98,24 @@ label {
 }
 
 .noUi-target {
-    background-color: #222;
-    border: 1px solid #444;
+    background: rgba(30, 30, 30, 0);
+    border: 0px;
+    border-radius: 0px;
     box-shadow: none;
 }
 
+.noUi-target:hover {
+    cursor: crosshair;
+}
 .noUi-handle {
-    width: 20px !important;
-    height: 20px !important;
-    background-color: #000;
-    border: 1px solid #555;
+    //display: none;
+    height: 162px !important;
+    background: none;
+    width: 10px !important;
+    left: -5px !important;
+    top: 0 !important;
+    background: rgba(200, 200, 30, 0.5);
+    border: 1px solid rgba(200, 200, 30, 0.5);
     box-shadow: none;
 }
 
@@ -108,6 +124,15 @@ label {
     display: none;
 }
 
+.noUi-handle:hover {
+    cursor: col-resize;
+}
+
 .noUi-connect {
-    background-color: #663;
+    background: rgba(200, 200, 30, 0.05);
+    border: 1px 0 solid rgba(200, 200, 30, 0.5);
+}
+
+.noUi-connect:hover {
+    cursor: col-resize;
 }

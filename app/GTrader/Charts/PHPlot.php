@@ -35,13 +35,16 @@ class PHPlot extends Chart {
         //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
         if ($width > 0 && $height > 0)
         {
+            $image_map_disabled = in_array('map', $this->getParam('disabled', []));
             $this->_plot = new PHPlot_truecolor($width, $height);
             $this->_plot->SetPrintImage(false);
             $this->_plot->SetFailureImage(false);
             $map_name = 'map-'.$this->getParam('name');
-            $this->_image_map = '<map name="'.$map_name.'">';
+            if (!$image_map_disabled)
+                $this->_image_map = '<map name="'.$map_name.'">';
             $this->plotCandles();
-            $this->_image_map .= '</map>';
+            if (!$image_map_disabled)
+                $this->_image_map .= '</map>';
             foreach ($this->getIndicatorsVisibleSorted() as $ind)
             {
                 //error_log('Plotting: '.$ind->getSignature());
@@ -51,8 +54,9 @@ class PHPlot extends Chart {
                 else
                     $this->plotIndicator($ind);
             }
+            $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
             return $this->_image_map.'<img class="img-responsive" src="'.
-                    $this->_plot->EncodeImage().'" usemap="#'.$map_name.'">';
+                    $this->_plot->EncodeImage().'"'.$map_str.'>';
         }
         return '';
     }
@@ -96,6 +100,8 @@ class PHPlot extends Chart {
         $limit = $candles->getParam('limit');
         $resolution = $candles->getParam('resolution');
         $live = ($end == 0) || $end > $candles->getLastInSeries() - $resolution;
+        if ($live)
+            $end = 0;
         error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command)
         {
@@ -130,15 +136,21 @@ class PHPlot extends Chart {
             case 'zoomIn':
                 if (!$limit && $resolution)
                 {
-                    $candles->reset();
-                    $first = $candles->next()->time;
-                    $limit = floor(($candles->last()->time - $first) / $resolution);
+                    $epoch = $candles->getEpoch();
+                    $last = $candles->getLastInSeries();
+                    $limit = floor(($last - $epoch) / $resolution);
                 }
                 $limit = ceil($limit / 2);
+                if ($limit < 10)
+                    $limit = 10;
                 break;
 
             case 'zoomOut':
+                $epoch = $candles->getEpoch();
+                $last = $candles->getLastInSeries();
                 $limit = $limit * 2;
+                if ($limit > (($last - $epoch) / $resolution))
+                    $limit = 0;
                 break;
         }
         $candles->setParam('limit', $limit);
@@ -176,36 +188,36 @@ class PHPlot extends Chart {
         $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
         $this->_plot->setPointShapes('none');
         $image_map = $this->_image_map;
-        $this->_plot->SetCallback('data_points',
-            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
-                        use (&$image_map, $times, $price) {
-                if (!$image_map) return null;
-                //error_log($row.$image_map);
-                # Title, also tool-tip text:
-                $title = date('Y-m-d H:i', $times[$row]);
-                $title .= ('rect' == $shape) ?
-                            "\nO: ".$price[$row][2]
-                            ."\nH: ".$price[$row][3]
-                            ."\nL: ".$price[$row][4]
-                            ."\nC: ".$price[$row][5] :
-                            "\nC: ".$price[$row][2];
-                # Link URL, for demonstration only:
-                $href = "javascript:console.log('".$times[$row]."')";
-                if ('rect' == $shape)
-                {
-                    # Convert coordinates to integers:
-                    $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
-                }
-                else
-                {
-                    # Convert coordinates to integers:
-                    $coords = sprintf("%d,%d,%d", $x1, $y1, 10);
-                    $shape = 'circle';
-                }
-                # Append the record for this data point shape to the image map string:
-                $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
-                           .  " title=\"$title\" href=\"$href\">\n";
-            });
+        $image_map_disabled = in_array('map', $this->getParam('disabled', []));
+        if (!$image_map_disabled)
+        {
+            $this->_plot->SetCallback('data_points',
+                function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
+                            use (&$image_map, $times, $price) {
+                    if (!$image_map) return null;
+                    //error_log($row.$image_map);
+                    $title = date('Y-m-d H:i', $times[$row]);
+                    $title .= ('rect' == $shape) ?
+                                "\nO: ".$price[$row][2]
+                                ."\nH: ".$price[$row][3]
+                                ."\nL: ".$price[$row][4]
+                                ."\nC: ".$price[$row][5] :
+                                "\nC: ".$price[$row][2];
+                    $href = "javascript:console.log('".$times[$row]."')";
+                    if ('rect' == $shape)
+                    {
+                        $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
+                    }
+                    else
+                    {
+                        $coords = sprintf("%d,%d,%d", $x1, $y1, 10);
+                        $shape = 'circle';
+                    }
+                    # Append the record for this data point shape to the image map string:
+                    $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
+                               .  " title=\"$title\" href=\"$href\">\n";
+                });
+        }
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetXTickLabelPos('plotdown');
         $this->_plot->SetLegend('candles' === $plot_type ? ['Price', ''] : ['Price']);
@@ -223,7 +235,8 @@ class PHPlot extends Chart {
         $this->_plot->TuneYAutoRange(0);
         $this->_plot->DrawGraph();
         $this->_image_map = $image_map;
-        $this->_plot->RemoveCallback('data_points');
+        if (!$image_map_disabled)
+            $this->_plot->RemoveCallback('data_points');
         if ('candles' === $plot_type)
             $this->nextLegendY();
         return $this;
