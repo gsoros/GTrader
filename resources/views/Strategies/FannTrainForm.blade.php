@@ -1,8 +1,7 @@
 <div class="row bdr-rad">
     <div class="col-sm-12" id='training'>
-        <h4>Train {{ $strategy->getParam('name') }}</h4>
-        {!! $strategy->getTrainingChart()->toHTML() !!}
-        <div id="slider" class="center-block" style="width: 90%; height: 162px; margin-top: -230px"></div>
+        <h3>Train {{ $strategy->getParam('name') }}</h3>
+        <div id="slider" class="center-block" style="width: 90%; height: 162px; margin-bottom: -177px"></div>
         <script>
             var slider = document.getElementById('slider');
             noUiSlider.create(slider, {
@@ -16,6 +15,7 @@
                 }
             });
         </script>
+        {!! $strategy->getTrainingChart()->toHTML() !!}
     </div>
 </div>
 <div class="row bdr-rad">
@@ -46,6 +46,4 @@
         </span>
     </div>
 </div>
-<pre>
-    {{ $strategy->getParam('debug') }}
-</pre>
+

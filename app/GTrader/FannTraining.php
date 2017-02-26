@@ -75,7 +75,7 @@ class FannTraining extends Model
             }
             $this->writeStatus($statusfile,
                         'Epoch: '.$epochs.
-                        ' Balance: '.$balance.
+                        ' Balance: '.$balance.' / '.$balance_max.
                         ' Signals: '.$strategy->getNumSignals(true));
 
         }

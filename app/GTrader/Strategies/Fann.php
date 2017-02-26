@@ -224,7 +224,7 @@ class Fann extends Strategy
         // remove trainings
         FannTraining::where('strategy_id', $this->getParam('id'))->delete();
         // remove fann file
-        $fn = $this-path();
+        $fn = $this->path();
         if (is_file($fn))
             if (is_writable($fn))
                 unlink($fn);
