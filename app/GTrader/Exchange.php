@@ -37,6 +37,18 @@ abstract class Exchange extends Skeleton
     }
 
 
+    public static function getNameById(int $id)
+    {
+        $query = DB::table('exchanges')
+                    ->select('name')
+                    ->where('id', $id)
+                    ->first();
+        if (is_object($query))
+            return $query->name;
+        return null;
+    }
+
+
     public static function getIdByName(string $name)
     {
         $query = DB::table('exchanges')
@@ -62,6 +74,19 @@ abstract class Exchange extends Skeleton
             return $query->id;
         return null;
     }
+
+
+    public static function getSymbolNameById(int $id)
+    {
+        $query = DB::table('symbols')
+                    ->select('name')
+                    ->where('id', $id)
+                    ->first();
+        if (is_object($query))
+            return $query->name;
+        return null;
+    }
+
 
     public static function getESR()
     {

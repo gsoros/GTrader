@@ -9,6 +9,7 @@ use GTrader\Series;
 use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Chart;
+use GTrader\FannTraining;
 
 if (!extension_loaded('fann'))
     throw new \Exception('FANN extension not loaded');
@@ -21,7 +22,6 @@ class Fann extends Strategy
     protected $_pack_iterator = 0;
     protected $_callback_type = false;
     protected $_callback_iterator = 0;
-    protected $_fannLoadedFromFile = false;
     protected $_bias = null;
 
 
@@ -113,26 +113,18 @@ class Fann extends Strategy
     }
 
 
-    public function createFann($config_file = false)
+    public function createFann()
     {
-        //$e = new \Exception;
-        //error_log(var_export($e->getTraceAsString(), true));
         if (is_resource($this->_fann))
             throw new \Exception('createFann called but _fann is already a resource');
-        if ($config_file)
-            $this->setParam('config_file', $config_file);
-        if ($config_file = $this->getParam('config_file'))
+
+        $path = $this->path();
+        if (is_file($path))
         {
-            $config_path = $this->getParam('path').DIRECTORY_SEPARATOR.$config_file;
-            //error_log('config file is '.$config_path);
-            if (is_file($config_path))
-            {
-                error_log('creating fann from '.$config_path);
-                $this->_fann = fann_create_from_file($config_path);
-                $this->_fannLoadedFromFile = $config_file;
-            }
+            error_log('creating fann from '.$path);
+            $this->_fann = fann_create_from_file($path);
         }
-        if (!$this->_fann)
+        if (!is_resource($this->_fann))
         {
             if ($this->getParam('fann_type') === 'fixed')
             {
@@ -141,7 +133,7 @@ class Fann extends Strategy
                             [$this->getNumInput()],
                             $this->getParam('hidden_array'),
                             [$this->getParam('num_output')]);
-                //error_log('calling fann_create_standard('.join(', ', $params).')');
+                error_log('calling fann_create_standard('.join(', ', $params).')');
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
             }
@@ -158,15 +150,11 @@ class Fann extends Strategy
     }
 
 
-    public function fannLoadedFromFile()
-    {
-        return $this->_fannLoadedFromFile;
-    }
-
 
     public function initFann()
     {
-        if (!is_resource($this->_fann)) throw new \Exception('Cannot init fann, not a resource');
+        if (!is_resource($this->_fann))
+            throw new \Exception('Cannot init fann, not a resource');
         fann_set_activation_function_hidden($this->_fann, FANN_SIGMOID_SYMMETRIC);
         //fann_set_activation_function_output($this->_fann, FANN_SIGMOID_SYMMETRIC);
         //fann_set_activation_function_hidden($this->_fann, FANN_GAUSSIAN_SYMMETRIC);
@@ -202,7 +190,8 @@ class Fann extends Strategy
 
     public function setFann($fann)
     {
-        if (!is_resource($fann)) throw new \Exception('supplied fann is not a resource');
+        if (!is_resource($fann))
+            throw new \Exception('supplied fann is not a resource');
         //error_log('setFann('.get_resource_type($fann).')');
         //var_dump(debug_backtrace());
         //if (is_resource($this->_fann)) $this->destroyFann(); // do not destroy, it may have a reference
@@ -212,21 +201,9 @@ class Fann extends Strategy
     }
 
 
-    public function saveFann($config_file = false, $update_config_file = true)
+    public function saveFann()
     {
-
-        if ($config_file)
-        {
-            if ($update_config_file)
-                $this->setParam('config_file', $config_file);
-        }
-        else $config_file = $this->getParam('config_file');
-        if (!$config_file)
-        {
-            throw new \Exception('saveFann: no config file');
-            return false;
-        }
-        $fn = $this->getParam('path').DIRECTORY_SEPARATOR.$config_file;
+        $fn = $this->path();
         if (!fann_save($this->getFann(), $fn))
         {
             error_log('saveFann to '.$fn.' failed');
@@ -238,6 +215,21 @@ class Fann extends Strategy
             return false;
         }
         return true;
+    }
+
+
+
+    public function delete()
+    {
+        // remove trainings
+        FannTraining::where('strategy_id', $this->getParam('id'))->delete();
+        // remove fann file
+        $fn = $this-path();
+        if (is_file($fn))
+            if (is_writable($fn))
+                unlink($fn);
+
+        parent::delete();
     }
 
 
@@ -365,7 +357,7 @@ class Fann extends Strategy
             foreach ($input as $k => $v) $input[$k] = Series::normalize($v, $min, $max);
             $delta = $output - $last_ohlc4;
             //error_log($delta);
-            $output = $delta * 100 / $last_ohlc4 / $this->_output_scaling;
+            $output = $delta * 100 / $last_ohlc4 / $this->getParam('output_scaling');
             if ($output > 1) $output = 1;
             else if ($output < -1) $output = -1;
 
@@ -503,4 +495,10 @@ class Fann extends Strategy
         return $this->getParam('num_samples') * 4 - 3;
     }
 
+
+    public function path()
+    {
+        return $this->getParam('path').DIRECTORY_SEPARATOR.
+                $this->getParam('id').'.fann';
+    }
 }

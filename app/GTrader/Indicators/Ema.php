@@ -10,7 +10,7 @@ class Ema extends Indicator
     protected $_allowed_owners = ['GTrader\\Series'];
 
 
-    public function calculate()
+    public function calculate(bool $force_rerun = false)
     {
         $params = $this->getParam('indicator');
 

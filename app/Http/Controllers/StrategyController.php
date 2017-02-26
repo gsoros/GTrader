@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Exchange;
+use GTrader\FannTraining;
 
 class StrategyController extends Controller
 {
@@ -111,7 +113,7 @@ class StrategyController extends Controller
     }
 
 
-    public function trainForm(Request $request)
+    public function train(Request $request)
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id)))
@@ -124,7 +126,13 @@ class StrategyController extends Controller
             error_log('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
-        //sleep(5);
+        $training = FannTraining::where('strategy_id', $strategy_id)
+                                ->where('status', 'training')->first();
+        if (is_object($training))
+        {
+            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            return response($html, 200);
+        }
         $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
         return response($html, 200);
     }
@@ -145,20 +153,87 @@ class StrategyController extends Controller
             error_log('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
-        if (!($exchange_id = Exchange::getIdByName($request->exchange)))
+        $exchange = $request->exchange;
+        if (!($exchange_id = Exchange::getIdByName($exchange)))
         {
             error_log('Exchange not found ');
             return response('Exchange not found.', 403);
         }
-        if (!($symbol_id = Exchange::getSymbolIdByExchangeSymbolName($request->exchange, $request->symbol)))
+        $symbol = $request->symbol;
+        if (!($symbol_id = Exchange::getSymbolIdByExchangeSymbolName($exchange, $symbol)))
         {
             error_log('Symbol not found ');
             return response('Symbol not found.', 403);
         }
-        error_log('trainStart Ex:'.$exchange_id.' Sy: '.$symbol_id);
-        $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
-        return response($html, 200);;
+        if (!($resolution = $request->resolution))
+        {
+            error_log('Resolution not found ');
+            return response('Resolution not found.', 403);
+        }
+        $start_percent = doubleval($request->start_percent);
+        $end_percent = doubleval($request->end_percent);
+        if (($start_percent >= $end_percent) || !$end_percent)
+        {
+            error_log('Start or end not found ');
+            return response('Input error.', 403);
+        }
+        $training = FannTraining::where('strategy_id', $strategy_id)
+                                ->where('status', 'training')->first();
+        if (is_object($training))
+        {
+            error_log('Strategy id('.$strategy_id.') is already being trained.');
+            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            return response($html, 200);
+        }
+        $candles = new Series(['exchange' => $exchange,
+                                'symbol' => $symbol,
+                                'resolution' => $resolution,
+                                'limit' => 0]);
+        $epoch = $candles->getEpoch();
+        $last = $candles->getLastInSeries();
+        $total = $last - $epoch;
+        $range_start = floor($epoch + $total / 100 * $start_percent);
+        $range_end = ceil($epoch + $total / 100 * $end_percent);
+
+        $training = FannTraining::firstOrNew([
+                            'strategy_id'   => $strategy_id,
+                            'status'        => 'training']);
+        $training->exchange_id = $exchange_id;
+        $training->symbol_id = $symbol_id;
+        $training->resolution = $resolution;
+        $training->range_start = $range_start;
+        $training->range_end = $range_end;
+        $training->save();
+        $strategy->setParam('debug', var_export($training, true));
+
+        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+        return response($html, 200);
     }
 
+
+    public function trainStop(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id)))
+        {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        $training = FannTraining::where('strategy_id', $strategy_id)
+                                ->where('status', 'training')->first();
+        if (is_object($training))
+        {
+            $training->status = 'stopped';
+            $training->save();
+            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            return response($html, 200);
+        }
+        response(Strategy::getListOfUser(Auth::id()), 200);
+    }
 
 }

@@ -19,7 +19,7 @@ class FannSignals extends Indicator
     }
 
 
-    public function calculate()
+    public function calculate(bool $force_rerun = false)
     {
         $signature = $this->getSignature();
 
@@ -27,7 +27,7 @@ class FannSignals extends Indicator
         $candles = $this->getCandles();
 
         $indicator = $this->getOwner()->getPredictionIndicator();
-        $indicator->checkAndRun();
+        $indicator->checkAndRun($force_rerun);
         $indicator_sig = $indicator->getSignature();
 
         $last = ['time' => 0, 'signal' => ''];
@@ -49,6 +49,9 @@ class FannSignals extends Indicator
         $candles->reset();
         while ($candle = $candles->next())
         {
+            if ($force_rerun && isset($candle->$signature))
+                unset($candle->$signature);
+
             $candles_seen++;
             if ($candles_seen < $num_input) continue; // skip trading while inside the first sample
             if (isset($candle->$indicator_sig))

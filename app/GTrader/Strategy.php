@@ -86,13 +86,17 @@ class Strategy extends Skeleton
                     '<script src="'.mix('/js/Strategy.js').'"></script>');
 
         $strategies_db = DB::table('strategies')
-                        ->select('strategy')
+                        ->select('id', 'strategy')
                         ->where('user_id', $user_id)
                         ->orderBy('name')
                         ->get();
         $strategies = [];
-        foreach ($strategies_db as $strategy)
-            $strategies[] = unserialize($strategy->strategy);
+        foreach ($strategies_db as $strategy_db)
+        {
+            $strategy = unserialize($strategy_db->strategy);
+            $strategy->setParam('id', $strategy_db->id);
+            $strategies[] = $strategy;
+        }
 
         return view('StrategyList', [
                         'available' => self::singleton()->getParam('available'),
@@ -146,4 +150,30 @@ class Strategy extends Skeleton
         return $indicator;
     }
 
+
+    public function getLastBalance(bool $force_rerun = false)
+    {
+        if (!$this->hasIndicatorClass('Balance'))
+            $this->addIndicator('Balance');
+        $balance = $this->getFirstIndicatorByClass('Balance');
+        $balance->checkAndRun($force_rerun);
+        $sig = $balance->getSignature();
+        if ($last = $this->getCandles()->last())
+            return $last->$sig;
+        return 0;
+    }
+
+    public function getNumSignals(bool $force_rerun = false)
+    {
+        $signals = $this->getSignalsIndicator();
+        $signals->checkAndRun($force_rerun);
+        $sig = $signals->getSignature();
+        $candles = $this->getCandles();
+        $candles->reset();
+        $count = 0;
+        while ($candle = $candles->next())
+            if (isset($candle->$sig))
+                $count++;
+        return $count;
+    }
 }

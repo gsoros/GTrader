@@ -46,3 +46,6 @@
         </span>
     </div>
 </div>
+<pre>
+    {{ $strategy->getParam('debug') }}
+</pre>

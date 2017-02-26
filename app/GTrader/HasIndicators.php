@@ -41,6 +41,15 @@ trait HasIndicators
     }
 
 
+    public function getFirstIndicatorByClass(string $class)
+    {
+        foreach ($this->getIndicators() as $indicator)
+            if ($indicator->getShortClass() === $class)
+                return $indicator;
+        return null;
+    }
+
+
     public function hasIndicator(string $signature)
     {
         return $this->getIndicator($signature) ? true : false;

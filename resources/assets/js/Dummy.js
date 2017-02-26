@@ -1,4 +1,4 @@
-$(window).ready(function() {
+$(function() {
     // For each chart ...
     $('.GTraderChart').each(function() {
         // Ask for ID

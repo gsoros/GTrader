@@ -20,7 +20,7 @@ abstract class Indicator extends Skeleton
     }
 
 
-    public abstract function calculate();
+    public abstract function calculate(bool $force_rerun = false);
 
 
     public function __wakeup()
@@ -84,7 +84,7 @@ abstract class Indicator extends Skeleton
                     $indicator->checkAndRun($force_rerun);
 
         $this->_calculated = true;
-        return $this->calculate();
+        return $this->calculate($force_rerun);
     }
 
 

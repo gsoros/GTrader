@@ -14,7 +14,8 @@ class Aggregator
 
         ignore_user_abort(true);
 
-        if (!Lock::obtain(basename(__FILE__)))
+        $lock = __METHOD__;//basename(__FILE__);
+        if (!Lock::obtain($lock))
         {
             error_log('Another aggregator process is running.');
             exit();
@@ -108,7 +109,7 @@ class Aggregator
             }
         }
 
-        Lock::release(basename(__FILE__));
+        Lock::release($lock);
 
     }
 }

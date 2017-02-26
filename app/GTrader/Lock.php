@@ -4,23 +4,21 @@ namespace GTrader;
 
 class Lock extends Skeleton {
 
-
     protected $locks = [];
-
 
     public static function obtain(string $lock)
     {
-        return self::singleton()->add($lock);
+        return self::singleton()->lock($lock);
     }
 
 
     public static function release(string $lock)
     {
-        return self::singleton()->remove($lock);
+        return self::singleton()->unlock($lock);
     }
 
 
-    protected function add(string $lock)
+    protected function lock(string $lock)
     {
         $lockfile = fopen($this->path($lock), 'c+');
         if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB))
@@ -30,20 +28,29 @@ class Lock extends Skeleton {
     }
 
 
-    protected function remove(string $lock)
+    protected function unlock(string $lock)
     {
         if (!isset($this->locks[$lock]))
             return false;
-        flock($this->locks[$lock], LOCK_UN);
-        fclose($this->locks[$lock]);
+        if (!($lockfile = $this->locks[$lock]))
+            return false;
+        flock($lockfile, LOCK_UN);
+        fclose($lockfile);
         unlink($this->path($lock));
         unset($this->locks[$lock]);
         return true;
     }
 
+
     protected function path(string $lock)
     {
-        return storage_path(DIRECTORY_SEPARATOR.'tmp'.
-                            DIRECTORY_SEPARATOR.'lock-'.$lock);
+        $dir = $this->getParam('path');
+        if (!is_dir($dir))
+            if (!mkdir($dir))
+                throw new \Exception('Failed to create directory '.$dir);
+        if (!($lock = addslashes(str_replace(DIRECTORY_SEPARATOR, '', trim($lock)))))
+            throw new \Exception('Empty lock');
+
+        return $dir.DIRECTORY_SEPARATOR.$lock;
     }
 }

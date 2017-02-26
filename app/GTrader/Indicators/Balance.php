@@ -19,7 +19,7 @@ class Balance extends Indicator
     }
 
 
-    public function calculate()
+    public function calculate(bool $force_rerun = false)
     {
         $params = $this->getParam('indicator');
 
@@ -31,7 +31,7 @@ class Balance extends Indicator
 
         $signal_ind = $owner->getSignalsIndicator();
         $signal_sig = $signal_ind->getSignature();
-        $signal_ind->checkAndRun();
+        $signal_ind->checkAndRun($force_rerun);
 
         $signature = $this->getSignature();
 

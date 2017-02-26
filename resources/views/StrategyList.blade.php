@@ -16,7 +16,7 @@
                             class="btn btn-primary btn-sm editbutton trans"
                             title="Edit Strategy"
                             onClick="window.strategyRequest(
-                                        'form', {id: {{ $id }}})">
+                                        'form', 'id={{ $id }}')">
                         <span class="glyphicon glyphicon-wrench"></span>
                     </button>
                     <button id="delete_{{ $id }}"
@@ -24,7 +24,7 @@
                             class="btn btn-primary btn-sm editbutton trans"
                             title="Delete Strategy"
                             onClick="window.strategyRequest(
-                                        'delete', {id: {{ $id }}})">
+                                        'delete', 'id={{ $id }}')">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
                 </div>

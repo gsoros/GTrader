@@ -11,8 +11,6 @@ trait HasStrategy
 
     public function getStrategy()
     {
-        //if (!is_object($this->_strategy))
-        //    $this->_strategy = Strategy::make();
         return $this->_strategy;
     }
 

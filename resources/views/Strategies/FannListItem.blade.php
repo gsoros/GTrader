@@ -1,6 +1,6 @@
 <strong>{{ $strategy->getParam('name') }}</strong>
 
-<button onClick="window.strategyRequest('trainForm', {id: {{ $strategy->getParam('id') }}})"
+<button onClick="window.strategyRequest('train', {id: {{ $strategy->getParam('id') }}})"
         type="button"
         class="btn btn-primary btn-sm trans"
         title="Training">

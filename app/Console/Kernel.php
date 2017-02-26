@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\FetchCandles::class
+        Commands\FetchCandles::class,
+        Commands\RunTraining::class,
+        Commands\RunTrainingManager::class
     ];
 
     /**
@@ -26,7 +28,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-         $schedule->command('candles:fetch')->everyMinute();//->withoutOverlapping();
+        $schedule->command('candles:fetch')->everyMinute();
+        //$schedule->command('trainingManager:run')->everyMinute();
     }
 
     /**
