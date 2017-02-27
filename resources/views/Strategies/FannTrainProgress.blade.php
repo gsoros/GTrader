@@ -2,11 +2,54 @@
     $chart = $strategy->getTrainingProgressChart($training);
 @endphp
 <div class="row bdr-rad">
-    <div class="col-sm-12" id='training'>
+    <div class="col-sm-12">
         <h4>Training Progress for {{ $strategy->getParam('name') }}</h4>
         {!! $chart->toHTML() !!}
     </div>
 </div>
+<div class="row bdr-rad">
+    <div class="col-sm-12" id="trainProgress">
+        Epoch: <span class="editable" id="trainProgressEpochs"></span>
+        &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
+        &nbsp; Max: <span class="editable" id="trainProgressBalanceMax"></span>
+        &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
+    </div>
+</div>
+<script>
+    function readStatus() {
+        console.log('readStatus() ' + $('#trainProgress').length);
+        $.ajax({
+            url: '/strategy.trainProgress?id={{ $strategy->getParam('id') }}',
+            success: function(data) {
+                try {
+                    reply = JSON.parse(data);
+                }
+                catch (err) {
+                    console.log(err);
+                }
+                finally {
+                    $('#trainProgressEpochs').html(reply.epochs);
+                    $('#trainProgressBalance').html(reply.balance);
+                    $('#trainProgressBalanceMax').html(reply.balance_max);
+                    $('#trainProgressSignals').html(reply.signals);
+                }
+            },
+            complete: function() {
+                if ($('#trainProgress').length)
+                    setTimeout(readStatus, 3000);
+            },
+            error: function (jqXHR, textStatus) {
+                console.log('readStatus() failure: ' + textStatus);
+            }
+        });
+    }
+    $('#trainProgressEpochs').html('Waiting...');
+    $('#trainProgressBalance').html(' ');
+    $('#trainProgressBalanceMax').html(' ');
+    $('#trainProgressSignals').html(' ');
+    readStatus();
+
+</script>
 <div class="row bdr-rad">
     <div class="col-sm-12">
         <span class="pull-right">

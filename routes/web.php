@@ -39,6 +39,7 @@ Route::post('/strategy.save',           'StrategyController@save');
 Route::get('/strategy.train',           'StrategyController@train');
 Route::get('/strategy.trainStart',      'StrategyController@trainStart');
 Route::get('/strategy.trainStop',       'StrategyController@trainStop');
+Route::get('/strategy.trainProgress',   'StrategyController@trainProgress');
 
 
 

@@ -52,9 +52,21 @@ class FannTraining extends Model
         if (!Lock::obtain($training_lock))
             throw new \Exception('Could not obtain training lock for '.$this->id);
 
+        $exchange_name = Exchange::getNameById($this->exchange_id);
+        $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
+
+        $status = new \stdClass();
+        $status->exchange = $exchange_name;
+        $status->symbol = $symbol_name;
+        $status->resolution = $this->resolution;
+        $status->range_start = $this->range_start;
+        $status->range_end = $this->range_end;
+
+
+
         $candles = new Series([
-                    'exchange' => Exchange::getNameById($this->exchange_id),
-                    'symbol' => Exchange::getSymbolNameById($this->symbol_id),
+                    'exchange' => $exchange_name,
+                    'symbol' => $symbol_name,
                     'resolution' => $this->resolution,
                     'start' => $this->range_start,
                     'end' => $this->range_end,
@@ -68,22 +80,33 @@ class FannTraining extends Model
         $statusfile = $strategy->path().'.status';
 
         $epochs = 0;
+        $epoch_jump = 1;
+
+        if ($json = $this->readStatus())
+            if ($json = json_decode($json))
+                if (is_object($json))
+                {
+                    if (isset($json->epochs))
+                        $epochs = $json->epochs;
+                    if (isset($json->epoch_jump))
+                        $epoch_jump = $json->epoch_jump;
+                }
+
         $balance_max = $strategy->getLastBalance(true);
-        $train_epochs = 1;
         $no_improvement = 0;
         $max_boredom = 10;
 
         while ($this->shouldRun())
         {
-            $epochs += $train_epochs;
-            $strategy->train($train_epochs);
+            $epochs += $epoch_jump;
+            $strategy->train($epoch_jump);
             $balance = $strategy->getLastBalance(true);
             if ($balance > $balance_max)
             {
                 $strategy->saveFann();
                 $balance_max = $balance;
                 $no_improvement = 0;
-                $train_epochs = 1;
+                $epoch_jump = 1;
             }
             else
             {
@@ -91,16 +114,19 @@ class FannTraining extends Model
             }
             if ($no_improvement > $max_boredom)
             {
-                $train_epochs++;
-                if ($train_epochs >= 100)
-                    $train_epochs = 100;
+                $epoch_jump++;
+                if ($epoch_jump >= 100)
+                    $epoch_jump = 100;
                 $no_improvement = 0;
             }
-            $this->writeStatus($statusfile,
-                        'Epoch: '.$epochs.
-                        ' Balance: '.$balance.' / '.$balance_max.
-                        ' Signals: '.$strategy->getNumSignals(true));
 
+            $status->epochs = $epochs;
+            $status->epoch_jump = $epoch_jump;
+            $status->balance = number_format($balance, 2);
+            $status->balance_max = number_format($balance_max, 2);
+            $status->signals = $strategy->getNumSignals(true);
+
+            $this->writeStatus($statusfile, json_encode($status));
         }
 
         Lock::release($training_lock);
@@ -117,8 +143,8 @@ class FannTraining extends Model
         try
         {
             self::where('id', $this->id)
-                    ->where('status', 'training')
-                    ->firstOrFail();
+                ->where('status', 'training')
+                ->firstOrFail();
         }
         catch (\Exception $e)
         {
@@ -143,7 +169,34 @@ class FannTraining extends Model
     {
         if (!($fp = fopen($file, 'wb')))
             return false;
-        return fwrite($fp, $s);
+        if (!flock($fp, LOCK_EX))
+        {
+            fclose($fp);
+            return false;
+        }
+        $n = fwrite($fp, $s);
+        fflush($fp);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        return $n;
+    }
+
+
+    public function readStatus()
+    {
+        $strategy = Strategy::load($this->strategy_id);
+        $statusfile = $strategy->path().'.status';
+        if (is_file($statusfile))
+            if (is_readable($statusfile))
+                if ($fp = fopen($statusfile, 'rb'))
+                    if (flock($fp, LOCK_SH))
+                    {
+                        $c = file_get_contents($statusfile);
+                        flock($fp, LOCK_UN);
+                        fclose($fp);
+                        return $c;
+                    }
+        return '{}';
     }
 }
 
