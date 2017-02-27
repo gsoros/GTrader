@@ -70,7 +70,7 @@ class PHPlot extends Chart {
         Page::add('stylesheets',
                     '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
         Page::add('scripts_top',
-                    '<script src="'.mix('/js/PHPlot.js').'"></script>');
+                    '<script src="/js/PHPlot.js"></script>');
         return $this;
     }
 

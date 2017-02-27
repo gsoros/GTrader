@@ -20,8 +20,8 @@
             'csrfToken' => csrf_token(),
         ]) !!};
     </script>
-    @yield('scripts_top')
     <script src="{{ mix('/js/app.js') }}"></script>
+    @yield('scripts_top')
 </head>
 <body>
     <div id="app">

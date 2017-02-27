@@ -99,7 +99,7 @@ class Fann extends Strategy
 
     public function handleSaveRequest(Request $request)
     {
-        foreach (['config_file', 'num_samples'] as $param)
+        foreach (['num_samples'] as $param)
             if (isset($request->$param))
                 $this->setParam($param, $request->$param);
 

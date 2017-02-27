@@ -13,15 +13,16 @@ const { mix } = require('laravel-mix');
 
 mix
     .js('resources/assets/js/app.js',           'public/js')
-    .js('resources/assets/js/Chart.js',         'public/js')
-    .js('resources/assets/js/PHPlot.js',        'public/js')
-    .js('resources/assets/js/Dummy.js',         'public/js')
-    .js('resources/assets/js/Mainchart.js',     'public/js')
-    .js('resources/assets/js/Strategy.js',      'public/js')
 
     .sass('resources/assets/sass/app.scss',     'public/css')
     .sass('resources/assets/sass/Chart.scss',   'public/css')
     .sass('resources/assets/sass/PHPlot.scss',  'public/css')
+
+    .copy('resources/assets/js/Chart.js',         'public/js')
+    .copy('resources/assets/js/PHPlot.js',        'public/js')
+    .copy('resources/assets/js/Dummy.js',         'public/js')
+    .copy('resources/assets/js/Mainchart.js',     'public/js')
+    .copy('resources/assets/js/Strategy.js',      'public/js')
 
     .copy('resources/assets/bower/nouislider/distribute/nouislider.min.js',     'public/js')
     .copy('resources/assets/bower/nouislider/distribute/nouislider.min.css',    'public/css')

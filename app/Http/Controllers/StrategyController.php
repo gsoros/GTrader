@@ -235,8 +235,9 @@ class StrategyController extends Controller
                                 ->where('status', 'training')->first();
         if (is_object($training))
         {
-            $training->status = 'stopped';
-            $training->save();
+            //$training->status = 'stopped';
+            //$training->save();
+            $training->delete();
             //$html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
             //return response($html, 200);
         }

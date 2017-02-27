@@ -49,6 +49,10 @@ select.btn-mini + .caret {
     margin-top: 2px;
 }
 
+.form-control[disabled] {
+    background: inherit;
+}
+
 .modal-dialog {
     min-width: 310px;
     width: 50%;

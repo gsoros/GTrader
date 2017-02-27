@@ -4,16 +4,27 @@
         <div class="col-sm-3">
             Common Strategy Settings
         </div>
-        <div class="col-sm-3">
-            <div class="editable">
-                <label for="setting1">Name</label>
-                <input class="btn-primary"
+        <div class="col-sm-4">
+            <div class="editable form-group">
+                <label for="name">Name</label>
+                <input class="btn-primary form-control form-control-sm"
                         type="text"
-                        size="20"
                         id="name"
                         name="name"
                         title="Strategy Name"
                         value="{{ $strategy->getParam('name') }}">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="editable form-group">
+                <label for="setting2">Another setting</label>
+                <input class="btn-primary form-control form-control-sm"
+                        type="text"
+                        id="setting2"
+                        name="setting2"
+                        title="Another setting"
+                        value="unused"
+                        disabled>
             </div>
         </div>
     </div>

@@ -35,8 +35,8 @@ class HomeController extends Controller
     {
         $chart = Chart::load(Auth::id(), 'mainchart');
 
-        Page::add('scripts_top',
-                    '<script src="'.mix('/js/Mainchart.js').'"></script>');
+        Page::add('scripts_bottom',
+                    '<script src="/js/Mainchart.js"></script>');
         $chart->addPageElements();
 
         Page::add('stylesheets',

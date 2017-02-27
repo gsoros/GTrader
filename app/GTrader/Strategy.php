@@ -83,7 +83,7 @@ class Strategy extends Skeleton
     public static function getListOfUser(int $user_id)
     {
         Page::add('scripts_bottom',
-                    '<script src="'.mix('/js/Strategy.js').'"></script>');
+                    '<script src="/js/Strategy.js"></script>');
 
         $strategies_db = DB::table('strategies')
                         ->select('id', 'strategy')

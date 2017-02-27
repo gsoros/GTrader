@@ -327,7 +327,7 @@ abstract class Chart extends Skeleton {
         Page::add('scripts_top',
                     '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>');
         Page::add('scripts_top',
-                    '<script src="'.mix('/js/Chart.js').'"></script>');
+                    '<script src="/js/Chart.js"></script>');
         //Page::add('scripts_top',
         //            '<script> window.'.$this->getParam('name').' = '.$this->toJSON().'; </script>');
         return $this;
