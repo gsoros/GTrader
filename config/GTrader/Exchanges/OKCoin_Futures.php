@@ -3,7 +3,7 @@
 return [
     'long_name' => 'OKCoin Futures Exchange',
     'short_name' => 'OKCF',
-    'local_name' => 'okcoin_futures',                           // used in the local database
+    'local_name' => 'OKCoin_Futures',                           // class name, also used in the local database
     'symbols' => [
         'btc_usd_3m' =>                                         // used in the local database, same as local_name
             [

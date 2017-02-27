@@ -17,7 +17,6 @@ class Series extends Collection {
 
     function __construct(array $params = [])
     {
-
         foreach (['exchange', 'symbol', 'resolution'] as $param)
         {
             if (isset($params[$param]))

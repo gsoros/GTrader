@@ -112,6 +112,24 @@ abstract class Exchange extends Skeleton
         }
         return $esr;
     }
+
+    public static function getESRReadonly(  string $exchange,
+                                            string $symbol,
+                                            int $resolution)
+    {
+        error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
+        //return '';
+        try {
+            $exchange = self::make($exchange);
+        } catch (\Exception $e) {
+            return null;
+        }
+        $ret = '['.$exchange->getParam('long_name').']';
+        if (!($symbol = $exchange->getParam('symbols')[$symbol]))
+            return null;
+        return $ret.' ['.$symbol['long_name'].'] ['.
+                    $symbol['resolutions'][$resolution].']';
+    }
 }
 
 

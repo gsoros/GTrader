@@ -27,9 +27,10 @@
                              $candles = $chart->getCandles();
                         @endphp
                         <small>
-                        [{{ $candles->getParam('exchange') }}]
-                        [{{ $candles->getParam('symbol') }}]
-                        [{{ $candles->getParam('resolution') }}]
+                        {{ GTrader\Exchange::getESRReadonly(
+                                            $candles->getParam('exchange'),
+                                            $candles->getParam('symbol'),
+                                             $candles->getParam('resolution')) }}
                         </small>
                     @else
                         <select title="Exchange Selector"

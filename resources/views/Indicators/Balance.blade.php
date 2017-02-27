@@ -7,8 +7,8 @@
 <h5>Balance</h5>
 <div class="row">
     <div class="col-sm-5">
-        <label for="length">Mode</label>
-        <select class="btn-primary btn btn-mini"
+        <label for="mode_{{ $sig }}">Mode</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="mode_{{ $sig }}"
                 title="Select mode">
             @foreach (['fixed', 'dynamic'] as $m)
@@ -21,10 +21,9 @@
         </select>
     </div>
     <div class="col-sm-5">
-        <label for="price">Initial Capital</label>
-        <input class="btn-primary btn-mini"
-                type="text"
-                size="5"
+        <label for="initial_capital_{{ $sig }}">Initial Capital</label>
+        <input class="btn-primary btn-mini form-control form-control-sm"
+                type="number"
                 id="initial_capital_{{ $sig }}"
                 title="Select the initial cap for the indicator"
                 value="{{ $initial_capital }}">

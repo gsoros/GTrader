@@ -10,7 +10,7 @@
 .editable {
     //width: 100%;
     margin-bottom: 2px;
-    padding: 7px 5px;
+    padding: 8px 5px;
     border-radius: 7px;
     box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.05);
 }
@@ -22,6 +22,7 @@
 .editbuttons {
     float: right;
     margin: 0;
+    margin-bottom: 5px !important;
 }
 
 .editbutton {

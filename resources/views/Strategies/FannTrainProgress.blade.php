@@ -16,8 +16,9 @@
     </div>
 </div>
 <script>
-    function readStatus() {
-        console.log('readStatus() ' + $('#trainProgress').length);
+    var pollTimeout;
+    function pollStatus() {
+        console.log('pollStatus() ' + $('#trainProgress').length);
         $.ajax({
             url: '/strategy.trainProgress?id={{ $strategy->getParam('id') }}',
             success: function(data) {
@@ -36,27 +37,28 @@
             },
             complete: function() {
                 if ($('#trainProgress').length)
-                    setTimeout(readStatus, 3000);
+                    pollTimeout = setTimeout(pollStatus, 3000);
             },
             error: function (jqXHR, textStatus) {
-                console.log('readStatus() failure: ' + textStatus);
+                console.log('pollStatus() failure: ' + textStatus);
             }
         });
     }
-    $('#trainProgressEpochs').html('Waiting...');
-    $('#trainProgressBalance').html(' ');
-    $('#trainProgressBalanceMax').html(' ');
-    $('#trainProgressSignals').html(' ');
-    readStatus();
+    $('#trainProgressEpochs').html(' ... ');
+    $('#trainProgressBalance').html(' ... ');
+    $('#trainProgressBalanceMax').html(' ... ');
+    $('#trainProgressSignals').html(' ... ');
+    pollStatus();
 
 </script>
 <div class="row bdr-rad">
     <div class="col-sm-12">
         <span class="pull-right">
-            <button onClick="window.strategyRequest(
-                                'trainStop',
-                                'id={{ $strategy->getParam('id') }}'
-                                )"
+            <button onClick="clearTimeout(pollTimeout);
+                                window.strategyRequest(
+                                    'trainStop',
+                                    'id={{ $strategy->getParam('id') }}'
+                                    )"
                     type="button"
                     id="stopTrainingButton"
                     class="btn btn-primary btn-sm trans"
@@ -74,6 +76,6 @@
 </div>
 <!--
 <pre>
-    {{ var_export($chart->getParams(), true) }}
+    {{ var_export($chart->getCandles()->getParams(), true) }}
 </pre>
 -->

@@ -77,16 +77,17 @@ class Fann extends Strategy
     public function getTrainingProgressChart(FannTraining $training)
     {
         $candles = new Series(['limit' => 0,
-                                'exchange' => $training->exchange,
-                                'symbol' => $training->symbol,
+                                'exchange' => Exchange::getNameById($training->exchange_id),
+                                'symbol' => Exchange::getSymbolNameById($training->symbol_id),
                                 'resolution' => $training->resolution]);
+
         $progress_chart = Chart::make(null, [
                             'candles' => $candles,
                             'strategy' => $this,
                             'name' => 'trainingProgressChart',
                             'height' => 200,
-                            'disabled' => ['title', 'map', 'settings'],
-                            'readonly' => ['esr', 'strategy'],
+                            'disabled' => ['title', 'strategy', 'map', 'settings'],
+                            'readonly' => ['esr'],
                             'highlight' => [$training->range_start, $training->range_end],
                             'visible_indicators' => ['Balance']]);
         $progress_chart->saveToSession();

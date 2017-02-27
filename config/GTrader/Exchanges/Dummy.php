@@ -3,7 +3,7 @@
 return [
     'long_name' => 'Dummy Exchange (for testing)',
     'short_name' => 'DMY',
-    'local_name' => 'dummy',                                // used in the local database
+    'local_name' => 'Dummy',                                // class name, also used in the local database
     'symbols' => [
         'dummy_symbol_1' =>                                 // used in the local database, same as local_name
             [

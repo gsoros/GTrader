@@ -7,8 +7,8 @@
 <h5>Ema</h5>
 <div class="row">
     <div class="col-sm-5">
-        <label for="length">Length</label>
-        <select class="btn-primary btn btn-mini"
+        <label for="length_{{ $sig }}">Length</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="length_{{ $sig }}"
                 title="Select length">
             @for ($i=2; $i<100; $i++)
@@ -21,8 +21,8 @@
         </select>
     </div>
     <div class="col-sm-5">
-        <label for="price">Price</label>
-        <select class="btn-primary btn btn-mini"
+        <label for="price_{{ $sig }}">Price</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="price_{{ $sig }}"
                 title="Select the index for the indicator">
             @foreach ($chart->getPricesAvailable($sig) as $signature => $display_name)
