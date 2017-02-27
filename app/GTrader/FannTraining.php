@@ -8,6 +8,7 @@ use GTrader\Lock;
 use GTrader\Exchange;
 use GTrader\Series;
 use GTrader\Strategy;
+use GTrader\TrainingManager;
 
 
 class FannTraining extends Model
@@ -36,6 +37,12 @@ class FannTraining extends Model
      */
     protected $guarded = [];
 
+
+    public function __construct()
+    {
+        // load params from config file
+        $this->setParams(\Config::get(str_replace('\\', '.', get_class($this))));
+    }
 
     public function run()
     {
@@ -102,7 +109,10 @@ class FannTraining extends Model
 
     protected function shouldRun()
     {
-        //return false;
+        static $started;
+
+        if (!$started) $started = time();
+
         // check db if we have been stopped or deleted
         try
         {
@@ -112,8 +122,18 @@ class FannTraining extends Model
         }
         catch (\Exception $e)
         {
-            echo "Training stopped\n";
+            echo "Training stopped.\n";
             return false;
+        }
+        // check if the number of active trainings is greater than the number of slots
+        if (self::where('status', 'training')->count() > TrainingManager::getSlotCount())
+        {
+            // check if we have spent too much time
+            if ((time() - $started) > $this->getParam('max_time_per_session'))
+            {
+                echo 'Time up: '.(time() - $started).'/'.$this->getParam('max_time_per_session')."\n";
+                return false;
+            }
         }
         return true;
     }

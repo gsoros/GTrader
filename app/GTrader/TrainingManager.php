@@ -22,10 +22,16 @@ class TrainingManager extends Skeleton {
         while ($this->shouldRun())
         {
             $this->main();
-            $this->sleep();
+            //$this->sleep();
         }
         Lock::release($lock);
         return true;
+    }
+
+
+    public static function getSlotCount()
+    {
+        return self::singleton()->getParam('slots');
     }
 
 
