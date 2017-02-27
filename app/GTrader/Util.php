@@ -4,6 +4,8 @@ namespace GTrader;
 
 class Util
 {
+
+
     public static function db_escape($string)
     {
         return app('db')->getPdo()->quote($string);

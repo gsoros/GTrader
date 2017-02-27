@@ -42,14 +42,17 @@ abstract class Chart extends Skeleton {
 
     public function __sleep()
     {
-        error_log('Chart::__sleep()');
+        //error_log('Chart::__sleep()');
+        if ($strategy = $this->getStrategy())
+            if ($strategy_id = $strategy->getParam('id'))
+                $this->setParam('strategy_id', $strategy_id);
         return ['_params', '_candles'];
     }
 
 
     public function __wakeup()
     {
-        error_log('Chart::__wakeup()');
+        //error_log('Chart::__wakeup()');
         // we need a strategy fresh from the db on each wakeup
         if (!($strategy_id = $this->getParam('strategy_id')))
             return;
@@ -306,12 +309,14 @@ abstract class Chart extends Skeleton {
     public function toHTML(string $content = '')
     {
         return view('Chart', [
-                    'name' => $this->getParam('name'),
-                    'height' => $this->getParam('height'),
-                    'content' => $content,
-                    'JSON' => $this->toJSON(),
-                    'disabled' => $this->getParam('disabled', [])
-                    ]);
+                        'name' => $this->getParam('name'),
+                        'height' => $this->getParam('height'),
+                        'content' => $content,
+                        'JSON' => $this->toJSON(),
+                        'disabled' => $this->getParam('disabled', []),
+                        'readonly' => $this->getParam('readonly', []),
+                        'chart' => $this
+                        ]);
     }
 
 
@@ -378,9 +383,25 @@ abstract class Chart extends Skeleton {
 
     public function getIndicatorsVisibleSorted()
     {
-        return $this->getIndicatorsFilteredSorted(
+        $indicators = $this->getIndicatorsFilteredSorted(
                     ['display.visible' => true],
                     ['display.y_axis_pos' => 'left', 'display.name']);
+        if (is_array($visible = $this->getParam('visible_indicators')))
+            foreach ($indicators as $key => $indicator)
+                if (!in_array($indicator->getShortClass(), $visible))
+                    unset($indicators[$key]);
+        return $indicators;
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+

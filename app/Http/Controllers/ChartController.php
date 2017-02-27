@@ -60,9 +60,9 @@ class ChartController extends Controller
 
     public function strategySelectorOptions(Request $request)
     {
-        if (! $chart = Chart::loadFromSession($request->name))
+        if (!($chart = Chart::loadFromSession($request->name)))
         {
-            error_log('strategySelectorOptions: no chart in session');
+            error_log('strategySelectorOptions: no '.$request->name.' chart in session');
             return response('No such chart in session.', 403);
         }
         $chart_name = $request->name;

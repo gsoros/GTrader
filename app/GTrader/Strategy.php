@@ -143,7 +143,7 @@ class Strategy extends Skeleton
         foreach ($this->getIndicators() as $indicator)
             if ($class === $indicator->getShortClass())
                 return $indicator;
-
+        error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
         $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
         $this->addIndicator($indicator);
 

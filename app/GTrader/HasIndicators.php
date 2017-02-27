@@ -158,4 +158,27 @@ trait HasIndicators
             $indicator->checkAndRun();
         return $this;
     }
+
+
+    public function dumpIndicators()
+    {
+        $dump = '';
+        foreach ($this->getIndicators() as $indicator)
+            $dump .= var_export($indicator->getParams(), true)."\n";
+        return $dump;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

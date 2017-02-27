@@ -130,7 +130,8 @@ class StrategyController extends Controller
                                 ->where('status', 'training')->first();
         if (is_object($training))
         {
-            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
+                                                            'training' => $training]);
             return response($html, 200);
         }
         $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
@@ -182,7 +183,9 @@ class StrategyController extends Controller
         if (is_object($training))
         {
             error_log('Strategy id('.$strategy_id.') is already being trained.');
-            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            $html = view('Strategies/FannTrainProgress', [
+                    'strategy' => $strategy,
+                    'training' => $training]);
             return response($html, 200);
         }
         $candles = new Series(['exchange' => $exchange,
@@ -206,7 +209,9 @@ class StrategyController extends Controller
         $training->save();
         $strategy->setParam('debug', var_export($training, true));
 
-        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+        $html = view('Strategies/FannTrainProgress', [
+                        'strategy' => $strategy,
+                        'training' => $training]);
         return response($html, 200);
     }
 
@@ -230,8 +235,8 @@ class StrategyController extends Controller
         {
             $training->status = 'stopped';
             $training->save();
-            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
-            return response($html, 200);
+            //$html = view('Strategies/FannTrainProgress', ['strategy' => $strategy]);
+            //return response($html, 200);
         }
         return response(Strategy::getListOfUser(Auth::id()), 200);
     }

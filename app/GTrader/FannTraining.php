@@ -58,20 +58,36 @@ class FannTraining extends Model
         $strategy = Strategy::load($this->strategy_id);
         $strategy->setCandles($candles);
 
-        $statusfile = $strategy->getParam('path').DIRECTORY_SEPARATOR.$this->strategy_id.'.status';
+        $statusfile = $strategy->path().'.status';
 
         $epochs = 0;
         $balance_max = $strategy->getLastBalance(true);
+        $train_epochs = 1;
+        $no_improvement = 0;
+        $max_boredom = 10;
 
         while ($this->shouldRun())
         {
-            $epochs++;
-            $strategy->train(1);
+            $epochs += $train_epochs;
+            $strategy->train($train_epochs);
             $balance = $strategy->getLastBalance(true);
             if ($balance > $balance_max)
             {
                 $strategy->saveFann();
                 $balance_max = $balance;
+                $no_improvement = 0;
+                $train_epochs = 1;
+            }
+            else
+            {
+                $no_improvement++;
+            }
+            if ($no_improvement > $max_boredom)
+            {
+                $train_epochs++;
+                if ($train_epochs >= 100)
+                    $train_epochs = 100;
+                $no_improvement = 0;
             }
             $this->writeStatus($statusfile,
                         'Epoch: '.$epochs.

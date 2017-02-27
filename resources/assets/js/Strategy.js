@@ -33,7 +33,8 @@ $(window).ready(function() {
             headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             success: function(response) {
                 $('#' + target).html(response);
-                if (-1 == ['list', 'form', 'trainForm', 'trainStart'].indexOf(request)) {
+                console.log('request: ' + request);
+                if (-1 == ['list', 'form', 'train', 'trainStart', 'trainStop'].indexOf(request)) {
                     window.Chart.updateAllStrategySelectors();
                     window.mainchart.refresh();
                 }

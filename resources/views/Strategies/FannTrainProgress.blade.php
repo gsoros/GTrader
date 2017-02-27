@@ -1,7 +1,10 @@
+@php
+    $chart = $strategy->getTrainingProgressChart($training);
+@endphp
 <div class="row bdr-rad">
     <div class="col-sm-12" id='training'>
         <h4>Training Progress for {{ $strategy->getParam('name') }}</h4>
-        {!! $strategy->getTrainingChart()->toHTML() !!}
+        {!! $chart->toHTML() !!}
     </div>
 </div>
 <div class="row bdr-rad">
@@ -26,6 +29,8 @@
         </span>
     </div>
 </div>
+<!--
 <pre>
-    {{ $strategy->getParam('debug') }}
+    {{ var_export($chart->getParams(), true) }}
 </pre>
+-->

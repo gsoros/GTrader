@@ -9,6 +9,7 @@ use GTrader\Series;
 use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Chart;
+use GTrader\Exchange;
 use GTrader\FannTraining;
 
 if (!extension_loaded('fann'))
@@ -35,7 +36,7 @@ class Fann extends Strategy
 
     public function __wakeup()
     {
-        error_log('Fann::__wakeup()');
+        //error_log('Fann::__wakeup()');
         $this->createFann();
     }
 
@@ -49,11 +50,20 @@ class Fann extends Strategy
 
     public function getTrainingChart()
     {
-        $resolution = 0;
+        $exchange = Exchange::getDefault('exchange');
+        $symbol = Exchange::getDefault('symbol');
+        $resolution = Exchange::getDefault('resolution');
         $mainchart = session('mainchart');
         if (is_object($mainchart))
+        {
+            $exchange = $mainchart->getCandles()->getParam('exchange');
+            $symbol = $mainchart->getCandles()->getParam('symbol');
             $resolution = $mainchart->getCandles()->getParam('resolution');
-        $candles = new Series(['limit' => 0, 'resolution' => $resolution]);
+        }
+        $candles = new Series(['limit' => 0,
+                                'exchange' => $exchange,
+                                'symbol' => $symbol,
+                                'resolution' => $resolution]);
         $training_chart = Chart::make(null, [
                             'candles' => $candles,
                             'name' => 'trainingChart',
@@ -62,6 +72,29 @@ class Fann extends Strategy
         $training_chart->saveToSession();
         return $training_chart;
     }
+
+
+    public function getTrainingProgressChart(FannTraining $training)
+    {
+        $candles = new Series(['limit' => 0,
+                                'exchange' => $training->exchange,
+                                'symbol' => $training->symbol,
+                                'resolution' => $training->resolution]);
+        $progress_chart = Chart::make(null, [
+                            'candles' => $candles,
+                            'strategy' => $this,
+                            'name' => 'trainingProgressChart',
+                            'height' => 200,
+                            'disabled' => ['title', 'map', 'settings'],
+                            'readonly' => ['esr', 'strategy'],
+                            'highlight' => [$training->range_start, $training->range_end],
+                            'visible_indicators' => ['Balance']]);
+        $progress_chart->saveToSession();
+        return $progress_chart;
+    }
+
+
+
 
 
     public function handleSaveRequest(Request $request)
@@ -77,7 +110,12 @@ class Fann extends Strategy
 
     public function listItem()
     {
-        return view('Strategies/FannListItem', ['strategy' => $this]);
+        $training_count = FannTraining::where('strategy_id', $this->getParam('id'))
+                                ->where('status', 'training')
+                                ->count();
+        return view('Strategies/FannListItem', [
+                    'strategy' => $this,
+                    'training_count' => $training_count]);
     }
 
 
@@ -121,7 +159,7 @@ class Fann extends Strategy
         $path = $this->path();
         if (is_file($path))
         {
-            error_log('creating fann from '.$path);
+            //error_log('creating fann from '.$path);
             $this->_fann = fann_create_from_file($path);
         }
         if (!is_resource($this->_fann))
@@ -228,7 +266,12 @@ class Fann extends Strategy
         if (is_file($fn))
             if (is_writable($fn))
                 unlink($fn);
-
+        // remove status file
+        $fn = $fn.'.status';
+        if (is_file($fn))
+            if (is_writable($fn))
+                unlink($fn);
+        // remove strategy
         parent::delete();
     }
 

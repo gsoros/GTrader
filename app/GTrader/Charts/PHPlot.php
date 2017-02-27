@@ -7,6 +7,7 @@ use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\Page;
 use PHPlot_truecolor;
+//use GTrader\Util;
 
 class PHPlot extends Chart {
 
@@ -47,7 +48,7 @@ class PHPlot extends Chart {
                 $this->_image_map .= '</map>';
             foreach ($this->getIndicatorsVisibleSorted() as $ind)
             {
-                //error_log('Plotting: '.$ind->getSignature());
+                //error_log('PHPlot::getImage() plotting: '.$ind->getSignature());
                 $ind->checkAndRun();
                 if ($ind->getParam('display.name') === 'Signals')
                     $this->plotSignals($ind);
@@ -181,12 +182,25 @@ class PHPlot extends Chart {
         $this->_plot->setTitle($title);
         $this->_plot->SetDataColors(
                     'candles' === $plot_type ?
-                    ['red:30', 'DarkGreen:20','grey:90', 'grey:90']:
-                    'DarkGreen');
+                    ['red:30', 'DarkGreen:20','grey:90', 'grey:90', 'yellow']:
+                    ['DarkGreen', 'yellow']);
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);
         $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
         $this->_plot->setPointShapes('none');
+
+        $highlight = $this->getParam('highlight', []);
+        if (2 === count($highlight))
+        {
+            $this->_plot->SetCallback('data_color',
+                function($img, $junk, $row, $col, $extra = 0) use ($highlight, $plot_type, $times) {
+                    if (($times[$row] >= $highlight[0]) && ($times[$row] <= $highlight[1]))
+                        return ('candles' === $plot_type) ? 4 : 1;
+                    else
+                        return ('candles' === $plot_type) ? 1 : 0;
+                });
+        }
+
         $image_map = $this->_image_map;
         $image_map_disabled = in_array('map', $this->getParam('disabled', []));
         if (!$image_map_disabled)
@@ -196,7 +210,7 @@ class PHPlot extends Chart {
                             use (&$image_map, $times, $price) {
                     if (!$image_map) return null;
                     //error_log($row.$image_map);
-                    $title = date('Y-m-d H:i', $times[$row]);
+                    $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
                     $title .= ('rect' == $shape) ?
                                 "\nO: ".$price[$row][2]
                                 ."\nH: ".$price[$row][3]
