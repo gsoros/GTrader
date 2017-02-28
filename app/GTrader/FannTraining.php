@@ -45,6 +45,7 @@ class FannTraining extends Model
         $this->setParams(\Config::get(str_replace('\\', '.', get_class($this))));
     }
 
+
     public function run()
     {
         echo 'FannTraining::run() ID:'.$this->id."\n";
@@ -63,7 +64,6 @@ class FannTraining extends Model
         $status->range_start = $this->range_start;
         $status->range_end = $this->range_end;
 
-        $status_suffix = '.status';
         $train_suffix = '.train';
 
         $candles = new Series([
@@ -79,9 +79,7 @@ class FannTraining extends Model
         define('FANN_WAKEUP_PREFERRED_SUFFX', $train_suffix);
         $strategy = Strategy::load($this->strategy_id);
         $strategy->setCandles($candles);
-
-        $statusfile = $strategy->path().$status_suffix;
-
+//echo $strategy->path().' NS: '.$strategy->getParam('num_samples')."\n"; exit();
         $epochs = 0;
         $epoch_jump = 1;
         $no_improvement = 0;
@@ -131,14 +129,14 @@ class FannTraining extends Model
             $status->epochs = $epochs;
             $status->epoch_jump = $epoch_jump;
             $status->no_improvement = $no_improvement;
-            $status->balance = number_format($balance, 2);
-            $status->balance_max = number_format($balance_max, 2);
+            $status->balance = number_format(floatval($balance), 2);
+            $status->balance_max = number_format(floatval($balance_max), 2);
             $status->signals = $strategy->getNumSignals(true);
             $status->state = 'training';
-            $this->writeStatus($statusfile, json_encode($status));
+            $this->writeStatus($strategy, json_encode($status));
         }
         $status->state = 'queued';
-        $this->writeStatus($statusfile, json_encode($status));
+        $this->writeStatus($strategy, json_encode($status));
         $strategy->saveFann($train_suffix);
 
         Lock::release($training_lock);
@@ -178,8 +176,9 @@ class FannTraining extends Model
     }
 
 
-    protected function writeStatus(string $file, string $s)
+    protected function writeStatus(FannStrategy $strategy, string $s)
     {
+        $file = $strategy->path().'.status';
         if (!($fp = fopen($file, 'wb')))
             return false;
         if (!flock($fp, LOCK_EX))

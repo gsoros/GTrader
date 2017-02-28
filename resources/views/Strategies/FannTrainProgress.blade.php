@@ -76,8 +76,14 @@
         </span>
     </div>
 </div>
-<!--
-<pre>
-    {{ var_export($chart->getCandles()->getParams(), true) }}
+
+
+<pre style="width: 100%; height: 280px; overflow: scroll; color: #fff; background-color: #111">
+    Training:
+        {{ var_export($training, true) }}
+
+    Strategy:
+        {{ var_export($strategy->getParams(), true) }}
 </pre>
--->
+
+

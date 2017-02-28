@@ -340,7 +340,7 @@ class PHPlot extends Chart {
     public static function nextColor()
     {
         static $index = 0;
-        $colors = ['yellow:110', 'maroon:100', 'brown:70'];
+        $colors = ['red:110', 'yellow:110', 'maroon:100', 'brown:70'];
         $color = $colors[$index];
         $index ++;
         if ($index >= count($colors)) $index = 0;

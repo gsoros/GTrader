@@ -219,7 +219,6 @@ class StrategyController extends Controller
         $training->range_end = $range_end;
         $training->save();
         $training->resetStatus($strategy);
-        $strategy->setParam('debug', var_export($training, true));
 
         $html = view('Strategies/FannTrainProgress', [
                         'strategy' => $strategy,

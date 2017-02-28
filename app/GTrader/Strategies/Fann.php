@@ -103,14 +103,18 @@ class Fann extends Strategy
     }
 
 
-
-
-
     public function handleSaveRequest(Request $request)
     {
-        foreach (['num_samples'] as $param)
+        if (isset($request->num_samples))
+            if (intval($request->num_samples) !== intval($this->getParam('num_samples')))
+            {
+                error_log('Strategy '.$this->getParam('id').': sample size changed, deleting fann.');
+                $this->destroyFann();
+                $this->deleteFiles();
+            }
+        foreach (['num_samples', 'target_distance'] as $param)
             if (isset($request->$param))
-                $this->setParam($param, $request->$param);
+                $this->setParam($param, intval($request->$param));
 
         parent::handleSaveRequest($request);
         return $this;
@@ -165,12 +169,15 @@ class Fann extends Strategy
         if (is_resource($this->_fann))
             throw new \Exception('createFann called but _fann is already a resource');
 
-        // try first with suffix
-        $path = $this->path().$prefer_suffix;
-        if (is_file($path) && is_readable($path))
+        // try first with suffix, if supplied
+        if (strlen($prefer_suffix))
         {
-            //error_log('creating fann from '.$path);
-            $this->_fann = fann_create_from_file($path);
+            $path = $this->path().$prefer_suffix;
+            if (is_file($path) && is_readable($path))
+            {
+                //error_log('creating fann from '.$path);
+                $this->_fann = fann_create_from_file($path);
+            }
         }
         // try without suffix
         if (!is_resource($this->_fann))
@@ -185,7 +192,7 @@ class Fann extends Strategy
         // create a new fann
         if (!is_resource($this->_fann))
         {
-            error_log('Fann::createFann() Brand New!');
+            error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
             if ($this->getParam('fann_type') === 'fixed')
             {
                 $params = array_merge(
@@ -293,17 +300,17 @@ class Fann extends Strategy
     public function deleteFiles()
     {
         // remove fann file
-        $fn = $this->path();
-        if (is_file($fn))
-            if (is_writable($fn))
-                unlink($fn);
+        $fann = $this->path();
+        if (is_file($fann))
+            if (is_writable($fann))
+                unlink($fann);
         // remove status file
-        $fn = $fn.'.status';
+        $fn = $fann.'.status';
         if (is_file($fn))
             if (is_writable($fn))
                 unlink($fn);
         // remove train file
-        $fn = $fn.'.train';
+        $fn = $fann.'.train';
         if (is_file($fn))
             if (is_writable($fn))
                 unlink($fn);
@@ -320,9 +327,16 @@ class Fann extends Strategy
 
     public function runFann($input, $ignore_bias = false)
     {
-        $output = fann_run($this->getFann(), $input);
-        if (!$ignore_bias) $output[0] -= $this->getBias();
-        return $output[0];
+        try {
+            $output = fann_run($this->getFann(), $input);
+            if (!$ignore_bias) $output[0] -= $this->getBias();
+            return $output[0];
+        }
+        catch (\Exception $e) {
+            error_log('fann_run error: '.$e->getMessage()."\n".
+                        ' Input: '.var_export($input, true));
+            return null;
+        }
     }
 
 

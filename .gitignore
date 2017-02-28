@@ -7,5 +7,10 @@ Homestead.json
 Homestead.yaml
 .env
 *.geany
-public/css/app.css
-public/js/app.js
+public/css/*.css
+public/js/*.js
+public/fonts/
+public/mix-manifest.json
+resources/assets/bower/
+storage/fann/
+storage/locks/
