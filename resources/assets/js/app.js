@@ -52,13 +52,33 @@ window.setLoading = function (element, loading) {
         $('#loading-' + element).remove();
 };
 
-/**
- * Add CSRF header to all ajax requests
- */
-/*
-$.ajaxSetup({
-    headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    }
+
+$(function () {
+    $.ajaxSetup({
+        /**
+         * Add CSRF header to all ajax requests
+         */
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        /**
+         * Handle ajax errors
+         */
+        error: function (x, status, error) {
+            if (x.status == 401 || x.status == 403) {
+                console.log('Session expired, redirecting to login.');
+                window.location.href ='/login';
+            }
+            else {
+                console.log('Ajax ' + status + ': ' + error);
+            }
+        }
+    });
 });
-*/
+
+
+
+
+
+
+

@@ -20,6 +20,30 @@
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12">
+        @php
+            if ($strategy->hasBeenTrained())
+            {
+                $disabled = '';
+                $checked = '';
+            }
+            else
+            {
+                $disabled = 'disabled';
+                $checked = 'checked';
+            }
+        @endphp
+        <div class="form-check form-check-inline {{ $disabled }}">
+            <label class="form-check-label">
+                <input class="form-check-input"
+                        type="checkbox"
+                        id="from_scratch"
+                        value="1" {{ $checked }} {{ $disabled }}> Train From Scratch
+            </label>
+        </div>
+    </div>
+</div>
+<div class="row bdr-rad">
+    <div class="col-sm-12">
         <span class="pull-right">
             <button onClick="window.strategyRequest(
                                 'trainStart',
@@ -28,7 +52,8 @@
                                     {
                                         id: {{ $strategy->getParam('id') }},
                                         start_percent: slider.noUiSlider.get()[0],
-                                        end_percent: slider.noUiSlider.get()[1]
+                                        end_percent: slider.noUiSlider.get()[1],
+                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0
                                     }
                                 ))"
                     type="button"

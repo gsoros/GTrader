@@ -124,11 +124,11 @@ abstract class Exchange extends Skeleton
         } catch (\Exception $e) {
             return null;
         }
-        $ret = '['.$exchange->getParam('long_name').']';
         if (!($symbol = $exchange->getParam('symbols')[$symbol]))
             return null;
-        return $ret.' ['.$symbol['long_name'].'] ['.
-                    $symbol['resolutions'][$resolution].']';
+        return $exchange->getParam('long_name').' / '.
+                $symbol['long_name'].' / '.
+                $symbol['resolutions'][$resolution];
     }
 }
 

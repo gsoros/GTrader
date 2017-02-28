@@ -36,8 +36,16 @@ class Fann extends Strategy
 
     public function __wakeup()
     {
-        //error_log('Fann::__wakeup()');
-        $this->createFann();
+        if (defined('FANN_WAKEUP_PREFERRED_SUFFX'))
+        {
+            //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
+            $this->createFann(FANN_WAKEUP_PREFERRED_SUFFX);
+        }
+        else
+        {
+            //error_log('Fann::__wakeup() path: '.$this->path());
+            $this->createFann();
+        }
     }
 
 
@@ -152,19 +160,32 @@ class Fann extends Strategy
     }
 
 
-    public function createFann()
+    public function createFann(string $prefer_suffix = '')
     {
         if (is_resource($this->_fann))
             throw new \Exception('createFann called but _fann is already a resource');
 
-        $path = $this->path();
-        if (is_file($path))
+        // try first with suffix
+        $path = $this->path().$prefer_suffix;
+        if (is_file($path) && is_readable($path))
         {
             //error_log('creating fann from '.$path);
             $this->_fann = fann_create_from_file($path);
         }
+        // try without suffix
         if (!is_resource($this->_fann))
         {
+            $path = $this->path();
+            if (is_file($path) && is_readable($path))
+            {
+                //error_log('creating fann from '.$path);
+                $this->_fann = fann_create_from_file($path);
+            }
+        }
+        // create a new fann
+        if (!is_resource($this->_fann))
+        {
+            error_log('Fann::createFann() Brand New!');
             if ($this->getParam('fann_type') === 'fixed')
             {
                 $params = array_merge(
@@ -240,9 +261,9 @@ class Fann extends Strategy
     }
 
 
-    public function saveFann()
+    public function saveFann(string $suffix = '')
     {
-        $fn = $this->path();
+        $fn = $this->path().$suffix;
         if (!fann_save($this->getFann(), $fn))
         {
             error_log('saveFann to '.$fn.' failed');
@@ -262,6 +283,15 @@ class Fann extends Strategy
     {
         // remove trainings
         FannTraining::where('strategy_id', $this->getParam('id'))->delete();
+        // remove files
+        $this->deleteFiles();
+        // remove strategy
+        parent::delete();
+    }
+
+
+    public function deleteFiles()
+    {
         // remove fann file
         $fn = $this->path();
         if (is_file($fn))
@@ -272,8 +302,11 @@ class Fann extends Strategy
         if (is_file($fn))
             if (is_writable($fn))
                 unlink($fn);
-        // remove strategy
-        parent::delete();
+        // remove train file
+        $fn = $fn.'.train';
+        if (is_file($fn))
+            if (is_writable($fn))
+                unlink($fn);
     }
 
 
@@ -544,5 +577,10 @@ class Fann extends Strategy
     {
         return $this->getParam('path').DIRECTORY_SEPARATOR.
                 $this->getParam('id').'.fann';
+    }
+
+    public function hasBeenTrained()
+    {
+        return is_file($this->path());
     }
 }

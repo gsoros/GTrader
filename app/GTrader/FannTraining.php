@@ -8,6 +8,7 @@ use GTrader\Lock;
 use GTrader\Exchange;
 use GTrader\Series;
 use GTrader\Strategy;
+use GTrader\Strategies\Fann as FannStrategy;
 use GTrader\TrainingManager;
 
 
@@ -62,7 +63,8 @@ class FannTraining extends Model
         $status->range_start = $this->range_start;
         $status->range_end = $this->range_end;
 
-
+        $status_suffix = '.status';
+        $train_suffix = '.train';
 
         $candles = new Series([
                     'exchange' => $exchange_name,
@@ -74,15 +76,18 @@ class FannTraining extends Model
 
         //echo 'Candles: '.$candles->size()."\n";
 
+        define('FANN_WAKEUP_PREFERRED_SUFFX', $train_suffix);
         $strategy = Strategy::load($this->strategy_id);
         $strategy->setCandles($candles);
 
-        $statusfile = $strategy->path().'.status';
+        $statusfile = $strategy->path().$status_suffix;
 
         $epochs = 0;
         $epoch_jump = 1;
+        $no_improvement = 0;
+        $max_boredom = 10;
 
-        if ($json = $this->readStatus())
+        if ($json = $this->readStatus($strategy))
             if ($json = json_decode($json))
                 if (is_object($json))
                 {
@@ -90,11 +95,14 @@ class FannTraining extends Model
                         $epochs = $json->epochs;
                     if (isset($json->epoch_jump))
                         $epoch_jump = $json->epoch_jump;
+                    if (isset($json->balance_max))
+                        $balance_max = $json->balance_max;
+                    if (isset($json->no_improvement))
+                        $no_improvement = $json->no_improvement;
                 }
 
-        $balance_max = $strategy->getLastBalance(true);
-        $no_improvement = 0;
-        $max_boredom = 10;
+        if (!isset($balance_max))
+            $balance_max = $strategy->getLastBalance(true);
 
         while ($this->shouldRun())
         {
@@ -122,15 +130,20 @@ class FannTraining extends Model
 
             $status->epochs = $epochs;
             $status->epoch_jump = $epoch_jump;
+            $status->no_improvement = $no_improvement;
             $status->balance = number_format($balance, 2);
             $status->balance_max = number_format($balance_max, 2);
             $status->signals = $strategy->getNumSignals(true);
-
+            $status->state = 'training';
             $this->writeStatus($statusfile, json_encode($status));
         }
+        $status->state = 'queued';
+        $this->writeStatus($statusfile, json_encode($status));
+        $strategy->saveFann($train_suffix);
 
         Lock::release($training_lock);
     }
+
 
 
     protected function shouldRun()
@@ -182,9 +195,8 @@ class FannTraining extends Model
     }
 
 
-    public function readStatus()
+    public function readStatus(FannStrategy $strategy)
     {
-        $strategy = Strategy::load($this->strategy_id);
         $statusfile = $strategy->path().'.status';
         if (is_file($statusfile))
             if (is_readable($statusfile))
@@ -197,6 +209,14 @@ class FannTraining extends Model
                         return $c;
                     }
         return '{}';
+    }
+
+    public function resetStatus(FannStrategy $strategy)
+    {
+        $statusfile = $strategy->path().'.status';
+        if (is_file($statusfile))
+            if (is_writable($statusfile))
+                unlink($statusfile);
     }
 }
 

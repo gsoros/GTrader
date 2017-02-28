@@ -9,10 +9,12 @@
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12" id="trainProgress">
-        Epoch: <span class="editable" id="trainProgressEpochs"></span>
+        State: <span class="editable" id="trainProgressState"></span>
+        &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
         &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
-        &nbsp; Max: <span class="editable" id="trainProgressBalanceMax"></span>
+        &nbsp; Best: <span class="editable" id="trainProgressBalanceMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
+        &nbsp; No Improvement: <span class="editable" id="trainProgressNoImprovement"></span>
     </div>
 </div>
 <script>
@@ -28,26 +30,26 @@
                 catch (err) {
                     console.log(err);
                 }
-                finally {
-                    $('#trainProgressEpochs').html(reply.epochs);
-                    $('#trainProgressBalance').html(reply.balance);
-                    $('#trainProgressBalanceMax').html(reply.balance_max);
-                    $('#trainProgressSignals').html(reply.signals);
-                }
+                var state = ('undefined' === reply.state) ? 'queued' : reply.state;
+                $('#trainProgressState').html(state);
+                $('#trainProgressEpochs').html(reply.epochs);
+                $('#trainProgressBalance').html(reply.balance);
+                $('#trainProgressBalanceMax').html(reply.balance_max);
+                $('#trainProgressSignals').html(reply.signals);
+                $('#trainProgressNoImprovement').html(reply.no_improvement);
             },
             complete: function() {
                 if ($('#trainProgress').length)
                     pollTimeout = setTimeout(pollStatus, 3000);
-            },
-            error: function (jqXHR, textStatus) {
-                console.log('pollStatus() failure: ' + textStatus);
             }
         });
     }
+    $('#trainProgressState').html(' ... ');
     $('#trainProgressEpochs').html(' ... ');
     $('#trainProgressBalance').html(' ... ');
     $('#trainProgressBalanceMax').html(' ... ');
     $('#trainProgressSignals').html(' ... ');
+    $('#trainProgressNoImprovement').html(' ... ');
     pollStatus();
 
 </script>

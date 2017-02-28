@@ -198,6 +198,15 @@ class StrategyController extends Controller
         $range_start = floor($epoch + $total / 100 * $start_percent);
         $range_end = ceil($epoch + $total / 100 * $end_percent);
 
+        if (isset($request->from_scratch))
+            if (intval($request->from_scratch))
+            {
+                error_log('Starting from scratch.');
+                $strategy->destroyFann();
+                $strategy->deleteFiles();
+                $strategy->createFann();
+            }
+
         $training = FannTraining::firstOrNew([
                             'strategy_id'   => $strategy_id,
                             'status'        => 'training']);
@@ -209,6 +218,7 @@ class StrategyController extends Controller
         $training->range_start = $range_start;
         $training->range_end = $range_end;
         $training->save();
+        $training->resetStatus($strategy);
         $strategy->setParam('debug', var_export($training, true));
 
         $html = view('Strategies/FannTrainProgress', [
@@ -265,7 +275,7 @@ class StrategyController extends Controller
             error_log('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
-        return response($training->readStatus(), 200);
+        return response($training->readStatus($strategy), 200);
     }
 
 }
