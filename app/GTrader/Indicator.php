@@ -4,9 +4,9 @@ namespace GTrader;
 
 use GTrader\Chart;
 
-abstract class Indicator extends Skeleton
+abstract class Indicator
 {
-    use HasOwner;
+    use Skeleton, HasOwner;
 
     protected $_calculated = false;
 

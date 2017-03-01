@@ -2,8 +2,9 @@
 
 namespace GTrader;
 
-class Page extends Skeleton
+class Page
 {
+    use Skeleton;
 
     public function __construct()
     {

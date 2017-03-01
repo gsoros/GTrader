@@ -14,7 +14,7 @@ use GTrader\TrainingManager;
 
 class FannTraining extends Model
 {
-    use HasParams, HasStrategy;
+    use Skeleton, HasStrategy;
 
 
     /**
@@ -37,13 +37,6 @@ class FannTraining extends Model
      * @var array
      */
     protected $guarded = [];
-
-
-    public function __construct()
-    {
-        // load params from config file
-        $this->setParams(\Config::get(str_replace('\\', '.', get_class($this))));
-    }
 
 
     public function run()

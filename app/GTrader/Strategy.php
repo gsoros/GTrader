@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use GTrader\Page;
 
 
-class Strategy extends Skeleton
+class Strategy
 {
-    use HasCandles, HasIndicators;
+    use Skeleton, HasCandles, HasIndicators;
 
 
     public static function load(int $id)

@@ -5,8 +5,9 @@ Namespace GTrader;
 use Illuminate\Support\Facades\DB;
 use GTrader\Exchange;
 
-abstract class Exchange extends Skeleton
+abstract class Exchange
 {
+    use Skeleton;
 
     abstract public function getTicker(array $params = []);
     abstract public function getCandles(array $params = []);

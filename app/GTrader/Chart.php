@@ -9,8 +9,12 @@ use GTrader\Strategy;
 use GTrader\Indicator;
 use GTrader\Page;
 
-abstract class Chart extends Skeleton {
-    use HasCandles, HasIndicators, HasStrategy;
+abstract class Chart
+{
+    use Skeleton, HasCandles, HasIndicators, HasStrategy
+    {
+        Skeleton::__construct as private __skeletonConstruct;
+    }
 
 
     public function __construct(array $params = [])
@@ -36,7 +40,7 @@ abstract class Chart extends Skeleton {
                     uniqid($this->getShortClass());
         $this->setParam('name', $name);
         $this->_indicators[] = 'this array should not be used';
-        parent::__construct($params);
+        $this->__skeletonConstruct($params);
     }
 
 

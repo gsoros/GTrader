@@ -21,7 +21,7 @@
 namespace GTrader;
 
 
-class Skeleton
+trait Skeleton
 {
     use HasParams;
 

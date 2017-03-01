@@ -2,7 +2,9 @@
 
 namespace GTrader;
 
-class Lock extends Skeleton {
+class Lock
+{
+    use Skeleton;
 
     protected $locks = [];
 
