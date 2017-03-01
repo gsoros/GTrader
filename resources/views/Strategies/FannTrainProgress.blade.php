@@ -18,7 +18,8 @@
     </div>
 </div>
 <script>
-    var pollTimeout;
+    var pollTimeout,
+        balance_max = 0;
     function pollStatus() {
         console.log('pollStatus() ' + $('#trainProgress').length);
         $.ajax({
@@ -37,6 +38,10 @@
                 $('#trainProgressBalanceMax').html(reply.balance_max);
                 $('#trainProgressSignals').html(reply.signals);
                 $('#trainProgressNoImprovement').html(reply.no_improvement);
+                if (parseFloat(reply.balance_max) > balance_max) {
+                    balance_max = parseFloat(reply.balance_max);
+                    window.{{ $chart->getParam('name') }}.refresh();
+                }
             },
             complete: function() {
                 if ($('#trainProgress').length)
@@ -44,7 +49,7 @@
             }
         });
     }
-    $('#trainProgressState').html(' ... ');
+    $('#trainProgressState').html('queued');
     $('#trainProgressEpochs').html(' ... ');
     $('#trainProgressBalance').html(' ... ');
     $('#trainProgressBalanceMax').html(' ... ');
@@ -78,7 +83,7 @@
 </div>
 
 
-<pre style="width: 100%; height: 280px; overflow: scroll; color: #fff; background-color: #111">
+<pre style="font-size: 10px; height: 280px; overflow: auto; color: #fff; background-color: #111">
     Training:
         {{ var_export($training, true) }}
 

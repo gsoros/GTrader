@@ -55,9 +55,17 @@ class PHPlot extends Chart {
                 else
                     $this->plotIndicator($ind);
             }
+            $refresh = null;
+            if ($this->getParam('autorefresh') &&
+                ($refresh = $this->getParam('refresh')))
+            {
+                $refresh = "<script>setTimeout(function () {window.".
+                            $this->getParam('name').".refresh()},".
+                            ($refresh * 1000).")</script>";
+            }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
             return $this->_image_map.'<img class="img-responsive" src="'.
-                    $this->_plot->EncodeImage().'"'.$map_str.'>';
+                    $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
         }
         return '';
     }
@@ -100,9 +108,12 @@ class PHPlot extends Chart {
         $end = $candles->getParam('end');
         $limit = $candles->getParam('limit');
         $resolution = $candles->getParam('resolution');
-        $live = ($end == 0) || $end > $candles->getLastInSeries() - $resolution;
-        if ($live)
+        $last = $candles->getLastInSeries();
+        $live = ($end == 0) || $end > $last - $resolution;
+        if ($live) {
             $end = 0;
+            $this->setParam('refresh', 30); // seconds
+        }
         error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command)
         {
@@ -117,7 +128,7 @@ class PHPlot extends Chart {
                 {
                     $epoch = $candles->getEpoch();
                     if (!$end)
-                        $end = $candles->getLastInSeries();
+                        $end = $last;
                     $end -= floor($limit * $resolution / 2);
                     if (($end - $limit * $resolution) < $epoch)
                         $end = $epoch + $limit * $resolution;
@@ -127,7 +138,6 @@ class PHPlot extends Chart {
             case 'forward':
                 if ($end)
                 {
-                    $last = $candles->getLastInSeries();
                     $end += floor($limit * $resolution / 2);
                     if ($end > $last)
                         $end = 0;
@@ -138,7 +148,6 @@ class PHPlot extends Chart {
                 if (!$limit && $resolution)
                 {
                     $epoch = $candles->getEpoch();
-                    $last = $candles->getLastInSeries();
                     $limit = floor(($last - $epoch) / $resolution);
                 }
                 $limit = ceil($limit / 2);
@@ -148,7 +157,6 @@ class PHPlot extends Chart {
 
             case 'zoomOut':
                 $epoch = $candles->getEpoch();
-                $last = $candles->getLastInSeries();
                 $limit = $limit * 2;
                 if ($limit > (($last - $epoch) / $resolution))
                     $limit = 0;
@@ -340,7 +348,7 @@ class PHPlot extends Chart {
     public static function nextColor()
     {
         static $index = 0;
-        $colors = ['red:110', 'yellow:110', 'maroon:100', 'brown:70'];
+        $colors = ['red:90', 'yellow:110', 'maroon:100', 'brown:70'];
         $color = $colors[$index];
         $index ++;
         if ($index >= count($colors)) $index = 0;

@@ -129,8 +129,8 @@ class FannTraining extends Model
             $status->epochs = $epochs;
             $status->epoch_jump = $epoch_jump;
             $status->no_improvement = $no_improvement;
-            $status->balance = number_format(floatval($balance), 2);
-            $status->balance_max = number_format(floatval($balance_max), 2);
+            $status->balance = number_format(floatval($balance), 2, '.', '');
+            $status->balance_max = number_format(floatval($balance_max), 2, '.', '');
             $status->signals = $strategy->getNumSignals(true);
             $status->state = 'training';
             $this->writeStatus($strategy, json_encode($status));

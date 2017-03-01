@@ -67,15 +67,12 @@ abstract class Chart extends Skeleton {
                                 string $make_class = null,
                                 array $params = [])
     {
-        if ($chart = self::loadFromSession($name))
-            return $chart;
-
-        if ($chart = self::loadFromDB($user_id, $name))
-            return $chart;
+        if (!($chart = self::loadFromSession($name)))
+            if (!($chart = self::loadFromDB($user_id, $name)))
+                $chart = Chart::make($make_class);
 
         $params = array_merge(['name' => $name, 'user_id' => $user_id], $params);
-        error_log('Chart::load params: '.serialize($params));
-        $chart = Chart::make($make_class, $params);
+        $chart->mergeParams($params);
 
         return $chart;
     }

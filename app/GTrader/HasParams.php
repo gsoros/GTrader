@@ -47,4 +47,11 @@ trait HasParams
         $this->_params = array_replace_recursive($this->_params, $params);
         return $this;
     }
+
+
+    public function mergeParams(array $params = [])
+    {
+        $this->_params = array_replace_recursive($this->_params, $params);
+        return $this;
+    }
 }

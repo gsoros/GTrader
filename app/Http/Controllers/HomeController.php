@@ -33,7 +33,7 @@ class HomeController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $chart = Chart::load(Auth::id(), 'mainchart');
+        $chart = Chart::load(Auth::id(), 'mainchart', null, ['autorefresh' => true]);
 
         Page::add('scripts_bottom',
                     '<script src="/js/Mainchart.js"></script>');
