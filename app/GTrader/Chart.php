@@ -72,7 +72,7 @@ abstract class Chart extends Skeleton {
                 $chart = Chart::make($make_class);
 
         $params = array_merge(['name' => $name, 'user_id' => $user_id], $params);
-        $chart->mergeParams($params);
+        $chart->setParams($params);
 
         return $chart;
     }
