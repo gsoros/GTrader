@@ -59,9 +59,10 @@ class PHPlot extends Chart {
             if ($this->getParam('autorefresh') &&
                 ($refresh = $this->getParam('refresh')))
             {
-                $refresh = "<script>setTimeout(function () {window.".
-                            $this->getParam('name').".refresh()},".
-                            ($refresh * 1000).")</script>";
+                $refresh = "<script>window.waitForFinalEvent(function () {window.".
+                            $this->getParam('name').".refresh()}, ".
+                            ($refresh * 1000).", 'refresh".
+                            $this->getParam('name')."')</script>";
             }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
             return $this->_image_map.'<img class="img-responsive" src="'.
