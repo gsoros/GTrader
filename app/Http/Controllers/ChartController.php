@@ -44,7 +44,7 @@ class ChartController extends Controller
 
     public function image(Request $request)
     {
-        error_log('ChartController::image()');
+        //error_log('ChartController::image()');
         if (! $chart = Chart::loadFromSession($request->name))
         {
             error_log('image: no chart in session');

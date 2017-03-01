@@ -74,6 +74,21 @@ $(function () {
             }
         }
     });
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var target = $(e.target).attr('href');
+        console.log('tab change: ' + target);
+
+        var chart = $(target + ' .GTraderChart');
+        console.log(chart.attr('id') ? 'we have a chart: ' + chart.attr('id') : 'no chart here');
+
+        if (chart.attr('id')) {
+            var chartObj = window[chart.attr('id')];
+            if (chartObj.needsRefresh) {
+                chartObj.needsRefresh = false;
+                chartObj.refresh();
+            }
+        }
+    });
 });
 
 

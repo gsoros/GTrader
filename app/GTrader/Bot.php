@@ -33,6 +33,15 @@ class Bot extends Model
     protected $guarded = [];
 
 
+    public static function getListOfUser(int $user_id)
+    {
+        $bots = self::where('user_id', $user_id)
+                        ->orderBy('name')
+                        ->get();
+
+        return view('BotList', ['bots' => $bots]);
+    }
+
 
 
 }

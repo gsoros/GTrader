@@ -50,13 +50,6 @@ class FannTraining extends Model
         $exchange_name = Exchange::getNameById($this->exchange_id);
         $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
 
-        $status = new \stdClass();
-        $status->exchange = $exchange_name;
-        $status->symbol = $symbol_name;
-        $status->resolution = $this->resolution;
-        $status->range_start = $this->range_start;
-        $status->range_end = $this->range_end;
-
         $train_suffix = '.train';
 
         $candles = new Series([
@@ -72,7 +65,16 @@ class FannTraining extends Model
         define('FANN_WAKEUP_PREFERRED_SUFFX', $train_suffix);
         $strategy = Strategy::load($this->strategy_id);
         $strategy->setCandles($candles);
-//echo $strategy->path().' NS: '.$strategy->getParam('num_samples')."\n"; exit();
+
+        $status = new \stdClass();
+        $status->exchange = $exchange_name;
+        $status->symbol = $symbol_name;
+        $status->resolution = $this->resolution;
+        $status->range_start = $this->range_start;
+        $status->range_end = $this->range_end;
+        $status->state = 'training';
+        //$this->writeStatus($strategy, json_encode($status));
+
         $epochs = 0;
         $epoch_jump = 1;
         $no_improvement = 0;
@@ -125,7 +127,6 @@ class FannTraining extends Model
             $status->balance = number_format(floatval($balance), 2, '.', '');
             $status->balance_max = number_format(floatval($balance_max), 2, '.', '');
             $status->signals = $strategy->getNumSignals(true);
-            $status->state = 'training';
             $this->writeStatus($strategy, json_encode($status));
         }
         $status->state = 'queued';

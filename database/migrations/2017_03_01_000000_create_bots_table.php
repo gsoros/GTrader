@@ -17,6 +17,7 @@ class CreateBotsTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
             $table->integer('strategy_id')->unsigned()->index();
+            $table->string('name');
             $table->string('status')->index();
             $table->integer('exchange_id')->unsigned();
             $table->integer('symbol_id')->unsigned();

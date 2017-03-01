@@ -9,12 +9,12 @@
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12" id="trainProgress">
-        State: <span class="editable" id="trainProgressState"></span>
+        <span class="editable" id="trainProgressState"></span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
         &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
         &nbsp; Best: <span class="editable" id="trainProgressBalanceMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
-        &nbsp; No Improvement: <span class="editable" id="trainProgressNoImprovement"></span>
+        &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
     </div>
 </div>
 <script>
@@ -37,7 +37,7 @@
                 $('#trainProgressBalance').html(reply.balance);
                 $('#trainProgressBalanceMax').html(reply.balance_max);
                 $('#trainProgressSignals').html(reply.signals);
-                $('#trainProgressNoImprovement').html(reply.no_improvement);
+                $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                 if (parseFloat(reply.balance_max) > balance_max) {
                     balance_max = parseFloat(reply.balance_max);
                     window.{{ $chart->getParam('name') }}.refresh();
