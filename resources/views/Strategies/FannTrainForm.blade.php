@@ -19,7 +19,7 @@
     </div>
 </div>
 <div class="row bdr-rad">
-    <div class="col-sm-12">
+    <div class="col-sm-6 editable">
         @php
             if ($strategy->hasBeenTrained())
             {
@@ -37,7 +37,29 @@
                 <input class="form-check-input"
                         type="checkbox"
                         id="from_scratch"
-                        value="1" {{ $checked }} {{ $disabled }}> Train From Scratch
+                        value="1" {{ $checked }} {{ $disabled }}> Train from scratch
+            </label>
+        </div>
+    </div>
+    <div class="col-sm-6 editable">
+        <label>Test on</label>
+        <div class="form-check form-check-inline">
+            <label class="form-check-label">
+                <input type="radio"
+                        class="form-check-input"
+                        name="test_on"
+                        value="train"
+                        checked>
+                Training period
+            </label>
+        </div>
+        <div class="form-check form-check-inline">
+            <label class="form-check-label">
+                <input type="radio"
+                        class="form-check-input"
+                        name="test_on"
+                        value="whole">
+                Whole period
             </label>
         </div>
     </div>
@@ -54,7 +76,8 @@
                                         id: {{ $strategy->getParam('id') }},
                                         start_percent: slider.noUiSlider.get()[0],
                                         end_percent: slider.noUiSlider.get()[1],
-                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0
+                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
+                                        test_on: $('input[name=test_on]:checked').val()
                                     }
                                 ))"
                     type="button"

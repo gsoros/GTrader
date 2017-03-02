@@ -13,7 +13,7 @@ class TrainingManager
 
     public function run()
     {
-        $lock = __METHOD__;
+        $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock))
         {
             echo "Another TrainingManager process is running.\n";
@@ -75,7 +75,7 @@ class TrainingManager
 
         for ($i = 0; $i < $slots; $i++)
         {
-            $slot_lock = 'slot_'.$i;
+            $slot_lock = 'training_slot_'.$i;
             if (Lock::obtain($slot_lock))
             {
                 Lock::release($slot_lock);

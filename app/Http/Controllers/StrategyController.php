@@ -207,6 +207,11 @@ class StrategyController extends Controller
                 $strategy->createFann();
             }
 
+        $options = ['test_on' => 'train'];
+        if (isset($request->test_on))
+            if (in_array($request->test_on, ['train', 'whole']))
+                $options['test_on'] = $request->test_on;
+
         $training = FannTraining::firstOrNew([
                             'strategy_id'   => $strategy_id,
                             'status'        => 'training']);
@@ -217,6 +222,7 @@ class StrategyController extends Controller
         $training->resolution = $resolution;
         $training->range_start = $range_start;
         $training->range_end = $range_end;
+        $training->options = $options;
         $training->save();
         $training->resetStatus($strategy);
 

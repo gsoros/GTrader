@@ -14,7 +14,7 @@ class Aggregator
 
         ignore_user_abort(true);
 
-        $lock = __METHOD__;//basename(__FILE__);
+        $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock))
         {
             error_log('Another aggregator process is running.');

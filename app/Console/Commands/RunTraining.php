@@ -42,7 +42,7 @@ class RunTraining extends Command
         $training = Training::findOrFail($this->argument('training_id'));
 
 
-        $slot_lock = 'slot_'.$this->argument('slot');
+        $slot_lock = 'training_slot_'.$this->argument('slot');
         if (!Lock::obtain($slot_lock))
             throw new \Exception('Could not obtain slot lock for '.$this->argument('slot'));
 
