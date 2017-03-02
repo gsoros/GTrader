@@ -1,6 +1,6 @@
 {
-  "name": "GTrader",
-  "description": "",
+  "name": "gtrader",
+  "description": "a trading strategy trainer, back-tester and bot",
   "main": "",
   "authors": [
     "GSoros <gsoros@gmail.com>"
