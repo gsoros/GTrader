@@ -18,11 +18,10 @@ mix
     .sass('resources/assets/sass/Chart.scss',   'public/css')
     .sass('resources/assets/sass/PHPlot.scss',  'public/css')
 
-    .copy('resources/assets/js/Chart.js',         'public/js')
     .copy('resources/assets/js/PHPlot.js',        'public/js')
     .copy('resources/assets/js/Dummy.js',         'public/js')
     .copy('resources/assets/js/Mainchart.js',     'public/js')
-    .copy('resources/assets/js/Strategy.js',      'public/js')
+    .copy('resources/assets/js/GTrader.js',       'public/js')
 
     .copy('resources/assets/bower/nouislider/distribute/nouislider.min.js',     'public/js')
     .copy('resources/assets/bower/nouislider/distribute/nouislider.min.css',    'public/css')

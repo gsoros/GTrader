@@ -5,11 +5,11 @@
 ></div>
 <script>
     window.{{ $name }} = {!! $JSON !!};
-    if (window.Chart)
-        window.Chart.register('{{ $name }}');
+    if (window.GTrader)
+        window.GTrader.registerChart('{{ $name }}');
     else {
         $(function() {
-            window.Chart.register('{{ $name }}');
+            window.GTrader.registerChart('{{ $name }}');
         });
     }
 </script>
@@ -30,18 +30,10 @@
                         {{ GTrader\Exchange::getESRReadonly(
                                             $candles->getParam('exchange'),
                                             $candles->getParam('symbol'),
-                                             $candles->getParam('resolution')) }}
+                                            $candles->getParam('resolution')) }}
                         </small>
                     @else
-                        <select title="Exchange Selector"
-                                class="btn-primary btn btn-mini"
-                                id="exchange_{{ $name }}"></select>
-                        <select title="Symbol Selector"
-                                class="btn-primary btn btn-mini"
-                                id="symbol_{{ $name }}"></select>
-                        <select title="Resolution Selector"
-                                class="btn-primary btn btn-mini"
-                                id="resolution_{{ $name }}"></select>
+                        {!! GTrader\Exchange::getESRSelector($chart->getParam('name')) !!}
                     @endif
                 </div>
             </form>
@@ -58,6 +50,15 @@
                     <select title="Strategy Selector"
                             class="btn-primary btn btn-mini"
                             id="strategy_select_{{ $name }}"></select>
+                    <script>
+                        if (window.GTrader)
+                            window.GTrader.registerStrategySelector('{{ $name }}');
+                        else {
+                            $(function() {
+                                window.GTrader.registerStrategySelector('{{ $name }}');
+                            });
+                        }
+                    </script>
                 @endif
 
             </form>

@@ -118,7 +118,7 @@ abstract class Exchange
                                             string $symbol,
                                             int $resolution)
     {
-        error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
+        //error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
         //return '';
         try {
             $exchange = self::make($exchange);
@@ -130,6 +130,12 @@ abstract class Exchange
         return $exchange->getParam('long_name').' / '.
                 $symbol['long_name'].' / '.
                 $symbol['resolutions'][$resolution];
+    }
+
+
+    public static function getESRSelector(string $name)
+    {
+        return view('ESRSelector', ['name' => $name]);
     }
 }
 

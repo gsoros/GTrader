@@ -29,11 +29,11 @@
     </div>
 @endif
 <script>
-    if (window.PHPlot)
-        window.PHPlot.register('{{ $name }}');
+    if (window.GTrader)
+        window.GTrader.registerPHPlot('{{ $name }}');
     else {
         $(function() {
-            window.PHPlot.register('{{ $name }}');
+            window.GTrader.registerPHPlot('{{ $name }}');
         });
     }
 </script>

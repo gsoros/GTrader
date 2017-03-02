@@ -16,12 +16,12 @@ class CreateBotsTable extends Migration
         Schema::create('bots', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
-            $table->integer('strategy_id')->unsigned()->index();
+            $table->integer('strategy_id')->unsigned()->nullable()->index();
             $table->string('name');
             $table->string('status')->index();
-            $table->integer('exchange_id')->unsigned();
-            $table->integer('symbol_id')->unsigned();
-            $table->integer('resolution')->unsigned();
+            $table->integer('exchange_id')->unsigned()->nullable();
+            $table->integer('symbol_id')->unsigned()->nullable();
+            $table->integer('resolution')->unsigned()->nullable();
         });
     }
 

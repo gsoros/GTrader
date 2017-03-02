@@ -11,13 +11,13 @@
                 {!! $chart !!}
             </div>
             <div role="tabpanel" class="tab-pane fade" id="strategyTab">
-                {!! $strategy !!}
+                {!! $strategies !!}
             </div>
             <div role="tabpanel" class="tab-pane fade" id="settingsTab">
                 Debug: <pre>{{ $debug }}</pre>
             </div>
             <div role="tabpanel" class="tab-pane fade" id="botTab">
-                Your Bots will appear here.
+                {!! $bots !!}
             </div>
         </div>
 

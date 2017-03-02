@@ -32,16 +32,14 @@
     <div class="row bdr-rad">
         <div class="col-sm-12">
             <span class="pull-right">
-                <button onClick="window.strategyRequest('list')"
+                <button onClick="window.GTrader.request('strategy', 'list')"
                         type="button"
-                        id="discard_strategy"
                         class="btn btn-primary btn-sm trans"
                         title="Discard Changes">
                     <span class="glyphicon glyphicon-remove"></span> Discard Changes
                 </button>
-                <button onClick="window.strategyRequest('save', $('#strategyForm').serialize(), 'POST')"
+                <button onClick="window.GTrader.request('strategy', 'save', $('#strategyForm').serialize(), 'POST')"
                         type="button"
-                        id="save_strategy"
                         class="btn btn-primary btn-sm trans"
                         title="Save Strategy">
                     <span class="glyphicon glyphicon-ok"></span> Save Strategy

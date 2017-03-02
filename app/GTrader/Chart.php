@@ -327,8 +327,6 @@ abstract class Chart
                     '<link href="'.mix('/css/Chart.css').'" rel="stylesheet">');
         Page::add('scripts_top',
                     '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>');
-        Page::add('scripts_top',
-                    '<script src="/js/Chart.js"></script>');
         //Page::add('scripts_top',
         //            '<script> window.'.$this->getParam('name').' = '.$this->toJSON().'; </script>');
         return $this;

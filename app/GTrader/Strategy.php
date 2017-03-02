@@ -82,9 +82,6 @@ class Strategy
 
     public static function getListOfUser(int $user_id)
     {
-        Page::add('scripts_bottom',
-                    '<script src="/js/Strategy.js"></script>');
-
         $strategies_db = DB::table('strategies')
                         ->select('id', 'strategy')
                         ->where('user_id', $user_id)
@@ -111,7 +108,6 @@ class Strategy
 
     public static function getSelectorOptions(
                                 int $user_id,
-                                string $chart_name = null,
                                 int $selected_strategy = null)
     {
         $strategies = DB::table('strategies')
@@ -121,7 +117,6 @@ class Strategy
                         ->get();
 
         return view('StrategySelectorOptions', [
-                        'chart_name' => $chart_name,
                         'selected_strategy' => $selected_strategy,
                         'strategies' => $strategies]);
     }

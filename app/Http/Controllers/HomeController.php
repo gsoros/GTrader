@@ -6,13 +6,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Page;
-use GTrader\Exchange;
+//use GTrader\Exchange;
 use GTrader\Chart;
-use GTrader\Series;
+//use GTrader\Series;
 use GTrader\Strategy;
-use GTrader\Indicator;
-use GTrader\Util;
-use GTrader\TestClass;
+//use GTrader\Indicator;
+//use GTrader\Util;
+use GTrader\Bot;
 
 class HomeController extends Controller
 {
@@ -35,6 +35,8 @@ class HomeController extends Controller
     {
         $chart = Chart::load(Auth::id(), 'mainchart', null, ['autorefresh' => true]);
 
+        Page::add('scripts_top',
+                    '<script src="/js/GTrader.js"></script>');
         Page::add('scripts_bottom',
                     '<script src="/js/Mainchart.js"></script>');
         $chart->addPageElements();
@@ -45,7 +47,8 @@ class HomeController extends Controller
                     '<script src="/js/nouislider.min.js"></script>');
 
         $viewData = [   'chart'             => $chart->toHtml(),
-                        'strategy'          => Strategy::getListOfUser(Auth::id()),
+                        'strategies'        => Strategy::getListOfUser(Auth::id()),
+                        'bots'              => Bot::getListOfUser(Auth::id()),
                         'stylesheets'       => Page::get('stylesheets'),
                         'scripts_top'       => Page::get('scripts_top'),
                         'scripts_bottom'    => Page::get('scripts_bottom'),

@@ -45,7 +45,8 @@
 <div class="row bdr-rad">
     <div class="col-sm-12">
         <span class="pull-right">
-            <button onClick="window.strategyRequest(
+            <button onClick="window.GTrader.request(
+                                'strategy',
                                 'trainStart',
                                 $.extend(
                                     window.trainingChart.getSelectedESR(),
@@ -57,12 +58,11 @@
                                     }
                                 ))"
                     type="button"
-                    id="startTrainingButton"
                     class="btn btn-primary btn-sm trans"
                     title="Start Training">
                 <span class="glyphicon glyphicon-fire"></span> Start Training
             </button>
-            <button onClick="window.strategyRequest('list')"
+            <button onClick="window.GTrader.request('strategy', 'list')"
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Back to the List of Strategies">

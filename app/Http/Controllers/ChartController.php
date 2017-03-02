@@ -60,16 +60,14 @@ class ChartController extends Controller
 
     public function strategySelectorOptions(Request $request)
     {
-        if (!($chart = Chart::loadFromSession($request->name)))
-        {
-            error_log('strategySelectorOptions: no '.$request->name.' chart in session');
-            return response('No such chart in session.', 403);
-        }
-        $chart_name = $request->name;
-        if ($strategy = $chart->getStrategy())
-            $selected_strategy = $strategy->getParam('id');
-        else $selected_strategy = null;
-        $selector = Strategy::getSelectorOptions(Auth::id(), $chart_name, $selected_strategy);
+        $selected_strategy = null;
+        if (isset($request->selected))
+            $selected_strategy = intval($request->selected);
+        else if ($chart = Chart::loadFromSession($request->name))
+            if ($strategy = $chart->getStrategy())
+                $selected_strategy = $strategy->getParam('id');
+
+        $selector = Strategy::getSelectorOptions(Auth::id(), $selected_strategy);
         return response($selector, 200);
     }
 

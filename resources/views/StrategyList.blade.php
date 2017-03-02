@@ -11,20 +11,20 @@
             </div>
             <div class="col-sm-2">
                 <div class="form-group editbuttons">
-                    <button id="edit_{{ $id }}"
+                    <button onClick="window.GTrader.request('strategy',
+                                                            'form',
+                                                            'id={{ $id }}')"
                             type="button"
                             class="btn btn-primary btn-sm editbutton trans"
-                            title="Edit Strategy"
-                            onClick="window.strategyRequest(
-                                        'form', 'id={{ $id }}')">
+                            title="Edit Strategy">
                         <span class="glyphicon glyphicon-wrench"></span>
                     </button>
-                    <button id="delete_{{ $id }}"
+                    <button onClick="window.GTrader.request('strategy',
+                                                            'delete',
+                                                            'id={{ $id }}')"
                             type="button"
                             class="btn btn-primary btn-sm editbutton trans"
-                            title="Delete Strategy"
-                            onClick="window.strategyRequest(
-                                        'delete', 'id={{ $id }}')">
+                            title="Delete Strategy">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
                 </div>
@@ -43,12 +43,12 @@
                 @endforeach
             </select>
 
-            <button id="new_strategy"
+            <button onClick="window.GTrader.request('strategy',
+                                                    'new',
+                                                    {strategyClass: $('#new_strategy_class').val()})"
                     type="button"
                     class="btn btn-primary btn-sm trans"
-                    title="Create new strategy"
-                    onClick="window.strategyRequest(
-                                'new', {strategyClass: $('#new_strategy_class').val()})">
+                    title="Create new strategy">
                 <span class="glyphicon glyphicon-ok"></span> Create
             </button>
         </div>

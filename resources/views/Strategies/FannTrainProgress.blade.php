@@ -62,17 +62,17 @@
     <div class="col-sm-12">
         <span class="pull-right">
             <button onClick="clearTimeout(pollTimeout);
-                                window.strategyRequest(
+                                window.GTrader.request(
+                                    'strategy',
                                     'trainStop',
                                     'id={{ $strategy->getParam('id') }}'
                                     )"
                     type="button"
-                    id="stopTrainingButton"
                     class="btn btn-primary btn-sm trans"
                     title="Stop Training">
                 <span class="glyphicon glyphicon-fire"></span> Stop Training
             </button>
-            <button onClick="window.strategyRequest('list')"
+            <button onClick="window.GTrader.request('strategy', 'list')"
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Back to the List of Strategies">

@@ -6,14 +6,18 @@ use GTrader\Chart;
 
 abstract class Indicator
 {
-    use Skeleton, HasOwner;
+
+    use Skeleton, HasOwner
+    {
+        Skeleton::__construct as private __skeletonConstruct;
+    }
 
     protected $_calculated = false;
 
 
     public function __construct(array $params = [])
     {
-        parent::__construct($params);
+        $this->__skeletonConstruct($params);
 
         if (!$this->getParam('display.y_axis_pos'))
             $this->setParam('display.y_axis_pos', 'left');

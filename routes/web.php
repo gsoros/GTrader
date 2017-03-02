@@ -36,11 +36,16 @@ Route::get('/strategy.new',             'StrategyController@new');
 Route::get('/strategy.form',            'StrategyController@form');
 Route::get('/strategy.delete',          'StrategyController@delete');
 Route::post('/strategy.save',           'StrategyController@save');
+
 Route::get('/strategy.train',           'StrategyController@train');
 Route::get('/strategy.trainStart',      'StrategyController@trainStart');
 Route::get('/strategy.trainStop',       'StrategyController@trainStop');
 Route::get('/strategy.trainProgress',   'StrategyController@trainProgress');
 
-
+Route::get('/bot.list',                 'BotController@list');
+Route::get('/bot.new',                  'BotController@new');
+Route::get('/bot.form',                 'BotController@form');
+Route::get('/bot.delete',               'BotController@delete');
+Route::post('/bot.save',                'BotController@save');
 
 
