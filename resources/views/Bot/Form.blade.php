@@ -4,34 +4,28 @@
 <form id="botForm">
     <input type="hidden" name="id" value="{{ $bot->id }}">
     <div class="row bdr-rad">
-        <div class="col-sm-1">
+        <div class="col-sm-12">
             Bot Settings
         </div>
-        <div class="col-sm-3">
-            <div class="editable form-group">
-                <label for="name">Name</label>
-                <input class="btn-primary form-control form-control-sm"
-                        type="text"
-                        id="name"
-                        name="name"
-                        title="Bot Name"
-                        value="{{ $bot->name }}">
-            </div>
+        <div class="col-sm-6 editable form-group">
+            <label for="name">Name</label>
+            <input class="btn-primary form-control form-control-sm"
+                    type="text"
+                    id="name"
+                    name="name"
+                    title="Bot Name"
+                    value="{{ $bot->name }}">
         </div>
-        <div class="col-sm-5">
-            <div class="editable form-group">
-                <label>Exchange, Symbol, Resolution</label>
-                {!! GTrader\Exchange::getESRSelector('bot_'.$bot->id) !!}
-            </div>
+        <div class="col-sm-6 editable form-group">
+            <label>Exchange, Symbol, Resolution</label><br>
+            {!! GTrader\Exchange::getESRSelector('bot_'.$bot->id) !!}
         </div>
-          <div class="col-sm-3">
-            <div class="editable form-group">
-                <label>Strategy</label>
-                <select title="Strategy Selector"
-                        class="btn-primary btn btn-mini"
-                        id="strategy_select_bot_{{ $bot->id }}"
-                        name="strategy_select_bot_{{ $bot->id }}"></select>
-            </div>
+          <div class="col-sm-6 editable form-group">
+            <label>Strategy</label>
+            <select title="Strategy Selector"
+                    class="btn-primary btn btn-mini"
+                    id="strategy_select_bot_{{ $bot->id }}"
+                    name="strategy_select_bot_{{ $bot->id }}"></select>
         </div>
     </div>
     <div class="row bdr-rad">
