@@ -84,6 +84,8 @@
 
 
 <pre style="font-size: 10px; height: 280px; overflow: auto; color: #fff; background-color: #111">
+    Chart->dumpIndicators():
+        {{ $chart->dumpIndicators() }}
     Training:
         {{ var_export($training, true) }}
 

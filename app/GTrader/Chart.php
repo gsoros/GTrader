@@ -385,6 +385,7 @@ abstract class Chart
         $indicators = $this->getIndicatorsFilteredSorted(
                     ['display.visible' => true],
                     ['display.y_axis_pos' => 'left', 'display.name']);
+
         if (is_array($visible = $this->getParam('visible_indicators')))
             foreach ($indicators as $key => $indicator)
                 if (!in_array($indicator->getShortClass(), $visible))

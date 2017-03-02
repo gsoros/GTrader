@@ -98,7 +98,14 @@ class Fann extends Strategy
                             'readonly' => ['esr'],
                             'highlight' => [$training->range_start, $training->range_end],
                             'visible_indicators' => ['Balance']]);
+
+        $progress_chart->addIndicator('Balance');
+
         $progress_chart->saveToSession();
+
+        // We have added a balance indicator, save
+        $this->save();
+
         return $progress_chart;
     }
 

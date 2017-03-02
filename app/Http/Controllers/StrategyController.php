@@ -229,6 +229,7 @@ class StrategyController extends Controller
         $html = view('Strategies/FannTrainProgress', [
                         'strategy' => $strategy,
                         'training' => $training]);
+
         return response($html, 200);
     }
 

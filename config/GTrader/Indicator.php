@@ -7,8 +7,10 @@ return [
                                 'Ema'               => ['allow_multiple' => true],
                                 'FannPrediction'    => ['allow_multiple' => false],
                                 'FannSignals'       => ['allow_multiple' => false],
-                                ],
+                            ],
     'default_child'     => 'Ema',
-    'display'           => ['name' => 'Unnamed Indicator',
-                            'visible' => true],
+    'display'           => [
+                                'name'              => 'Unnamed Indicator',
+                                'visible'           => true
+                            ],
 ];

@@ -48,7 +48,6 @@ class PHPlot extends Chart {
                 $this->_image_map .= '</map>';
             foreach ($this->getIndicatorsVisibleSorted() as $ind)
             {
-                //error_log('PHPlot::getImage() plotting: '.$ind->getSignature());
                 $ind->checkAndRun();
                 if ($ind->getParam('display.name') === 'Signals')
                     $this->plotSignals($ind);
