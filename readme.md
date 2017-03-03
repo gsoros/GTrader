@@ -1,9 +1,24 @@
 ## About GTrader
 
-GTrader is a trading strategy tester and bot...
+GTrader is a trading strategy back-tester and bot manager.
 
 ## Installation
 
-- Step 1
-- Step 2
-- Step 3
+1. git clone
+2. composer install
+3. bower install
+4. npm install
+5. cp .env.example .env
+6. php artisan key:generate
+7. edit .env
+8. set up db
+9. php artisan migrate
+10. php artisan serve
+
+![main chart](https://cloud.githubusercontent.com/assets/12033369/23566860/fdeaecca-0053-11e7-9c57-7de5d9aa8297.png)
+
+![settings](https://cloud.githubusercontent.com/assets/12033369/23566869/08e82b60-0054-11e7-9637-3de98b20c5cf.png)
+
+![training](https://cloud.githubusercontent.com/assets/12033369/23566864/01f26f1e-0054-11e7-82fd-c23d142728fa.png)
+
+![strategies](https://cloud.githubusercontent.com/assets/12033369/23566871/0e0255da-0054-11e7-861d-3412d534c426.png)
