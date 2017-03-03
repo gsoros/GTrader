@@ -13,7 +13,8 @@ GTrader is a trading strategy back-tester and bot manager.
 7. edit .env
 8. set up db
 9. php artisan migrate
-10. php artisan serve
+10. (crontab -l ; echo -e "### GTrader Schedule\n* * * * * /path/to/php /path/to/GTrader/artisan schedule:run >> /path/to/GTrader/storage/logs/schedule.log 2>&1") | crontab -
+11. php artisan serve
 
 ![main chart](https://cloud.githubusercontent.com/assets/12033369/23566860/fdeaecca-0053-11e7-9c57-7de5d9aa8297.png)
 
