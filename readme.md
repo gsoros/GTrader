@@ -2,8 +2,11 @@
 
 GTrader is a trading strategy back-tester and bot manager.
 
-## Installation
+## Requirements
+* PHP 7
+* [PHP-FANN] (http://php.net/manual/en/book.fann.php)
 
+## Installation
 1. git clone
 2. composer install
 3. bower install
@@ -16,6 +19,7 @@ GTrader is a trading strategy back-tester and bot manager.
 10. (crontab -l ; echo -e "### GTrader Schedule\n* * * * * /path/to/php /path/to/GTrader/artisan schedule:run >> /path/to/GTrader/storage/logs/schedule.log 2>&1") | crontab -
 11. php artisan serve
 
+## Screenshots
 ![main chart](https://cloud.githubusercontent.com/assets/12033369/23566860/fdeaecca-0053-11e7-9c57-7de5d9aa8297.png)
 
 ![settings](https://cloud.githubusercontent.com/assets/12033369/23566869/08e82b60-0054-11e7-9637-3de98b20c5cf.png)
@@ -23,3 +27,6 @@ GTrader is a trading strategy back-tester and bot manager.
 ![training](https://cloud.githubusercontent.com/assets/12033369/23566864/01f26f1e-0054-11e7-82fd-c23d142728fa.png)
 
 ![strategies](https://cloud.githubusercontent.com/assets/12033369/23566871/0e0255da-0054-11e7-861d-3412d534c426.png)
+
+## License
+[GPLv3] (https://www.gnu.org/licenses/gpl-3.0.en.html)
