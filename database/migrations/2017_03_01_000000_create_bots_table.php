@@ -22,6 +22,7 @@ class CreateBotsTable extends Migration
             $table->integer('exchange_id')->unsigned()->nullable();
             $table->integer('symbol_id')->unsigned()->nullable();
             $table->integer('resolution')->unsigned()->nullable();
+            $table->text('options')->nullable();
         });
     }
 

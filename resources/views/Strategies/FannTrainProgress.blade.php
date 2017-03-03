@@ -9,7 +9,7 @@
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12" id="trainProgress">
-        <span class="editable" id="trainProgressState"></span>
+        <span class="editable cap" id="trainProgressState"></span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
         &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
         &nbsp; Best: <span class="editable" id="trainProgressBalanceMax"></span>
@@ -82,7 +82,7 @@
     </div>
 </div>
 
-
+<!--
 <pre style="font-size: 10px; height: 280px; overflow: auto; color: #fff; background-color: #111">
     Chart->dumpIndicators():
         {{ $chart->dumpIndicators() }}
@@ -92,5 +92,5 @@
     Strategy:
         {{ var_export($strategy->getParams(), true) }}
 </pre>
-
+-->
 

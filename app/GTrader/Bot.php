@@ -35,6 +35,20 @@ class Bot extends Model
      */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'options' => 'array',
+    ];
+
+
+    public function run()
+    {
+    }
+
 
     public static function getListOfUser(int $user_id)
     {

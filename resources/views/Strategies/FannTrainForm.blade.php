@@ -59,7 +59,7 @@
                         class="form-check-input"
                         name="test_on"
                         value="whole">
-                Whole period
+                Entire period
             </label>
         </div>
     </div>

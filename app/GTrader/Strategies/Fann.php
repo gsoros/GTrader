@@ -596,9 +596,13 @@ class Fann extends Strategy
 
     public function path()
     {
-        return $this->getParam('path').DIRECTORY_SEPARATOR.
-                $this->getParam('id').'.fann';
+        $dir = $this->getParam('path');
+        if (!is_dir($dir))
+            if (!mkdir($dir))
+                throw new \Exception('Failed to create directory '.$dir);
+        return $dir.DIRECTORY_SEPARATOR.$this->getParam('id').'.fann';
     }
+
 
     public function hasBeenTrained()
     {

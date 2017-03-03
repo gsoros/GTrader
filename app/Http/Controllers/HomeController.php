@@ -33,7 +33,11 @@ class HomeController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $chart = Chart::load(Auth::id(), 'mainchart', null, ['autorefresh' => true]);
+        $chart = Chart::load(Auth::id(),
+                            'mainchart',
+                            null,
+                            [   'autorefresh' => true,
+                                'disabled' => ['map']]);
 
         Page::add('scripts_top',
                     '<script src="/js/GTrader.js"></script>');

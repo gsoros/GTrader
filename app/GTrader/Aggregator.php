@@ -72,7 +72,7 @@ class Aggregator
                     echo 'Res: '.$resolution.' Last: '.date('Y-m-d H:i', $time)."\n";
                     //if ($time > time() - $resolution) continue;
 
-                    $params = [ 'since'         => $time - 2 * $resolution - 1,
+                    $params = [ 'since'         => $time - $resolution - 1,
                                 'resolution'    => $resolution,
                                 'symbol'        => $symbol_local,
                                 'size'          => 100000];

@@ -1,7 +1,13 @@
 .PHPlot-panzoom {
     width: 200px;
     position: relative;
-    top: -50px;
+    top: -60px;
     left: 400px;
     margin-bottom: -30px;
+    opacity: 0.3;
+    transition: opacity 0.5s;
+}
+
+.PHPlot-panzoom:hover {
+    opacity: 1;
 }

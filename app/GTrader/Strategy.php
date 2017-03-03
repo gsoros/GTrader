@@ -106,6 +106,7 @@ class Strategy
         return $this->getParam('name');
     }
 
+
     public static function getSelectorOptions(
                                 int $user_id,
                                 int $selected_strategy = null)

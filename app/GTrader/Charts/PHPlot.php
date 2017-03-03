@@ -320,8 +320,8 @@ class PHPlot extends Chart {
         $this->_plot->SetCallback('data_color',
                function($img, $junk, $row, $col, $extra = 0) use ($signals) {
                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                   if ('buy' === $signals[$row]) return (0 === $extra) ? 1 : 0;
-                   else if ('sell' === $signals[$row]) return (0 === $extra) ? 0 : 1;
+                   if ('long' === $signals[$row]) return (0 === $extra) ? 1 : 0;
+                   else if ('short' === $signals[$row]) return (0 === $extra) ? 0 : 1;
                    else error_log('Unmatched signal');
                });
         $this->_plot->SetDataValues($data);

@@ -59,19 +59,19 @@ class Balance extends Indicator
             if ($prev_signal)
             { // update UPL
                 if ($candle->close != $prev_signal['price']) // avoid division by zero
-                    if ($prev_signal['signal'] == 'buy')
+                    if ($prev_signal['signal'] == 'long')
                         $upl = $stake / $prev_signal['price'] *
                                 ($candle->close - $prev_signal['price']) * $leverage;
-                    else if ($prev_signal['signal'] == 'sell')
+                    else if ($prev_signal['signal'] == 'short')
                         $upl = $stake / $prev_signal['price'] *
                                 ($prev_signal['price'] - $candle->close) * $leverage;
             }
 
             if ($signal = $candle->$signal_sig)
             {
-                if ($signal['signal'] == 'buy' && $capital > 0)
+                if ($signal['signal'] == 'long' && $capital > 0)
                 { // go long
-                    if ($prev_signal && $prev_signal['signal'] == 'sell')
+                    if ($prev_signal && $prev_signal['signal'] == 'short')
                     { // close last short
                         if ($prev_signal['price']) // avoid division by zero
                             $capital += $stake / $prev_signal['price'] * ($prev_signal['price']
@@ -82,9 +82,9 @@ class Balance extends Indicator
                     // open long
                     $capital -= $stake * $fee_multiplier;
                 }
-                else if ($signal['signal'] == 'sell' && $capital > 0)
+                else if ($signal['signal'] == 'short' && $capital > 0)
                 { // go short
-                    if ($prev_signal && $prev_signal['signal'] == 'buy')
+                    if ($prev_signal && $prev_signal['signal'] == 'long')
                     { // close last long
                         if ($prev_signal['price']) // avoid division by zero
                             $capital += $stake / $prev_signal['price'] * ($signal['price']
