@@ -1,36 +1,40 @@
 @php
 @endphp
 <div class="container-fluid">
-    @foreach ($strategies as $strategy)
-        @php
-            $id = $strategy->getParam('id');
-        @endphp
-        <div class="row editable" id="strategy_{{ $id }}">
-            <div class="col-sm-10">
-                {!! $strategy->listItem() !!}
-            </div>
-            <div class="col-sm-2">
-                <div class="form-group editbuttons">
-                    <button onClick="window.GTrader.request('strategy',
-                                                            'form',
-                                                            'id={{ $id }}')"
-                            type="button"
-                            class="btn btn-primary btn-sm editbutton trans"
-                            title="Edit Strategy">
-                        <span class="glyphicon glyphicon-wrench"></span>
-                    </button>
-                    <button onClick="window.GTrader.request('strategy',
-                                                            'delete',
-                                                            'id={{ $id }}')"
-                            type="button"
-                            class="btn btn-primary btn-sm editbutton trans"
-                            title="Delete Strategy">
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
+    <div class="row">
+        @foreach ($strategies as $strategy)
+            @php
+                $id = $strategy->getParam('id');
+            @endphp
+            <div class="col-sm-6 editable">
+                <div class="row">
+                    <div class="col-sm-8">
+                        {!! $strategy->listItem() !!}
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group editbuttons">
+                            <button onClick="window.GTrader.request('strategy',
+                                                                    'form',
+                                                                    'id={{ $id }}')"
+                                    type="button"
+                                    class="btn btn-primary btn-sm editbutton trans"
+                                    title="Edit Strategy">
+                                <span class="glyphicon glyphicon-wrench"></span>
+                            </button>
+                            <button onClick="window.GTrader.request('strategy',
+                                                                    'delete',
+                                                                    'id={{ $id }}')"
+                                    type="button"
+                                    class="btn btn-primary btn-sm editbutton trans"
+                                    title="Delete Strategy">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    @endforeach
+        @endforeach
+    </div>
 
     <div class="row" id="new_strategy">
         <div class="col-sm-12 editable text-right">

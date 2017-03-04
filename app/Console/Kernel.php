@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\FetchCandles::class,
         Commands\RunTraining::class,
-        Commands\RunTrainingManager::class
+        Commands\RunTrainingManager::class,
+        Commands\RunBot::class,
+        Commands\RunBots::class,
     ];
 
     /**

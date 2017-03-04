@@ -159,17 +159,24 @@ class Strategy
         return 0;
     }
 
-    public function getNumSignals(bool $force_rerun = false)
+
+    public function getSignals(bool $force_rerun = false)
     {
-        $signals = $this->getSignalsIndicator();
-        $signals->checkAndRun($force_rerun);
-        $sig = $signals->getSignature();
+        $sig_ind = $this->getSignalsIndicator();
+        $sig_ind->checkAndRun($force_rerun);
+        $signature = $sig_ind->getSignature();
         $candles = $this->getCandles();
         $candles->reset();
-        $count = 0;
+        $signals = [];
         while ($candle = $candles->next())
-            if (isset($candle->$sig))
-                $count++;
-        return $count;
+            if (isset($candle->$signature))
+                $signals[$candle->time] = $candle->$signature;
+        return $signals;
+    }
+
+
+    public function getNumSignals(bool $force_rerun = false)
+    {
+        return count($this->getSignals($force_rerun));
     }
 }

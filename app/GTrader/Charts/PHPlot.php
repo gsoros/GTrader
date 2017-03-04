@@ -190,7 +190,7 @@ class PHPlot extends Chart {
         $this->_plot->setTitle($title);
         $this->_plot->SetDataColors(
                     'candles' === $plot_type ?
-                    ['red:30', 'DarkGreen:20','grey:90', 'grey:90', 'yellow']:
+                    ['#ff101020', 'DarkGreen:20','grey:90', 'grey:90', 'yellow']:
                     ['DarkGreen', 'yellow']);
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);
@@ -316,7 +316,7 @@ class PHPlot extends Chart {
         //dd($signals);
         if (!count($data))
             return $this;
-        $this->_plot->SetDataColors(['green:50', 'red:50']);
+        $this->_plot->SetDataColors(['#00ff0050', '#ff000010']);
         $this->_plot->SetCallback('data_color',
                function($img, $junk, $row, $col, $extra = 0) use ($signals) {
                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
@@ -327,7 +327,7 @@ class PHPlot extends Chart {
         $this->_plot->SetDataValues($data);
         $this->_plot->SetLineWidths(1);
         $this->_plot->SetPlotType('linepoints');
-        $this->_plot->SetPointShapes('dot');
+        $this->_plot->SetPointShapes('target');
         $this->_plot->SetLineStyles(['dashed']);
         $this->_plot->SetPointSizes(14);
         $this->_plot->SetYDataLabelPos('plotin');
@@ -348,7 +348,7 @@ class PHPlot extends Chart {
     public static function nextColor()
     {
         static $index = 0;
-        $colors = ['red:90', 'yellow:110', 'maroon:100', 'brown:70'];
+        $colors = ['#22226640', 'yellow:110', 'maroon:100', 'brown:70'];
         $color = $colors[$index];
         $index ++;
         if ($index >= count($colors)) $index = 0;

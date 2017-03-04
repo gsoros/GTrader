@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use GTrader\Exchange;
-
+use GTrader\Series;
+use GTrader\Lock;
 
 class Bot extends Model
 {
@@ -47,6 +48,36 @@ class Bot extends Model
 
     public function run()
     {
+        $lock = 'bot_'.$this->id;
+        if (!Lock::obtain($lock))
+            throw new \Exception('Could not obtain lock for '.$this->id);
+
+        // Set up series
+        $candles_limit = 200;
+        $candles = new Series([
+                        'exchange' => Exchange::getNameById($this->exchange_id),
+                        'symbol' => Exchange::getSymbolNameById($this->symbol_id),
+                        'resolution' => $this->resolution,
+                        'limit' => $candles_limit]);
+
+        // Set up strategy
+        $strategy = $this->getStrategy();
+        $strategy->setCandles($candles);
+        $strategy->setParam('spitfire', true);
+
+        // Check for a signal
+        $signals = $strategy->getSignals();
+
+        $signal_times = array_keys($signals);
+        $last_signal_time = array_pop($signal_times);
+        $last_signal = array_pop($signals);
+        $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
+
+
+        var_export($last_signal);
+
+        Lock::release($lock);
+
     }
 
 
@@ -114,6 +145,12 @@ class Bot extends Model
         $o->resolution = $this->resolution;
         $o->strategy_id = $this->strategy_id;
         return json_encode($o, $options);
+    }
+
+
+    public function getStrategy()
+    {
+        return Strategy::load($this->strategy_id);
     }
 
 }

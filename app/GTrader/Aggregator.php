@@ -60,7 +60,7 @@ class Aggregator
                 echo ' ID: '.$symbol_id."\n";
                 foreach ($symbol['resolutions'] as $resolution => $res_name)
                 {
-                    set_time_limit(59);
+                    //set_time_limit(59);
 
                     $time = Candle::select('time')
                             ->where('exchange_id', $exchange_id)

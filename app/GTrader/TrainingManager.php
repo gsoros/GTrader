@@ -96,7 +96,9 @@ class TrainingManager
     {
         echo 'Assigning training '.$training->id.' to slot '.$slot."\n";
 
-        $command = 'php '.base_path('artisan').' training:run '.$slot.' '.$training->id;
+        $command = $this->getParam('php_command').' '.
+                    base_path('artisan').' training:run '.
+                    $slot.' '.$training->id;
 
         echo $command."\n";
 
