@@ -11,6 +11,7 @@ abstract class Exchange
 
     abstract public function getTicker(array $params = []);
     abstract public function getCandles(array $params = []);
+    abstract public function takePosition(string $position);
 
 
     public static function getDefault(string $param)
@@ -37,6 +38,11 @@ abstract class Exchange
         return null;
     }
 
+
+    public function getId()
+    {
+        return self::getIdByName($this->getShortClass());
+    }
 
     public static function getNameById(int $id)
     {
@@ -136,6 +142,16 @@ abstract class Exchange
     public static function getESRSelector(string $name)
     {
         return view('ESRSelector', ['name' => $name]);
+    }
+
+
+    public static function getList()
+    {
+        $default = self::singleton();
+        $exchanges = [];
+        foreach ($default->getParam('available_exchanges') as $class)
+            $exchanges[] = self::make($class);
+        return view('Exchange/List', ['exchanges' => $exchanges]);
     }
 }
 

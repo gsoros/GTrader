@@ -62,14 +62,16 @@ class FannSignals extends Indicator
 
                 $price_long = $price_short = $candle->open;
 
-                if ($candle->$indicator_sig > $candle->open + $candle->open / $long_threshold &&
-                                                    ($last['signal'] != 'long' || $spitfire))
+                if ($candle->$indicator_sig >
+                            $candle->open + $candle->open / $long_threshold &&
+                            ($last['signal'] != 'long' || $spitfire))
                 {
                     $candle->$signature = ['signal' => 'long', 'price' => $price_long];
                     $last = ['time' => $candle->time, 'signal' => 'long'];
                 }
-                else if ($candle->$indicator_sig < $candle->open - $candle->open / $short_threshold &&
-                                                    ($last['signal'] != 'short' || $spitfire))
+                else if ($candle->$indicator_sig <
+                            $candle->open - $candle->open / $short_threshold &&
+                            ($last['signal'] != 'short' || $spitfire))
                 {
                     $candle->$signature = ['signal' => 'short', 'price' => $price_short];
                     $last = ['time' => $candle->time, 'signal' => 'short'];

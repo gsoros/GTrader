@@ -83,7 +83,7 @@
 </div>
 
 <!--
-<pre style="font-size: 10px; height: 280px; overflow: auto; color: #fff; background-color: #111">
+<pre class="debug">
     Chart->dumpIndicators():
         {{ $chart->dumpIndicators() }}
     Training:

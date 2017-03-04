@@ -1,9 +1,10 @@
 <?php
 
 return [
-    'long_name' => 'OKCoin Futures Exchange',
-    'short_name' => 'OKCF',
-    'local_name' => 'OKCoin_Futures',                           // class name, also used in the local database
+    'long_name'         => 'OKCoin Futures Exchange',
+    'short_name'        => 'OKCF',
+    'local_name'        => 'OKCoin_Futures',                    // class name, also used in the local database
+    'user_config_keys'  => ['api_key', 'api_secret'],           // user-configurable parameters
     'symbols' => [
         'btc_usd_3m' =>                                         // used in the local database, same as local_name
             [
@@ -28,7 +29,7 @@ return [
             ],
     ],
     /* OKCoin-specific resolution strings */
-    'resolution_names'=> [  60      => '1min',
+    'resolution_names' => [ 60      => '1min',
                             180     => '3min',   //       3*60
                             300     => '5min',   //       5*60
                             900     => '15min',  //      15*60
@@ -41,6 +42,5 @@ return [
                             86400   => '1day',   //   24*60*60
                             259200  => '3day',   // 3*24*60*60
                             604800  => '1week'], // 7*24*60*60
-
 
 ];

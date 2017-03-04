@@ -190,7 +190,7 @@ class PHPlot extends Chart {
         $this->_plot->setTitle($title);
         $this->_plot->SetDataColors(
                     'candles' === $plot_type ?
-                    ['#ff101020', 'DarkGreen:20','grey:90', 'grey:90', 'yellow']:
+                    ['#b0100010', '#00600010','grey:90', 'grey:90', 'yellow']:
                     ['DarkGreen', 'yellow']);
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);

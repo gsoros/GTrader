@@ -26,4 +26,12 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Get the configs for the exchanges.
+     */
+    public function exchangeConfigs()
+    {
+        return $this->hasMany('GTrader\UserExchangeConfig');
+    }
 }

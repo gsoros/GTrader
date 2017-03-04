@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Page;
-//use GTrader\Exchange;
+use GTrader\Exchange;
 use GTrader\Chart;
 //use GTrader\Series;
 use GTrader\Strategy;
@@ -52,6 +52,7 @@ class HomeController extends Controller
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'strategies'        => Strategy::getListOfUser(Auth::id()),
+                        'exchanges'         => Exchange::getList(),
                         'bots'              => Bot::getListOfUser(Auth::id()),
                         'stylesheets'       => Page::get('stylesheets'),
                         'scripts_top'       => Page::get('scripts_top'),

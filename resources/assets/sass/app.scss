@@ -37,6 +37,10 @@ h3 {
     font-size: 11px;
 }
 
+.btn {
+    border-radius: 7px;
+}
+
 select.btn {
     -webkit-appearance: none;
        -moz-appearance: none;
@@ -148,3 +152,32 @@ label {
 .cap {
     text-transform: capitalize;
 }
+
+pre.debug {
+    font-size: 10px;
+    height: 280px;
+    overflow: auto;
+    color: #fff;
+    background-color: #111;
+}
+
+.errorBubble {
+    background-color: #ff4;
+    color: #000;
+    padding: 15px;
+    position: relative;
+    border: 1px solid #000;
+    border-radius: 15px;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+
+
+
+
+
+
+
+
+

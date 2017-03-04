@@ -15,18 +15,20 @@ $(function() {
                 data = params;
             }
             else {
-                if (typeof params === 'object') {
-                    if (Object.keys(params).length) {
-                        var i = 0;
-                        $.each(params, function(k, v) {
-                            url += (i === 0) ? '?' : '&';
-                            url += k + '=' + v;
-                            i++;
-                        });
+                if (params) {
+                    if (typeof params === 'object') {
+                        if (Object.keys(params).length) {
+                            var i = 0;
+                            $.each(params, function(k, v) {
+                                url += (i === 0) ? '?' : '&';
+                                url += k + '=' + v;
+                                i++;
+                            });
+                        }
                     }
+                    else if (typeof params === 'string')
+                        url += '?' + params;
                 }
-                else if (typeof params === 'string')
-                    url += '?' + params;
             }
             console.log(url);
             $.ajax({
@@ -41,6 +43,22 @@ $(function() {
                         window.GTrader.updateAllStrategySelectors();
                         window.mainchart.refresh();
                     }
+                },
+                error: function(response) {
+                    window.setLoading(target, false);
+                    var top = $('#' + target).height() / 2 - 10;
+                    var left = $('#' + target).width() / 2 - 70;
+                    console.log('left: ' + left);
+                    $('#' + target).append('<span id="errorBubble" class="errorBubble" ' +
+                                'style="top: -' + top + 'px; left: ' + left + 'px"><strong>' +
+                                response.status + ': ' + response.statusText + '</strong></span>');
+                    $('#errorBubble').css({opacity: 1});
+                    setTimeout(function() {
+                        $('#errorBubble').css({opacity: 0});
+                        setTimeout(function() {
+                            $('#errorBubble').remove();
+                        }, 1000);
+                    }, 3000)
                 }
             });
         },

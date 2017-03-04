@@ -8,6 +8,12 @@ class OKCoin_Futures extends Exchange
 {
 
 
+    public function takePosition(string $position)
+    {
+        echo 'OKCoin_Futures going '.$position."\n";
+    }
+
+
 
     /**
      * Get ticker.
@@ -50,14 +56,19 @@ class OKCoin_Futures extends Exchange
         if (!strlen($new_params['contract_type']))
             throw new \Exception('Could not find contract type for '.$params['symbol']);
 
+        if (!isset($params['size']))
+            $params['size'] = 0;
         $new_params['size'] = $params['size'];
 
         $new_params['type'] = $this->resolution2name($params['resolution']);
 
-        if (!isset($params['since'])) $params['since'] = 0;
+        if (!isset($params['since']))
+            $params['since'] = 0;
         $new_params['since'] = $params['since'].'000';
 
-        return \OKCoin::getFutureKline($new_params);
+        $kline = \OKCoin::getFutureKline($new_params);
+
+        return $kline;
     }
 
 

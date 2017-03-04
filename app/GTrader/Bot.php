@@ -48,11 +48,20 @@ class Bot extends Model
 
     public function run()
     {
+        // Make sure only one instance is running
         $lock = 'bot_'.$this->id;
         if (!Lock::obtain($lock))
             throw new \Exception('Could not obtain lock for '.$this->id);
 
-        // Set up series
+        // Set up our Exchange object
+        $exchange_name = Exchange::getNameById($this->exchange_id);
+        $exchange = Exchange::make($exchange_name);
+
+        // Check if we got the correct exchange
+        if ($exchange->getShortClass() !== $exchange_name)
+            throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
+
+        // Set up our series
         $candles_limit = 200;
         $candles = new Series([
                         'exchange' => Exchange::getNameById($this->exchange_id),
@@ -60,24 +69,36 @@ class Bot extends Model
                         'resolution' => $this->resolution,
                         'limit' => $candles_limit]);
 
-        // Set up strategy
+        $t = time();
+
+        // Set up the strategy
         $strategy = $this->getStrategy();
         $strategy->setCandles($candles);
+
+        // Fire signal even if previous signal was identical
         $strategy->setParam('spitfire', true);
 
         // Check for a signal
         $signals = $strategy->getSignals();
-
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
         $last_signal = array_pop($signals);
         $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
 
+        // See if signal is recent enough
+        if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution)
+            return $this;
 
+        // Looks like we have a valid signal, tell the exchange to take a position
+        $exchange->takePosition($last_signal['signal']);
+
+        echo date('Y-m-d H:i T', $last_signal['time'])."\n";
         var_export($last_signal);
 
+        // Release our lock
         Lock::release($lock);
 
+        return $this;
     }
 
 

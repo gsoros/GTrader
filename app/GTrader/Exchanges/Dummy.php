@@ -31,5 +31,10 @@ class Dummy extends Exchange
     }
 
 
+    public function takePosition(string $position)
+    {
+    }
+
+
 
 }
