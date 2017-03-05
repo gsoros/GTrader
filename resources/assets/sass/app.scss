@@ -20,6 +20,10 @@
     line-height: 21px;
 }
 
+.navbar-nav li.active a {
+    color: #fff !important;
+}
+
 h3 {
     margin-bottom: 17px;
 }
@@ -168,6 +172,7 @@ pre.debug {
     position: relative;
     border: 1px solid #000;
     border-radius: 15px;
+    box-shadow: 10px 10px 10px 10px #000;
     opacity: 0;
     transition: opacity 0.5s;
 }

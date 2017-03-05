@@ -51,11 +51,12 @@ $(function() {
         //console.log(window[name].refresh);
     };
 
-    window.GTrader.registerPHPlot = function (name) {
+    window.GTrader.registerPHPlot = function (name, initialRefresh = true) {
         window.GTrader.registerRefreshFunc(name);
         window.GTrader.registerPanZoomHandler(name);
         window.GTrader.setPanZoomPosition(name);
-        window.GTrader.requestPlot(name);
+        if (initialRefresh)
+            window.GTrader.requestPlot(name);
     };
 
 });

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use GTrader\Exchange;
 use GTrader\Series;
 use GTrader\Lock;
+use GTrader\UserExchangeConfig;
 
 class Bot extends Model
 {
@@ -53,6 +54,9 @@ class Bot extends Model
         if (!Lock::obtain($lock))
             throw new \Exception('Could not obtain lock for '.$this->id);
 
+        // Get the symbol's local name
+        $symbol = Exchange::getSymbolNameById($this->symbol_id);
+
         // Set up our Exchange object
         $exchange_name = Exchange::getNameById($this->exchange_id);
         $exchange = Exchange::make($exchange_name);
@@ -65,7 +69,7 @@ class Bot extends Model
         $candles_limit = 200;
         $candles = new Series([
                         'exchange' => Exchange::getNameById($this->exchange_id),
-                        'symbol' => Exchange::getSymbolNameById($this->symbol_id),
+                        'symbol' => $symbol,
                         'resolution' => $this->resolution,
                         'limit' => $candles_limit]);
 
@@ -89,11 +93,18 @@ class Bot extends Model
         if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution)
             return $this;
 
-        // Looks like we have a valid signal, tell the exchange to take a position
-        $exchange->takePosition($last_signal['signal']);
+        // Looks like we have a valid signal
 
-        echo date('Y-m-d H:i T', $last_signal['time'])."\n";
-        var_export($last_signal);
+        // Tell the exchange which user's settings should be loaded
+        $exchange->setParam('user_id', $this->user_id);
+
+        // Tell the exchange to take the position
+        $exchange->takePosition($symbol,
+                                $last_signal['signal'],
+                                $last_signal['price']);
+
+        //echo date('Y-m-d H:i T', $last_signal['time'])."\n";
+        //var_export($last_signal);
 
         // Release our lock
         Lock::release($lock);

@@ -31,7 +31,7 @@ class Dummy extends Exchange
     }
 
 
-    public function takePosition(string $position)
+    public function takePosition(string $symbol, string $position, float $price)
     {
     }
 

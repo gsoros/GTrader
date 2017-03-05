@@ -3,7 +3,8 @@
 Namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
-use GTrader\Exchange;
+use GTrader\UserExchangeConfig;
+
 
 abstract class Exchange
 {
@@ -11,7 +12,48 @@ abstract class Exchange
 
     abstract public function getTicker(array $params = []);
     abstract public function getCandles(array $params = []);
-    abstract public function takePosition(string $position);
+    abstract public function takePosition(string $symbol, string $position, float $price);
+
+
+    /**
+     * Get the options configured by the user.
+     *
+     * @return array
+     */
+    public function getUserOptions()
+    {
+        if (!($user_id = $this->getParam('user_id')))
+            throw new \Exception('cannot getUserOptions() without user_id');
+        if ($options = $this->getParam('user_options'))
+            return $options;
+        $config = UserExchangeConfig::select('options')
+                        ->where('user_id', $user_id)
+                        ->where('exchange_id', $this->getId())
+                        ->first();
+        if (null === $config)
+        {
+            error_log('Exchange has not yet been configured by the user.');
+            return [];
+        }
+        $this->setParam('user_options', $config->options);
+        return $config->options;
+    }
+
+
+    /**
+     * Get an option configured by the user.
+     *
+     * @return mixed
+     */
+    public function getUserOption(string $option)
+    {
+        $options = $this->getUserOptions();
+        if (!isset($options[$option]))
+            throw new \Exception($option.' not set');
+        if (is_null($options[$option]))
+            throw new \Exception($option.' is null');
+        return $options[$option];
+    }
 
 
     public static function getDefault(string $param)

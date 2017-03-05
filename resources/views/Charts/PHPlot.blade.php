@@ -28,12 +28,15 @@
         </div>
     </div>
 @endif
+@php
+    $initial_refresh = in_array('initial_refresh', $disabled) ? 'false' : 'true';
+@endphp
 <script>
     if (window.GTrader)
-        window.GTrader.registerPHPlot('{{ $name }}');
+        window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
     else {
         $(function() {
-            window.GTrader.registerPHPlot('{{ $name }}');
+            window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
         });
     }
 </script>

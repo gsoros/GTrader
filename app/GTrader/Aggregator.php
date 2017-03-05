@@ -82,29 +82,10 @@ class Aggregator
                     if (!is_array($candles)) continue;
                     if (!count($candles)) continue;
 
-                    $counter = 0;
-                    foreach($candles as $candle) {
+                    foreach($candles as $candle)
+                        $candle->save();
 
-                        $counter++;
-                        $uts = substr($candle[0], 0, -3);
-                        $date = date('Y-m-d H:i', $uts);
-                        //echo $date.', '; flush();
-
-                        $new_candle = new Candle();
-                        $new_candle->open = $candle[1];
-                        $new_candle->high = $candle[2];
-                        $new_candle->low = $candle[3];
-                        $new_candle->close = $candle[4];
-                        $new_candle->volume = $candle[5];
-                        $new_candle->time = $uts;
-                        $new_candle->exchange_id = $exchange_id;
-                        $new_candle->symbol_id = $symbol_id;
-                        $new_candle->resolution = $resolution;
-                        $new_candle->save();
-                        //echo 'This: '.gmdate('Y-m-d H:i', $new_candle->time).'<br />';
-                        //dump($new_candle);
-                    }
-                    echo $counter." processed\n";
+                    echo count($candles)." processed\n";
                 }
             }
         }

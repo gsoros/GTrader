@@ -4,7 +4,14 @@ return [
     'long_name'         => 'OKCoin Futures Exchange',
     'short_name'        => 'OKCF',
     'local_name'        => 'OKCoin_Futures',                    // class name, also used in the local database
-    'user_config_keys'  => ['api_key', 'api_secret'],           // user-configurable parameters
+    'user_config_keys'  => [                                    // user-configurable parameters
+                            'api_key' => '',                    // API key
+                            'api_secret' => '',                 // API secret
+                            'position_size' => 20,              // max percentage of balance to be used in a position
+                            'leverage' => 10,                   // 10 or 20
+                            'max_contracts' => 100,             // max amount of contracts to hold
+                            'market_orders' => 0,               // 1: use market orders, 0: use limit orders
+                            ],
     'symbols' => [
         'btc_usd_3m' =>                                         // used in the local database, same as local_name
             [
@@ -12,6 +19,7 @@ return [
             'short_name' => 'BTCUSD3M',                         // used for displaying in lists
             'local_name' => 'btc_usd_3m',                       // used in the local database, same as the key
             'remote_name' => 'btc_usd',                         // used when querying the remote data
+            'contract_value' => 100,                            // value of 1 contract
             'resolutions'=> [60     => '1 minute',
                             180     => '3 minutes',
                             300     => '5 minutes',

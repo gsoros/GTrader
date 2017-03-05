@@ -52,8 +52,8 @@ class ExchangeController extends Controller
             return $error;
 
         $options = $config->options;
-        foreach ($exchange->getParam('user_config_keys') as $key)
-            $options[$key] = $request->$key;
+        foreach ($exchange->getParam('user_config_keys') as $key => $default)
+            $options[$key] = isset($request->$key) ? $request->$key : $default;
         $config->options = $options;
         $config->save();
 
@@ -75,6 +75,11 @@ class ExchangeController extends Controller
             $config = Auth::user()
                         ->exchangeConfigs()
                         ->firstOrNew(['exchange_id' => $exchange_id]);
+            $options = $config->options;
+            foreach ($exchange->getParam('user_config_keys') as $key => $default)
+                if (!isset($options[$key]))
+                    $options[$key] = $default;
+            $config->options = $options;
         }
         return [$exchange, $config, $class, $error];
     }
