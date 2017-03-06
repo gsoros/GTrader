@@ -34,4 +34,22 @@ class User extends Authenticatable
     {
         return $this->hasMany('GTrader\UserExchangeConfig');
     }
+
+
+    /**
+     * Get the trades of the user.
+     */
+    public function trades()
+    {
+        return $this->hasMany('GTrader\Trade');
+    }
+
+
+    /**
+     * Get the bots of the user.
+     */
+    public function bots()
+    {
+        return $this->hasMany('GTrader\Bot');
+    }
 }

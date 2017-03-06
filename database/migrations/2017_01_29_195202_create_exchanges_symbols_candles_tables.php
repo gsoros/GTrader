@@ -32,10 +32,10 @@ class CreateExchangesSymbolsCandlesTables extends Migration
             $table->integer('exchange_id')->unsigned()->index();
             $table->integer('symbol_id')->unsigned()->index();
             $table->integer('resolution')->unsigned();
-            $table->float('open', 11, 4)->unsigned();
-            $table->float('high', 11, 4)->unsigned();
-            $table->float('low', 11, 4)->unsigned();
-            $table->float('close', 11, 4)->unsigned();
+            $table->decimal('open', 11, 4)->unsigned();
+            $table->decimal('high', 11, 4)->unsigned();
+            $table->decimal('low', 11, 4)->unsigned();
+            $table->decimal('close', 11, 4)->unsigned();
             $table->bigInteger('volume')->unsigned()->nullable()->default(NULL);
             $table->index(['symbol_id', 'resolution']);
         });

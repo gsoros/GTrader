@@ -3,17 +3,15 @@
 namespace GTrader;
 
 use Illuminate\Database\Eloquent\Model;
-use GTrader\Exchange;
 
-class UserExchangeConfig extends Model
+class Trade extends Model
 {
-
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'users_exchanges';
+    protected $table = 'trades';
 
     /**
      * Indicates if the model should be timestamped.
@@ -29,22 +27,21 @@ class UserExchangeConfig extends Model
      */
     protected $guarded = [];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'options' => 'array',
-    ];
 
     /**
-     * Get the user that owns the config.
+     * Get the user that owns the trade.
      */
     public function user()
     {
         return $this->belongsTo('App\User');
     }
 
+    /**
+     * Get the bot that owns the trade.
+     */
+    public function bot()
+    {
+        return $this->belongsTo('GTrader\Bot');
+    }
 
 }

@@ -4,7 +4,7 @@ return [
     'long_name'         => 'OKCoin Futures Exchange',
     'short_name'        => 'OKCF',
     'local_name'        => 'OKCoin_Futures',                    // class name, also used in the local database
-    'user_config_keys'  => [                                    // user-configurable parameters
+    'user_options'      => [                                    // user-configurable options
                             'api_key' => '',                    // API key
                             'api_secret' => '',                 // API secret
                             'position_size' => 20,              // max percentage of balance to be used in a position
@@ -36,6 +36,20 @@ return [
             'contract_type' => 'quarter',                       // used when querying the remote data
             ],
     ],
+
+    /* Order statuscodes */
+    'order_statuscodes' => [   -1 => 'cancelled',
+                                0 => 'unfilled',
+                                1 => 'partially_filled',
+                                2 => 'filled',
+                                4 => 'cancel_in_progress'],
+
+    /* Order type codes */
+    'order_types' => [          1 => 'open_long',
+                                2 => 'open_short',
+                                3 => 'close_long',
+                                4 => 'close_short'],
+
     /* OKCoin-specific resolution strings */
     'resolution_names' => [ 60      => '1min',
                             180     => '3min',   //       3*60

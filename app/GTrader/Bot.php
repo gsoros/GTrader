@@ -46,6 +46,22 @@ class Bot extends Model
         'options' => 'array',
     ];
 
+    /**
+     * Get the trades of the bot.
+     */
+    public function trades()
+    {
+        return $this->hasMany('GTrader\Trade');
+    }
+
+    /**
+     * Get the user that owns the bot.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
+
 
     public function run()
     {
@@ -61,9 +77,25 @@ class Bot extends Model
         $exchange_name = Exchange::getNameById($this->exchange_id);
         $exchange = Exchange::make($exchange_name);
 
+        // Tell the exchange which user's settings should be loaded
+        $exchange->setParam('user_id', $this->user_id);
+
         // Check if we got the correct exchange
         if ($exchange->getShortClass() !== $exchange_name)
             throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
+
+        // Save a record of any filled orders into local db
+        $exchange->saveFilledOrders($symbol, $this->id);
+
+        // Cancel unfilled orders
+        if (isset($this->options['unfilled_max']))
+            if ($unfilled_max = intval($this->options['unfilled_max']))
+                $exchange->cancelUnfilledOrders(
+                                $symbol,
+                                time() -
+                                $this->options['unfilled_max'] *
+                                $this->resolution);
+
 
         // Set up our series
         $candles_limit = 200;
@@ -95,16 +127,11 @@ class Bot extends Model
 
         // Looks like we have a valid signal
 
-        // Tell the exchange which user's settings should be loaded
-        $exchange->setParam('user_id', $this->user_id);
-
         // Tell the exchange to take the position
         $exchange->takePosition($symbol,
                                 $last_signal['signal'],
-                                $last_signal['price']);
-
-        //echo date('Y-m-d H:i T', $last_signal['time'])."\n";
-        //var_export($last_signal);
+                                $last_signal['price'],
+                                $this->id);
 
         // Release our lock
         Lock::release($lock);
@@ -158,6 +185,13 @@ class Bot extends Model
             if (isset($request->$param))
                 $this->$param = $request->$param;
 
+        $options = $this->options;
+        foreach ($this->getParam('user_options') as $option => $default)
+            $options[$option] = isset($request->$option) ?
+                                $request->$option :
+                                $default;
+        $this->options = $options;
+
         return $this;
     }
 
@@ -186,10 +220,3 @@ class Bot extends Model
     }
 
 }
-
-
-
-
-
-
-

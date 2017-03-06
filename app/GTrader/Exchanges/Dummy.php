@@ -15,26 +15,37 @@ class Dummy extends Exchange
      * @param $params array
      * @return array
      */
-    public function getTicker(array $params = [])
-    {
-    }
+    public function getTicker(string $symbol)
+    {}
 
 
     /**
-     * Get candles.
+     * Get candles from the exchange.
      *
-     * @param $params array
-     * @return array
+     * @param $symbol string
+     * @param $resolution int
+     * @param $since int
+     * @param $size int
+     * @return array of GTrader\Candle
      */
-    public function getCandles(array $params = [])
-    {
-    }
+    public function getCandles(string $symbol,
+                                int $resolution,
+                                int $since = 0,
+                                int $size = 0)
+    {}
 
 
-    public function takePosition(string $symbol, string $position, float $price)
-    {
-    }
+    public function takePosition(string $symbol,
+                                string $signal,
+                                float $price,
+                                int $bot_id = null)
+    {}
 
+    public function cancelUnfilledOrders(string $symbol, int $before_timestamp)
+    {}
+
+    public function saveFilledOrders(string $symbol, int $bot_id = null)
+    {}
 
 
 }

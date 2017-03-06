@@ -53,6 +53,7 @@ class BotController extends Controller
         return response($bot->toHTML(), 200);
     }
 
+
     public function idCheck(Request $request)
     {
         if (!($bot = Bot::find($request->id)))
@@ -67,6 +68,7 @@ class BotController extends Controller
         }
         return $bot;
     }
+
 
     public function form(Request $request)
     {

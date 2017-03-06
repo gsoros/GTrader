@@ -10,9 +10,17 @@ abstract class Exchange
 {
     use Skeleton;
 
-    abstract public function getTicker(array $params = []);
-    abstract public function getCandles(array $params = []);
-    abstract public function takePosition(string $symbol, string $position, float $price);
+    abstract public function getTicker(string $symbol);
+    abstract public function getCandles(string $symbol,
+                                        int $resolution,
+                                        int $since = 0,
+                                        int $size = 0);
+    abstract public function takePosition(string $symbol,
+                                            string $signal,
+                                            float $price,
+                                            int $bot_id = null);
+    abstract public function cancelUnfilledOrders(string $symbol, int $before_timestamp);
+    abstract public function saveFilledOrders(string $symbol, int $bot_id = null);
 
 
     /**
@@ -24,7 +32,7 @@ abstract class Exchange
     {
         if (!($user_id = $this->getParam('user_id')))
             throw new \Exception('cannot getUserOptions() without user_id');
-        if ($options = $this->getParam('user_options'))
+        if ($options = $this->getParam('user_options_cached'))
             return $options;
         $config = UserExchangeConfig::select('options')
                         ->where('user_id', $user_id)
@@ -35,7 +43,7 @@ abstract class Exchange
             error_log('Exchange has not yet been configured by the user.');
             return [];
         }
-        $this->setParam('user_options', $config->options);
+        $this->setParam('user_options_cached', $config->options);
         return $config->options;
     }
 
@@ -48,6 +56,7 @@ abstract class Exchange
     public function getUserOption(string $option)
     {
         $options = $this->getUserOptions();
+
         if (!isset($options[$option]))
             throw new \Exception($option.' not set');
         if (is_null($options[$option]))
@@ -125,6 +134,16 @@ abstract class Exchange
     }
 
 
+    public function getSymbolIdByRemoteName(string $remote_name)
+    {
+        foreach ($this->getParam('symbols') as $symbol)
+            if ($symbol['remote_name'] === $remote_name)
+                return self::getSymbolIdByExchangeSymbolName(
+                                    $this->getParam('local_name'),
+                                    $symbol['local_name']);
+    }
+
+
     public static function getSymbolNameById(int $id)
     {
         $query = DB::table('symbols')
@@ -196,14 +215,3 @@ abstract class Exchange
         return view('Exchange/List', ['exchanges' => $exchanges]);
     }
 }
-
-
-
-
-
-
-
-
-
-
-

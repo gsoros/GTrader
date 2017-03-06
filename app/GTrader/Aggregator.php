@@ -54,9 +54,11 @@ class Aggregator
                     $symbol_id = $symbol_o->id;
                 if (!$symbol_id)
                     $symbol_id = DB::table('symbols')
-                                        ->insertGetId(['name' => $symbol_local,
-                                                        'exchange_id' => $exchange_id,
-                                                        'long_name' => $symbol['long_name']]);
+                                        ->insertGetId([
+                                            'name' => $symbol_local,
+                                            'exchange_id' => $exchange_id,
+                                            'long_name' => $symbol['long_name']]);
+
                 echo ' ID: '.$symbol_id."\n";
                 foreach ($symbol['resolutions'] as $resolution => $res_name)
                 {
@@ -72,11 +74,11 @@ class Aggregator
                     echo 'Res: '.$resolution.' Last: '.date('Y-m-d H:i', $time)."\n";
                     //if ($time > time() - $resolution) continue;
 
-                    $params = [ 'since'         => $time - $resolution - 1,
-                                'resolution'    => $resolution,
-                                'symbol'        => $symbol_local,
-                                'size'          => 100000];
-                    $candles = $exchange->getCandles($params);
+                    $candles = $exchange->getCandles(
+                                    $symbol_local,
+                                    $resolution,
+                                    $time - $resolution - 1,
+                                    100000);
                     //dd($candles);
 
                     if (!is_array($candles)) continue;

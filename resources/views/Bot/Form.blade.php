@@ -20,12 +20,28 @@
             <label>Exchange, Symbol, Resolution</label><br>
             {!! GTrader\Exchange::getESRSelector('bot_'.$bot->id) !!}
         </div>
-          <div class="col-sm-6 editable form-group">
+        <div class="col-sm-6 editable form-group">
             <label>Strategy</label>
             <select title="Strategy Selector"
                     class="btn-primary btn btn-mini"
                     id="strategy_select_bot_{{ $bot->id }}"
                     name="strategy_select_bot_{{ $bot->id }}"></select>
+        </div>
+        @php
+            $unfilled_max = isset($bot->options['unfilled_max']) ?
+                                $bot->options['unfilled_max'] :
+                                0;
+        @endphp
+        <div class="col-sm-6 editable form-group">
+            <label for="unfilled_max">Cancel Unfilled Orders After This Number of Candles
+                                <small>(0 to never remove unfilled orders)</small>
+            </label>
+            <input class="btn-primary form-control form-control-sm"
+                    type="number"
+                    id="unfilled_max"
+                    name="unfilled_max"
+                    title="Cancel Unfilled Orders After This Number of Candles"
+                    value="{{ $unfilled_max }}">
         </div>
     </div>
     <div class="row bdr-rad">

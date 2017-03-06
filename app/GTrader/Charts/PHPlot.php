@@ -310,7 +310,7 @@ class PHPlot extends Chart {
         while ($candle = $candles->next())
             if (isset($candle->$sig))
             {
-                $data[] = ['', $candle->time, $candle->$sig['price']];
+                $data[] = ['', $candle->time, round($candle->$sig['price'], 2)];
                 $signals[] = $candle->$sig['signal'];
             }
         //dd($signals);
