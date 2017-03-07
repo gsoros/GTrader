@@ -174,9 +174,11 @@ class PHPlot extends Chart {
             return $this;
         $candles->reset(); // loads
         $title = in_array('title', $this->getParam('disabled', [])) ? '' :
-            'R: '.$candles->getParam('resolution').' '.
-                 date('Y-m-d H:i', $candles->next()->time).' - '.
-                 date('Y-m-d H:i', $candles->last()->time);
+            "\n".$candles->getParam('exchange').' '.
+            $candles->getParam('symbol').' '.
+            $candles->getParam('resolution').' '.
+            date('Y-m-d H:i', $candles->next()->time).' - '.
+            date('Y-m-d H:i', $candles->last()->time);
         $plot_type = $candles->size() < 260 ? 'candles' : 'line';
         $price = $times = [];
         $candles->reset();
