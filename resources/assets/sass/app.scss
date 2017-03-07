@@ -24,6 +24,30 @@
     color: #fff !important;
 }
 
+.panel-default {
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.panel-default > .panel-heading {
+    color: #bbb;
+}
+
+.panel-default > .panel-body {
+    background-color: #111;
+    color: #ccc;
+}
+
+.dropdown-menu, .dropdown-menu > li > a {
+    color: #ccc;
+    background-color: #111;
+}
+
+.dropdown-menu > li > a:hover {
+    color: white;
+    background-color: #222;
+}
+
 h3 {
     margin-bottom: 17px;
 }
@@ -177,12 +201,10 @@ pre.debug {
     transition: opacity 0.5s;
 }
 
-
-
-
-
-
-
-
-
-
+:-webkit-autofill,
+:-webkit-autofill:hover,
+:-webkit-autofill:focus {
+    -webkit-text-fill-color: white;
+    -webkit-box-shadow: 0 0 0px 1000px #333 inset;
+    transition: background-color 5000s ease-in-out 0s
+}
