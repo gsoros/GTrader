@@ -13,7 +13,7 @@ class PHPlot extends Chart {
 
     protected $_plot;
     protected $_image_map;
-
+    protected $last_close;
 
 
     public function toHTML(string $content = '')
@@ -61,7 +61,10 @@ class PHPlot extends Chart {
                 $refresh = "<script>window.waitForFinalEvent(function () {window.".
                             $this->getParam('name').".refresh()}, ".
                             ($refresh * 1000).", 'refresh".
-                            $this->getParam('name')."')</script>";
+                            $this->getParam('name')."');";
+                if ($this->last_close)
+                    $refresh .= "document.title = '".number_format($this->last_close, 2)." - GTrader';";
+                $refresh .= '</script>';
             }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
             return $this->_image_map.'<img class="img-responsive" src="'.
@@ -188,7 +191,9 @@ class PHPlot extends Chart {
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:
                 ['', $c->time, $c->close];
                 $times[] = $c->time;
+                $this->last_close = $c->close;
         }
+
         $this->_plot->setTitle($title);
         $this->_plot->SetDataColors(
                     'candles' === $plot_type ?

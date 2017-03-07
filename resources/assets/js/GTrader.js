@@ -276,7 +276,7 @@ $(function() {
         updateAllStrategySelectors: function() {
             $('.GTraderChart').each(function() {
                 var chartObj = window[$( this ).attr('id')];
-                if (chartObj)
+                if (chartObj.updateStrategySelector)
                     chartObj.updateStrategySelector();
             });
         } // updateAllStrategySelectors
