@@ -1,5 +1,5 @@
 @php
-    $train = $training_count ? 'Now Training' : 'Train';
+    $train = $training_status ? ('paused' === $training_status) ? 'Training Paused' : 'Now Training' : 'Train';
 @endphp
 <button onClick="window.GTrader.request('strategy', 'train', {id: {{ $strategy->getParam('id') }}})"
         type="button"

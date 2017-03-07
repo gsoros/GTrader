@@ -41,6 +41,8 @@ Route::get('/strategy.train',           'StrategyController@train');
 Route::get('/strategy.trainStart',      'StrategyController@trainStart');
 Route::get('/strategy.trainStop',       'StrategyController@trainStop');
 Route::get('/strategy.trainProgress',   'StrategyController@trainProgress');
+Route::get('/strategy.trainPause',      'StrategyController@trainPause');
+Route::get('/strategy.trainResume',     'StrategyController@trainResume');
 
 Route::get('/bot.list',                 'BotController@list');
 Route::get('/bot.new',                  'BotController@new');
@@ -51,14 +53,3 @@ Route::post('/bot.save',                'BotController@save');
 Route::get('/exchange.form',            'ExchangeController@form');
 Route::get('/exchange.list',            'ExchangeController@list');
 Route::post('/exchange.save',           'ExchangeController@save');
-
-
-
-
-
-
-
-
-
-
-

@@ -9,7 +9,11 @@
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12" id="trainProgress">
-        <span class="editable cap" id="trainProgressState"></span>
+        <span class="editable cap" id="trainProgressState">
+        @if ('paused' === $training->status)
+            Paused
+        @endif
+        </span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
         &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
         &nbsp; Best: <span class="editable" id="trainProgressBalanceMax"></span>
@@ -17,50 +21,76 @@
         &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
     </div>
 </div>
-<script>
-    var pollTimeout,
-        balance_max = 0;
-    function pollStatus() {
-        console.log('pollStatus() ' + $('#trainProgress').length);
-        $.ajax({
-            url: '/strategy.trainProgress?id={{ $strategy->getParam('id') }}',
-            success: function(data) {
-                try {
-                    reply = JSON.parse(data);
+@if ('paused' != $training->status)
+    <script>
+        var pollTimeout,
+            balance_max = 0;
+        function pollStatus() {
+            console.log('pollStatus() ' + $('#trainProgress').length);
+            $.ajax({
+                url: '/strategy.trainProgress?id={{ $strategy->getParam('id') }}',
+                success: function(data) {
+                    try {
+                        reply = JSON.parse(data);
+                    }
+                    catch (err) {
+                        console.log(err);
+                    }
+                    var state = ('undefined' === reply.state) ? 'queued' : reply.state;
+                    $('#trainProgressState').html(state);
+                    $('#trainProgressEpochs').html(reply.epochs);
+                    $('#trainProgressBalance').html(reply.balance);
+                    $('#trainProgressBalanceMax').html(reply.balance_max);
+                    $('#trainProgressSignals').html(reply.signals);
+                    $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
+                    if (parseFloat(reply.balance_max) > balance_max) {
+                        balance_max = parseFloat(reply.balance_max);
+                        window.{{ $chart->getParam('name') }}.refresh();
+                    }
+                },
+                complete: function() {
+                    if ($('#trainProgress').length)
+                        pollTimeout = setTimeout(pollStatus, 3000);
                 }
-                catch (err) {
-                    console.log(err);
-                }
-                var state = ('undefined' === reply.state) ? 'queued' : reply.state;
-                $('#trainProgressState').html(state);
-                $('#trainProgressEpochs').html(reply.epochs);
-                $('#trainProgressBalance').html(reply.balance);
-                $('#trainProgressBalanceMax').html(reply.balance_max);
-                $('#trainProgressSignals').html(reply.signals);
-                $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
-                if (parseFloat(reply.balance_max) > balance_max) {
-                    balance_max = parseFloat(reply.balance_max);
-                    window.{{ $chart->getParam('name') }}.refresh();
-                }
-            },
-            complete: function() {
-                if ($('#trainProgress').length)
-                    pollTimeout = setTimeout(pollStatus, 3000);
-            }
-        });
-    }
-    $('#trainProgressState').html('queued');
-    $('#trainProgressEpochs').html(' ... ');
-    $('#trainProgressBalance').html(' ... ');
-    $('#trainProgressBalanceMax').html(' ... ');
-    $('#trainProgressSignals').html(' ... ');
-    $('#trainProgressNoImprovement').html(' ... ');
-    pollStatus();
+            });
+        }
+        $('#trainProgressState').html('queued');
+        $('#trainProgressEpochs').html(' ... ');
+        $('#trainProgressBalance').html(' ... ');
+        $('#trainProgressBalanceMax').html(' ... ');
+        $('#trainProgressSignals').html(' ... ');
+        $('#trainProgressNoImprovement').html(' ... ');
+        pollStatus();
 
-</script>
+    </script>
+@endif
 <div class="row bdr-rad">
     <div class="col-sm-12">
         <span class="pull-right">
+            @if ('paused' === $training->status)
+                <button onClick="window.GTrader.request(
+                                        'strategy',
+                                        'trainResume',
+                                        'id={{ $strategy->getParam('id') }}'
+                                        )"
+                        type="button"
+                        class="btn btn-primary btn-sm trans"
+                        title="Resume Training">
+                    <span class="glyphicon glyphicon-play"></span> Resume Training
+                </button>
+            @else
+                <button onClick="clearTimeout(pollTimeout);
+                                    window.GTrader.request(
+                                        'strategy',
+                                        'trainPause',
+                                        'id={{ $strategy->getParam('id') }}'
+                                        )"
+                        type="button"
+                        class="btn btn-primary btn-sm trans"
+                        title="Pause Training">
+                    <span class="glyphicon glyphicon-pause"></span> Pause Training
+                </button>
+            @endif
             <button onClick="clearTimeout(pollTimeout);
                                 window.GTrader.request(
                                     'strategy',
@@ -70,7 +100,7 @@
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Stop Training">
-                <span class="glyphicon glyphicon-fire"></span> Stop Training
+                <span class="glyphicon glyphicon-stop"></span> Stop Training
             </button>
             <button onClick="window.GTrader.request('strategy', 'list')"
                     type="button"
@@ -93,4 +123,3 @@
         {{ var_export($strategy->getParams(), true) }}
 </pre>
 -->
-

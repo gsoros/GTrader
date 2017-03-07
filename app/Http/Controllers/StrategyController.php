@@ -127,7 +127,11 @@ class StrategyController extends Controller
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where('status', 'training')->first();
+                                ->where(function ($query) {
+                                        $query->where('status', 'training')
+                                            ->orWhere('status', 'paused');
+                                })
+                                ->first();
         if (is_object($training))
         {
             $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
@@ -284,4 +288,59 @@ class StrategyController extends Controller
         return response($training->readStatus($strategy), 200);
     }
 
+
+    public function trainPause(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id)))
+        {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 404);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        $training = FannTraining::where('strategy_id', $strategy_id)
+                                ->where('status', 'training')->first();
+        if (!is_object($training))
+        {
+            error_log('Training not found for strategy '.$strategy_id);
+            return response('Training not found.', 404);
+        }
+        $training->status = 'paused';
+        $training->save();
+        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
+                                                    'training' => $training]);
+        return response($html, 200);
+    }
+
+
+    public function trainResume(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id)))
+        {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 404);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id())
+        {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+        $training = FannTraining::where('strategy_id', $strategy_id)
+                                ->where('status', 'paused')->first();
+        if (!is_object($training))
+        {
+            error_log('Training not found for strategy '.$strategy_id);
+            return response('Training not found.', 404);
+        }
+        $training->status = 'training';
+        $training->save();
+        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
+                                                    'training' => $training]);
+        return response($html, 200);
+    }
 }

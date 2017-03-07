@@ -4,6 +4,7 @@ namespace GTrader\Indicators;
 
 use GTrader\Indicator;
 use GTrader\Exchange;
+use GTrader\UserExchangeConfig;
 
 class Balance extends Indicator
 {
@@ -21,13 +22,30 @@ class Balance extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $params = $this->getParam('indicator');
+        $mode = $this->getParam('indicator.mode');
 
-        $mode = $params['mode'];
         if (!in_array($mode, array('dynamic', 'fixed')))
             throw new \Exception('Mode must be either dynamic or fixed.');
 
         $owner = $this->getOwner();
+
+        $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
+        $config = UserExchangeConfig::firstOrNew([
+                                'exchange_id' => $exchange->getId(),
+                                'user_id' => $owner->getParam('user_id', 0)]);
+
+        // Get defaults from exchange config file
+        $leverage = $exchange->getParam('leverage');
+        $position_size = $exchange->getParam('position_size');
+
+        // Update values from UserExchangeCOnfig
+        if (is_array($config->options))
+        {
+            if (isset($config->options['leverage']))
+                $leverage = $config->options['leverage'];
+            if (isset($config->options['position_size']))
+                $position_size = $config->options['position_size'];
+        }
 
         $signal_ind = $owner->getSignalsIndicator();
         $signal_sig = $signal_ind->getSignature();
@@ -35,13 +53,10 @@ class Balance extends Indicator
 
         $signature = $this->getSignature();
 
-        $capital = $params['initial_capital'];
+        $capital = $this->getParam('indicator.initial_capital');
         $upl = 0;
-        $e = Exchange::make();
-        $position_size = $e->getParam('position_size');
-        $stake = $capital * $position_size;
-        $fee_multiplier = $e->getParam('fee_multiplier');
-        $leverage = $e->getParam('leverage');
+        $stake = $capital * $position_size / 100;
+        $fee_multiplier = $exchange->getParam('fee_multiplier');
         $liquidated = false;
         $prev_signal = false;
 
@@ -78,7 +93,7 @@ class Balance extends Indicator
                                         - $signal['price']) * $leverage;
                         $upl = 0;
                     }
-                    if ($mode == 'dynamic') $stake = $capital * $position_size;
+                    if ($mode == 'dynamic') $stake = $capital * $position_size / 100;
                     // open long
                     $capital -= $stake * $fee_multiplier;
                 }
@@ -91,7 +106,7 @@ class Balance extends Indicator
                                         - $prev_signal['price']) * $leverage;
                         $upl = 0;
                     }
-                    if ($mode == 'dynamic') $stake = $capital * $position_size;
+                    if ($mode == 'dynamic') $stake = $capital * $position_size / 100;
                     // open short
                     $capital -= $stake * $fee_multiplier;
                 }

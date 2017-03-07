@@ -8,8 +8,8 @@ return [
 
     'user_options'          => [],                                          // User-configurable options, to be overridden in children
 
-    /* TODO FIXME DEPRECATED */
-    'position_size'     => env('EXCHANGE_POSITION_SIZE',    0.30),          // 30% of capital
-    'leverage'          => env('EXCHANGE_LEVERAGE',         20),
-    'fee_multiplier'    => env('EXCHANGE_FEE_MULTIPLIER',   0.005),
+    'fee_multiplier'    => env('EXCHANGE_FEE_MULTIPLIER',   0.005),         // TODO make this configurable in UserExConf
+    'position_size'     => env('EXCHANGE_POSITION_SIZE',    30),            // 30% of capital
+    'leverage'          => env('EXCHANGE_LEVERAGE',         10),
+
 ];

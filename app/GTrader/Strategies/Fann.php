@@ -130,12 +130,20 @@ class Fann extends Strategy
 
     public function listItem()
     {
-        $training_count = FannTraining::where('strategy_id', $this->getParam('id'))
-                                ->where('status', 'training')
-                                ->count();
+        $training = FannTraining::select('status')
+                                ->where('strategy_id', $this->getParam('id'))
+                                ->where(function ($query) {
+                                    $query->where('status', 'training')
+                                            ->orWhere('status', 'paused');
+                                })
+                                ->first();
+        $training_status = null;
+        if (is_object($training))
+            $training_status = $training->status;
+
         return view('Strategies/FannListItem', [
                     'strategy' => $this,
-                    'training_count' => $training_count]);
+                    'training_status' => $training_status]);
     }
 
 
