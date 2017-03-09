@@ -99,12 +99,13 @@ class Fann extends Strategy
                             'highlight' => [$training->range_start, $training->range_end],
                             'visible_indicators' => ['Balance']]);
 
-        $progress_chart->addIndicator('Balance');
+        if (!$progress_chart->hasIndicatorClass('Balance'))
+        {
+            $progress_chart->addIndicator('Balance');
+            $this->save();
+        }
 
         $progress_chart->saveToSession();
-
-        // We have added a balance indicator, save
-        $this->save();
 
         return $progress_chart;
     }

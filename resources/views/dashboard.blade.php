@@ -15,7 +15,7 @@
             </div>
             <div role="tabpanel" class="tab-pane fade" id="settingsTab">
                 {!! $exchanges !!}
-                Debug: <pre class="debug">{{ $debug }}</pre>
+                <!--Debug: <pre class="debug">{{ $debug }}</pre>-->
             </div>
             <div role="tabpanel" class="tab-pane fade" id="botTab">
                 {!! $bots !!}

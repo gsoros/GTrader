@@ -15,11 +15,18 @@ trait HasIndicators
         if (!$indicator->canBeOwnedBy($this))
             return $this;
 
-        //error_log('addIndicator() '.$indicator->getSignature());
         if ($this->hasIndicator($indicator->getSignature()))
         {
             //error_log('addIndicator() we already have it, updating params');
             $existing = $this->getIndicator($indicator->getSignature());
+            $existing->setParams($indicator->getParams());
+            return $this;
+        }
+        $class = $indicator->getShortClass();
+        if (!$indicator->getParam('available.'.$class.'.allow_multiple') &&
+                $this->hasIndicatorClass($class))
+        {
+            $existing = $this->getFirstIndicatorByClass($class);
             $existing->setParams($indicator->getParams());
             return $this;
         }
@@ -168,17 +175,3 @@ trait HasIndicators
         return $dump;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
