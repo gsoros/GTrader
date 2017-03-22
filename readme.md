@@ -10,14 +10,13 @@ GTrader is a trading strategy back-tester and bot manager.
 1. ```git clone https://github.com/gsoros/GTrader.git```
 2. ```cd GTrader```
 3. ```composer install```
-4. ```bower install```
-5. ```npm install```
-6. ```cp .env.example .env```
-7. ```php artisan key:generate```
-8. edit .env
-9. set up db
-10. ```php artisan migrate```
-5. ```npm run dev```
+4. ```npm install```
+5. ```cp .env.example .env```
+6. ```php artisan key:generate```
+7. edit .env
+8. set up db
+9. ```php artisan migrate```
+10. ```npm run dev```
 11. ```(crontab -l; echo -e "### GTrader Schedule\n* * * * * `which php` `pwd`artisan schedule:run >> `pwd`storage/logs/schedule.log 2>&1" | crontab -```
 12. ```php artisan serve```
 

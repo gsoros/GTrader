@@ -23,6 +23,6 @@ mix
     .copy('resources/assets/js/Mainchart.js',     'public/js')
     .copy('resources/assets/js/GTrader.js',       'public/js')
 
-    .copy('resources/assets/bower/nouislider/distribute/nouislider.min.js',     'public/js')
-    .copy('resources/assets/bower/nouislider/distribute/nouislider.min.css',    'public/css')
+    .copy('node_modules/nouislider/distribute/nouislider.min.js',     'public/js')
+    .copy('node_modules/nouislider/distribute/nouislider.min.css',    'public/css')
     ;
