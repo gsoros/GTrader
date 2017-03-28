@@ -18,27 +18,24 @@ class FannPrediction extends Indicator
         $num_samples = $owner->getNumSamples();
         $prediction = array();
         $owner->resetPack();
-        while ($pack = $owner->nextPack($num_samples))
-        {
+        while ($pack = $owner->nextPack($num_samples)) {
             $input = array();
-            for ($i = 0; $i < $num_samples; $i++)
-            {
-                if ($i < $num_samples - 1)
-                {
+            for ($i = 0; $i < $num_samples; $i++) {
+                if ($i < $num_samples - 1) {
                     $input[] = floatval($pack[$i]->open);
                     $input[] = floatval($pack[$i]->high);
                     $input[] = floatval($pack[$i]->low);
                     $input[] = floatval($pack[$i]->close);
-                }
-                else
-                { // we only care about the open price for the last candle in the sample
+                } else {
+                    // we only care about the open price for the last candle in the sample
                     $input[] = floatval($pack[$i]->open);
                 }
             }
             $min = min($input);
             $max = max($input);
-            foreach ($input as $k => $v)
+            foreach ($input as $k => $v) {
                 $input[$k] = Series::normalize($v, $min, $max);
+            }
             //error_log(serialize($input));
             $pred = $owner->runFann($input);
             $prediction[$pack[count($pack)-1]->time] = $pred;
@@ -46,8 +43,7 @@ class FannPrediction extends Indicator
 
         $candles = $this->getCandles();
         $candles->reset();
-        while ($candle = $candles->next())
-        {
+        while ($candle = $candles->next()) {
             $val = isset($prediction[$candle->time]) ? $prediction[$candle->time] : 0;
             //error_log('P:'.$val);
             //$price = series::ohlc4($candle);
@@ -56,6 +52,5 @@ class FannPrediction extends Indicator
             //$candles->set($candle);
         }
         return $this;
-
-   }
+    }
 }

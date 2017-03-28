@@ -41,24 +41,19 @@ class RunBots extends Command
     {
         $bots = Bot::where('status', 'active');
 
-        if (!count($bots));
-            return;
+        if (!count($bots)) {
+            return null;
+        }
 
         $lock = 'bots_run';
-        if (!Lock::obtain($lock))
+        if (!Lock::obtain($lock)) {
             throw new \Exception('Could not obtain lock');
+        }
 
-        foreach ($bots as $bot)
+        foreach ($bots as $bot) {
             $bot->run();
+        }
 
         Lock::release($lock);
     }
 }
-
-
-
-
-
-
-
-

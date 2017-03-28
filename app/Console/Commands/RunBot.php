@@ -42,11 +42,3 @@ class RunBot extends Command
         $bot->run();
     }
 }
-
-
-
-
-
-
-
-

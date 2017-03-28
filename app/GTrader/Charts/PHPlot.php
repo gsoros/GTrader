@@ -9,7 +9,8 @@ use GTrader\Page;
 use PHPlot_truecolor;
 //use GTrader\Util;
 
-class PHPlot extends Chart {
+class PHPlot extends Chart
+{
 
     protected $_plot;
     protected $_image_map;
@@ -18,10 +19,13 @@ class PHPlot extends Chart {
 
     public function toHTML(string $content = '')
     {
-        $content = view('Charts/PHPlot', [
+        $content = view(
+            'Charts/PHPlot',
+            [
                     'name' => $this->getParam('name'),
                     'disabled' => $this->getParam('disabled', [])
-                    ]);
+            ]
+        );
 
         $content = parent::toHTML($content);
 
@@ -29,41 +33,42 @@ class PHPlot extends Chart {
     }
 
 
-    public function getImage() {
-
+    public function getImage()
+    {
         $width = $this->getParam('width');
         $height = $this->getParam('height');
         //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
-        if ($width > 0 && $height > 0)
-        {
+        if ($width > 0 && $height > 0) {
             $image_map_disabled = in_array('map', $this->getParam('disabled', []));
             $this->_plot = new PHPlot_truecolor($width, $height);
             $this->_plot->SetPrintImage(false);
             $this->_plot->SetFailureImage(false);
             $map_name = 'map-'.$this->getParam('name');
-            if (!$image_map_disabled)
+            if (!$image_map_disabled) {
                 $this->_image_map = '<map name="'.$map_name.'">';
+            }
             $this->plotCandles();
-            if (!$image_map_disabled)
+            if (!$image_map_disabled) {
                 $this->_image_map .= '</map>';
-            foreach ($this->getIndicatorsVisibleSorted() as $ind)
-            {
+            }
+            foreach ($this->getIndicatorsVisibleSorted() as $ind) {
                 $ind->checkAndRun();
-                if ($ind->getParam('display.name') === 'Signals')
+                if ($ind->getParam('display.name') === 'Signals') {
                     $this->plotSignals($ind);
-                else
+                } else {
                     $this->plotIndicator($ind);
+                }
             }
             $refresh = null;
             if ($this->getParam('autorefresh') &&
-                ($refresh = $this->getParam('refresh')))
-            {
+                ($refresh = $this->getParam('refresh'))) {
                 $refresh = "<script>window.waitForFinalEvent(function () {window.".
                             $this->getParam('name').".refresh()}, ".
                             ($refresh * 1000).", 'refresh".
                             $this->getParam('name')."');";
-                if ($this->last_close)
+                if ($this->last_close) {
                     $refresh .= "document.title = '".number_format($this->last_close, 2)." - GTrader';";
+                }
                 $refresh .= '</script>';
             }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
@@ -74,14 +79,12 @@ class PHPlot extends Chart {
     }
 
 
-    public Function addPageElements()
+    public function addPageElements()
     {
         parent::addPageElements();
 
-        Page::add('stylesheets',
-                    '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
-        Page::add('scripts_top',
-                    '<script src="/js/PHPlot.js"></script>');
+        Page::add('stylesheets', '<link href="'.mix('/css/PHPlot.css').'" rel="stylesheet">');
+        Page::add('scripts_top', '<script src="/js/PHPlot.js"></script>');
         return $this;
     }
 
@@ -92,11 +95,14 @@ class PHPlot extends Chart {
         $this->setParam('width', isset($request->width) ? $request->width : 0);
         $this->setParam('height', isset($request->height) ? $request->height : 0);
         $candles = $this->getCandles();
-        foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param)
-            if (isset($request->$param))
+        foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param) {
+            if (isset($request->$param)) {
                 $candles->setParam($param, $request->$param);
-        if (isset($request->command))
+            }
+        }
+        if (isset($request->command)) {
             $this->handleCommand($request->command, (array)json_decode($request->args));
+        }
         return $this->getImage();
 
     }
@@ -118,51 +124,54 @@ class PHPlot extends Chart {
             $this->setParam('refresh', 30); // seconds
         }
         error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
-        switch ($command)
-        {
-            case 'ESR':;
-                foreach (['exchange', 'symbol', 'resolution'] as $arg)
-                    if (isset($args[$arg]))
+        switch ($command) {
+            case 'ESR':
+                foreach (['exchange', 'symbol', 'resolution'] as $arg) {
+                    if (isset($args[$arg])) {
                         $candles->setParam($arg, $args[$arg]);
+                    }
+                }
                 break;
 
             case 'backward':
-                if ($limit)
-                {
+                if ($limit) {
                     $epoch = $candles->getEpoch();
-                    if (!$end)
+                    if (!$end) {
                         $end = $last;
+                    }
                     $end -= floor($limit * $resolution / 2);
-                    if (($end - $limit * $resolution) < $epoch)
+                    if (($end - $limit * $resolution) < $epoch) {
                         $end = $epoch + $limit * $resolution;
+                    }
                 }
                 break;
 
             case 'forward':
-                if ($end)
-                {
+                if ($end) {
                     $end += floor($limit * $resolution / 2);
-                    if ($end > $last)
+                    if ($end > $last) {
                         $end = 0;
+                    }
                 }
                 break;
 
             case 'zoomIn':
-                if (!$limit && $resolution)
-                {
+                if (!$limit && $resolution) {
                     $epoch = $candles->getEpoch();
                     $limit = floor(($last - $epoch) / $resolution);
                 }
                 $limit = ceil($limit / 2);
-                if ($limit < 10)
+                if ($limit < 10) {
                     $limit = 10;
+                }
                 break;
 
             case 'zoomOut':
                 $epoch = $candles->getEpoch();
                 $limit = $limit * 2;
-                if ($limit > (($last - $epoch) / $resolution))
+                if ($limit > (($last - $epoch) / $resolution)) {
                     $limit = 0;
+                }
                 break;
         }
         $candles->setParam('limit', $limit);
@@ -173,8 +182,9 @@ class PHPlot extends Chart {
     protected function plotCandles()
     {
         $candles = $this->getCandles();
-        if (!$candles->size())
+        if (!$candles->size()) {
             return $this;
+        }
         $candles->reset(); // loads
         $title = in_array('title', $this->getParam('disabled', [])) ? '' :
             "\n".$candles->getParam('exchange').' '.
@@ -185,67 +195,68 @@ class PHPlot extends Chart {
         $plot_type = $candles->size() < 260 ? 'candles' : 'line';
         $price = $times = [];
         $candles->reset();
-        while ($c = $candles->next())
-        {
+        while ($c = $candles->next()) {
             $price[] = ('candles' === $plot_type) ?
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:
                 ['', $c->time, $c->close];
-                $times[] = $c->time;
-                $this->last_close = $c->close;
+            $times[] = $c->time;
+            $this->last_close = $c->close;
         }
 
         $this->_plot->setTitle($title);
         $this->_plot->SetDataColors(
-                    'candles' === $plot_type ?
-                    ['#b0100010', '#00600010','grey:90', 'grey:90', 'yellow']:
-                    ['DarkGreen', 'yellow']);
+            'candles' === $plot_type ?
+            ['#b0100010', '#00600010','grey:90', 'grey:90', 'yellow']:
+            ['DarkGreen', 'yellow']
+        );
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);
         $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
         $this->_plot->setPointShapes('none');
 
         $highlight = $this->getParam('highlight', []);
-        if (2 === count($highlight))
-        {
-            $this->_plot->SetCallback('data_color',
-                function($img, $junk, $row, $col, $extra = 0) use ($highlight, $plot_type, $times) {
-                    if (($times[$row] >= $highlight[0]) && ($times[$row] <= $highlight[1]))
+        if (2 === count($highlight)) {
+            $this->_plot->SetCallback(
+                'data_color',
+                function ($img, $junk, $row, $col, $extra = 0) use ($highlight, $plot_type, $times) {
+                    if (($times[$row] >= $highlight[0]) && ($times[$row] <= $highlight[1])) {
                         return ('candles' === $plot_type) ? 4 : 1;
-                    else
-                        return ('candles' === $plot_type) ? 1 : 0;
-                });
+                    }
+                    return ('candles' === $plot_type) ? 1 : 0;
+                }
+            );
         }
 
         $image_map = $this->_image_map;
         $image_map_disabled = in_array('map', $this->getParam('disabled', []));
-        if (!$image_map_disabled)
-        {
-            $this->_plot->SetCallback('data_points',
-                function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null)
-                            use (&$image_map, $times, $price) {
-                    if (!$image_map) return null;
+        if (!$image_map_disabled) {
+            $this->_plot->SetCallback(
+                'data_points',
+                function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use
+                    (&$image_map, $times, $price) {
+                    if (!$image_map) {
+                        return null;
+                    }
                     //error_log($row.$image_map);
                     $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
                     $title .= ('rect' == $shape) ?
-                                "\nO: ".$price[$row][2]
-                                ."\nH: ".$price[$row][3]
-                                ."\nL: ".$price[$row][4]
-                                ."\nC: ".$price[$row][5] :
-                                "\nC: ".$price[$row][2];
+                        "\nO: ".$price[$row][2]
+                        ."\nH: ".$price[$row][3]
+                        ."\nL: ".$price[$row][4]
+                        ."\nC: ".$price[$row][5] :
+                        "\nC: ".$price[$row][2];
                     $href = "javascript:console.log('".$times[$row]."')";
-                    if ('rect' == $shape)
-                    {
+                    if ('rect' == $shape) {
                         $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
-                    }
-                    else
-                    {
+                    } else {
                         $coords = sprintf("%d,%d,%d", $x1, $y1, 10);
                         $shape = 'circle';
                     }
                     # Append the record for this data point shape to the image map string:
                     $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
                                .  " title=\"$title\" href=\"$href\">\n";
-                });
+                }
+            );
         }
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetXTickLabelPos('plotdown');
@@ -264,10 +275,12 @@ class PHPlot extends Chart {
         $this->_plot->TuneYAutoRange(0);
         $this->_plot->DrawGraph();
         $this->_image_map = $image_map;
-        if (!$image_map_disabled)
+        if (!$image_map_disabled) {
             $this->_plot->RemoveCallback('data_points');
-        if ('candles' === $plot_type)
+        }
+        if ('candles' === $plot_type) {
             $this->nextLegendY();
+        }
         return $this;
     }
 
@@ -281,25 +294,29 @@ class PHPlot extends Chart {
         $candles = $this->getCandles();
         $candles->reset();
         $data = [];
-        while ($candle = $candles->next())
+        while ($candle = $candles->next()) {
             $data[] = ['', $candle->time, isset($candle->$sig) ? $candle->$sig : ''];
-        if (!count($data))
+        }
+        if (!count($data)) {
             return $this;
+        }
         $this->_plot->SetDataValues($data);
         $this->_plot->SetLineWidths(2);
         $this->_plot->setPlotType('lines');
         $this->_plot->SetDataColors([$color]);
-        if (isset($display['y_axis_pos']))
-            if ($display['y_axis_pos'] === 'right')
-            {
+        if (isset($display['y_axis_pos'])) {
+            if ($display['y_axis_pos'] === 'right') {
                 $this->_plot->SetPlotAreaWorld();
                 $this->_plot->SetYTickPos('plotright');
                 $this->_plot->SetYTickLabelPos('plotright');
                 $this->_plot->TuneYAutoRange(0);
             }
+        }
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $legend = $display['name'];
-        if (count($params)) $legend .= ' ('.join(', ', $params).')';
+        if (count($params)) {
+            $legend .= ' ('.join(', ', $params).')';
+        }
         $this->_plot->SetLegend([$legend]);
         $this->_plot->DrawGraph();
         return $this;
@@ -314,23 +331,29 @@ class PHPlot extends Chart {
         $candles->reset();
         $data = $signals = [];
         //dd($this);
-        while ($candle = $candles->next())
-            if (isset($candle->$sig))
-            {
+        while ($candle = $candles->next()) {
+            if (isset($candle->$sig)) {
                 $data[] = ['', $candle->time, round($candle->$sig['price'], 2)];
                 $signals[] = $candle->$sig['signal'];
             }
+        }
         //dd($signals);
-        if (!count($data))
+        if (!count($data)) {
             return $this;
+        }
         $this->_plot->SetDataColors(['#00ff0050', '#ff000010']);
-        $this->_plot->SetCallback('data_color',
-               function($img, $junk, $row, $col, $extra = 0) use ($signals) {
-                   //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                   if ('long' === $signals[$row]) return (0 === $extra) ? 1 : 0;
-                   else if ('short' === $signals[$row]) return (0 === $extra) ? 0 : 1;
-                   else error_log('Unmatched signal');
-               });
+        $this->_plot->SetCallback(
+            'data_color',
+            function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
+                //dump('R: '.$row.' C: '.$col.' E:'.$extra);
+                if ('long' === $signals[$row]) {
+                    return (0 === $extra) ? 1 : 0;
+                } elseif ('short' === $signals[$row]) {
+                    return (0 === $extra) ? 0 : 1;
+                }
+                error_log('Unmatched signal');
+            }
+        );
         $this->_plot->SetDataValues($data);
         $this->_plot->SetLineWidths(1);
         $this->_plot->SetPlotType('linepoints');
@@ -341,7 +364,9 @@ class PHPlot extends Chart {
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $legend = $indicator->getParam('display.name');
         $params = $indicator->getParam('indicator');
-        if (count($params)) $legend .= ' ('.join(', ', $params).')';
+        if (count($params)) {
+            $legend .= ' ('.join(', ', $params).')';
+        }
         $this->_plot->SetLegend([$legend, '']);
         $this->_plot->DrawGraph();
         self::nextLegendY();
@@ -358,7 +383,9 @@ class PHPlot extends Chart {
         $colors = ['#22226640', 'yellow:110', 'maroon:100', 'brown:70'];
         $color = $colors[$index];
         $index ++;
-        if ($index >= count($colors)) $index = 0;
+        if ($index >= count($colors)) {
+            $index = 0;
+        }
         return $color;
     }
 

@@ -12,8 +12,9 @@ use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\FannTraining;
 
-if (!extension_loaded('fann'))
+if (!extension_loaded('fann')) {
     throw new \Exception('FANN extension not loaded');
+}
 
 class Fann extends Strategy
 {
@@ -36,13 +37,10 @@ class Fann extends Strategy
 
     public function __wakeup()
     {
-        if (defined('FANN_WAKEUP_PREFERRED_SUFFX'))
-        {
+        if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
             //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
             $this->createFann(FANN_WAKEUP_PREFERRED_SUFFX);
-        }
-        else
-        {
+        } else {
             //error_log('Fann::__wakeup() path: '.$this->path());
             $this->createFann();
         }
@@ -52,7 +50,8 @@ class Fann extends Strategy
     public function toHTML(string $content = null)
     {
         return parent::toHTML(
-                view('Strategies/'.$this->getShortClass().'Form', ['strategy' => $this]));
+            view('Strategies/'.$this->getShortClass().'Form', ['strategy' => $this])
+        );
     }
 
 
@@ -62,16 +61,17 @@ class Fann extends Strategy
         $symbol = Exchange::getDefault('symbol');
         $resolution = Exchange::getDefault('resolution');
         $mainchart = session('mainchart');
-        if (is_object($mainchart))
-        {
+        if (is_object($mainchart)) {
             $exchange = $mainchart->getCandles()->getParam('exchange');
             $symbol = $mainchart->getCandles()->getParam('symbol');
             $resolution = $mainchart->getCandles()->getParam('resolution');
         }
-        $candles = new Series(['limit' => 0,
-                                'exchange' => $exchange,
-                                'symbol' => $symbol,
-                                'resolution' => $resolution]);
+        $candles = new Series([
+            'limit' => 0,
+            'exchange' => $exchange,
+            'symbol' => $symbol,
+            'resolution' => $resolution
+        ]);
         $training_chart = Chart::make(null, [
                             'candles' => $candles,
                             'name' => 'trainingChart',
@@ -99,8 +99,7 @@ class Fann extends Strategy
                             'highlight' => [$training->range_start, $training->range_end],
                             'visible_indicators' => ['Balance']]);
 
-        if (!$progress_chart->hasIndicatorClass('Balance'))
-        {
+        if (!$progress_chart->hasIndicatorClass('Balance')) {
             $progress_chart->addIndicator('Balance');
             $this->save();
         }
@@ -113,16 +112,18 @@ class Fann extends Strategy
 
     public function handleSaveRequest(Request $request)
     {
-        if (isset($request->num_samples))
-            if (intval($request->num_samples) !== intval($this->getParam('num_samples')))
-            {
+        if (isset($request->num_samples)) {
+            if (intval($request->num_samples) !== intval($this->getParam('num_samples'))) {
                 error_log('Strategy '.$this->getParam('id').': sample size changed, deleting fann.');
                 $this->destroyFann();
                 $this->deleteFiles();
             }
-        foreach (['num_samples', 'target_distance'] as $param)
-            if (isset($request->$param))
+        }
+        foreach (['num_samples', 'target_distance'] as $param) {
+            if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
+            }
+        }
 
         parent::handleSaveRequest($request);
         return $this;
@@ -132,19 +133,24 @@ class Fann extends Strategy
     public function listItem()
     {
         $training = FannTraining::select('status')
-                                ->where('strategy_id', $this->getParam('id'))
-                                ->where(function ($query) {
-                                    $query->where('status', 'training')
-                                            ->orWhere('status', 'paused');
-                                })
-                                ->first();
+            ->where('strategy_id', $this->getParam('id'))
+            ->where(function ($query) {
+                $query->where('status', 'training')
+                        ->orWhere('status', 'paused');
+            })
+            ->first();
         $training_status = null;
-        if (is_object($training))
+        if (is_object($training)) {
             $training_status = $training->status;
+        }
 
-        return view('Strategies/FannListItem', [
+        return view(
+            'Strategies/FannListItem',
+            [
                     'strategy' => $this,
-                    'training_status' => $training_status]);
+                    'training_status' => $training_status
+            ]
+        );
     }
 
 
@@ -153,24 +159,25 @@ class Fann extends Strategy
         $class = $this->getParam('prediction_indicator_class');
 
         $indicator = null;
-        foreach ($this->getIndicators() as $candidate)
-            if ($class === $candidate->getShortClass())
+        foreach ($this->getIndicators() as $candidate) {
+            if ($class === $candidate->getShortClass()) {
                 $indicator = $candidate;
-        if (is_null($indicator))
-        {
+            }
+        }
+        if (is_null($indicator)) {
             $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
             $this->addIndicator($indicator);
         }
 
         $ema_len = $this->getParam('prediction_ema');
-        if ($ema_len > 1)
-        {
+        if ($ema_len > 1) {
             $candles = $this->getCandles();
-            $indicator = Indicator::make('Ema',
-                            ['indicator' => [   'price' => $indicator->getSignature(),
-                                                'length' => $ema_len],
-                             'display' => [     'visible' => false],
-                             'depends' => [     $indicator]]);
+            $indicator = Indicator::make(
+                'Ema',
+                ['indicator' => ['price' => $indicator->getSignature(), 'length' => $ema_len],
+                 'display' => ['visible' => false],
+                 'depends' => [$indicator]]
+            );
 
             $candles->addIndicator($indicator);
             $indicator = $candles->getIndicator($indicator->getSignature());
@@ -182,50 +189,48 @@ class Fann extends Strategy
 
     public function createFann(string $prefer_suffix = '')
     {
-        if (is_resource($this->_fann))
+        if (is_resource($this->_fann)) {
             throw new \Exception('createFann called but _fann is already a resource');
+        }
 
         // try first with suffix, if supplied
-        if (strlen($prefer_suffix))
-        {
+        if (strlen($prefer_suffix)) {
             $path = $this->path().$prefer_suffix;
-            if (is_file($path) && is_readable($path))
-            {
+            if (is_file($path) && is_readable($path)) {
                 //error_log('creating fann from '.$path);
                 $this->_fann = fann_create_from_file($path);
             }
         }
         // try without suffix
-        if (!is_resource($this->_fann))
-        {
+        if (!is_resource($this->_fann)) {
             $path = $this->path();
-            if (is_file($path) && is_readable($path))
-            {
+            if (is_file($path) && is_readable($path)) {
                 //error_log('creating fann from '.$path);
                 $this->_fann = fann_create_from_file($path);
             }
         }
         // create a new fann
-        if (!is_resource($this->_fann))
-        {
+        if (!is_resource($this->_fann)) {
             error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
-            if ($this->getParam('fann_type') === 'fixed')
-            {
+            if ($this->getParam('fann_type') === 'fixed') {
                 $params = array_merge(
-                            [$this->getParam('num_layers')],
-                            [$this->getNumInput()],
-                            $this->getParam('hidden_array'),
-                            [$this->getParam('num_output')]);
+                    [$this->getParam('num_layers')],
+                    [$this->getNumInput()],
+                    $this->getParam('hidden_array'),
+                    [$this->getParam('num_output')]
+                );
                 error_log('calling fann_create_standard('.join(', ', $params).')');
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
-            }
-            else if ($this->getParam('fann_type') == 'cascade')
+            } elseif ($this->getParam('fann_type') == 'cascade') {
                 $this->_fann = fann_create_shortcut(
-                                $this->getParam('num_layers'),
-                                $this->getNumInput(),
-                                $this->getParam('num_output'));
-            else throw new \Exception('Unknown fann type');
+                    $this->getParam('num_layers'),
+                    $this->getNumInput(),
+                    $this->getParam('num_output')
+                );
+            } else {
+                throw new \Exception('Unknown fann type');
+            }
             //fann_randomize_weights($this->_fann, -0.2, 0.2);
         }
         $this->initFann();
@@ -236,8 +241,9 @@ class Fann extends Strategy
 
     public function initFann()
     {
-        if (!is_resource($this->_fann))
+        if (!is_resource($this->_fann)) {
             throw new \Exception('Cannot init fann, not a resource');
+        }
         fann_set_activation_function_hidden($this->_fann, FANN_SIGMOID_SYMMETRIC);
         //fann_set_activation_function_output($this->_fann, FANN_SIGMOID_SYMMETRIC);
         //fann_set_activation_function_hidden($this->_fann, FANN_GAUSSIAN_SYMMETRIC);
@@ -260,7 +266,9 @@ class Fann extends Strategy
 
     public function getFann()
     {
-        if (!is_resource($this->_fann)) $this->createFann();
+        if (!is_resource($this->_fann)) {
+            $this->createFann();
+        }
         return $this->_fann;
     }
 
@@ -273,8 +281,9 @@ class Fann extends Strategy
 
     public function setFann($fann)
     {
-        if (!is_resource($fann))
+        if (!is_resource($fann)) {
             throw new \Exception('supplied fann is not a resource');
+        }
         //error_log('setFann('.get_resource_type($fann).')');
         //var_dump(debug_backtrace());
         //if (is_resource($this->_fann)) $this->destroyFann(); // do not destroy, it may have a reference
@@ -287,13 +296,11 @@ class Fann extends Strategy
     public function saveFann(string $suffix = '')
     {
         $fn = $this->path().$suffix;
-        if (!fann_save($this->getFann(), $fn))
-        {
+        if (!fann_save($this->getFann(), $fn)) {
             error_log('saveFann to '.$fn.' failed');
             return false;
         }
-        if (!chmod($fn, 0666))
-        {
+        if (!chmod($fn, 0666)) {
             error_log('chmod of '.$fn.' failed');
             return false;
         }
@@ -317,26 +324,33 @@ class Fann extends Strategy
     {
         // remove fann file
         $fann = $this->path();
-        if (is_file($fann))
-            if (is_writable($fann))
+        if (is_file($fann)) {
+            if (is_writable($fann)) {
                 unlink($fann);
+            }
+        }
         // remove status file
         $fn = $fann.'.status';
-        if (is_file($fn))
-            if (is_writable($fn))
+        if (is_file($fn)) {
+            if (is_writable($fn)) {
                 unlink($fn);
+            }
+        }
         // remove train file
         $fn = $fann.'.train';
-        if (is_file($fn))
-            if (is_writable($fn))
+        if (is_file($fn)) {
+            if (is_writable($fn)) {
                 unlink($fn);
+            }
+        }
     }
 
 
     public function destroyFann()
     {
-        if (is_resource($this->_fann))
+        if (is_resource($this->_fann)) {
             return fann_destroy($this->_fann);
+        }
         return true;
     }
 
@@ -345,10 +359,11 @@ class Fann extends Strategy
     {
         try {
             $output = fann_run($this->getFann(), $input);
-            if (!$ignore_bias) $output[0] -= $this->getBias();
+            if (!$ignore_bias) {
+                $output[0] -= $this->getBias();
+            }
             return $output[0];
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             error_log('fann_run error: '.$e->getMessage()."\n".
                         ' Input: '.var_export($input, true));
             return null;
@@ -358,10 +373,12 @@ class Fann extends Strategy
 
     public function getBias()
     {
-        if (!$this->getParam('bias_compensation'))
+        if (!$this->getParam('bias_compensation')) {
             return 0; // bias disabled
-        if (!is_null($this->_bias))
+        }
+        if (!is_null($this->_bias)) {
             return $this->_bias * $this->getParam('bias_compensation');
+        }
         $this->_bias = fann_run($this->getFann(), array_fill(0, $this->getNumInput(), 0))[0];
         //error_log('bias: '.$this->_bias);
         return $this->_bias * $this->getParam('bias_compensation');
@@ -380,27 +397,30 @@ class Fann extends Strategy
     {
         static $___pack = array();
 
-        if ($reset == 'reset')
-        {
+        if ($reset == 'reset') {
             $___pack = [];
             return true;
         }
 
         $candles = $this->getCandles();
 
-        if (!$candles->size()) return null;
+        if (!$candles->size()) {
+            return null;
+        }
 
         $target_pack_size = $size ? $size : $this->getParam('num_samples') + $this->getParam('target_distance');
         //echo ' '.$this->_pack_iterator;
-        while ($candle = $candles->byKey($this->_pack_iterator))
-        {
+        while ($candle = $candles->byKey($this->_pack_iterator)) {
             $this->_pack_iterator++;
             $___pack[] = $candle;
             $current_pack_size = count($___pack);
-            if ($current_pack_size <  $target_pack_size) continue;
-            if ($current_pack_size == $target_pack_size) return $___pack;
-            if ($current_pack_size >  $target_pack_size)
-            {
+            if ($current_pack_size <  $target_pack_size) {
+                continue;
+            }
+            if ($current_pack_size == $target_pack_size) {
+                return $___pack;
+            }
+            if ($current_pack_size >  $target_pack_size) {
                 array_shift($___pack);
                 return $___pack;
             }
@@ -411,25 +431,23 @@ class Fann extends Strategy
     public function candlesToData($name, $force = false)
     {
 
-        if (isset($this->_data[$name]) && !$force) return true;
+        if (isset($this->_data[$name]) && !$force) {
+            return true;
+        }
         $data = array();
         $images = 0;
 
         $this->resetPack();
-        while ($pack = $this->nextPack())
-        { //echo " DEBUG stop candlesToData\n"; return false;
+        while ($pack = $this->nextPack()) {
             $input = array();
-            for ($i=0; $i<$this->getParam('num_samples'); $i++)
-            {
-                if ($i < $this->getParam('num_samples') - 1)
-                {
+            for ($i=0; $i<$this->getParam('num_samples'); $i++) {
+                if ($i < $this->getParam('num_samples') - 1) {
                     $input[] = floatval($pack[$i]->open);
                     $input[] = floatval($pack[$i]->high);
                     $input[] = floatval($pack[$i]->low);
                     $input[] = floatval($pack[$i]->close);
-                }
-                else
-                { // we only care about the open price for the last candle in the sample
+                } else {
+                    // we only care about the open price for the last candle in the sample
                     $input[] = floatval($pack[$i]->open);
                     $last_ohlc4 = Series::ohlc4($pack[$i]);
                 }
@@ -461,12 +479,17 @@ class Fann extends Strategy
             // Normalize input to -1, 1, output is delta of last input and output scaled
             $min = min($input);
             $max = max($input);
-            foreach ($input as $k => $v) $input[$k] = Series::normalize($v, $min, $max);
+            foreach ($input as $k => $v) {
+                $input[$k] = Series::normalize($v, $min, $max);
+            }
             $delta = $output - $last_ohlc4;
             //error_log($delta);
             $output = $delta * 100 / $last_ohlc4 / $this->getParam('output_scaling');
-            if ($output > 1) $output = 1;
-            else if ($output < -1) $output = -1;
+            if ($output > 1) {
+                $output = 1;
+            } elseif ($output < -1) {
+                $output = -1;
+            }
 
             $data[] = array('input'  => $input, 'output' => array($output));
 
@@ -493,10 +516,11 @@ class Fann extends Strategy
         $this->_callback_type = 'test';
         $this->_callback_iterator = 0;
         $test_data = fann_create_train_from_callback(
-                        count($this->_data['test']),
-                        $this->getNumInput(),
-                        $this->getParam('num_output'),
-                        array($this, 'createCallback'));
+            count($this->_data['test']),
+            $this->getNumInput(),
+            $this->getParam('num_output'),
+            array($this, 'createCallback')
+        );
 
         $mse = fann_test_data($this->getFann(), $test_data);
         //$bit_fail = fann_get_bit_fail($this->getFann());
@@ -513,10 +537,11 @@ class Fann extends Strategy
         $this->_callback_type = 'train';
         $this->_callback_iterator = 0;
         $training_data = fann_create_train_from_callback(
-                            count($this->_data['train']),
-                            $this->getNumInput(),
-                            $this->getParam('num_output'),
-                            array($this, 'createCallback'));
+            count($this->_data['train']),
+            $this->getNumInput(),
+            $this->getParam('num_output'),
+            array($this, 'createCallback')
+        );
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
 
         $desired_error = 0.0000001;
@@ -526,29 +551,38 @@ class Fann extends Strategy
 
         /* Cascade */
         $max_neurons = $max_epochs / 10;
-        if ($max_neurons < 1)   $max_neurons = 1;
-        if ($max_neurons > 100) $max_neurons = 100;
+        if ($max_neurons < 1) {
+            $max_neurons = 1;
+        }
+        if ($max_neurons > 100) {
+            $max_neurons = 100;
+        }
         $neurons_between_reports = 10;
 
         //echo 'Training... '; flush();
-        if ($this->getParam('fann_type') === 'fixed')
-            $res = fann_train_on_data($this->getFann(),
-                                        $training_data,
-                                        $max_epochs,
-                                        $epochs_between_reports,
-                                        $desired_error);
-        else if ($this->getParam('fann_type') === 'cascade')
-            $res = fann_cascadetrain_on_data($this->getFann(),
-                                        $training_data,
-                                        $max_neurons,
-                                        $neurons_between_reports,
-                                        $desired_error);
-        else throw new \Exception('Unknown fann type.');
+        if ($this->getParam('fann_type') === 'fixed') {
+            $res = fann_train_on_data(
+                $this->getFann(),
+                $training_data,
+                $max_epochs,
+                $epochs_between_reports,
+                $desired_error
+            );
+        } elseif ($this->getParam('fann_type') === 'cascade') {
+            $res = fann_cascadetrain_on_data(
+                $this->getFann(),
+                $training_data,
+                $max_neurons,
+                $neurons_between_reports,
+                $desired_error
+            );
+        } else {
+            throw new \Exception('Unknown fann type.');
+        }
 
         $this->_bias = null;
 
-        if ($res)
-        {
+        if ($res) {
             //echo 'done in '.(time()-$t).'s. Connections: '.count(fann_get_connection_array($this->getFann())).
             //      ', MSE: '.fann_get_MSE($this->getFann()).'<br />';
             return true;
@@ -560,14 +594,16 @@ class Fann extends Strategy
     public function createCallback($num_data, $num_input, $num_output)
     {
 
-        if (!$this->_callback_type) throw new \Exception('callback type not set');
+        if (!$this->_callback_type) {
+            throw new \Exception('callback type not set');
+        }
 
         //error_log('train callback: '.$num_data.' '.$num_input.' '.$num_output.' '.$this->_callback_iterator.' '.
         //      count($this->_data[$this->_callback_type]));
         $this->_callback_iterator++;
         return is_array($this->_data[$this->_callback_type][$this->_callback_iterator-1]) ?
-                  $this->_data[$this->_callback_type][$this->_callback_iterator-1] :
-                  false;
+            $this->_data[$this->_callback_type][$this->_callback_iterator-1] :
+            false;
     }
 
 
@@ -578,7 +614,9 @@ class Fann extends Strategy
     {
         $mse = fann_get_MSE($this->getFann());
         //error_log('MSER: '.$mse);
-        if ($mse) return 1 / $mse;
+        if ($mse) {
+            return 1 / $mse;
+        }
         return 0;
     }
 
@@ -606,9 +644,11 @@ class Fann extends Strategy
     public function path()
     {
         $dir = $this->getParam('path');
-        if (!is_dir($dir))
-            if (!mkdir($dir))
+        if (!is_dir($dir)) {
+            if (!mkdir($dir)) {
                 throw new \Exception('Failed to create directory '.$dir);
+            }
+        }
         return $dir.DIRECTORY_SEPARATOR.$this->getParam('id').'.fann';
     }
 

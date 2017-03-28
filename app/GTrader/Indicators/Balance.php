@@ -14,8 +14,10 @@ class Balance extends Indicator
     public function createDependencies()
     {
         $owner = $this->getOwner();
-        if (is_object($owner))
-            $owner->getSignalsIndicator(); /* just calling the owner's method will create the dependency */
+        if (is_object($owner)) {
+            /* just calling the owner's method will create the dependency */
+            $owner->getSignalsIndicator();
+        }
         return $this;
     }
 
@@ -24,27 +26,29 @@ class Balance extends Indicator
     {
         $mode = $this->getParam('indicator.mode');
 
-        if (!in_array($mode, array('dynamic', 'fixed')))
+        if (!in_array($mode, array('dynamic', 'fixed'))) {
             throw new \Exception('Mode must be either dynamic or fixed.');
+        }
 
         $owner = $this->getOwner();
 
         $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([
-                                'exchange_id' => $exchange->getId(),
-                                'user_id' => $owner->getParam('user_id', 0)]);
+            'exchange_id' => $exchange->getId(),
+            'user_id' => $owner->getParam('user_id', 0)]);
 
         // Get defaults from exchange config file
         $leverage = $exchange->getParam('leverage');
         $position_size = $exchange->getParam('position_size');
 
         // Update values from UserExchangeCOnfig
-        if (is_array($config->options))
-        {
-            if (isset($config->options['leverage']))
+        if (is_array($config->options)) {
+            if (isset($config->options['leverage'])) {
                 $leverage = $config->options['leverage'];
-            if (isset($config->options['position_size']))
+            }
+            if (isset($config->options['position_size'])) {
                 $position_size = $config->options['position_size'];
+            }
         }
 
         $signal_ind = $owner->getSignalsIndicator();
@@ -63,50 +67,57 @@ class Balance extends Indicator
         $candles = $this->getCandles();
         $candles->reset();
 
-        while ($candle = $candles->next())
-        {
-            if ($liquidated)
-            {
+        while ($candle = $candles->next()) {
+            if ($liquidated) {
                 $candle->$signature = 0;
                 continue;
             }
 
-            if ($prev_signal)
-            { // update UPL
-                if ($candle->close != $prev_signal['price']) // avoid division by zero
-                    if ($prev_signal['signal'] == 'long')
+            if ($prev_signal) {
+                // update UPL
+                if ($candle->close != $prev_signal['price']) {
+                    // avoid division by zero
+                    if ($prev_signal['signal'] == 'long') {
                         $upl = $stake / $prev_signal['price'] *
                                 ($candle->close - $prev_signal['price']) * $leverage;
-                    else if ($prev_signal['signal'] == 'short')
+                    } elseif ($prev_signal['signal'] == 'short') {
                         $upl = $stake / $prev_signal['price'] *
                                 ($prev_signal['price'] - $candle->close) * $leverage;
+                    }
+                }
             }
 
-            if ($signal = $candle->$signal_sig)
-            {
-                if ($signal['signal'] == 'long' && $capital > 0)
-                { // go long
-                    if ($prev_signal && $prev_signal['signal'] == 'short')
-                    { // close last short
-                        if ($prev_signal['price']) // avoid division by zero
+            if ($signal = $candle->$signal_sig) {
+                if ($signal['signal'] == 'long' && $capital > 0) {
+                    // go long
+                    if ($prev_signal && $prev_signal['signal'] == 'short') {
+                        // close last short
+                        if ($prev_signal['price']) {
+                            // avoid division by zero
                             $capital += $stake / $prev_signal['price'] * ($prev_signal['price']
                                         - $signal['price']) * $leverage;
+                        }
                         $upl = 0;
                     }
-                    if ($mode == 'dynamic') $stake = $capital * $position_size / 100;
+                    if ($mode == 'dynamic') {
+                        $stake = $capital * $position_size / 100;
+                    }
                     // open long
                     $capital -= $stake * $fee_multiplier;
-                }
-                else if ($signal['signal'] == 'short' && $capital > 0)
-                { // go short
-                    if ($prev_signal && $prev_signal['signal'] == 'long')
-                    { // close last long
-                        if ($prev_signal['price']) // avoid division by zero
+                } elseif ($signal['signal'] == 'short' && $capital > 0) {
+                    // go short
+                    if ($prev_signal && $prev_signal['signal'] == 'long') {
+                        // close last long
+                        if ($prev_signal['price']) {
+                            // avoid division by zero
                             $capital += $stake / $prev_signal['price'] * ($signal['price']
                                         - $prev_signal['price']) * $leverage;
+                        }
                         $upl = 0;
                     }
-                    if ($mode == 'dynamic') $stake = $capital * $position_size / 100;
+                    if ($mode == 'dynamic') {
+                        $stake = $capital * $position_size / 100;
+                    }
                     // open short
                     $capital -= $stake * $fee_multiplier;
                 }
@@ -120,6 +131,5 @@ class Balance extends Indicator
             $candle->$signature = $new_balance;
         }
         return $this;
-
-   }
+    }
 }

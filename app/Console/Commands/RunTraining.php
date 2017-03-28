@@ -43,19 +43,12 @@ class RunTraining extends Command
 
 
         $slot_lock = 'training_slot_'.$this->argument('slot');
-        if (!Lock::obtain($slot_lock))
+        if (!Lock::obtain($slot_lock)) {
             throw new \Exception('Could not obtain slot lock for '.$this->argument('slot'));
+        }
 
         $training->run();
 
         Lock::release($slot_lock);
     }
 }
-
-
-
-
-
-
-
-

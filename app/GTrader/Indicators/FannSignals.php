@@ -13,8 +13,10 @@ class FannSignals extends Indicator
     public function createDependencies()
     {
         $owner = $this->getOwner();
-        if (is_object($owner))
-            $owner->getPredictionIndicator(); /* just calling the owner's method will create the dependency */
+        if (is_object($owner)) {
+            /* just calling the owner's method will create the dependency */
+            $owner->getPredictionIndicator();
+        }
         return $this;
     }
 
@@ -40,39 +42,40 @@ class FannSignals extends Indicator
         $spitfire = $owner->getParam('spitfire');
         $long_threshold = $owner->getParam('prediction_long_threshold');
         $short_threshold = $owner->getParam('prediction_short_threshold');
-        if ($long_threshold == 0 || $short_threshold == 0)
+        if ($long_threshold == 0 || $short_threshold == 0) {
             throw new \Exception('Threshold is zero');
+        }
         $min_distance = $owner->getParam('min_trade_distance');
         $resolution = $candles->getParam('resolution');
         $num_input = $owner->getNumInput();
 
         $candles->reset();
-        while ($candle = $candles->next())
-        {
-            if ($force_rerun && isset($candle->$signature))
+        while ($candle = $candles->next()) {
+            if ($force_rerun && isset($candle->$signature)) {
                 unset($candle->$signature);
+            }
 
             $candles_seen++;
-            if ($candles_seen < $num_input) continue; // skip trading while inside the first sample
-            if (isset($candle->$indicator_sig))
-            {
+            if ($candles_seen < $num_input) {
+                // skip trading while inside the first sample
+                continue;
+            }
+            if (isset($candle->$indicator_sig)) {
                 // skip trade if last trade was recent
-                if ($last['time'] >= $candle->time - $min_distance * $resolution)
+                if ($last['time'] >= $candle->time - $min_distance * $resolution) {
                     continue;
+                }
 
                 $price_long = $price_short = $candle->open;
 
                 if ($candle->$indicator_sig >
                             $candle->open + $candle->open / $long_threshold &&
-                            ($last['signal'] != 'long' || $spitfire))
-                {
+                            ($last['signal'] != 'long' || $spitfire)) {
                     $candle->$signature = ['signal' => 'long', 'price' => $price_long];
                     $last = ['time' => $candle->time, 'signal' => 'long'];
-                }
-                else if ($candle->$indicator_sig <
+                } elseif ($candle->$indicator_sig <
                             $candle->open - $candle->open / $short_threshold &&
-                            ($last['signal'] != 'short' || $spitfire))
-                {
+                            ($last['signal'] != 'short' || $spitfire)) {
                     $candle->$signature = ['signal' => 'short', 'price' => $price_short];
                     $last = ['time' => $candle->time, 'signal' => 'short'];
                 }
