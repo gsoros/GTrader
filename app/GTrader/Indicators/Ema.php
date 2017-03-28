@@ -7,7 +7,7 @@ use GTrader\Indicator;
 /**  Exponential Moving Average */
 class Ema extends Indicator
 {
-    protected $_allowed_owners = ['GTrader\\Series'];
+    protected $allowed_owners = ['GTrader\\Series'];
 
 
     public function calculate(bool $force_rerun = false)
@@ -17,42 +17,34 @@ class Ema extends Indicator
         $length = intval($params['length']);
         $price = $params['price'];
 
-        if ($length <= 1)
-        {
+        if ($length <= 1) {
             error_log('Ema needs int length > 1');
             return $this;
         }
 
         $signature = $this->getSignature();
 
-        if (!($candles = $this->getCandles()))
+        if (!($candles = $this->getCandles())) {
             return $this;
+        }
 
         $candles->reset();
-        while ($candle = $candles->next())
-        {
+        while ($candle = $candles->next()) {
             $candle_price = 0;
-            if (isset($candle->$price))
-            {
+            if (isset($candle->$price)) {
                 $candle_price = $candle->$price;
-            }
-            else
-            {
+            } else {
                 error_log('Ema::calculate() '.$signature.' candle->'.$price.' is not set');
             }
             //echo 'candle: '; dump($candle);
             $prev_candle = $candles->prev();
             //echo 'prev candle: '; dump($prev_candle);
-            if (is_object($prev_candle))
-            {
+            if (is_object($prev_candle)) {
                 $prev_candle_sig = 0;
-                if (isset($prev_candle->$signature))
-                {
+                if (isset($prev_candle->$signature)) {
                     $prev_candle_sig = $prev_candle->$signature;
 
-                }
-                else
-                {
+                } else {
                     // TODO handle the error
                     //throw new \Exception('Ema: prev_candle->'.$signature.' is not set');
                 }
@@ -60,9 +52,7 @@ class Ema extends Indicator
                 $candle->$signature =
                     ($candle_price - $prev_candle_sig) * (2 / ($length + 1))
                     + $prev_candle_sig;
-            }
-            else
-            {
+            } else {
                 // start with the first candle's price as a basis for the ema
                 $candle->$signature = $candle_price;
             }

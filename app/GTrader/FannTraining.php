@@ -11,7 +11,6 @@ use GTrader\Strategy;
 use GTrader\Strategies\Fann as FannStrategy;
 use GTrader\TrainingManager;
 
-
 class FannTraining extends Model
 {
     use Skeleton, HasStrategy;
@@ -53,8 +52,9 @@ class FannTraining extends Model
         echo 'FannTraining::run() ID:'.$this->id."\n";
 
         $training_lock = 'training_'.$this->id;
-        if (!Lock::obtain($training_lock))
+        if (!Lock::obtain($training_lock)) {
             throw new \Exception('Could not obtain training lock for '.$this->id);
+        }
 
         $exchange_name = Exchange::getNameById($this->exchange_id);
         $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
@@ -62,9 +62,11 @@ class FannTraining extends Model
         $train_suffix = '.train';
 
         $test_on_whole = false;
-        if (isset($this->options['test_on']))
-            if ('whole' === $this->options['test_on'])
+        if (isset($this->options['test_on'])) {
+            if ('whole' === $this->options['test_on']) {
                 $test_on_whole = true;
+            }
+        }
 
         // Set up training strategy
         $train_candles = new Series([
@@ -82,8 +84,7 @@ class FannTraining extends Model
         $train_strategy->setCandles($train_candles);
 
         // Set up test strategy
-        if ($test_on_whole)
-        {
+        if ($test_on_whole) {
             $test_candles = new Series([
                             'exchange' => $exchange_name,
                             'symbol' => $symbol_name,
@@ -91,9 +92,7 @@ class FannTraining extends Model
                             'limit' => 0]);
             $test_strategy = $train_strategy;
             $test_strategy->setCandles($test_candles);
-        }
-        else
-        {
+        } else {
             $test_strategy =& $train_strategy;
         }
 
@@ -113,58 +112,61 @@ class FannTraining extends Model
         $max_boredom = 10;      // increase jump size after this many checks without improvement
         $epoch_jump_max = 100;  // max amount of skipped epochs
 
-        if ($json = $this->readStatus($train_strategy))
-            if ($json = json_decode($json))
-                if (is_object($json))
-                {
-                    if (isset($json->epochs))
+        if ($json = $this->readStatus($train_strategy)) {
+            if ($json = json_decode($json)) {
+                if (is_object($json)) {
+                    if (isset($json->epochs)) {
                         $epochs = $json->epochs;
-                    if (isset($json->epoch_jump))
+                    }
+                    if (isset($json->epoch_jump)) {
                         $epoch_jump = $json->epoch_jump;
-                    if (isset($json->balance_max))
+                    }
+                    if (isset($json->balance_max)) {
                         $balance_max = $json->balance_max;
-                    if (isset($json->no_improvement))
+                    }
+                    if (isset($json->no_improvement)) {
                         $no_improvement = $json->no_improvement;
+                    }
                 }
+            }
+        }
 
-        if (!isset($balance_max))
+        if (!isset($balance_max)) {
             $balance_max = $test_strategy->getLastBalance(true);
+        }
 
-        while ($this->shouldRun())
-        {
+        while ($this->shouldRun()) {
             $epochs += $epoch_jump;
 
             // Do the actual training
             $train_strategy->train($epoch_jump);
 
             // Assign fann to test strat
-            if ($test_on_whole)
+            if ($test_on_whole) {
                 $test_strategy->setFann($train_strategy->copyFann());
+            }
 
             // Get balance
             $balance = $test_strategy->getLastBalance(true);
 
-            if ($balance > $balance_max)
-            {
+            if ($balance > $balance_max) {
                 // There is improvement, save the fann
                 $train_strategy->saveFann();
                 $balance_max = $balance;
                 $no_improvement = 0;
                 $epoch_jump = 1;
-            }
-            else
-            {
+            } else {
                 $no_improvement++;
             }
 
-            if ($no_improvement > $max_boredom)
-            {
+            if ($no_improvement > $max_boredom) {
                 // Increase jump size to fly over valleys faster, possibly missing some narrow peaks
                 $epoch_jump++;
 
                 //
-                if ($epoch_jump >= $epoch_jump_max)
+                if ($epoch_jump >= $epoch_jump_max) {
                     $epoch_jump = $epoch_jump_max;
+                }
                 $no_improvement = 0;
             }
 
@@ -194,26 +196,23 @@ class FannTraining extends Model
     {
         static $started;
 
-        if (!$started) $started = time();
+        if (!$started) {
+            $started = time();
+        }
 
         // check db if we have been stopped or deleted
-        try
-        {
+        try {
             self::where('id', $this->id)
                 ->where('status', 'training')
                 ->firstOrFail();
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             echo "Training stopped.\n";
             return false;
         }
         // check if the number of active trainings is greater than the number of slots
-        if (self::where('status', 'training')->count() > TrainingManager::getSlotCount())
-        {
+        if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
             // check if we have spent too much time
-            if ((time() - $started) > $this->getParam('max_time_per_session'))
-            {
+            if ((time() - $started) > $this->getParam('max_time_per_session')) {
                 echo 'Time up: '.(time() - $started).'/'.$this->getParam('max_time_per_session')."\n";
                 return false;
             }
@@ -225,10 +224,10 @@ class FannTraining extends Model
     protected function writeStatus(FannStrategy $strategy, string $s)
     {
         $file = $strategy->path().'.status';
-        if (!($fp = fopen($file, 'wb')))
+        if (!($fp = fopen($file, 'wb'))) {
             return false;
-        if (!flock($fp, LOCK_EX))
-        {
+        }
+        if (!flock($fp, LOCK_EX)) {
             fclose($fp);
             return false;
         }
@@ -243,31 +242,28 @@ class FannTraining extends Model
     public function readStatus(FannStrategy $strategy)
     {
         $statusfile = $strategy->path().'.status';
-        if (is_file($statusfile))
-            if (is_readable($statusfile))
-                if ($fp = fopen($statusfile, 'rb'))
-                    if (flock($fp, LOCK_SH))
-                    {
+        if (is_file($statusfile)) {
+            if (is_readable($statusfile)) {
+                if ($fp = fopen($statusfile, 'rb')) {
+                    if (flock($fp, LOCK_SH)) {
                         $c = file_get_contents($statusfile);
                         flock($fp, LOCK_UN);
                         fclose($fp);
                         return $c;
                     }
+                }
+            }
+        }
         return '{}';
     }
 
     public function resetStatus(FannStrategy $strategy)
     {
         $statusfile = $strategy->path().'.status';
-        if (is_file($statusfile))
-            if (is_writable($statusfile))
+        if (is_file($statusfile)) {
+            if (is_writable($statusfile)) {
                 unlink($statusfile);
+            }
+        }
     }
 }
-
-
-
-
-
-
-

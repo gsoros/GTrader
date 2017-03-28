@@ -4,21 +4,20 @@ namespace GTrader;
 
 trait HasOwner
 {
-    protected $_allowed_owners = [];
-    protected $_owner;
+    protected $allowed_owners = [];
+    protected $owner;
 
 
     public function getOwner()
     {
-        return $this->_owner;
+        return $this->owner;
     }
 
 
     public function setOwner(&$owner)
     {
-        if ($this->canBeOwnedBy($owner))
-        {
-            $this->_owner = $owner;
+        if ($this->canBeOwnedBy($owner)) {
+            $this->owner = $owner;
             return $this;
         }
         throw new \Exception('Class '.get_class($owner).' is not allowed as owner.');
@@ -28,9 +27,11 @@ trait HasOwner
     public function canBeOwnedBy(&$owner)
     {
         $owner_class = get_class($owner);
-        foreach ($this->_allowed_owners as $allowed)
-            if ($allowed === $owner_class || is_subclass_of($owner, $allowed))
+        foreach ($this->allowed_owners as $allowed) {
+            if ($allowed === $owner_class || is_subclass_of($owner, $allowed)) {
                 return true;
+            }
+        }
         return false;
     }
 }

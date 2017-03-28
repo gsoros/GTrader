@@ -6,11 +6,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use GTrader\Page;
 
-
 class Strategy
 {
     use Skeleton, HasCandles, HasIndicators;
-
 
     public static function load(int $id)
     {
@@ -18,8 +16,9 @@ class Strategy
                     ->select('user_id', 'name', 'strategy')
                     ->where('id', $id)
                     ->first();
-        if (!is_object($query))
+        if (!is_object($query)) {
             return null;
+        }
         $strategy = unserialize($query->strategy);
         $strategy->setParam('id', $id);
         $strategy->setParam('user_id', $query->user_id);
@@ -30,19 +29,16 @@ class Strategy
 
     public function save()
     {
-        if (!($id = $this->getParam('id')))
-        {
+        if (!($id = $this->getParam('id'))) {
             error_log('tried to save strategy without id');
             return $this;
         }
-        if (!($user_id = $this->getParam('user_id')))
-        {
+        if (!($user_id = $this->getParam('user_id'))) {
             error_log('tried to save strategy without user_id');
             return $this;
         }
 
-        if ('new' === $id)
-        {
+        if ('new' === $id) {
             $id = DB::table('strategies')
                         ->insertGetId([
                             'user_id' => $user_id,
@@ -88,16 +84,18 @@ class Strategy
                         ->orderBy('name')
                         ->get();
         $strategies = [];
-        foreach ($strategies_db as $strategy_db)
-        {
+        foreach ($strategies_db as $strategy_db) {
             $strategy = unserialize($strategy_db->strategy);
             $strategy->setParam('id', $strategy_db->id);
             $strategies[] = $strategy;
         }
 
-        return view('StrategyList', [
-                        'available' => self::singleton()->getParam('available'),
-                        'strategies' => $strategies]);
+        return view(
+            'StrategyList',
+            [
+                'available' => self::singleton()->getParam('available'),
+                'strategies' => $strategies]
+        );
     }
 
 
@@ -108,26 +106,31 @@ class Strategy
 
 
     public static function getSelectorOptions(
-                                int $user_id,
-                                int $selected_strategy = null)
-    {
+        int $user_id,
+        int $selected_strategy = null
+    ) {
         $strategies = DB::table('strategies')
                         ->select('id', 'name')
                         ->where('user_id', $user_id)
                         ->orderBy('name')
                         ->get();
 
-        return view('StrategySelectorOptions', [
-                        'selected_strategy' => $selected_strategy,
-                        'strategies' => $strategies]);
+        return view(
+            'StrategySelectorOptions',
+            [
+                'selected_strategy' => $selected_strategy,
+                'strategies' => $strategies]
+        );
     }
 
 
     public function handleSaveRequest(Request $request)
     {
-        foreach (['name'] as $param)
-            if (isset($request->$param))
+        foreach (['name'] as $param) {
+            if (isset($request->$param)) {
                 $this->setParam($param, $request->$param);
+            }
+        }
         return $this;
     }
 
@@ -136,9 +139,11 @@ class Strategy
     {
         $class = $this->getParam('signals_indicator_class');
 
-        foreach ($this->getIndicators() as $indicator)
-            if ($class === $indicator->getShortClass())
+        foreach ($this->getIndicators() as $indicator) {
+            if ($class === $indicator->getShortClass()) {
                 return $indicator;
+            }
+        }
         error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
         $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
         $this->addIndicator($indicator);
@@ -149,13 +154,15 @@ class Strategy
 
     public function getLastBalance(bool $force_rerun = false)
     {
-        if (!$this->hasIndicatorClass('Balance'))
+        if (!$this->hasIndicatorClass('Balance')) {
             $this->addIndicator('Balance');
+        }
         $balance = $this->getFirstIndicatorByClass('Balance');
         $balance->checkAndRun($force_rerun);
         $sig = $balance->getSignature();
-        if ($last = $this->getCandles()->last())
+        if ($last = $this->getCandles()->last()) {
             return $last->$sig;
+        }
         return 0;
     }
 
@@ -168,9 +175,11 @@ class Strategy
         $candles = $this->getCandles();
         $candles->reset();
         $signals = [];
-        while ($candle = $candles->next())
-            if (isset($candle->$signature))
+        while ($candle = $candles->next()) {
+            if (isset($candle->$signature)) {
                 $signals[$candle->time] = $candle->$signature;
+            }
+        }
         return $signals;
     }
 

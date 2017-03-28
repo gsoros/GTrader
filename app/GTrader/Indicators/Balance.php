@@ -8,7 +8,7 @@ use GTrader\UserExchangeConfig;
 
 class Balance extends Indicator
 {
-    protected $_allowed_owners = ['GTrader\\Strategy'];
+    protected $allowed_owners = ['GTrader\\Strategy'];
 
 
     public function createDependencies()

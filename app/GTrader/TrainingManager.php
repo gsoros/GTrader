@@ -14,15 +14,13 @@ class TrainingManager
     public function run()
     {
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
-        if (!Lock::obtain($lock))
-        {
+        if (!Lock::obtain($lock)) {
             echo "Another TrainingManager process is running.\n";
             return false;
         }
         echo "TrainingManager:run()\n";
 
-        while ($this->shouldRun())
-        {
+        while ($this->shouldRun()) {
             $this->main();
             $this->sleep();
         }
@@ -49,18 +47,15 @@ class TrainingManager
         // Check for any trainings
         $trainings = Training::where('status', 'training')->get();
         echo 'Trainings: '.count($trainings)."\n";
-        foreach ($trainings as $training)
-        {
+        foreach ($trainings as $training) {
             // Check if we have a free trainer slot
-            while (is_null($slot = $this->getSlot()))
-            {
+            while (is_null($slot = $this->getSlot())) {
                 echo "No free slot\n";
                 $this->sleep();
             }
             // Check if a trainer is already working on this training
             $training_lock = 'training_'.$training->id;
-            if (Lock::obtain($training_lock))
-            {
+            if (Lock::obtain($training_lock)) {
                 // This training can be assigned to a worker
                 Lock::release($training_lock);
                 $this->assign($slot, $training);
@@ -73,11 +68,9 @@ class TrainingManager
     {
         $slots = $this->getParam('slots');
 
-        for ($i = 0; $i < $slots; $i++)
-        {
+        for ($i = 0; $i < $slots; $i++) {
             $slot_lock = 'training_slot_'.$i;
-            if (Lock::obtain($slot_lock))
-            {
+            if (Lock::obtain($slot_lock)) {
                 Lock::release($slot_lock);
                 return $i;
             }
@@ -102,10 +95,11 @@ class TrainingManager
 
         echo $command."\n";
 
-        if (substr(php_uname(), 0, 7) === "Windows")
+        if (substr(php_uname(), 0, 7) === "Windows") {
             pclose(popen('start /B '. $command, 'r'));
-        else
+        } else {
             exec($command.' >> /dev/null 2>&1 &');
+        }
 
         sleep(2); // allow child process some time to obtain lock
     }

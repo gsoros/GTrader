@@ -23,8 +23,9 @@ class Lock
     protected function lock(string $lock)
     {
         $lockfile = fopen($this->path($lock), 'c+');
-        if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB))
+        if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB)) {
             return false;
+        }
         $this->locks[$lock] = $lockfile;
         return true;
     }
@@ -32,10 +33,12 @@ class Lock
 
     protected function unlock(string $lock)
     {
-        if (!isset($this->locks[$lock]))
+        if (!isset($this->locks[$lock])) {
             return false;
-        if (!($lockfile = $this->locks[$lock]))
+        }
+        if (!($lockfile = $this->locks[$lock])) {
             return false;
+        }
         flock($lockfile, LOCK_UN);
         fclose($lockfile);
         unlink($this->path($lock));
@@ -47,11 +50,14 @@ class Lock
     protected function path(string $lock)
     {
         $dir = $this->getParam('path');
-        if (!is_dir($dir))
-            if (!mkdir($dir))
+        if (!is_dir($dir)) {
+            if (!mkdir($dir)) {
                 throw new \Exception('Failed to create directory '.$dir);
-        if (!($lock = addslashes(str_replace(DIRECTORY_SEPARATOR, '', trim($lock)))))
+            }
+        }
+        if (!($lock = addslashes(str_replace(DIRECTORY_SEPARATOR, '', trim($lock))))) {
             throw new \Exception('Empty lock');
+        }
 
         return $dir.DIRECTORY_SEPARATOR.$lock;
     }

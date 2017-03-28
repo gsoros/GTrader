@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Bot;
 
-
 class BotController extends Controller
 {
 
@@ -34,12 +33,12 @@ class BotController extends Controller
         $user_id = Auth::id();
         $name = 'New Bot';
         $i = 2;
-        while (true)
-        {
+        while (true) {
             if (!Bot::where('user_id', $user_id)
                         ->where('name', $name)
-                        ->count())
+                        ->count()) {
                 break;
+            }
             $name = 'New Bot #'.$i;
             $i++;
         }
@@ -56,13 +55,11 @@ class BotController extends Controller
 
     public function idCheck(Request $request)
     {
-        if (!($bot = Bot::find($request->id)))
-        {
+        if (!($bot = Bot::find($request->id))) {
             error_log('Failed to load bot ID '.$request->id);
             return response('Failed to load bot.', 404);
         }
-        if ($bot->user_id !== Auth::id())
-        {
+        if ($bot->user_id !== Auth::id()) {
             error_log('That bot belongs to someone else: ID '.$request->id);
             return response('Failed to load bot.', 403);
         }
@@ -72,8 +69,9 @@ class BotController extends Controller
 
     public function form(Request $request)
     {
-        if (!($bot = $this->idCheck($request)) instanceof Bot)
+        if (!($bot = $this->idCheck($request)) instanceof Bot) {
             return $bot;
+        }
 
         return response($bot->toHTML(), 200);
     }
@@ -81,8 +79,9 @@ class BotController extends Controller
 
     public function delete(Request $request)
     {
-        if (!($bot = $this->idCheck($request)) instanceof Bot)
+        if (!($bot = $this->idCheck($request)) instanceof Bot) {
             return $bot;
+        }
         $bot->delete();
         return response(Bot::getListOfUser(Auth::id()), 200);
     }
@@ -90,13 +89,11 @@ class BotController extends Controller
 
     public function save(Request $request)
     {
-        if (!($bot = $this->idCheck($request)) instanceof Bot)
+        if (!($bot = $this->idCheck($request)) instanceof Bot) {
             return $bot;
+        }
         $bot->handleSaveRequest($request);
         $bot->save();
         return response(Bot::getListOfUser(Auth::id()), 200);
     }
-
-
-
 }

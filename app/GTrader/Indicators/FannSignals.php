@@ -7,7 +7,7 @@ use GTrader\Series;
 
 class FannSignals extends Indicator
 {
-    protected $_allowed_owners = ['GTrader\\Strategies\\Fann'];
+    protected $allowed_owners = ['GTrader\\Strategies\\Fann'];
 
 
     public function createDependencies()
@@ -35,7 +35,7 @@ class FannSignals extends Indicator
 
         //$trade_indicator = 'open';
         //$trade_indicator = 'ohlc4';
-        //$this->_candles->ohlc4()->reset();
+        //$this->candles->ohlc4()->reset();
 
         $spitfire = $owner->getParam('spitfire');
         $long_threshold = $owner->getParam('prediction_long_threshold');

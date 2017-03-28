@@ -26,10 +26,12 @@ class Page
     {
         $singleton = self::singleton();
         $elements = $singleton->getParam($element);
-        if (!is_array($elements))
+        if (!is_array($elements)) {
             return false;
-        if (in_array($content, $elements))
+        }
+        if (in_array($content, $elements)) {
             return true;
+        }
         $elements[] = $content;
         $singleton->setParam($element, $elements);
         return true;

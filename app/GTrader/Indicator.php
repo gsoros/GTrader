@@ -12,24 +12,25 @@ abstract class Indicator
         Skeleton::__construct as private __skeletonConstruct;
     }
 
-    protected $_calculated = false;
+    protected $calculated = false;
 
 
     public function __construct(array $params = [])
     {
         $this->__skeletonConstruct($params);
 
-        if (!$this->getParam('display.y_axis_pos'))
+        if (!$this->getParam('display.y_axis_pos')) {
             $this->setParam('display.y_axis_pos', 'left');
+        }
     }
 
 
-    public abstract function calculate(bool $force_rerun = false);
+    abstract public function calculate(bool $force_rerun = false);
 
 
     public function __wakeup()
     {
-        $this->_calculated = false;
+        $this->calculated = false;
     }
 
 
@@ -44,9 +45,9 @@ abstract class Indicator
     public function getDisplaySignature()
     {
         $name = $this->getParam('display.name');
-        $param_arr = [];
         $p = $this->getParam('indicator');
         /*
+        $param_arr = [];
         if (is_array($p))
             foreach ($p as $k => $v)
                 $param_arr[] = $k.': '.$v;
@@ -58,8 +59,9 @@ abstract class Indicator
 
     public function getCandles()
     {
-        if ($owner = $this->getOwner())
+        if ($owner = $this->getOwner()) {
             return $owner->getCandles();
+        }
         return null;
     }
 
@@ -78,16 +80,20 @@ abstract class Indicator
 
     public function checkAndRun(bool $force_rerun = false)
     {
-        if (!$force_rerun && $this->_calculated)
+        if (!$force_rerun && $this->calculated) {
             return $this;
+        }
 
         $depends = $this->getParam('depends');
-        if (is_array($depends))
-            if (count($depends))
-                foreach ($depends as $indicator)
+        if (is_array($depends)) {
+            if (count($depends)) {
+                foreach ($depends as $indicator) {
                     $indicator->checkAndRun($force_rerun);
+                }
+            }
+        }
 
-        $this->_calculated = true;
+        $this->calculated = true;
         return $this->calculate($force_rerun);
     }
 

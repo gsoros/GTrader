@@ -21,35 +21,33 @@ class Candle extends Model
         $attributes = ['id', 'time', 'exchange_id', 'symbol_id', 'resolution',
                         'open', 'high', 'low', 'close', 'volume'];
 
-        foreach ($this->attributes as $k => $v)
-        {
-            if (!in_array($k, $attributes))
-            {
+        foreach ($this->attributes as $k => $v) {
+            if (!in_array($k, $attributes)) {
                 echo 'not saving attribute '.$k.' = '.$v.'<br />';
                 unset($this->attributes[$k]);
             }
         }
 
-        if (isset($this->resolution))
+        if (isset($this->resolution)) {
             $this->resolution = intval($this->resolution);
+        }
 
-        $q = self::select('id');
+        $query = self::select('id');
 
-        foreach (['time', 'exchange_id', 'symbol_id', 'resolution'] as $k)
-        {
-            if (!isset($this->$k))
+        foreach (['time', 'exchange_id', 'symbol_id', 'resolution'] as $k) {
+            if (!isset($this->$k)) {
                 throw new \Exception('Cannot save without '.$k);
-            $q->where($k, $this->$k);
+            }
+            $query->where($k, $this->$k);
         }
 
-        if (is_object($q->first()))
-        {
+        if (is_object($query->first())) {
             DB::table('candles')
-                ->where('id', $q->first()->id)
+                ->where('id', $query->first()->id)
                 ->update($this->attributes);
+            return $this;
         }
-        else $this->insert($this->attributes, $options);
-
+        $this->insert($this->attributes, $options);
         return $this;
     }
 
@@ -63,10 +61,13 @@ class Candle extends Model
     public static function heikinashi(Candle $candle, Candle $prev_candle = null)
     {
         //dump($candle); dump($prev_candle); exit();
-        if (!is_object($prev_candle)) return $candle;
+        if (!is_object($prev_candle)) {
+            return $candle;
+        }
         if (!$prev_candle->open || !$prev_candle->high ||
-              !$prev_candle->low || !$prev_candle->close) return $candle;
-
+              !$prev_candle->low || !$prev_candle->close) {
+            return $candle;
+        }
         $candle->attributes = array_merge($candle->attributes, array(
             'open' => ($prev_candle->open + $prev_candle->close) / 2,
             'high' => max($candle->open, $candle->high, $candle->close),

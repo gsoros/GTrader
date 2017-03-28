@@ -7,7 +7,7 @@ use GTrader\Series;
 
 class FannPrediction extends Indicator
 {
-    protected $_allowed_owners = ['GTrader\\Strategies\\Fann'];
+    protected $allowed_owners = ['GTrader\\Strategies\\Fann'];
 
 
     public function calculate(bool $force_rerun = false)

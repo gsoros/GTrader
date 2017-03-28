@@ -11,6 +11,9 @@ use GTrader\Series;
 use GTrader\Lock;
 use GTrader\UserExchangeConfig;
 
+/**
+*
+*/
 class Bot extends Model
 {
     use Skeleton, HasStrategy;
@@ -48,6 +51,7 @@ class Bot extends Model
 
     /**
      * Get the trades of the bot.
+     * @return GTrader\Trade
      */
     public function trades()
     {
@@ -56,19 +60,24 @@ class Bot extends Model
 
     /**
      * Get the user that owns the bot.
+     * @return App\User
      */
     public function user()
     {
         return $this->belongsTo('App\User');
     }
 
-
+    /**
+     * Run the bot.
+     * @return $this
+     */
     public function run()
     {
         // Make sure only one instance is running
         $lock = 'bot_'.$this->id;
-        if (!Lock::obtain($lock))
+        if (!Lock::obtain($lock)) {
             throw new \Exception('Could not obtain lock for '.$this->id);
+        }
 
         // Get the symbol's local name
         $symbol = Exchange::getSymbolNameById($this->symbol_id);
@@ -81,20 +90,22 @@ class Bot extends Model
         $exchange->setParam('user_id', $this->user_id);
 
         // Check if we got the correct exchange
-        if ($exchange->getShortClass() !== $exchange_name)
+        if ($exchange->getShortClass() !== $exchange_name) {
             throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
-
+        }
+        
         // Save a record of any filled orders into local db
         $exchange->saveFilledOrders($symbol, $this->id);
 
         // Cancel unfilled orders
-        if (isset($this->options['unfilled_max']))
-            if ($unfilled_max = intval($this->options['unfilled_max']))
+        if (isset($this->options['unfilled_max'])) {
+            if (intval($this->options['unfilled_max'])) {
                 $exchange->cancelUnfilledOrders(
-                                $symbol,
-                                time() -
-                                $this->options['unfilled_max'] *
-                                $this->resolution);
+                    $symbol,
+                    time() - $this->options['unfilled_max'] * $this->resolution
+                );
+            }
+        }
 
 
         // Set up our series
@@ -122,16 +133,19 @@ class Bot extends Model
         $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
 
         // See if signal is recent enough
-        if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution)
+        if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution) {
             return $this;
+        }
 
         // Looks like we have a valid signal
 
         // Tell the exchange to take the position
-        $exchange->takePosition($symbol,
-                                $last_signal['signal'],
-                                $last_signal['price'],
-                                $this->id);
+        $exchange->takePosition(
+            $symbol,
+            $last_signal['signal'],
+            $last_signal['price'],
+            $this->id
+        );
 
         // Release our lock
         Lock::release($lock);
@@ -161,35 +175,44 @@ class Bot extends Model
         //error_log(var_export($request->all(), true));
 
         $ex = 'exchange_bot_'.$this->id;
-        if (isset($request->$ex))
+        if (isset($request->$ex)) {
             $this->exchange_id = Exchange::getIdByName($request->$ex);
+        }
 
         $sy = 'symbol_bot_'.$this->id;
-        if (isset($request->$sy))
+        if (isset($request->$sy)) {
             $this->symbol_id = Exchange::getSymbolIdByExchangeSymbolName(
-                                        $request->$ex,
-                                        $request->$sy);
+                $request->$ex,
+                $request->$sy
+            );
+        }
 
         $re = 'resolution_bot_'.$this->id;
-        if (isset($request->$re))
+        if (isset($request->$re)) {
             $this->resolution = $request->$re;
+        }
 
         $st = 'strategy_select_bot_'.$this->id;
-        if (isset($request->$st))
+        if (isset($request->$st)) {
             if (DB::table('strategies')->where('id', $request->$st)
                                         ->where('user_id', Auth::id())
-                                        ->count())
-            $this->strategy_id = $request->$st;
+                                        ->count()) {
+                $this->strategy_id = $request->$st;
+            }
+        }
 
-        foreach (['name'] as $param)
-            if (isset($request->$param))
+        foreach (['name'] as $param) {
+            if (isset($request->$param)) {
                 $this->$param = $request->$param;
+            }
+        }
 
         $options = $this->options;
-        foreach ($this->getParam('user_options') as $option => $default)
+        foreach ($this->getParam('user_options') as $option => $default) {
             $options[$option] = isset($request->$option) ?
                                 $request->$option :
                                 $default;
+        }
         $this->options = $options;
 
         return $this;
@@ -218,5 +241,4 @@ class Bot extends Model
     {
         return Strategy::load($this->strategy_id);
     }
-
 }

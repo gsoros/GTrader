@@ -43,5 +43,4 @@ class Trade extends Model
     {
         return $this->belongsTo('GTrader\Bot');
     }
-
 }

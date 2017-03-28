@@ -18,7 +18,7 @@ if (!extension_loaded('fann'))
 class Fann extends Strategy
 {
 
-    protected $_fann = null;              // fann resource
+    protected $_fann = null;                // fann resource
     protected $_data = [];
     protected $_pack_iterator = 0;
     protected $_callback_type = false;

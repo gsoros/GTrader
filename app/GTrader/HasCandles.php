@@ -6,30 +6,29 @@ use GTrader\Series;
 
 trait HasCandles
 {
-    protected $_candles;
+    protected $candles;
 
 
     public function setCandles(Series &$candles)
     {
-        $this->_candles = $candles;
+        $this->candles = $candles;
         return $this;
     }
 
 
     public function getCandles()
     {
-        if (!is_object($this->_candles))
-        {
+        if (!is_object($this->candles)) {
             $candles = new Series();
             $this->setCandles($candles);
         }
-        return $this->_candles;
+        return $this->candles;
     }
 
 
     public function unsetCandles()
     {
-        unset($this->_candles);
+        unset($this->candles);
         return $this;
     }
 }

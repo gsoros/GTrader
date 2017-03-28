@@ -33,22 +33,20 @@ class HomeController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $chart = Chart::load(Auth::id(),
-                            'mainchart',
-                            null,
-                            [   'autorefresh' => true,
-                                'disabled' => ['map']]);
+        $chart = Chart::load(
+            Auth::id(),
+            'mainchart',
+            null,
+            [   'autorefresh' => true,
+                'disabled' => ['map']]
+        );
 
-        Page::add('scripts_top',
-                    '<script src="/js/GTrader.js"></script>');
-        Page::add('scripts_bottom',
-                    '<script src="/js/Mainchart.js"></script>');
+        Page::add('scripts_top', '<script src="/js/GTrader.js"></script>');
+        Page::add('scripts_bottom', '<script src="/js/Mainchart.js"></script>');
         $chart->addPageElements();
 
-        Page::add('stylesheets',
-                    '<link href="/css/nouislider.min.css" rel="stylesheet">');
-        Page::add('scripts_bottom',
-                    '<script src="/js/nouislider.min.js"></script>');
+        Page::add('stylesheets', '<link href="/css/nouislider.min.css" rel="stylesheet">');
+        Page::add('scripts_bottom', '<script src="/js/nouislider.min.js"></script>');
 
         $viewData = [   'chart'             => $chart->toHtml(),
                         'strategies'        => Strategy::getListOfUser(Auth::id()),
@@ -63,7 +61,4 @@ class HomeController extends Controller
 
         return view('dashboard')->with($viewData);
     }
-
-
-
 }

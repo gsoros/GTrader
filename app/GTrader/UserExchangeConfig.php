@@ -45,6 +45,4 @@ class UserExchangeConfig extends Model
     {
         return $this->belongsTo('App\User');
     }
-
-
 }

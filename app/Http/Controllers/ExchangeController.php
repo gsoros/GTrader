@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Exchange;
 
-
 class ExchangeController extends Controller
 {
 
@@ -33,8 +32,9 @@ class ExchangeController extends Controller
     {
         list ($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
-        if ($error)
+        if ($error) {
             return $error;
+        }
 
         return view('Exchange/'.$class.'_form', [
                         'exchange' => $exchange,
@@ -48,12 +48,14 @@ class ExchangeController extends Controller
     {
         list ($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
-        if ($error)
+        if ($error) {
             return $error;
+        }
 
         $options = $config->options;
-        foreach ($exchange->getParam('user_options') as $key => $default)
+        foreach ($exchange->getParam('user_options') as $key => $default) {
             $options[$key] = isset($request->$key) ? $request->$key : $default;
+        }
         $config->options = $options;
         $config->save();
 
@@ -65,23 +67,22 @@ class ExchangeController extends Controller
     {
         $exchange = $config = $class = $error = null;
         $exchange_id = (int)$request->id;
-        if (!($class = Exchange::getNameById($exchange_id)))
-        {
+        if (!($class = Exchange::getNameById($exchange_id))) {
             error_log('Failed to load exchange ID '.$exchange_id);
             $error = response('Failed to load exchange.', 404);
-        }
-        else {
+        } else {
             $exchange = Exchange::make($class);
             $config = Auth::user()
                         ->exchangeConfigs()
                         ->firstOrNew(['exchange_id' => $exchange_id]);
             $options = $config->options;
-            foreach ($exchange->getParam('user_options') as $key => $default)
-                if (!isset($options[$key]))
+            foreach ($exchange->getParam('user_options') as $key => $default) {
+                if (!isset($options[$key])) {
                     $options[$key] = $default;
+                }
+            }
             $config->options = $options;
         }
         return [$exchange, $config, $class, $error];
     }
-
 }
