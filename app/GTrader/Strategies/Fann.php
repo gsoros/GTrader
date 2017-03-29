@@ -90,14 +90,25 @@ class Fann extends Strategy
                                 'resolution' => $training->resolution]);
 
         $progress_chart = Chart::make(null, [
-                            'candles' => $candles,
-                            'strategy' => $this,
-                            'name' => 'trainingProgressChart',
-                            'height' => 200,
-                            'disabled' => ['title', 'strategy', 'map', 'settings'],
-                            'readonly' => ['esr'],
-                            'highlight' => [$training->options['train_start'], $training->options['train_end']],
-                            'visible_indicators' => ['Balance']]);
+            'candles' => $candles,
+            'strategy' => $this,
+            'name' => 'trainingProgressChart',
+            'height' => 200,
+            'disabled' => ['title', 'strategy', 'map', 'settings'],
+            'readonly' => ['esr'],
+            'highlight' => [
+                [
+                    'start' => $training->options['train_start'],
+                    'end' => $training->options['train_end']
+                ],
+                [
+                    'start' => $training->options['test_start'],
+                    'end' => $training->options['test_end']
+                ],
+
+            ],
+            'visible_indicators' => ['Balance']
+        ]);
 
         if (!$progress_chart->hasIndicatorClass('Balance')) {
             $progress_chart->addIndicator('Balance');

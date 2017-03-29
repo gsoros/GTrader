@@ -204,25 +204,45 @@ class PHPlot extends Chart
         }
 
         $this->_plot->setTitle($title);
-        $this->_plot->SetDataColors(
-            'candles' === $plot_type ?
-            ['#b0100010', '#00600010','grey:90', 'grey:90', 'yellow']:
-            ['DarkGreen', 'yellow']
-        );
+        $colors = 'candles' === $plot_type ?
+            ['#b0100010', '#00600010','grey:90', 'grey:90'] :
+            ['DarkGreen'];
+        $highlight_colors = ['yellow', 'red', 'blue'];
+        $highlight_color_count = count($highlight_colors);
+        $this->_plot->SetDataColors(array_merge($colors, $highlight_colors));
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);
         $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
         $this->_plot->setPointShapes('none');
 
         $highlight = $this->getParam('highlight', []);
-        if (2 === count($highlight)) {
+        if (count($highlight)) {
             $this->_plot->SetCallback(
                 'data_color',
-                function ($img, $junk, $row, $col, $extra = 0) use ($highlight, $plot_type, $times) {
-                    if (($times[$row] >= $highlight[0]) && ($times[$row] <= $highlight[1])) {
-                        return ('candles' === $plot_type) ? 4 : 1;
+                function (
+                    $img,
+                    $junk,
+                    $row,
+                    $col,
+                    $extra = 0) use (
+                    $highlight,
+                    $plot_type,
+                    $times,
+                    $highlight_color_count
+                ) {
+                    $return = ('candles' === $plot_type) ? 1 : 0;
+                    $high_index = 0;
+                    foreach ($highlight as $high_range) {
+                        if (($times[$row] >= $high_range['start']) && ($times[$row] <= $high_range['end'])) {
+                            $return = (('candles' === $plot_type) ? 4 : 1) + $high_index;
+                            $high_index ++;
+                        }
+                        $high_index ++;
+                        if ($high_index > $highlight_color_count) {
+                            $high_index = 0;
+                        }
                     }
-                    return ('candles' === $plot_type) ? 1 : 0;
+                    return $return;
                 }
             );
         }
