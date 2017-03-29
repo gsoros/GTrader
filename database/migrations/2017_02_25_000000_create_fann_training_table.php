@@ -20,8 +20,6 @@ class CreateFannTrainingTable extends Migration
             $table->integer('exchange_id')->unsigned();
             $table->integer('symbol_id')->unsigned();
             $table->integer('resolution')->unsigned();
-            $table->bigInteger('range_start')->unsigned();
-            $table->bigInteger('range_end')->unsigned();
             $table->text('options')->nullable();
         });
     }

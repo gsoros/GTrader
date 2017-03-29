@@ -1,10 +1,22 @@
 <div class="row bdr-rad">
     <div class="col-sm-12" id='training'>
-        <h3>Train {{ $strategy->getParam('name') }}</h3>
-        <div id="slider" class="center-block" style="width: 90%; height: 162px; margin-bottom: -177px"></div>
+        <h3>Select ranges for {{ $strategy->getParam('name') }}</h3>
+        <div id="train_slider" class="center-block" style="width: 90%; height: 81px; margin-bottom: -81px"></div>
+        <div id="test_slider" class="center-block" style="position: relative; top: 81px; width: 90%; height: 81px; margin-bottom: -81px"></div>
         <script>
-            var slider = document.getElementById('slider');
-            noUiSlider.create(slider, {
+            var train_slider = document.getElementById('train_slider');
+            noUiSlider.create(train_slider, {
+                start: [50, 100],
+                connect: true,
+                behaviour: "tap-drag",
+                margin: 5,
+                range: {
+                    'min': 0,
+                    'max': 100
+                }
+            });
+            var test_slider = document.getElementById('test_slider');
+            noUiSlider.create(test_slider, {
                 start: [50, 100],
                 connect: true,
                 behaviour: "tap-drag",
@@ -41,28 +53,6 @@
             </label>
         </div>
     </div>
-    <div class="col-sm-6 editable">
-        <label>Test on</label>
-        <div class="form-check form-check-inline">
-            <label class="form-check-label">
-                <input type="radio"
-                        class="form-check-input"
-                        name="test_on"
-                        value="train"
-                        checked>
-                Training period
-            </label>
-        </div>
-        <div class="form-check form-check-inline">
-            <label class="form-check-label">
-                <input type="radio"
-                        class="form-check-input"
-                        name="test_on"
-                        value="whole">
-                Entire period
-            </label>
-        </div>
-    </div>
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12">
@@ -74,10 +64,11 @@
                                     window.trainingChart.getSelectedESR(),
                                     {
                                         id: {{ $strategy->getParam('id') }},
-                                        start_percent: slider.noUiSlider.get()[0],
-                                        end_percent: slider.noUiSlider.get()[1],
-                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
-                                        test_on: $('input[name=test_on]:checked').val()
+                                        train_start_percent: train_slider.noUiSlider.get()[0],
+                                        train_end_percent: train_slider.noUiSlider.get()[1],
+                                        test_start_percent: test_slider.noUiSlider.get()[0],
+                                        test_end_percent: test_slider.noUiSlider.get()[1],
+                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0
                                     }
                                 ))"
                     type="button"
@@ -94,4 +85,3 @@
         </span>
     </div>
 </div>
-

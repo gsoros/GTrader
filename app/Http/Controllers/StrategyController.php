@@ -163,9 +163,15 @@ class StrategyController extends Controller
             error_log('Resolution not found ');
             return response('Resolution not found.', 403);
         }
-        $start_percent = doubleval($request->start_percent);
-        $end_percent = doubleval($request->end_percent);
-        if (($start_percent >= $end_percent) || !$end_percent) {
+        $train_start_percent = doubleval($request->train_start_percent);
+        $train_end_percent = doubleval($request->train_end_percent);
+        if (($train_start_percent >= $train_end_percent) || !$train_end_percent) {
+            error_log('Start or end not found ');
+            return response('Input error.', 403);
+        }
+        $test_start_percent = doubleval($request->test_start_percent);
+        $test_end_percent = doubleval($request->test_end_percent);
+        if (($test_start_percent >= $test_end_percent) || !$test_end_percent) {
             error_log('Start or end not found ');
             return response('Input error.', 403);
         }
@@ -185,8 +191,10 @@ class StrategyController extends Controller
         $epoch = $candles->getEpoch();
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
-        $range_start = floor($epoch + $total / 100 * $start_percent);
-        $range_end = ceil($epoch + $total / 100 * $end_percent);
+        $train_start = floor($epoch + $total / 100 * $train_start_percent);
+        $train_end = ceil($epoch + $total / 100 * $train_end_percent);
+        $test_start = floor($epoch + $total / 100 * $test_start_percent);
+        $test_end = ceil($epoch + $total / 100 * $test_end_percent);
 
         if (isset($request->from_scratch)) {
             if (intval($request->from_scratch)) {
@@ -197,12 +205,12 @@ class StrategyController extends Controller
             }
         }
 
-        $options = ['test_on' => 'train'];
-        if (isset($request->test_on)) {
-            if (in_array($request->test_on, ['train', 'whole'])) {
-                $options['test_on'] = $request->test_on;
-            }
-        }
+        $options = [
+            'train_start' => $train_start,
+            'train_end' => $train_end,
+            'test_start' => $test_start,
+            'test_end' => $test_end
+        ];
 
         $training = FannTraining::firstOrNew([
                             'strategy_id'   => $strategy_id,
@@ -212,8 +220,6 @@ class StrategyController extends Controller
         $training->exchange_id = $exchange_id;
         $training->symbol_id = $symbol_id;
         $training->resolution = $resolution;
-        $training->range_start = $range_start;
-        $training->range_end = $range_end;
         $training->options = $options;
         $training->save();
         $training->resetStatus($strategy);

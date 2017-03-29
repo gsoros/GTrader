@@ -137,6 +137,18 @@ label {
             border-radius: 5px;
 }
 
+#train_slider > .noUi-base > .noUi-connect,
+#test_slider > .noUi-base > .noUi-connect {
+    text-align: center;
+    overflow: hidden;
+}
+#train_slider > .noUi-base > .noUi-connect:after {
+    content: 'Training Range';
+}
+#test_slider > .noUi-base > .noUi-connect:after {
+    content: 'Test Range';
+}
+
 .noUi-target {
     background: rgba(30, 30, 30, 0);
     border: 0px;
@@ -149,7 +161,7 @@ label {
 }
 .noUi-handle {
     //display: none;
-    height: 162px !important;
+    height: 81px !important;
     background: none;
     width: 10px !important;
     left: -5px !important;

@@ -68,14 +68,21 @@ class FannTraining extends Model
             }
         }
 
+        foreach (['train_start', 'train_end', 'test_start', 'test_end'] as $field) {
+            if (!isset($this->options[$field]) || !$this->options[$field]) {
+                throw new \Exception('Missing field: '.$field);
+            }
+        }
+
         // Set up training strategy
         $train_candles = new Series([
-                        'exchange' => $exchange_name,
-                        'symbol' => $symbol_name,
-                        'resolution' => $this->resolution,
-                        'start' => $this->range_start,
-                        'end' => $this->range_end,
-                        'limit' => 0]);
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['train_start'],
+            'end' => $this->options['train_end'],
+            'limit' => 0
+        ]);
 
         //echo 'Candles: '.$train_candles->size()."\n";
 
@@ -84,17 +91,17 @@ class FannTraining extends Model
         $train_strategy->setCandles($train_candles);
 
         // Set up test strategy
-        if ($test_on_whole) {
-            $test_candles = new Series([
-                            'exchange' => $exchange_name,
-                            'symbol' => $symbol_name,
-                            'resolution' => $this->resolution,
-                            'limit' => 0]);
-            $test_strategy = $train_strategy;
-            $test_strategy->setCandles($test_candles);
-        } else {
-            $test_strategy =& $train_strategy;
-        }
+
+        $test_candles = new Series([
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['test_start'],
+            'end' => $this->options['test_end'],
+            'limit' => 0
+        ]);
+        $test_strategy = $train_strategy;
+        $test_strategy->setCandles($test_candles);
 
         // Set up status object
         $status = new \stdClass();

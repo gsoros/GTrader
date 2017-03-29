@@ -96,7 +96,7 @@ class Fann extends Strategy
                             'height' => 200,
                             'disabled' => ['title', 'strategy', 'map', 'settings'],
                             'readonly' => ['esr'],
-                            'highlight' => [$training->range_start, $training->range_end],
+                            'highlight' => [$training->options['train_start'], $training->options['train_end']],
                             'visible_indicators' => ['Balance']]);
 
         if (!$progress_chart->hasIndicatorClass('Balance')) {
