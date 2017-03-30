@@ -21,7 +21,7 @@ class Fann extends Strategy
 
     protected $_fann = null;                // fann resource
     protected $_data = [];
-    protected $_pack_iterator = 0;
+    protected $_sample_iterator = 0;
     protected $_callback_type = false;
     protected $_callback_iterator = 0;
     protected $_bias = null;
@@ -396,20 +396,20 @@ class Fann extends Strategy
     }
 
 
-    public function resetPack()
+    public function resetSample()
     {
-        $this->_pack_iterator = 0;
-        $this->nextPack(null, 'reset');
+        $this->_sample_iterator = 0;
+        $this->nextSample(null, 'reset');
         return true;
     }
 
 
-    public function nextPack($size = null, $reset = false)
+    public function nextSample($size = null, $reset = false)
     {
-        static $___pack = array();
+        static $___sample = array();
 
         if ($reset == 'reset') {
-            $___pack = [];
+            $___sample = [];
             return true;
         }
 
@@ -419,21 +419,21 @@ class Fann extends Strategy
             return null;
         }
 
-        $target_pack_size = $size ? $size : $this->getParam('num_samples') + $this->getParam('target_distance');
-        //echo ' '.$this->_pack_iterator;
-        while ($candle = $candles->byKey($this->_pack_iterator)) {
-            $this->_pack_iterator++;
-            $___pack[] = $candle;
-            $current_pack_size = count($___pack);
-            if ($current_pack_size <  $target_pack_size) {
+        $target_sample_size = $size ? $size : $this->getParam('num_samples') + $this->getParam('target_distance');
+        //echo ' '.$this->_sample_iterator;
+        while ($candle = $candles->byKey($this->_sample_iterator)) {
+            $this->_sample_iterator++;
+            $___sample[] = $candle;
+            $current_sample_size = count($___sample);
+            if ($current_sample_size <  $target_sample_size) {
                 continue;
             }
-            if ($current_pack_size == $target_pack_size) {
-                return $___pack;
+            if ($current_sample_size == $target_sample_size) {
+                return $___sample;
             }
-            if ($current_pack_size >  $target_pack_size) {
-                array_shift($___pack);
-                return $___pack;
+            if ($current_sample_size >  $target_sample_size) {
+                array_shift($___sample);
+                return $___sample;
             }
         }
     }
@@ -448,22 +448,22 @@ class Fann extends Strategy
         $data = array();
         $images = 0;
 
-        $this->resetPack();
-        while ($pack = $this->nextPack()) {
+        $this->resetSample();
+        while ($sample = $this->nextSample()) {
             $input = array();
             for ($i=0; $i<$this->getParam('num_samples'); $i++) {
                 if ($i < $this->getParam('num_samples') - 1) {
-                    $input[] = floatval($pack[$i]->open);
-                    $input[] = floatval($pack[$i]->high);
-                    $input[] = floatval($pack[$i]->low);
-                    $input[] = floatval($pack[$i]->close);
+                    $input[] = floatval($sample[$i]->open);
+                    $input[] = floatval($sample[$i]->high);
+                    $input[] = floatval($sample[$i]->low);
+                    $input[] = floatval($sample[$i]->close);
                 } else {
                     // we only care about the open price for the last candle in the sample
-                    $input[] = floatval($pack[$i]->open);
-                    $last_ohlc4 = Series::ohlc4($pack[$i]);
+                    $input[] = floatval($sample[$i]->open);
+                    $last_ohlc4 = Series::ohlc4($sample[$i]);
                 }
             }
-            $output = Series::ohlc4($pack[count($pack)-1]);
+            $output = Series::ohlc4($sample[count($sample)-1]);
             //$img_data = join(',', $input).','.$output;
             //error_log($img_data);
 
