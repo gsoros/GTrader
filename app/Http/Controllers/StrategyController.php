@@ -244,7 +244,11 @@ class StrategyController extends Controller
             return response(Strategy::getListOfUser(Auth::id()), 200);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where('status', 'training')->first();
+                         ->where(function ($query) {
+                                $query->where('status', 'training')
+                                    ->orWhere('status', 'paused');
+                        })
+                        ->first();
         if (is_object($training)) {
             //$training->status = 'stopped';
             //$training->save();

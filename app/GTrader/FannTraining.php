@@ -61,13 +61,6 @@ class FannTraining extends Model
 
         $train_suffix = '.train';
 
-        $test_on_whole = false;
-        if (isset($this->options['test_on'])) {
-            if ('whole' === $this->options['test_on']) {
-                $test_on_whole = true;
-            }
-        }
-
         foreach (['train_start', 'train_end', 'test_start', 'test_end'] as $field) {
             if (!isset($this->options[$field]) || !$this->options[$field]) {
                 throw new \Exception('Missing field: '.$field);
@@ -108,8 +101,10 @@ class FannTraining extends Model
         $status->exchange = $exchange_name;
         $status->symbol = $symbol_name;
         $status->resolution = $this->resolution;
-        $status->range_start = $this->range_start;
-        $status->range_end = $this->range_end;
+        $status->train_start = $this->options['train_start'];
+        $status->train_end = $this->options['train_end'];
+        $status->test_start = $this->options['test_start'];
+        $status->test_end = $this->options['test_end'];
         $status->state = 'training';
         //$this->writeStatus($train_strategy, json_encode($status));
 
@@ -149,9 +144,7 @@ class FannTraining extends Model
             $train_strategy->train($epoch_jump);
 
             // Assign fann to test strat
-            if ($test_on_whole) {
-                $test_strategy->setFann($train_strategy->copyFann());
-            }
+            $test_strategy->setFann($train_strategy->copyFann());
 
             // Get balance
             $balance = $test_strategy->getLastBalance(true);

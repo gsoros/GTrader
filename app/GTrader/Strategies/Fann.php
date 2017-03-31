@@ -445,23 +445,24 @@ class Fann extends Strategy
         if (isset($this->_data[$name]) && !$force) {
             return true;
         }
-        $data = array();
+        $data = [];
         $images = 0;
+        $num_samples = $this->getParam('num_samples');
 
         $this->resetSample();
         while ($sample = $this->nextSample()) {
-            $input = array();
-            for ($i=0; $i<$this->getParam('num_samples'); $i++) {
-                if ($i < $this->getParam('num_samples') - 1) {
+            $input = [];
+            for ($i = 0; $i < $num_samples; $i++) {
+                if ($i < $num_samples - 1) {
                     $input[] = floatval($sample[$i]->open);
                     $input[] = floatval($sample[$i]->high);
                     $input[] = floatval($sample[$i]->low);
                     $input[] = floatval($sample[$i]->close);
-                } else {
-                    // we only care about the open price for the last candle in the sample
-                    $input[] = floatval($sample[$i]->open);
-                    $last_ohlc4 = Series::ohlc4($sample[$i]);
+                    continue;
                 }
+                // we only care about the open price for the last candle in the sample
+                $input[] = floatval($sample[$i]->open);
+                $last_ohlc4 = Series::ohlc4($sample[$i]);
             }
             $output = Series::ohlc4($sample[count($sample)-1]);
             //$img_data = join(',', $input).','.$output;
