@@ -17,14 +17,10 @@
         </div>
         <div class="col-sm-4">
             <div class="editable form-group">
-                <label for="setting2">Another setting</label>
-                <input class="btn-primary form-control form-control-sm"
-                        type="text"
-                        id="setting2"
-                        name="setting2"
-                        title="Another setting"
-                        value="unused"
-                        disabled>
+                <label for="setting2">Description</label>
+                <textarea class="btn-primary form-control form-control-sm"
+                        name="description"
+                        title="Description">{{ $strategy->getParam('description') }}</textarea>
             </div>
         </div>
     </div>

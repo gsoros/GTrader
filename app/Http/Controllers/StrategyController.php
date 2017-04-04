@@ -52,7 +52,8 @@ class StrategyController extends Controller
             $request->strategyClass,
             [   'id' => 'new',
                 'user_id' => $user_id,
-                'name' => $name]
+                'name' => $name,
+                'description' => $request->strategyClass.' strategy']
         );
         $strategy->save();
         $form = $strategy->toHTML();

@@ -126,7 +126,7 @@ class Strategy
 
     public function handleSaveRequest(Request $request)
     {
-        foreach (['name'] as $param) {
+        foreach (['name', 'description'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, $request->$param);
             }

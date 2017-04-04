@@ -123,13 +123,37 @@ class Fann extends Strategy
 
     public function handleSaveRequest(Request $request)
     {
-        if (isset($request->num_samples)) {
-            if (intval($request->num_samples) !== intval($this->getParam('num_samples'))) {
-                error_log('Strategy '.$this->getParam('id').': sample size changed, deleting fann.');
-                $this->destroyFann();
-                $this->deleteFiles();
+        $topology_changed = false;
+        if (isset($request->hidden_array)) {
+            $hidden_array = explode(',', $request->hidden_array);
+            if (count($hidden_array)) {
+                $request->hidden_array = [];
+                foreach ($hidden_array as $hidden_layer) {
+                    if (($hidden_layer = intval($hidden_layer)) && $hidden_layer > 0) {
+                        $request->hidden_array[] = $hidden_layer;
+                    }
+                }
+            }
+            $current_hidden_array = $this->getParam('hidden_array');
+            if (count($request->hidden_array) &&
+                $current_hidden_array !== $request->hidden_array) {
+                $topology_changed = true;
+                $this->setParam('hidden_array', $request->hidden_array);
             }
         }
+
+        if (isset($request->num_samples)) {
+            if (intval($request->num_samples) !== intval($this->getParam('num_samples'))) {
+                $topology_changed = true;
+            }
+        }
+
+        if ($topology_changed) {
+            error_log('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
+            $this->destroyFann();
+            $this->deleteFiles();
+        }
+
         foreach (['num_samples', 'target_distance'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
@@ -225,7 +249,7 @@ class Fann extends Strategy
             error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
             if ($this->getParam('fann_type') === 'fixed') {
                 $params = array_merge(
-                    [$this->getParam('num_layers')],
+                    [$this->getNumLayers()],
                     [$this->getNumInput()],
                     $this->getParam('hidden_array'),
                     [$this->getParam('num_output')]
@@ -233,9 +257,9 @@ class Fann extends Strategy
                 error_log('calling fann_create_standard('.join(', ', $params).')');
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
-            } elseif ($this->getParam('fann_type') == 'cascade') {
+            } elseif ($this->getParam('fann_type') === 'cascade') {
                 $this->_fann = fann_create_shortcut(
-                    $this->getParam('num_layers'),
+                    $this->getNumLayers(),
                     $this->getNumInput(),
                     $this->getParam('num_output')
                 );
@@ -650,6 +674,18 @@ class Fann extends Strategy
     {
         // last sample has only open
         return $this->getParam('num_samples') * 4 - 3;
+    }
+
+
+    public function getNumLayers()
+    {
+        if ($this->getParam('fann_type') === 'fixed') {
+            return count($this->getParam('hidden_array')) + 2;
+        }
+        if ($this->getParam('fann_type') === 'cascade') {
+            return 2;
+        }
+        throw new \Exception('Unknown fann type');
     }
 
 
