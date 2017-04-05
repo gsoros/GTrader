@@ -128,8 +128,10 @@ class StrategyController extends Controller
                                 })
                                 ->first();
         if (is_object($training)) {
-            $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
-                                                            'training' => $training]);
+            $html = view('Strategies/FannTrainProgress', [
+                'strategy' => $strategy,
+                'training' => $training
+            ]);
             return response($html, 200);
         }
         $html = view('Strategies/FannTrainForm', ['strategy' => $strategy]);
@@ -181,14 +183,16 @@ class StrategyController extends Controller
         if (is_object($training)) {
             error_log('Strategy id('.$strategy_id.') is already being trained.');
             $html = view('Strategies/FannTrainProgress', [
-                    'strategy' => $strategy,
-                    'training' => $training]);
+                'strategy' => $strategy,
+                'training' => $training
+            ]);
             return response($html, 200);
         }
         $candles = new Series(['exchange' => $exchange,
-                                'symbol' => $symbol,
-                                'resolution' => $resolution,
-                                'limit' => 0]);
+            'symbol' => $symbol,
+            'resolution' => $resolution,
+            'limit' => 0
+        ]);
         $epoch = $candles->getEpoch();
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
@@ -199,7 +203,7 @@ class StrategyController extends Controller
 
         if (isset($request->from_scratch)) {
             if (intval($request->from_scratch)) {
-                error_log('Starting from scratch.');
+                error_log('Training from scratch.');
                 $strategy->destroyFann();
                 $strategy->deleteFiles();
                 $strategy->createFann();
@@ -214,8 +218,9 @@ class StrategyController extends Controller
         ];
 
         $training = FannTraining::firstOrNew([
-                            'strategy_id'   => $strategy_id,
-                            'status'        => 'training']);
+            'strategy_id'   => $strategy_id,
+            'status'        => 'training'
+        ]);
         $training->strategy_id = $strategy_id;
         $training->status = 'training';
         $training->exchange_id = $exchange_id;
@@ -226,8 +231,9 @@ class StrategyController extends Controller
         $training->resetStatus($strategy);
 
         $html = view('Strategies/FannTrainProgress', [
-                        'strategy' => $strategy,
-                        'training' => $training]);
+            'strategy' => $strategy,
+            'training' => $training
+        ]);
 
         return response($html, 200);
     }
@@ -301,8 +307,10 @@ class StrategyController extends Controller
         }
         $training->status = 'paused';
         $training->save();
-        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
-                                                    'training' => $training]);
+        $html = view('Strategies/FannTrainProgress', [
+            'strategy' => $strategy,
+            'training' => $training
+        ]);
         return response($html, 200);
     }
 
@@ -326,8 +334,10 @@ class StrategyController extends Controller
         }
         $training->status = 'training';
         $training->save();
-        $html = view('Strategies/FannTrainProgress', ['strategy' => $strategy,
-                                                    'training' => $training]);
+        $html = view('Strategies/FannTrainProgress', [
+            'strategy' => $strategy,
+            'training' => $training
+        ]);
         return response($html, 200);
     }
 }

@@ -357,25 +357,15 @@ class Fann extends Strategy
 
     public function deleteFiles()
     {
-        // remove fann file
         $fann = $this->path();
-        if (is_file($fann)) {
-            if (is_writable($fann)) {
-                unlink($fann);
-            }
-        }
-        // remove status file
-        $fn = $fann.'.status';
-        if (is_file($fn)) {
-            if (is_writable($fn)) {
-                unlink($fn);
-            }
-        }
-        // remove train file
-        $fn = $fann.'.train';
-        if (is_file($fn)) {
-            if (is_writable($fn)) {
-                unlink($fn);
+        foreach ([$fann, $fann.'.status', $fann.'.train'] as $file) {
+            error_log('Checking to delete '.$file);
+            if (is_file($file)) {
+                if (!is_writable($file)) {
+                    error_log($file.' not writable');
+                    continue;
+                }
+                unlink($file);
             }
         }
     }
