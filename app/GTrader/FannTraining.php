@@ -61,7 +61,11 @@ class FannTraining extends Model
 
         $train_suffix = '.train';
 
-        foreach (['train_start', 'train_end', 'test_start', 'test_end'] as $field) {
+        foreach ([
+            'train_start', 'train_end',
+            'test_start', 'test_end',
+            'verify_start', 'verify_end'
+        ] as $field) {
             if (!isset($this->options[$field]) || !$this->options[$field]) {
                 throw new \Exception('Missing field: '.$field);
             }
@@ -77,8 +81,6 @@ class FannTraining extends Model
             'limit' => 0
         ]);
 
-        //echo 'Candles: '.$train_candles->size()."\n";
-
         define('FANN_WAKEUP_PREFERRED_SUFFX', $train_suffix);
         $train_strategy = Strategy::load($this->strategy_id);
         $train_strategy->setCandles($train_candles);
@@ -93,8 +95,21 @@ class FannTraining extends Model
             'end' => $this->options['test_end'],
             'limit' => 0
         ]);
-        $test_strategy = $train_strategy;
+        $test_strategy = clone $train_strategy;
         $test_strategy->setCandles($test_candles);
+
+        // Set up verify strategy
+
+        $verify_candles = new Series([
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['verify_start'],
+            'end' => $this->options['verify_end'],
+            'limit' => 0
+        ]);
+        $verify_strategy = clone $train_strategy;
+        $verify_strategy->setCandles($verify_candles);
 
         // Set up status object
         $status = new \stdClass();
@@ -105,6 +120,8 @@ class FannTraining extends Model
         $status->train_end = $this->options['train_end'];
         $status->test_start = $this->options['test_start'];
         $status->test_end = $this->options['test_end'];
+        $status->verify_start = $this->options['verify_start'];
+        $status->verify_end = $this->options['verify_end'];
         $status->state = 'training';
         //$this->writeStatus($train_strategy, json_encode($status));
 
@@ -123,8 +140,14 @@ class FannTraining extends Model
                     if (isset($json->epoch_jump)) {
                         $epoch_jump = $json->epoch_jump;
                     }
-                    if (isset($json->balance_max)) {
-                        $balance_max = $json->balance_max;
+                    if (isset($json->test_balance_max)) {
+                        $test_balance_max = $json->test_balance_max;
+                    }
+                    if (isset($json->verify_balance)) {
+                        $verify_balance = $json->verify_balance;
+                    }
+                    if (isset($json->verify_balance_max)) {
+                        $verify_balance_max = $json->verify_balance_max;
                     }
                     if (isset($json->no_improvement)) {
                         $no_improvement = $json->no_improvement;
@@ -133,8 +156,15 @@ class FannTraining extends Model
             }
         }
 
-        if (!isset($balance_max)) {
-            $balance_max = $test_strategy->getLastBalance(true);
+        if (!isset($test_balance_max)) {
+            $test_balance_max = $test_strategy->getLastBalance(true);
+        }
+
+        if (!isset($verify_balance)) {
+            $verify_balance = 0;
+        }
+        if (!isset($verify_balance_max)) {
+            $verify_balance_max = $verify_strategy->getLastBalance(true);
         }
 
         while ($this->shouldRun()) {
@@ -146,17 +176,32 @@ class FannTraining extends Model
             // Assign fann to test strat
             $test_strategy->setFann($train_strategy->copyFann());
 
-            // Get balance
-            $balance = $test_strategy->getLastBalance(true);
+            // Get test balance
+            $test_balance = $test_strategy->getLastBalance(true);
+            error_log('Training test_bal: '.$test_balance);
 
-            if ($balance > $balance_max) {
-                // There is improvement, save the fann
-                $train_strategy->saveFann();
-                $balance_max = $balance;
-                $no_improvement = 0;
-                $epoch_jump = 1;
-            } else {
-                $no_improvement++;
+            $no_improvement++;
+
+            if ($test_balance > $test_balance_max) {
+
+                $test_balance_max = $test_balance;
+
+                // Assign fann to verify strat
+                $verify_strategy->setFann($train_strategy->copyFann());
+
+                // Get verify balance
+                $verify_balance = $verify_strategy->getLastBalance(true);
+
+                if ($verify_balance > $verify_balance_max) {
+
+                    $verify_balance_max = $verify_balance;
+
+                    // There is improvement, save the fann
+                    $no_improvement--;
+                    $train_strategy->saveFann();
+                    $no_improvement = 0;
+                    $epoch_jump = 1;
+                }
             }
 
             if ($no_improvement > $max_boredom) {
@@ -174,8 +219,10 @@ class FannTraining extends Model
             $status->epochs = $epochs;
             $status->epoch_jump = $epoch_jump;
             $status->no_improvement = $no_improvement;
-            $status->balance = number_format(floatval($balance), 2, '.', '');
-            $status->balance_max = number_format(floatval($balance_max), 2, '.', '');
+            $status->test_balance = number_format(floatval($test_balance), 2, '.', '');
+            $status->test_balance_max = number_format(floatval($test_balance_max), 2, '.', '');
+            $status->verify_balance = number_format(floatval($verify_balance), 2, '.', '');
+            $status->verify_balance_max = number_format(floatval($verify_balance_max), 2, '.', '');
             $status->signals = $test_strategy->getNumSignals(true);
             $this->writeStatus($train_strategy, json_encode($status));
         }

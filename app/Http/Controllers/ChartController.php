@@ -49,7 +49,7 @@ class ChartController extends Controller
             return response('No such chart in session.', 403);
         }
 
-        set_time_limit(240);
+        set_time_limit(480);
 
         $image = $chart->handleImageRequest($request);
         $chart->saveToSession();

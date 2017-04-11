@@ -15,8 +15,10 @@
         @endif
         </span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
-        &nbsp; Balance: <span class="editable" id="trainProgressBalance"></span>
-        &nbsp; Best: <span class="editable" id="trainProgressBalanceMax"></span>
+        &nbsp; Test Balance: <span class="editable" id="trainProgressTestBalance"></span>
+        &nbsp; Test Max: <span class="editable" id="trainProgressTestBalanceMax"></span>
+        &nbsp; Verify Balance: <span class="editable" id="trainProgressVerifyBalance"></span>
+        &nbsp; Verify Max: <span class="editable" id="trainProgressVerifyBalanceMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
         &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
     </div>
@@ -24,7 +26,7 @@
 @if ('paused' != $training->status)
     <script>
         var pollTimeout,
-            balance_max = 0;
+            verify_balance_max = 0;
         function pollStatus() {
             console.log('pollStatus() ' + $('#trainProgress').length);
             $.ajax({
@@ -39,12 +41,15 @@
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
                     $('#trainProgressEpochs').html(reply.epochs);
-                    $('#trainProgressBalance').html(reply.balance);
-                    $('#trainProgressBalanceMax').html(reply.balance_max);
+                    $('#trainProgressTestBalance').html(reply.test_balance);
+                    $('#trainProgressTestBalanceMax').html(reply.test_balance_max);
+                    $('#trainProgressVerifyBalance').html(reply.verify_balance);
+                    $('#trainProgressVerifyBalanceMax').html(reply.verify_balance_max);
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
-                    if (parseFloat(reply.balance_max) > balance_max) {
-                        balance_max = parseFloat(reply.balance_max);
+                    var new_max = parseFloat(reply.verify_balance_max);
+                    if (new_max > verify_balance_max) {
+                        verify_balance_max = new_max;
                         window.{{ $chart->getParam('name') }}.refresh();
                     }
                 },
@@ -56,8 +61,10 @@
         }
         $('#trainProgressState').html('queued');
         $('#trainProgressEpochs').html(' ... ');
-        $('#trainProgressBalance').html(' ... ');
-        $('#trainProgressBalanceMax').html(' ... ');
+        $('#trainProgressTestBalance').html(' ... ');
+        $('#trainProgressTestBalanceMax').html(' ... ');
+        $('#trainProgressVerifyBalance').html(' ... ');
+        $('#trainProgressVerifyBalanceMax').html(' ... ');
         $('#trainProgressSignals').html(' ... ');
         $('#trainProgressNoImprovement').html(' ... ');
         pollStatus();

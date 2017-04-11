@@ -27,6 +27,15 @@ class Strategy
     }
 
 
+    public function __clone()
+    {
+        foreach ($this->indicators as $key => $indicator) {
+            $new_indicator = clone $indicator;
+            $new_indicator->setOwner($this);
+            $this->indicators[$key] = $new_indicator;
+        }
+    }
+
     public function save()
     {
         if (!($id = $this->getParam('id'))) {

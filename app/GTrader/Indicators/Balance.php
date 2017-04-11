@@ -125,11 +125,12 @@ class Balance extends Indicator
             }
             $new_balance = $capital + $upl;
             if ($new_balance <= 0) {
-                    $liquidated = true;
-                    $new_balance = 0;
+                $liquidated = true;
+                $new_balance = 0;
             }
             $candle->$signature = $new_balance;
         }
+
         return $this;
     }
 }

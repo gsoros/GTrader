@@ -166,17 +166,13 @@ class StrategyController extends Controller
             error_log('Resolution not found ');
             return response('Resolution not found.', 403);
         }
-        $train_start_percent = doubleval($request->train_start_percent);
-        $train_end_percent = doubleval($request->train_end_percent);
-        if (($train_start_percent >= $train_end_percent) || !$train_end_percent) {
-            error_log('Start or end not found ');
-            return response('Input error.', 403);
-        }
-        $test_start_percent = doubleval($request->test_start_percent);
-        $test_end_percent = doubleval($request->test_end_percent);
-        if (($test_start_percent >= $test_end_percent) || !$test_end_percent) {
-            error_log('Start or end not found ');
-            return response('Input error.', 403);
+        foreach (['train', 'test', 'verify'] as $item) {
+            ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
+            ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
+            if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
+                error_log('Start or end not found for '.$item);
+                return response('Input error.', 403);
+            }
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
                                 ->where('status', 'training')->first();
@@ -196,10 +192,10 @@ class StrategyController extends Controller
         $epoch = $candles->getEpoch();
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
-        $train_start = floor($epoch + $total / 100 * $train_start_percent);
-        $train_end = ceil($epoch + $total / 100 * $train_end_percent);
-        $test_start = floor($epoch + $total / 100 * $test_start_percent);
-        $test_end = ceil($epoch + $total / 100 * $test_end_percent);
+        foreach (['train', 'test', 'verify'] as $item) {
+            ${$item.'_start'} = floor($epoch + $total / 100 * ${$item.'_start_percent'});
+            ${$item.'_end'} = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
+        }
 
         if (isset($request->from_scratch)) {
             if (intval($request->from_scratch)) {
@@ -214,7 +210,9 @@ class StrategyController extends Controller
             'train_start' => $train_start,
             'train_end' => $train_end,
             'test_start' => $test_start,
-            'test_end' => $test_end
+            'test_end' => $test_end,
+            'verify_start' => $verify_start,
+            'verify_end' => $verify_end
         ];
 
         $training = FannTraining::firstOrNew([

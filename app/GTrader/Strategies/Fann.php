@@ -89,6 +89,16 @@ class Fann extends Strategy
                                 'symbol' => Exchange::getSymbolNameById($training->symbol_id),
                                 'resolution' => $training->resolution]);
 
+        $highlights = [];
+        foreach (['train', 'test', 'verify'] as $range) {
+            if (isset($training->options[$range.'_start']) && isset($training->options[$range.'_end'])) {
+                $highlights[] = [
+                    'start' => $training->options[$range.'_start'],
+                    'end' => $training->options[$range.'_end']
+                ];
+            }
+        }
+
         $progress_chart = Chart::make(null, [
             'candles' => $candles,
             'strategy' => $this,
@@ -96,17 +106,7 @@ class Fann extends Strategy
             'height' => 200,
             'disabled' => ['title', 'strategy', 'map', 'settings'],
             'readonly' => ['esr'],
-            'highlight' => [
-                [
-                    'start' => $training->options['train_start'],
-                    'end' => $training->options['train_end']
-                ],
-                [
-                    'start' => $training->options['test_start'],
-                    'end' => $training->options['test_end']
-                ],
-
-            ],
+            'highlight' => $highlights,
             'visible_indicators' => ['Balance']
         ]);
 
@@ -266,7 +266,7 @@ class Fann extends Strategy
             } else {
                 throw new \Exception('Unknown fann type');
             }
-            //fann_randomize_weights($this->_fann, -0.2, 0.2);
+            fann_randomize_weights($this->_fann, -0.5, 0.5);
         }
         $this->initFann();
         return true;
@@ -292,7 +292,8 @@ class Fann extends Strategy
             fann_set_training_algorithm($this->_fann, FANN_TRAIN_RPROP);
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_QUICKPROP);
         }
-        fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_LINEAR);
+        //fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_LINEAR);
+        fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_TANH);
         //fann_set_learning_rate($this->_fann, 0.5);
         $this->_bias = null;
         return true;
@@ -474,7 +475,7 @@ class Fann extends Strategy
                     $input[] = floatval($sample[$i]->close);
                     continue;
                 }
-                // we only care about the open price for the last candle in the sample
+                // we only care about the open price for the last input candle
                 $input[] = floatval($sample[$i]->open);
                 $last_ohlc4 = Series::ohlc4($sample[$i]);
             }
