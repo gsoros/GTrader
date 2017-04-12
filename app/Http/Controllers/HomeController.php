@@ -48,14 +48,16 @@ class HomeController extends Controller
         Page::add('stylesheets', '<link href="/css/nouislider.min.css" rel="stylesheet">');
         Page::add('scripts_bottom', '<script src="/js/nouislider.min.js"></script>');
 
-        $viewData = [   'chart'             => $chart->toHtml(),
-                        'strategies'        => Strategy::getListOfUser(Auth::id()),
-                        'exchanges'         => Exchange::getList(),
-                        'bots'              => Bot::getListOfUser(Auth::id()),
-                        'stylesheets'       => Page::get('stylesheets'),
-                        'scripts_top'       => Page::get('scripts_top'),
-                        'scripts_bottom'    => Page::get('scripts_bottom'),
-                        'debug'             => var_export($chart->getCandles()->getParams(), true)];
+        $viewData = [
+            'chart'             => $chart->toHtml(),
+            'strategies'        => Strategy::getListOfUser(Auth::id()),
+            'exchanges'         => Exchange::getList(),
+            'bots'              => Bot::getListOfUser(Auth::id()),
+            'stylesheets'       => Page::get('stylesheets'),
+            'scripts_top'       => Page::get('scripts_top'),
+            'scripts_bottom'    => Page::get('scripts_bottom'),
+            'debug'             => var_export($chart->getCandles()->getParams(), true)
+        ];
 
         $chart->saveToSession()->save();
 

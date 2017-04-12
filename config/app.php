@@ -233,4 +233,29 @@ return [
 
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum number of users
+    |--------------------------------------------------------------------------
+    |
+    | Limit the number of registered users. Registration will be disabled if
+    | reached. Zero means no limit.
+    |
+    */
+
+    'max_users' => env('MAX_USERS', 0),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allow password resets
+    |--------------------------------------------------------------------------
+    |
+    | Allow password resets.
+    |
+    */
+
+    'allow_password_resets' => env('ALLOW_PASSWORD_RESETS', true),
+
 ];
