@@ -3,7 +3,9 @@
 @endphp
 <div class="row bdr-rad">
     <div class="col-sm-12">
-        <h4>Training Progress for {{ $strategy->getParam('name') }}</h4>
+        <h4>Training Progress for
+            <span title="ID: {{ $strategy->getParam('id') }}">{{ $strategy->getParam('name') }}</span>
+        </h4>
         {!! $chart->toHTML() !!}
     </div>
 </div>
@@ -21,6 +23,7 @@
         &nbsp; Verify Max: <span class="editable" id="trainProgressVerifyBalanceMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
         &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
+        &nbsp; Epochs Between Tests: <span class="editable" id="trainProgressEpochJump"></span>
     </div>
 </div>
 @if ('paused' != $training->status)
@@ -47,6 +50,7 @@
                     $('#trainProgressVerifyBalanceMax').html(reply.verify_balance_max);
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
+                    $('#trainProgressEpochJump').html(reply.epoch_jump);
                     var new_max = parseFloat(reply.verify_balance_max);
                     if (new_max > verify_balance_max) {
                         verify_balance_max = new_max;
@@ -67,6 +71,7 @@
         $('#trainProgressVerifyBalanceMax').html(' ... ');
         $('#trainProgressSignals').html(' ... ');
         $('#trainProgressNoImprovement').html(' ... ');
+        $('#trainProgressEpochJump').html(' ... ');
         pollStatus();
 
     </script>

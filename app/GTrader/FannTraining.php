@@ -167,6 +167,8 @@ class FannTraining extends Model
             $verify_balance_max = $verify_strategy->getLastBalance(true);
         }
 
+        $prev_test_balance = 0;
+
         while ($this->shouldRun()) {
             $epochs += $epoch_jump;
 
@@ -178,11 +180,24 @@ class FannTraining extends Model
 
             // Get test balance
             $test_balance = $test_strategy->getLastBalance(true);
-            error_log('Training test_bal: '.$test_balance);
+            //error_log('Training test_bal: '.$test_balance);
 
             $no_improvement++;
 
+            // if test is improving, decrease jump size
+            if ($test_balance > $prev_test_balance) {
+                $no_improvement = 0;
+                $epoch_jump = floor($epoch_jump / 2);
+                if ($epoch_jump < 1) {
+                    $epoch_jump = 1;
+                }
+            }
+            $prev_test_balance = $test_balance;
+
             if ($test_balance > $test_balance_max) {
+
+                // There is improvement
+                $no_improvement = 0;
 
                 $test_balance_max = $test_balance;
 
@@ -196,10 +211,8 @@ class FannTraining extends Model
 
                     $verify_balance_max = $verify_balance;
 
-                    // There is improvement, save the fann
-                    $no_improvement--;
+                    // Save the fann
                     $train_strategy->saveFann();
-                    $no_improvement = 0;
                     $epoch_jump = 1;
                 }
             }
@@ -208,7 +221,7 @@ class FannTraining extends Model
                 // Increase jump size to fly over valleys faster, possibly missing some narrow peaks
                 $epoch_jump++;
 
-                //
+                // Limit jumps
                 if ($epoch_jump >= $epoch_jump_max) {
                     $epoch_jump = $epoch_jump_max;
                 }
