@@ -15,9 +15,15 @@
 
 Auth::routes();
 
-//Route::get('/', function () {
-//    return view('dashboard');
-//});
+if (\Config::get('app.env') === 'local') {
+    Route::get('/phpinfo', function() {
+        ob_start();
+        phpinfo();
+        $phpinfo = ob_get_contents();
+        ob_end_clean();
+        return $phpinfo;
+    });
+}
 
 Route::get('/',                         'HomeController@dashboard');
 

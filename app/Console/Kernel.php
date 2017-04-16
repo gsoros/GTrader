@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         //          ->hourly();
         $schedule->command('candles:fetch')->everyMinute();
         $schedule->command('trainingManager:run')->everyMinute();
+        $schedule->command('bots:run')->everyMinute();
     }
 
     /**

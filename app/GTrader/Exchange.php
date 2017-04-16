@@ -11,14 +11,18 @@ abstract class Exchange
     use Skeleton;
 
     abstract public function getTicker(string $symbol);
-    abstract public function getCandles(string $symbol,
-                                        int $resolution,
-                                        int $since = 0,
-                                        int $size = 0);
-    abstract public function takePosition(string $symbol,
-                                            string $signal,
-                                            float $price,
-                                            int $bot_id = null);
+    abstract public function getCandles(
+        string $symbol,
+        int $resolution,
+        int $since = 0,
+        int $size = 0
+    );
+    abstract public function takePosition(
+        string $symbol,
+        string $signal,
+        float $price,
+        int $bot_id = null
+    );
     abstract public function cancelUnfilledOrders(string $symbol, int $before_timestamp);
     abstract public function saveFilledOrders(string $symbol, int $bot_id = null);
 
@@ -30,16 +34,17 @@ abstract class Exchange
      */
     public function getUserOptions()
     {
-        if (!($user_id = $this->getParam('user_id')))
+        if (!($user_id = $this->getParam('user_id'))) {
             throw new \Exception('cannot getUserOptions() without user_id');
-        if ($options = $this->getParam('user_options_cached'))
+        }
+        if ($options = $this->getParam('user_options_cached')) {
             return $options;
+        }
         $config = UserExchangeConfig::select('options')
                         ->where('user_id', $user_id)
                         ->where('exchange_id', $this->getId())
                         ->first();
-        if (null === $config)
-        {
+        if (null === $config) {
             error_log('Exchange has not yet been configured by the user.');
             return [];
         }
@@ -57,10 +62,12 @@ abstract class Exchange
     {
         $options = $this->getUserOptions();
 
-        if (!isset($options[$option]))
+        if (!isset($options[$option])) {
             throw new \Exception($option.' not set');
-        if (is_null($options[$option]))
+        }
+        if (is_null($options[$option])) {
             throw new \Exception($option.' is null');
+        }
         return $options[$option];
     }
 
@@ -68,21 +75,21 @@ abstract class Exchange
     public static function getDefault(string $param)
     {
         $exchange = Exchange::singleton();
-        if ('exchange' === $param)
+        if ('exchange' === $param) {
             return $exchange->getParam('local_name');
-        if ('symbol' === $param)
-        {
+        }
+        if ('symbol' === $param) {
             $symbols = $exchange->getParam('symbols');
             $first_symbol = reset($symbols);
             return $first_symbol['local_name'];
         }
-        if ('resolution' === $param)
-        {
+        if ('resolution' === $param) {
             $symbols = $exchange->getParam('symbols');
             $first_symbol = reset($symbols);
             $resolutions = $first_symbol['resolutions'];
-            if (isset($resolutions[3600])) // prefer 1-hour
+            if (isset($resolutions[3600])) {// prefer 1-hour
                 return 3600;
+            }
             reset($resolutions);
             return key($resolutions); // return first res
         }
@@ -101,8 +108,9 @@ abstract class Exchange
                     ->select('name')
                     ->where('id', $id)
                     ->first();
-        if (is_object($query))
+        if (is_object($query)) {
             return $query->name;
+        }
         return null;
     }
 
@@ -113,8 +121,9 @@ abstract class Exchange
                     ->select('id')
                     ->where('name', $name)
                     ->first();
-        if (is_object($query))
+        if (is_object($query)) {
             return $query->id;
+        }
         return null;
     }
 
@@ -128,19 +137,23 @@ abstract class Exchange
                             })
                     ->where('symbols.name', $symbol_name)
                     ->first();
-        if (is_object($query))
+        if (is_object($query)) {
             return $query->id;
+        }
         return null;
     }
 
 
     public function getSymbolIdByRemoteName(string $remote_name)
     {
-        foreach ($this->getParam('symbols') as $symbol)
-            if ($symbol['remote_name'] === $remote_name)
+        foreach ($this->getParam('symbols') as $symbol) {
+            if ($symbol['remote_name'] === $remote_name) {
                 return self::getSymbolIdByExchangeSymbolName(
-                                    $this->getParam('local_name'),
-                                    $symbol['local_name']);
+                    $this->getParam('local_name'),
+                    $symbol['local_name']
+                );
+            }
+        }
     }
 
 
@@ -150,8 +163,9 @@ abstract class Exchange
                     ->select('name')
                     ->where('id', $id)
                     ->first();
-        if (is_object($query))
+        if (is_object($query)) {
             return $query->name;
+        }
         return null;
     }
 
@@ -160,16 +174,14 @@ abstract class Exchange
     {
         $esr = [];
         $default_exchange = Exchange::singleton();
-        foreach ($default_exchange->getParam('available_exchanges') as $class)
-        {
+        foreach ($default_exchange->getParam('available_exchanges') as $class) {
             $exchange = Exchange::make($class);
             $exo = new \stdClass();
             $exo->name = $exchange->getParam('local_name');
             $exo->long_name = $exchange->getParam('long_name');
             $exo->symbols = [];
 
-            foreach ($exchange->getParam('symbols') as $symbol)
-            {
+            foreach ($exchange->getParam('symbols') as $symbol) {
                 $symo = new \stdClass();
                 $symo->name = $symbol['local_name'];
                 $symo->long_name = $symbol['long_name'];
@@ -192,11 +204,12 @@ abstract class Exchange
         } catch (\Exception $e) {
             return null;
         }
-        if (!($symbol = $exchange->getParam('symbols')[$symbol]))
+        if (!($symbol = $exchange->getParam('symbols')[$symbol])) {
             return null;
+        }
         return $exchange->getParam('long_name').' / '.
-                $symbol['long_name'].' / '.
-                $symbol['resolutions'][$resolution];
+            $symbol['long_name'].' / '.
+            $symbol['resolutions'][$resolution];
     }
 
 
@@ -210,8 +223,9 @@ abstract class Exchange
     {
         $default = self::singleton();
         $exchanges = [];
-        foreach ($default->getParam('available_exchanges') as $class)
+        foreach ($default->getParam('available_exchanges') as $class) {
             $exchanges[] = self::make($class);
+        }
         return view('Exchange/List', ['exchanges' => $exchanges]);
     }
 }

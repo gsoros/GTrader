@@ -43,6 +43,24 @@
                     title="Cancel Unfilled Orders After This Number of Candles"
                     value="{{ $unfilled_max }}">
         </div>
+        <div class="col-sm-6 editable form-group">
+            <label for="status">Status</label>
+            <select class="btn btn-primary btn-mini"
+                    id="status"
+                    name="status"
+                    title="Status">
+                <option
+                @if ('active' !== $bot->status)
+                    selected
+                @endif
+                value="disabled">Disabled</option>
+                <option
+                @if ('active' === $bot->status)
+                    selected
+                @endif
+                value="active">Active</option>
+            </select>
+        </div>
     </div>
     <div class="row bdr-rad">
         <div class="col-sm-12">

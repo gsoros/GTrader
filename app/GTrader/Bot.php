@@ -73,6 +73,12 @@ class Bot extends Model
      */
     public function run()
     {
+
+        // make sure we are active
+        if ('active' !== $this->status) {
+            throw new \Exception('run() called but bot not active: '.$this->id);
+        }
+
         // Make sure only one instance is running
         $lock = 'bot_'.$this->id;
         if (!Lock::obtain($lock)) {
@@ -93,7 +99,7 @@ class Bot extends Model
         if ($exchange->getShortClass() !== $exchange_name) {
             throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
         }
-        
+
         // Save a record of any filled orders into local db
         $exchange->saveFilledOrders($symbol, $this->id);
 
@@ -111,10 +117,11 @@ class Bot extends Model
         // Set up our series
         $candles_limit = 200;
         $candles = new Series([
-                        'exchange' => Exchange::getNameById($this->exchange_id),
-                        'symbol' => $symbol,
-                        'resolution' => $this->resolution,
-                        'limit' => $candles_limit]);
+            'exchange' => Exchange::getNameById($this->exchange_id),
+            'symbol' => $symbol,
+            'resolution' => $this->resolution,
+            'limit' => $candles_limit]
+        );
 
         $t = time();
 
@@ -138,7 +145,7 @@ class Bot extends Model
         }
 
         // Looks like we have a valid signal
-
+        echo 'Going '.$last_signal['signal'].' at '.$last_signal['price']."\n";
         // Tell the exchange to take the position
         $exchange->takePosition(
             $symbol,
@@ -207,6 +214,21 @@ class Bot extends Model
             }
         }
 
+        if (isset($request->status)) {
+            if (in_array($request->status, ['active', 'disabled'])) {
+                $this->status = $request->status;
+                if ('active' === $this->status) {
+                    if (!$this->canBeActive()) {
+                        // TODO send error msg to UI
+                        $this->status = 'disabled';
+                        $exchange_name = Exchange::getNameById($this->exchange_id);
+                        error_log('Tried to activate bot ID '.$this->id.' for '.$exchange_name.
+                                    ' but there are other active bots on this exchange.');
+                    }
+                }
+            }
+        }
+
         $options = $this->options;
         foreach ($this->getParam('user_options') as $option => $default) {
             $options[$option] = isset($request->$option) ?
@@ -216,6 +238,16 @@ class Bot extends Model
         $this->options = $options;
 
         return $this;
+    }
+
+
+    public function canBeActive()
+    {
+        $active_bots = Bot::where('id', '<>', $this->id)
+            ->where('status', 'active')
+            ->where('exchange_id', $this->exchange_id)
+            ->count();
+        return $active_bots ? false : true;
     }
 
 
@@ -240,5 +272,10 @@ class Bot extends Model
     public function getStrategy()
     {
         return Strategy::load($this->strategy_id);
+    }
+
+    public function getExchangeName()
+    {
+        return Exchange::getNameById($this->exchange_id);
     }
 }

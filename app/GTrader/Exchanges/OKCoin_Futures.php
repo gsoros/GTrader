@@ -332,9 +332,10 @@ class OKCoin_Futures extends Exchange
             throw new \Exception('need user id');
         }
 
-        echo "\nNot exceuting trade()\n";
-        var_export(func_get_args());
-        return $this;
+        if ('production' !== \Config::get('app.env')) {
+            echo "\nNot in production, not executing trade(".serialize(func_get_args()).")\n";
+            return $this;
+        }
 
         $reply = \OKCoin::postFutureTrade(
             $this->getUserOption('api_key'),
@@ -397,9 +398,10 @@ class OKCoin_Futures extends Exchange
             throw new \Exception('Contract type not found');
         }
 
-        echo "\nNot executing cancelOrder()\n";
-        var_export(func_get_args());
-        return $this;
+        if ('production' !== \Config::get('app.env')) {
+            echo "\nNot in production, not executing cancelOrder(".serialize(func_get_args()).")\n";
+            return $this;
+        }
 
         $reply = \OKCoin::postFutureCancel(
             $this->getUserOption('api_key'),

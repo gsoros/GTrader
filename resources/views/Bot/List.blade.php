@@ -7,6 +7,11 @@
             <div class="col-sm-6 editable">
                 <div class="row">
                     <div class="col-sm-8">
+                        @if ('active' === $bot->status)
+                            <span class="editable">
+                                Active on {{ $bot->getExchangeName() }}
+                            </span>
+                        @endif
                         <strong>{{ $bot->name }}</strong>
                     </div>
                     <div class="col-sm-4">

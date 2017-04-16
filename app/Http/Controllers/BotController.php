@@ -46,7 +46,7 @@ class BotController extends Controller
         $bot = new Bot;
         $bot->user_id = $user_id;
         $bot->name = $name;
-        $bot->status = 'brand new';
+        $bot->status = 'disabled';
         $bot->save();
 
         return response($bot->toHTML(), 200);

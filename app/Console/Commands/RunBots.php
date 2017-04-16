@@ -39,7 +39,7 @@ class RunBots extends Command
      */
     public function handle()
     {
-        $bots = Bot::where('status', 'active');
+        $bots = Bot::where('status', 'active')->get();
 
         if (!count($bots)) {
             return null;
