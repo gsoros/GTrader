@@ -324,6 +324,7 @@ class PHPlot extends Chart
         $this->_plot->SetLineWidths(2);
         $this->_plot->setPlotType('lines');
         $this->_plot->SetDataColors([$color]);
+        $this->_plot->SetTickLabelColor($color);
         if (isset($display['y_axis_pos'])) {
             if ($display['y_axis_pos'] === 'right') {
                 $this->_plot->SetPlotAreaWorld();

@@ -163,12 +163,24 @@ class Strategy
 
     public function getLastBalance(bool $force_rerun = false)
     {
-        if (!$this->hasIndicatorClass('Balance')) {
-            $this->addIndicator('Balance');
+        return $this->getIndicatorLastValue('Balance', $force_rerun);
+    }
+
+
+    public function getLastProfitability(bool $force_rerun = false)
+    {
+        return $this->getIndicatorLastValue('Profitability', $force_rerun);
+    }
+
+
+    public function getIndicatorLastValue(string $class, bool $force_rerun = false)
+    {
+        if (!$this->hasIndicatorClass($class)) {
+            $this->addIndicator($class);
         }
-        $balance = $this->getFirstIndicatorByClass('Balance');
-        $balance->checkAndRun($force_rerun);
-        $sig = $balance->getSignature();
+        $indicator = $this->getFirstIndicatorByClass($class);
+        $indicator->checkAndRun($force_rerun);
+        $sig = $indicator->getSignature();
         if ($last = $this->getCandles()->last()) {
             return $last->$sig;
         }

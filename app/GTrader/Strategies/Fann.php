@@ -107,11 +107,16 @@ class Fann extends Strategy
             'disabled' => ['title', 'strategy', 'map', 'settings'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
-            'visible_indicators' => ['Balance']
+            'visible_indicators' => ['Balance', 'Profitability']
         ]);
 
         if (!$progress_chart->hasIndicatorClass('Balance')) {
             $progress_chart->addIndicator('Balance');
+            $this->save();
+        }
+
+        if (!$progress_chart->hasIndicatorClass('Profitability')) {
+            $progress_chart->addIndicator('Profitability');
             $this->save();
         }
 
