@@ -334,11 +334,7 @@ class PHPlot extends Chart
             }
         }
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
-        $legend = $display['name'];
-        if (count($params)) {
-            $legend .= ' ('.join(', ', $params).')';
-        }
-        $this->_plot->SetLegend([$legend]);
+        $this->_plot->SetLegend([$indicator->getDisplaySignature()]);
         $this->_plot->DrawGraph();
         return $this;
     }

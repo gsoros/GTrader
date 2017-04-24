@@ -3,7 +3,7 @@
 return [
     'indicator' =>  [
                         'length'    => 20,
-                        'price'     => 'close'
+                        'base'      => 'close'
                     ],
     'display' =>    [
                         'name'      => 'Ema',

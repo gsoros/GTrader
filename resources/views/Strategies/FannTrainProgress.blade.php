@@ -17,10 +17,10 @@
         @endif
         </span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
-        &nbsp; Test Balance: <span class="editable" id="trainProgressTestBalance"></span>
-        &nbsp; Test Max: <span class="editable" id="trainProgressTestBalanceMax"></span>
-        &nbsp; Verify Balance: <span class="editable" id="trainProgressVerifyBalance"></span>
-        &nbsp; Verify Max: <span class="editable" id="trainProgressVerifyBalanceMax"></span>
+        &nbsp; Test: <span class="editable" id="trainProgressTest"></span>
+        &nbsp; Test Max: <span class="editable" id="trainProgressTestMax"></span>
+        &nbsp; Verify: <span class="editable" id="trainProgressVerify"></span>
+        &nbsp; Verify Max: <span class="editable" id="trainProgressVerifyMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
         &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
         &nbsp; Epochs Between Tests: <span class="editable" id="trainProgressEpochJump"></span>
@@ -29,7 +29,7 @@
 @if ('paused' != $training->status)
     <script>
         var pollTimeout,
-            verify_balance_max = 0;
+            verify_max = 0;
         function pollStatus() {
             console.log('pollStatus() ' + $('#trainProgress').length);
             $.ajax({
@@ -44,16 +44,16 @@
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
                     $('#trainProgressEpochs').html(reply.epochs);
-                    $('#trainProgressTestBalance').html(reply.test_balance);
-                    $('#trainProgressTestBalanceMax').html(reply.test_balance_max);
-                    $('#trainProgressVerifyBalance').html(reply.verify_balance);
-                    $('#trainProgressVerifyBalanceMax').html(reply.verify_balance_max);
+                    $('#trainProgressTest').html(reply.test);
+                    $('#trainProgressTestMax').html(reply.test_max);
+                    $('#trainProgressVerify').html(reply.verify);
+                    $('#trainProgressVerifyMax').html(reply.verify_max);
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
-                    var new_max = parseFloat(reply.verify_balance_max);
-                    if (new_max > verify_balance_max) {
-                        verify_balance_max = new_max;
+                    var new_max = parseFloat(reply.verify_max);
+                    if (new_max > verify_max) {
+                        verify_max = new_max;
                         window.{{ $chart->getParam('name') }}.refresh();
                     }
                 },
@@ -65,10 +65,10 @@
         }
         $('#trainProgressState').html('queued');
         $('#trainProgressEpochs').html(' ... ');
-        $('#trainProgressTestBalance').html(' ... ');
-        $('#trainProgressTestBalanceMax').html(' ... ');
-        $('#trainProgressVerifyBalance').html(' ... ');
-        $('#trainProgressVerifyBalanceMax').html(' ... ');
+        $('#trainProgressTest').html(' ... ');
+        $('#trainProgressTestMax').html(' ... ');
+        $('#trainProgressVerify').html(' ... ');
+        $('#trainProgressVerifyMax').html(' ... ');
         $('#trainProgressSignals').html(' ... ');
         $('#trainProgressNoImprovement').html(' ... ');
         $('#trainProgressEpochJump').html(' ... ');

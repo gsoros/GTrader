@@ -2,20 +2,20 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicator;
+use GTrader\Indicators\Avg;
 
 /**  Exponential Moving Average */
-class Ema extends Indicator
+class Ema extends Avg
 {
-    protected $allowed_owners = ['GTrader\\Series'];
-
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->runDependencies($force_rerun);
+
         $params = $this->getParam('indicator');
 
         $length = intval($params['length']);
-        $price = $params['price'];
+        $base = $params['base'];
 
         if ($length <= 1) {
             error_log('Ema needs int length > 1');
@@ -30,35 +30,28 @@ class Ema extends Indicator
 
         $candles->reset();
         while ($candle = $candles->next()) {
-            $candle_price = 0;
-            if (isset($candle->$price)) {
-                $candle_price = $candle->$price;
-            } else {
-                error_log('Ema::calculate() '.$signature.' candle->'.$price.' is not set');
+            $candle_base = 0;
+            if (!isset($candle->$base)) {
+                error_log('Ema::calculate() '.$signature.' candle->'.$base.' is not set');
+                return $this;
             }
-            //echo 'candle: '; dump($candle);
+            $candle_base = $candle->$base;
             $prev_candle = $candles->prev();
-            //echo 'prev candle: '; dump($prev_candle);
-            if (is_object($prev_candle)) {
-                $prev_candle_sig = 0;
-                if (isset($prev_candle->$signature)) {
-                    $prev_candle_sig = $prev_candle->$signature;
-
-                } else {
-                    // TODO handle the error
-                    //throw new \Exception('Ema: prev_candle->'.$signature.' is not set');
-                }
-                // calculate current ema
-                $candle->$signature =
-                    ($candle_price - $prev_candle_sig) * (2 / ($length + 1))
-                    + $prev_candle_sig;
-            } else {
-                // start with the first candle's price as a basis for the ema
-                $candle->$signature = $candle_price;
+            if (!is_object($prev_candle)) {
+                // start with the first candle's base as a basis for the ema
+                $candle->$signature = $candle_base;
+                continue;
             }
-            //$candles->set($candle);
+            $prev_candle_sig = 0;
+            if (!isset($prev_candle->$signature)) {
+                error_log('Ema: prev_candle->'.$signature.' is not set');
+            }
+            $prev_candle_sig = $prev_candle->$signature;
+            // calculate current ema
+            $candle->$signature =
+                ($candle_base - $prev_candle_sig) * (2 / ($length + 1))
+                + $prev_candle_sig;
         }
-        //dd($candles);
         return $this;
     }
 }

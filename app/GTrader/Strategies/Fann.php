@@ -29,7 +29,7 @@ class Fann extends Strategy
 
     public function __construct(array $params = [])
     {
-        error_log('Fann::__construct()');
+        //error_log('Fann::__construct()');
         parent::__construct($params);
         $this->setParam('num_output', 1);
     }
@@ -251,7 +251,7 @@ class Fann extends Strategy
         }
         // create a new fann
         if (!is_resource($this->_fann)) {
-            error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
+            //error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
             if ($this->getParam('fann_type') === 'fixed') {
                 $params = array_merge(
                     [$this->getNumLayers()],
@@ -259,7 +259,7 @@ class Fann extends Strategy
                     $this->getParam('hidden_array'),
                     [$this->getParam('num_output')]
                 );
-                error_log('calling fann_create_standard('.join(', ', $params).')');
+                //error_log('calling fann_create_standard('.join(', ', $params).')');
                 $this->_fann = call_user_func_array('fann_create_standard', $params);
                 //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
             } elseif ($this->getParam('fann_type') === 'cascade') {
@@ -271,7 +271,8 @@ class Fann extends Strategy
             } else {
                 throw new \Exception('Unknown fann type');
             }
-            fann_randomize_weights($this->_fann, -0.5, 0.5);
+            //fann_randomize_weights($this->_fann, -0.5, 0.5);
+            fann_randomize_weights($this->_fann, -0.01, 0.01);
         }
         $this->initFann();
         return true;
@@ -294,8 +295,10 @@ class Fann extends Strategy
         //fann_set_activation_function_output($this->_fann, FANN_ELLIOT_SYMMETRIC);
         if ($this->getParam('fann_type') === 'fixed') {
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_INCREMENTAL);
+            //fann_set_training_algorithm($this->_fann, FANN_TRAIN_BATCH);
             fann_set_training_algorithm($this->_fann, FANN_TRAIN_RPROP);
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_QUICKPROP);
+            //fann_set_training_algorithm($this->_fann, FANN_TRAIN_SARPROP);
         }
         //fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_LINEAR);
         fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_TANH);

@@ -21,7 +21,7 @@ $(function() {
                             var i = 0;
                             $.each(params, function(k, v) {
                                 url += (i === 0) ? '?' : '&';
-                                url += k + '=' + v;
+                                url += k + '=' + encodeURIComponent(v);
                                 i++;
                             });
                         }
@@ -30,7 +30,7 @@ $(function() {
                         url += '?' + params;
                 }
             }
-            console.log(url);
+            console.log('Url: ' + url);
             $.ajax({
                 url: url,
                 type: type,
@@ -70,63 +70,6 @@ $(function() {
         registerChart: function(name) {
 
             var chartObj = window[name];
-
-            /**
-            * Requests the edit form for an indicator and inserts it into the DOM
-            */
-            chartObj.requestIndicatorEditForm = function(signature) {
-                window.setLoading('form_' + signature, true);
-                $.ajax({url: '/indicator.form?name=' + name + '&signature=' + signature,
-                    success: function(response) {
-                        $('#form_' + signature).html(response);
-                    }
-                });
-            };
-
-            /**
-            * Requests deletion for an indicator and inserts the result into the modal
-            */
-            chartObj.requestIndicatorDelete = function(signature) {
-                window.setLoading('settings_content', true);
-                $.ajax({url: '/indicator.delete?name=' + name + '&signature=' + signature,
-                    success: function(response) {
-                        $('#settings_content').html(response);
-                        chartObj.refresh();
-                    }
-                });
-            };
-
-            /**
-            * Requests creation of a new indicator and inserts the result into the modal
-            */
-            chartObj.requestIndicatorNew = function(signature) {
-                $.ajax({url: '/indicator.new?name=' + name + '&signature=' + signature,
-                    success: function(response) {
-                        $('#settings_content').html(response);
-                        chartObj.refresh();
-                    }
-                });
-            };
-
-            /**
-            * Sends an edited indicator and inserts the reply into the modal
-            */
-            chartObj.requestIndicatorSaveForm = function(signature, params) {
-                window.setLoading('settings_content', true);
-                $.ajax({
-                    type: 'POST',
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                    url: '/indicator.save',
-                    data: { name: name,
-                            signature: signature,
-                            params: JSON.stringify(params)},
-                    success: function(response) {
-                        $('#settings_content').html(response);
-                        chartObj.refresh();
-                    }
-                });
-            };
-
 
             /**
             * Register click handler for settings button

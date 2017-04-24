@@ -8,6 +8,7 @@ return [
                                 'FannPrediction'    => ['allow_multiple' => false],
                                 'FannSignals'       => ['allow_multiple' => false],
                                 'Profitability'     => ['allow_multiple' => false],
+                                'Avg'               => ['allow_multiple' => true],
                             ],
     'default_child'     => 'Ema',
     'display'           => [

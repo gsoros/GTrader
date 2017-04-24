@@ -2,11 +2,11 @@
 
 return [
     'indicator' =>  [
-                        'mode'          => 'fixed',
-                        'capital'       => 100,
+                        'base'          => 'close'
                     ],
     'display' =>    [
-                        'name'          => 'Balance',
+                        'name'          => 'Average',
                         'y_axis_pos'    => 'right',
                     ],
+
 ];

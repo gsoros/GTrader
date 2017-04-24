@@ -27,11 +27,17 @@ trait HasOwner
     public function canBeOwnedBy(&$owner)
     {
         $owner_class = get_class($owner);
-        foreach ($this->allowed_owners as $allowed) {
+        foreach ($this->getAllowedOwners() as $allowed) {
             if ($allowed === $owner_class || is_subclass_of($owner, $allowed)) {
                 return true;
             }
         }
         return false;
+    }
+
+
+    public function getAllowedOwners()
+    {
+        return $this->allowed_owners;
     }
 }

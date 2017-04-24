@@ -27,26 +27,32 @@ trait Skeleton
 
     public function __construct(array $params = [])
     {
-        //dump('Construct() called: '.get_class($this).' parent: '.get_parent_class($this));
-        if ($conf = self::getClassConf(get_parent_class($this))) {
-            foreach (['children_ns', 'default_child'] as $no_inherit) {
-                if (isset($conf[$no_inherit])) {
-                    unset($conf[$no_inherit]);
-                }
-            }
-            $this->setParams($conf);
-        }
-        if ($conf = self::getClassConf(get_class($this))) {
-            $this->setParams($conf);
-        }
+        $this->setParams(self::loadConfRecursive(get_class($this)));
         $this->setParams($params);
     }
 
 
+    protected static function loadConfRecursive(string $class)
+    {
+        $parent_conf = [];
+        if ($parent = get_parent_class($class)) {
+            $parent_conf = self::loadConfRecursive($parent);
+            foreach (['children_ns', 'default_child'] as $no_inherit) {
+                if (isset($parent_conf[$no_inherit])) {
+                    unset($parent_conf[$no_inherit]);
+                }
+            }
+        }
+        if ($conf = self::getClassConf($class)) {
+            return array_replace_recursive($parent_conf, $conf);
+        }
+        return $parent_conf;
+    }
+
 
     protected static function getClassConf(string $class, $key = null)
     {
-        //dump('getClassConf('.$class.', '.$key.')');
+        //error_log('getClassConf('.$class.', '.$key.')');
         if (!is_null($key)) {
             $key = '.'.$key;
         }

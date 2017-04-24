@@ -38,6 +38,14 @@ trait HasIndicators
     }
 
 
+    public function addIndicatorBySignature($sig)
+    {
+        $class = Indicator::getClassFromSignature($sig);
+        $params = Indicator::getParamsFromSignature($sig);
+        return $this->addIndicator($class, $params);
+    }
+
+
     public function getIndicator(string $signature)
     {
         foreach ($this->getIndicators() as $indicator) {
@@ -71,24 +79,38 @@ trait HasIndicators
         //error_log('hasIndicatorClass('.$class.', '.serialize($filters).')');
         foreach ($this->getIndicators() as $indicator) {
             if ($indicator->getShortClass() === $class) {
-                if ($num_filters = count($filters)) {
-                    $num_matched = 0;
-                    foreach ($filters as $conf => $val) {
-                        if ($indicator->getParam($conf) === $val) {
-                            $num_matched++;
-                        }
-                    }
-                    if ($num_matched === $num_filters) {
-                        return true;
-                    }
-                } else {
+                if (!count($filters)) {
                     return true;
                 }
+                foreach ($filters as $conf => $val) {
+                    if ($indicator->getParam($conf) != $val) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
         return false;
     }
 
+
+    public function getIndicatorLastValue(string $class, array $params = [], bool $force_rerun = false)
+    {
+        $indicator = Indicator::make($class, $params);
+        if (!$this->hasIndicatorClass($class, $params)) {
+            $this->addIndicator($indicator);
+        }
+        $sig = $indicator->getSignature();
+        if (!($indicator = $this->getIndicator($sig))) {
+            error_log('getIndicatorLastValue: '.$sig.' not found.');
+            return 0;
+        }
+        $indicator->checkAndRun($force_rerun);
+        if ($last = $indicator->getCandles()->last()) {
+            return $last->$sig;
+        }
+        return 0;
+    }
 
 
     public function unsetIndicator(Indicator $indicator)

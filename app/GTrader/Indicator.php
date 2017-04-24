@@ -38,24 +38,45 @@ abstract class Indicator
     {
         $class = $this->getShortClass();
         $params = $this->getParam('indicator');
-        $param_str = count($params) ? join('_', $params) : null;
+        //$param_str = count($params) ? join('_', $params) : null;
+
+        $param_str = '';
+        if (is_array($params)) {
+            if (count($params)) {
+                foreach ($params as $key => $value) {
+                    if (strlen($param_str)) {
+                        $param_str .= '_';
+                    }
+                    $param_str .= $key.'_'.str_replace('_', '-', $value);
+                }
+            }
+        }
+
         return $param_str ? $class.'_'.$param_str : $class;
     }
+
 
     public function getDisplaySignature()
     {
         $name = $this->getParam('display.name');
-        $p = $this->getParam('indicator');
-        /*
-        $param_arr = [];
-        if (is_array($p))
-            foreach ($p as $k => $v)
-                $param_arr[] = $k.': '.$v;
-        $param_str = count($param_arr) ? join(', ', $param_arr) : null;
-        */
-        $param_str = (is_array($p)) ? join(', ', $p) : null;
+        $params = $this->getParam('indicator');
+        //$param_str = (is_array($params)) ? join(', ', $params) : null;
+
+        $param_str = '';
+        if (is_array($params)) {
+            if (count($params)) {
+                foreach ($params as $value) {
+                    if (strlen($param_str)) {
+                        $param_str .= ', ';
+                    }
+                    $param_str .= explode('_', $value)[0];
+                }
+            }
+        }
+
         return $param_str ? $name.' ('.$param_str.')' : $name;
     }
+
 
     public function getCandles()
     {
@@ -97,5 +118,32 @@ abstract class Indicator
         return $this->calculate($force_rerun);
     }
 
+
+    public static function getClassFromSignature($sig)
+    {
+        return explode('_', $sig)[0];
+    }
+
+
+    public static function getParamsFromSignature($sig)
+    {
+        $pieces = explode('_', $sig);
+        // First elem is the class
+        array_shift($pieces);
+        if (!count($pieces)) {
+            return [];
+        }
+        $params = [];
+        $key = false;
+        while (list($junk, $piece) = each($pieces)) {
+            if (!$key) {
+                $key = $piece;
+                continue;
+            }
+            $params[$key] = $piece;
+            $key = false;
+        }
+        return $params;
+    }
 
 }

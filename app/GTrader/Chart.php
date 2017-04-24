@@ -213,8 +213,7 @@ abstract class Chart
             foreach ($indicator->getParam('indicator') as $param => $val) {
                 if (isset($jso->$param)) {
                     $indicator->setParam('indicator.'.$param, $jso->$param);
-                    if ($param === 'price') {
-                        //error_log('handleIndicatorSaveRequest price: '.$val.' -> '.$jso->$param);
+                    if ($param === 'base') {
                         $indicator->setParam('depends', []);
                         $dependency = $this->getIndicator($jso->$param);
                         if (is_object($dependency)) {
@@ -240,7 +239,7 @@ abstract class Chart
                     'volume' => 'Volume'];
         foreach ($this->getIndicatorsVisibleSorted() as $ind) {
             if ($except_signature != $ind->getSignature()) {
-                $prices[$ind->getSignature()] = $ind->getParam('display.name');
+                $prices[$ind->getSignature()] = $ind->getDisplaySignature();
             }
         }
         return $prices;

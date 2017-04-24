@@ -33,7 +33,7 @@ class Profitability extends Indicator
 
         $winners = 0;
         $losers = 0;
-        $percentage = 50;
+        $score = 50;
 
         $candles = $this->getCandles();
         $candles->reset();
@@ -59,11 +59,11 @@ class Profitability extends Indicator
                     }
                 }
                 $total = $winners + $losers;
-                $percentage = $total ? $winners / $total * 100 : 50;
+                $score = $total ? $winners / $total * 100 : 50;
 
                 $prev_signal = $signal;
             }
-            $candle->$signature = $percentage;
+            $candle->$signature = $score;
         }
 
         return $this;

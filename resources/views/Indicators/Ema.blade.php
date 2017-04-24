@@ -1,15 +1,16 @@
 @php
+    $uid = uniqid();
     $sig = $indicator->getSignature();
     $length = $indicator->getParam('indicator.length');
-    $price = $indicator->getParam('indicator.price');
+    $base = $indicator->getParam('indicator.base');
 @endphp
 
 <h5>Ema</h5>
 <div class="row">
     <div class="col-sm-5">
-        <label for="length_{{ $sig }}">Length</label>
+        <label for="length_{{ $uid }}">Length</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
-                id="length_{{ $sig }}"
+                id="length_{{ $uid }}"
                 title="Select length">
             @for ($i=2; $i<100; $i++)
                 <option
@@ -21,13 +22,13 @@
         </select>
     </div>
     <div class="col-sm-5">
-        <label for="price_{{ $sig }}">Price</label>
+        <label for="base_{{ $uid }}">Base</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
-                id="price_{{ $sig }}"
+                id="base_{{ $uid }}"
                 title="Select the index for the indicator">
             @foreach ($chart->getPricesAvailable($sig) as $signature => $display_name)
                 <option
-                @if ($signature === $price)
+                @if ($signature === $base)
                     selected
                 @endif
                 value="{{ $signature }}">{{ $display_name }}</option>
@@ -35,21 +36,31 @@
         </select>
     </div>
     <div class="col-sm-2">
-        <button id="save_{{ $sig }}"
+        <button id="save_{{ $uid }}"
                 class="btn btn-primary btn-sm trans"
                 title="Save changes"
-                onClick="return window.save{{ $sig }}()">
+                onClick="return window.save{{ $uid }}()">
             <span class="glyphicon glyphicon-ok"></span>
         </button>
     </div>
 </div>
 
 <script>
-    window.save{{ $sig }} = function(){
+    window.save{{ $uid }} = function(){
         var params = {
-                length: $('#length_{{ $sig }}').val(),
-                price: $('#price_{{ $sig }}').val()};
-        window.{{ $name }}.requestIndicatorSaveForm('{{ $sig }}', params);
+            length: $('#length_{{ $uid }}').val(),
+            base: $('#base_{{ $uid }}').val()
+        };
+        window.GTrader.request(
+            'indicator',
+            'save',
+            {
+                name: '{{ $name }}',
+                signature: '{{ $sig }}',
+                params: JSON.stringify(params)
+            },
+            'POST',
+            'settings_content');
         return false;
     };
 </script>

@@ -1,33 +1,24 @@
 @php
     $uid = uniqid();
     $sig = $indicator->getSignature();
-    $mode = $indicator->getParam('indicator.mode');
-    $initial_capital = $indicator->getParam('indicator.initial_capital');
+    $base = $indicator->getParam('indicator.base');
 @endphp
 
-<h5>Balance</h5>
+<h5>Average</h5>
 <div class="row">
     <div class="col-sm-5">
-        <label for="mode_{{ $uid }}">Mode</label>
+        <label for="base_{{ $uid }}">Base</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
-                id="mode_{{ $uid }}"
-                title="Select mode">
-            @foreach (['fixed', 'dynamic'] as $m)
+                id="base_{{ $uid }}"
+                title="Select the base for the indicator">
+            @foreach ($chart->getPricesAvailable($sig) as $signature => $display_name)
                 <option
-                @if ($m == $mode)
+                @if ($signature === $base)
                     selected
                 @endif
-                value="{{ $m }}">{{ $m }}</option>
+                value="{{ $signature }}">{{ $display_name }}</option>
             @endforeach
         </select>
-    </div>
-    <div class="col-sm-5">
-        <label for="initial_capital_{{ $uid }}">Initial Capital</label>
-        <input class="btn-primary btn-mini form-control form-control-sm"
-                type="number"
-                id="initial_capital_{{ $uid }}"
-                title="Select the initial cap for the indicator"
-                value="{{ $initial_capital }}">
     </div>
     <div class="col-sm-2">
         <button id="save_{{ $uid }}"
@@ -42,8 +33,7 @@
 <script>
     window.save{{ $uid }} = function(){
         var params = {
-            mode: $('#mode_{{ $uid }}').val(),
-            initial_capital: Math.abs(parseInt($('#initial_capital_{{ $uid }}').val()))
+            base: $('#base_{{ $uid }}').val()
         };
         window.GTrader.request(
             'indicator',

@@ -57,7 +57,7 @@ class Balance extends Indicator
 
         $signature = $this->getSignature();
 
-        $capital = $this->getParam('indicator.initial_capital');
+        $capital = floatval($this->getParam('indicator.capital'));
         $upl = 0;
         $stake = $capital * $position_size / 100;
         $fee_multiplier = $exchange->getParam('fee_multiplier');
