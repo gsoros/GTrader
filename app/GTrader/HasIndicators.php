@@ -12,10 +12,10 @@ trait HasIndicators
         if (!is_object($indicator)) {
             $indicator = Indicator::make($indicator, $params);
         }
+        //error_log(get_class($this).' checking indicator '.$indicator->getSignature());
         if (!$indicator->canBeOwnedBy($this)) {
             return $this;
         }
-
         if ($this->hasIndicator($indicator->getSignature())) {
             //error_log('addIndicator() we already have it, updating params');
             $existing = $this->getIndicator($indicator->getSignature());
@@ -26,10 +26,11 @@ trait HasIndicators
         if (!$indicator->getParam('available.'.$class.'.allow_multiple') &&
             $this->hasIndicatorClass($class)) {
             $existing = $this->getFirstIndicatorByClass($class);
+            //error_log('Boo: '.$class.' '.$existing->getSignature());
             $existing->setParams($indicator->getParams());
             return $this;
         }
-
+        //error_log(get_class($this).' adding indicator '.$indicator->getSignature());
         $indicator->setOwner($this);
         $this->indicators[] = $indicator;
         $indicator->createDependencies();

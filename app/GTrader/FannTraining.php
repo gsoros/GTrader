@@ -136,7 +136,7 @@ class FannTraining extends Model
         //$indicator = 'Profitability';
         //$indicator_params = [];
         $indicator = 'Avg';
-        $indicator_params = ['indicator' => ['base' => 'Balance_fixed_100']];
+        $indicator_params = ['indicator' => ['base' => 'Balance_mode_fixed_capital_100']];
 
         if ($json = $this->readStatus($train_strategy)) {
             if ($json = json_decode($json)) {

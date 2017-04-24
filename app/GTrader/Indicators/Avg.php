@@ -31,6 +31,17 @@ class Avg extends Indicator
     }
 
 
+    public function createDependencies()
+    {
+        if (!$this->basedOnIndicator()) {
+            return $this;
+        }
+        if (!$this->getOrAddBaseIndicator()) {
+            error_log('Could not getOrAdd base indicator for '.get_class($this));
+        }
+        return $this;
+    }
+
     public function runDependencies(bool $force_rerun = false)
     {
         $base = $this->getParam('indicator.base');
@@ -43,6 +54,7 @@ class Avg extends Indicator
             return $this;
         }
         if (!($indicator = $this->getOrAddBaseIndicator())) {
+            error_log('Avg::runDependencies() could not getOrAdd base indicator for '.get_class($this));
             return $this;
         }
         $this->setParam('display.y_axis_pos', 'right');

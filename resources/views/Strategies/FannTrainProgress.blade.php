@@ -123,15 +123,3 @@
         </span>
     </div>
 </div>
-
-<!--
-<pre class="debug">
-    Chart->dumpIndicators():
-        {{ $chart->dumpIndicators() }}
-    Training:
-        {{ var_export($training, true) }}
-
-    Strategy:
-        {{ var_export($strategy->getParams(), true) }}
-</pre>
--->
