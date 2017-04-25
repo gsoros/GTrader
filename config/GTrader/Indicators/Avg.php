@@ -2,11 +2,12 @@
 
 return [
     'indicator' =>  [
-                        'base'          => 'close'
+                        'base'          => 'close',
                     ],
     'display' =>    [
                         'name'          => 'Average',
                         'y_axis_pos'    => 'right',
+                        'top_level'     => true,
                     ],
 
 ];

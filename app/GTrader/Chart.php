@@ -230,19 +230,20 @@ abstract class Chart
     }
 
 
-    public function getPricesAvailable(string $except_signature = null)
+    public function getBasesAvailable(string $except_signature = null)
     {
-        $prices = ['open' => 'Open',
+        $bases = ['open' => 'Open',
                     'high' => 'High',
                     'low' => 'Low',
                     'close' => 'Close',
                     'volume' => 'Volume'];
         foreach ($this->getIndicatorsVisibleSorted() as $ind) {
-            if ($except_signature != $ind->getSignature()) {
-                $prices[$ind->getSignature()] = $ind->getDisplaySignature();
+            if (!$ind->getParam('display.top_level') &&
+                $except_signature != $ind->getSignature()) {
+                $bases[$ind->getSignature()] = $ind->getDisplaySignature();
             }
         }
-        return $prices;
+        return $bases;
     }
 
 

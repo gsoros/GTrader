@@ -11,7 +11,7 @@
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="base_{{ $uid }}"
                 title="Select the base for the indicator">
-            @foreach ($chart->getPricesAvailable($sig) as $signature => $display_name)
+            @foreach ($chart->getBasesAvailable($sig) as $signature => $display_name)
                 <option
                 @if ($signature === $base)
                     selected
