@@ -28,8 +28,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
         $schedule->command('candles:fetch')->everyMinute();
         $schedule->command('trainingManager:run')->everyMinute();
         $schedule->command('bots:run')->everyMinute();

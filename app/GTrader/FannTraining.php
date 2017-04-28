@@ -4,6 +4,7 @@ namespace GTrader;
 
 //use GTrader\Strategies\Fann as FannStrategy;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use GTrader\Lock;
 use GTrader\Exchange;
 use GTrader\Series;
@@ -44,6 +45,8 @@ class FannTraining extends Model
      */
     protected $casts = [
         'options' => 'array',
+        'progress' => 'array',
+        'history' => 'array',
     ];
 
 
@@ -86,7 +89,6 @@ class FannTraining extends Model
         $train_strategy->setCandles($train_candles);
 
         // Set up test strategy
-
         $test_candles = new Series([
             'exchange' => $exchange_name,
             'symbol' => $symbol_name,
@@ -99,7 +101,6 @@ class FannTraining extends Model
         $test_strategy->setCandles($test_candles);
 
         // Set up verify strategy
-
         $verify_candles = new Series([
             'exchange' => $exchange_name,
             'symbol' => $symbol_name,
@@ -111,26 +112,27 @@ class FannTraining extends Model
         $verify_strategy = clone $train_strategy;
         $verify_strategy->setCandles($verify_candles);
 
-        // Set up status object
-        $status = new \stdClass();
-        $status->exchange = $exchange_name;
-        $status->symbol = $symbol_name;
-        $status->resolution = $this->resolution;
-        $status->train_start = $this->options['train_start'];
-        $status->train_end = $this->options['train_end'];
-        $status->test_start = $this->options['test_start'];
-        $status->test_end = $this->options['test_end'];
-        $status->verify_start = $this->options['verify_start'];
-        $status->verify_end = $this->options['verify_end'];
-        $status->state = 'training';
-        //$this->writeStatus($train_strategy, json_encode($status));
+        foreach ([
+            'epochs' => 0,              // current epoch count
+            'epoch_jump' => 1,          // number of epochs between value checks
+            'no_improvement' => 0,      // keep track of the length of the period without improvement
+            'test' => 0,                // test value
+            'test_max' => 0,            // max test value
+            'verify' => 0,              // verify value
+            'verify_max' => 0,          // max verify value
+            'signals' => 0,
+            'state' => 'training',
+        ] as $field => $default) {
+            if (!isset($this->progress[$field])) {
+                $this->setProgress($field, $default);
+            }
+        }
 
-        $epochs = 0;            // current epoch count
-        $epoch_jump = 1;        // amount of epoch between value checks
-        $no_improvement = 0;    // keep track of the length of the period without improvement
+        $this->saveProgress();
+
         $max_boredom = 10;      // increase jump size after this many checks without improvement
         $epoch_jump_max = 100;  // max amount of skipped epochs
-        $test_regression = .9;
+        $test_regression = .9;  // allow this amount of regression to test max
 
         //$indicator = 'Balance';
         //$indicator = 'Profitability';
@@ -138,122 +140,93 @@ class FannTraining extends Model
         $indicator = 'Avg';
         $indicator_params = ['indicator' => ['base' => 'Balance_mode_fixed_capital_100']];
 
-        if ($json = $this->readStatus($train_strategy)) {
-            if ($json = json_decode($json)) {
-                if (is_object($json)) {
-                    if (isset($json->epochs)) {
-                        $epochs = $json->epochs;
-                    }
-                    if (isset($json->epoch_jump)) {
-                        $epoch_jump = $json->epoch_jump;
-                    }
-                    if (isset($json->test_max)) {
-                        $test_max = $json->test_max;
-                    }
-                    if (isset($json->verify)) {
-                        $verify = $json->verify;
-                    }
-                    if (isset($json->verify_max)) {
-                        $verify_max = $json->verify_max;
-                    }
-                    if (isset($json->no_improvement)) {
-                        $no_improvement = $json->no_improvement;
-                    }
-                }
-            }
+
+        if (!$this->progress['test_max']) {
+            $this->setProgress(
+                'test_max',
+                $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
+            );
         }
 
-        if (!isset($test_max)) {
-            $test_max = $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true);
-        }
-
-        if (!isset($verify)) {
-            $verify = 0;
-        }
-        if (!isset($verify_max)) {
-            $verify_max = $verify_strategy->getIndicatorLastValue($indicator, $indicator_params, true);
+        if (!$this->progress['verify_max']) {
+            $this->setProgress(
+                'verify_max',
+                $verify_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
+            );
         }
 
         $prev_test = 0;
 
         while ($this->shouldRun()) {
-            $epochs += $epoch_jump;
+
+            $this->setProgress(
+                'epochs',
+                $this->progress['epochs'] + $this->progress['epoch_jump']
+            );
 
             // Do the actual training
-            $train_strategy->train($epoch_jump);
+            $train_strategy->train($this->progress['epoch_jump']);
 
             // Assign fann to test strat
             $test_strategy->setFann($train_strategy->copyFann());
 
             // Get test value
-            $test = $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true);
-            //error_log('Training test: '.$test);
+            $this->setProgress(
+                'test',
+                $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
+            );
 
-            $no_improvement++;
+            $this->setProgress(
+                'no_improvement',
+                $this->progress['no_improvement'] + 1
+            );
 
-            /*
-            // if test is improving, decrease jump size
-            if ($test > $prev_test * $test_regression) {
-                //$no_improvement = 0;
-                $epoch_jump = floor($epoch_jump / 2);
-                if ($epoch_jump < 1) {
-                    $epoch_jump = 1;
-                }
-            }
-            $prev_test = $test;
-            */
-
-            if ($test > $test_max * $test_regression) {
+            if ($this->progress['test'] > $this->progress['test_max'] * $test_regression) {
 
                 // There is improvement
-                $no_improvement = 0;
+                $this->setProgress('no_improvement', 0);
 
-                if ($test > $test_max) {
-                    $test_max = $test;
+                if ($this->progress['test'] > $this->progress['test_max']) {
+                    $this->setProgress('test_max', $this->progress['test']);
                 }
 
                 // Assign fann to verify strat
                 $verify_strategy->setFann($train_strategy->copyFann());
 
                 // Get verify value
-                $verify = $verify_strategy->getIndicatorLastValue($indicator, $indicator_params, true);
+                $this->setProgress(
+                    'verify',
+                    $verify_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
+                );
 
-                if ($verify > $verify_max) {
+                if ($this->progress['verify'] > $this->progress['verify_max']) {
 
-                    $verify_max = $verify;
+                    $this->setProgress('verify_max',$this->progress['verify']);
 
                     // Save the fann
                     $train_strategy->saveFann();
-                    $epoch_jump = 1;
+                    $this->setProgress('epoch_jump', 1);
                 }
             }
 
-            if ($no_improvement > $max_boredom) {
+            if ($this->progress['no_improvement'] > $max_boredom) {
                 // Increase jump size to fly over valleys faster, possibly missing some narrow peaks
-                $epoch_jump++;
+                $this->setProgress('epoch_jump', $this->progress['epoch_jump'] + 1);
 
                 // Limit jumps
-                if ($epoch_jump >= $epoch_jump_max) {
-                    $epoch_jump = $epoch_jump_max;
+                if ($this->progress['epoch_jump'] >= $epoch_jump_max) {
+                    $this->setProgress('epoch_jump', $epoch_jump_max);
                 }
-                $no_improvement = 0;
+                $this->setProgress('no_improvement', 0);
             }
 
-            // Set and write status file
-            $status->epochs = $epochs;
-            $status->epoch_jump = $epoch_jump;
-            $status->no_improvement = $no_improvement;
-            $status->test = number_format(floatval($test), 2, '.', '');
-            $status->test_max = number_format(floatval($test_max), 2, '.', '');
-            $status->verify = number_format(floatval($verify), 2, '.', '');
-            $status->verify_max = number_format(floatval($verify_max), 2, '.', '');
-            $status->signals = $test_strategy->getNumSignals(true);
-            $this->writeStatus($train_strategy, json_encode($status));
+            $this->setProgress('signals', $test_strategy->getNumSignals(true));
+            $this->saveProgress();
         }
 
         // Put training back to queue
-        $status->state = 'queued';
-        $this->writeStatus($train_strategy, json_encode($status));
+        $this->setProgress('state', 'queued');
+        $this->saveProgress();
 
         // Save current trained fann for the next run
         $train_strategy->saveFann($train_suffix);
@@ -292,49 +265,20 @@ class FannTraining extends Model
     }
 
 
-    protected function writeStatus(FannStrategy $strategy, string $s)
+    protected function setProgress($key, $value)
     {
-        $file = $strategy->path().'.status';
-        if (!($fp = fopen($file, 'wb'))) {
-            return false;
+        $progress = $this->progress;
+        if (!is_array($progress)) {
+            $progress = [];
         }
-        if (!flock($fp, LOCK_EX)) {
-            fclose($fp);
-            return false;
-        }
-        $n = fwrite($fp, $s);
-        fflush($fp);
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        return $n;
+        $this->progress = array_replace_recursive($progress, [$key => $value]);
     }
 
-
-    public function readStatus(FannStrategy $strategy)
+    protected function saveProgress()
     {
-        $statusfile = $strategy->path().'.status';
-        if (is_file($statusfile)) {
-            if (is_readable($statusfile)) {
-                if ($fp = fopen($statusfile, 'rb')) {
-                    if (flock($fp, LOCK_SH)) {
-                        $c = file_get_contents($statusfile);
-                        flock($fp, LOCK_UN);
-                        fclose($fp);
-                        return $c;
-                    }
-                }
-            }
-        }
-        return '{}';
+        return DB::table($this->table)
+            ->where('id', $this->id)
+            ->update(['progress' => json_encode($this->progress)]);
     }
 
-    public function resetStatus(FannStrategy $strategy)
-    {
-        $statusfile = $strategy->path().'.status';
-        if (is_file($statusfile)) {
-            if (is_writable($statusfile)) {
-                unlink($statusfile);
-            }
-        }
-    }
 }

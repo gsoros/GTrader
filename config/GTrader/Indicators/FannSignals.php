@@ -2,7 +2,9 @@
 
 return [
     'display' =>    [
-                        'name'      => 'Signals',
+                        'name'          => 'Signals',
+                        'top_level'     => true,
+                        'y_axis_pos'    => 'left',
                     ],
 
 ];

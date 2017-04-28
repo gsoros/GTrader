@@ -282,7 +282,15 @@ class StrategyController extends Controller
             error_log('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
-        return response($training->readStatus($strategy), 200);
+        $progress = $training->progress;
+        if (!is_array($progress)) {
+            $progress = [];
+        }
+        foreach (['test', 'test_max', 'verify', 'verify_max'] as $field) {
+            $value = isset($progress[$field]) ? $progress[$field] : 0;
+            $progress[$field] = number_format(floatval($value), 2, '.', '');
+        }
+        return response(json_encode($progress), 200);
     }
 
 
