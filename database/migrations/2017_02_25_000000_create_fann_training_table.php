@@ -22,7 +22,6 @@ class CreateFannTrainingTable extends Migration
             $table->integer('resolution')->unsigned();
             $table->text('options')->nullable();
             $table->text('progress')->nullable();
-            $table->text('history')->nullable();
         });
     }
 

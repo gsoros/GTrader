@@ -312,14 +312,14 @@ abstract class Chart
     public function toHTML(string $content = '')
     {
         return view('Chart', [
-                        'name' => $this->getParam('name'),
-                        'height' => $this->getParam('height'),
-                        'content' => $content,
-                        'JSON' => $this->toJSON(),
-                        'disabled' => $this->getParam('disabled', []),
-                        'readonly' => $this->getParam('readonly', []),
-                        'chart' => $this
-                        ]);
+            'name' => $this->getParam('name'),
+            'height' => $this->getParam('height'),
+            'content' => $content,
+            'JSON' => $this->toJSON(),
+            'disabled' => $this->getParam('disabled', []),
+            'readonly' => $this->getParam('readonly', []),
+            'chart' => $this
+        ]);
     }
 
 

@@ -4,6 +4,7 @@ namespace GTrader\Strategies;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use GTrader\Strategy;
 use GTrader\Series;
 use GTrader\Indicator;
@@ -359,15 +360,52 @@ class Fann extends Strategy
         FannTraining::where('strategy_id', $this->getParam('id'))->delete();
         // remove files
         $this->deleteFiles();
+        // remove training history
+        $this->deleteHistory();
         // remove strategy
-        parent::delete();
+        return parent::delete();
+    }
+
+
+    public function deleteHistory()
+    {
+        $affected = DB::table('fann_history')
+            ->where('strategy_id', $this->getParam('id'))
+            ->delete();
+        error_log('Fann::deleteHistory() '.$affected.' records deleted.');
+        return $this;
+    }
+
+
+    public function saveHistory(int $epoch, string $name, float $value)
+    {
+        DB::table('fann_history')
+            ->insert([
+                'strategy_id' => $this->getParam('id'),
+                'epoch' => $epoch,
+                'name' => $name,
+                'value' => $value,
+            ]);
+        return $this;
+    }
+
+
+    public function getLastTrainingEpoch()
+    {
+        $res = DB::table('fann_history')
+            ->select('epoch')
+            ->where('strategy_id', $this->getParam('id'))
+            ->orderBy('epoch', 'desc')
+            ->limit(1)
+            ->first();
+        return intval($res->epoch);
     }
 
 
     public function deleteFiles()
     {
         $fann = $this->path();
-        foreach ([$fann, $fann.'.status', $fann.'.train'] as $file) {
+        foreach ([$fann, $fann.'.train'] as $file) {
             error_log('Checking to delete '.$file);
             if (is_file($file)) {
                 if (!is_writable($file)) {
@@ -377,6 +415,7 @@ class Fann extends Strategy
                 unlink($file);
             }
         }
+        return $this;
     }
 
 

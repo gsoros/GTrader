@@ -176,6 +176,13 @@ class FannTraining extends Model
                 $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
             );
 
+            // Save test value to history
+            $train_strategy->saveHistory(
+                $this->progress['epochs'],
+                'test',
+                $this->progress['test']
+            );
+
             $this->setProgress(
                 'no_improvement',
                 $this->progress['no_improvement'] + 1
@@ -197,6 +204,13 @@ class FannTraining extends Model
                 $this->setProgress(
                     'verify',
                     $verify_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
+                );
+
+                // Save verify value to history
+                $train_strategy->saveHistory(
+                    $this->progress['epochs'],
+                    'verify',
+                    $this->progress['verify']
                 );
 
                 if ($this->progress['verify'] > $this->progress['verify_max']) {
@@ -250,14 +264,14 @@ class FannTraining extends Model
                 ->where('status', 'training')
                 ->firstOrFail();
         } catch (\Exception $e) {
-            echo "Training stopped.\n";
+            error_log('Training stopped.');
             return false;
         }
         // check if the number of active trainings is greater than the number of slots
         if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
             // check if we have spent too much time
             if ((time() - $started) > $this->getParam('max_time_per_session')) {
-                echo 'Time up: '.(time() - $started).'/'.$this->getParam('max_time_per_session')."\n";
+                error_log('Time up: '.(time() - $started).'/'.$this->getParam('max_time_per_session'));
                 return false;
             }
         }
@@ -272,13 +286,15 @@ class FannTraining extends Model
             $progress = [];
         }
         $this->progress = array_replace_recursive($progress, [$key => $value]);
+        return $this;
     }
 
     protected function saveProgress()
     {
-        return DB::table($this->table)
+        DB::table($this->table)
             ->where('id', $this->id)
             ->update(['progress' => json_encode($this->progress)]);
+        return $this;
     }
 
 }

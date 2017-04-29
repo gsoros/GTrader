@@ -197,15 +197,6 @@ class StrategyController extends Controller
             ${$item.'_end'} = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
         }
 
-        if (isset($request->from_scratch)) {
-            if (intval($request->from_scratch)) {
-                error_log('Training from scratch.');
-                $strategy->destroyFann();
-                $strategy->deleteFiles();
-                $strategy->createFann();
-            }
-        }
-
         $options = [
             'train_start' => $train_start,
             'train_end' => $train_end,
@@ -219,14 +210,36 @@ class StrategyController extends Controller
             'strategy_id'   => $strategy_id,
             'status'        => 'training'
         ]);
+
         $training->strategy_id = $strategy_id;
         $training->status = 'training';
         $training->exchange_id = $exchange_id;
         $training->symbol_id = $symbol_id;
         $training->resolution = $resolution;
         $training->options = $options;
+        $training->progress = [];
+
+        $from_scratch = !$strategy->hasBeenTrained();
+        if (isset($request->from_scratch)) {
+            if (intval($request->from_scratch)) {
+                $from_scratch = true;
+            }
+        }
+
+        if ($from_scratch) {
+            error_log('Training from scratch.');
+            $strategy->destroyFann();
+            $strategy->deleteFiles();
+            $strategy->createFann();
+            $strategy->deleteHistory();
+        } else {
+            $last_epoch = $strategy->getLastTrainingEpoch();
+            error_log('Continuing training from epoch '.$last_epoch);
+            //$training->setProgress('epochs', $last_epoch);
+            $training->progress = ['epochs' => $last_epoch];
+        }
+
         $training->save();
-        $training->resetStatus($strategy);
 
         $html = view('Strategies/FannTrainProgress', [
             'strategy' => $strategy,
