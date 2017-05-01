@@ -10,6 +10,10 @@
     </div>
 </div>
 <div class="row bdr-rad">
+    <div class="col-sm-12" id="trainHistory" title="Training History">
+    </div>
+</div>
+<div class="row bdr-rad">
     <div class="col-sm-12" id="trainProgress">
         <span class="editable cap" id="trainProgressState">
         @if ('paused' === $training->status)
@@ -29,7 +33,8 @@
 @if ('paused' != $training->status)
     <script>
         var pollTimeout,
-            verify_max = 0;
+            verify_max = 0,
+            last_epoch = 0;
         function pollStatus() {
             console.log('pollStatus() ' + $('#trainProgress').length);
             $.ajax({
@@ -51,6 +56,21 @@
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
+                    var new_epoch = parseInt(reply.epochs);
+                    if (new_epoch > last_epoch) {
+                        last_epoch = new_epoch;
+                        window.GTrader.request(
+                            'strategy',
+                            'trainHistory',
+                            {
+                                id: {{ $strategy->getParam('id') }},
+                                width: $('#trainHistory').width(),
+                                height: 200
+                            },
+                            'GET',
+                            'trainHistory'
+                        );
+                    }
                     var new_max = parseFloat(reply.verify_max);
                     if (new_max > verify_max) {
                         verify_max = new_max;

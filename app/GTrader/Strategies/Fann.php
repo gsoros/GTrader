@@ -12,6 +12,7 @@ use GTrader\Util;
 use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\FannTraining;
+use GTrader\Plot;
 
 if (!extension_loaded('fann')) {
     throw new \Exception('FANN extension not loaded');
@@ -124,6 +125,37 @@ class Fann extends Strategy
         $progress_chart->saveToSession();
 
         return $progress_chart;
+    }
+
+
+    public function getHistoryPlot(int $width, int $height)
+    {
+        $labels = [];
+        $values = [];
+        $items = DB::table('fann_history')
+            ->select('epoch', 'name', 'value')
+            ->where('strategy_id', $this->getParam('id'))
+            ->orderBy('epoch')
+            ->orderBy('name')
+            ->get();
+        foreach ($items as $item) {
+            if (!in_array($item->name, $labels)) {
+                $labels[] = $item->name;
+            }
+            $index = array_search($item->name, $labels);
+            if (!isset($values[$index])) {
+                $values[$index] = [];
+            }
+            $values[$index][$item->epoch] = $item->value;
+        }
+        $plot = new Plot([
+            'name' => 'History',
+            'width' => $width,
+            'height' => $height,
+            'labels' => $labels,
+            'values' => $values //[[10 => 1, 11 => 3, 12 => 4], [10 => 2, 11 => 5, 12 => 6]],
+            ]);
+        return $plot->toHTML();
     }
 
 
@@ -687,7 +719,7 @@ class Fann extends Strategy
     public function getMSER()
     {
         $mse = fann_get_MSE($this->getFann());
-        //error_log('MSER: '.$mse);
+        //error_log('MSE: '.$mse);
         if ($mse) {
             return 1 / $mse;
         }

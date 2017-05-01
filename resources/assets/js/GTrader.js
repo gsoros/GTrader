@@ -30,7 +30,7 @@ $(function() {
                         url += '?' + params;
                 }
             }
-            console.log('Url: ' + url);
+            console.log('GTRader.request() Url: ' + url);
             $.ajax({
                 url: url,
                 type: type,

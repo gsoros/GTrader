@@ -10,6 +10,7 @@ use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Exchange;
 use GTrader\FannTraining;
+use GTrader\Plot;
 
 class StrategyController extends Controller
 {
@@ -304,6 +305,22 @@ class StrategyController extends Controller
             $progress[$field] = number_format(floatval($value), 2, '.', '');
         }
         return response(json_encode($progress), 200);
+    }
+
+
+    public function trainHistory(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id))) {
+            error_log('Failed to load strategy ID '.$strategy_id);
+            return response('Strategy not found.', 404);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id()) {
+            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Strategy not found.', 403);
+        }
+
+        return response($strategy->getHistoryPlot($request->width, $request->height), 200);
     }
 
 

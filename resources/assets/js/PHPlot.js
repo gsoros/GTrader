@@ -8,7 +8,7 @@ $(function() {
         window.setLoading(name, true);
         var container = $('#' + name);
         var plot = window[name];
-        var width = $(window).width() - 2;
+        var width = container.width();
         console.log('requestPlot: ' + name + ' width: ' + width);
         var url = '/plot.image?name=' + name +
                     '&width=' + width +

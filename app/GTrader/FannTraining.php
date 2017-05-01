@@ -183,6 +183,13 @@ class FannTraining extends Model
                 $this->progress['test']
             );
 
+            // Save test MSER to history
+            $train_strategy->saveHistory(
+                $this->progress['epochs'],
+                'test_MSER',
+                $train_strategy->getMSER()
+            );
+
             $this->setProgress(
                 'no_improvement',
                 $this->progress['no_improvement'] + 1
@@ -193,9 +200,11 @@ class FannTraining extends Model
                 // There is improvement
                 $this->setProgress('no_improvement', 0);
 
+                /*
                 if ($this->progress['test'] > $this->progress['test_max']) {
                     $this->setProgress('test_max', $this->progress['test']);
                 }
+                */
 
                 // Assign fann to verify strat
                 $verify_strategy->setFann($train_strategy->copyFann());
@@ -216,6 +225,11 @@ class FannTraining extends Model
                 if ($this->progress['verify'] > $this->progress['verify_max']) {
 
                     $this->setProgress('verify_max',$this->progress['verify']);
+
+                    // Update test max
+                    if ($this->progress['test'] > $this->progress['test_max']) {
+                        $this->setProgress('test_max', $this->progress['test']);
+                    }
 
                     // Save the fann
                     $train_strategy->saveFann();
