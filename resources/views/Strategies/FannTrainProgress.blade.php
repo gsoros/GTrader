@@ -57,7 +57,7 @@
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
                     var new_epoch = parseInt(reply.epochs);
-                    if (new_epoch > last_epoch) {
+                    if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {
                         last_epoch = new_epoch;
                         window.GTrader.request(
                             'strategy',

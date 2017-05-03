@@ -16,6 +16,25 @@
     </div>
     <div class="col-sm-4">
         <div class="editable form-group">
+
+            <div class="form-check form-check-inline">
+                <label class="form-check-label" title="Include volume in the samples">
+                    <input class="form-check-input"
+                            type="checkbox"
+                            id="use_volume"
+                            name="use_volume"
+                            value="1"
+                                @if ($strategy->getParam('use_volume'))
+                                    checked
+                                @endif
+                            > Include Volume
+                </label>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="editable form-group">
             <label for="hidden_array">Hidden layers</label>
             <input class="btn-primary form-control form-control-sm"
                     type="text"

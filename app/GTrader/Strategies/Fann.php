@@ -162,6 +162,7 @@ class Fann extends Strategy
     public function handleSaveRequest(Request $request)
     {
         $topology_changed = false;
+
         if (isset($request->hidden_array)) {
             $hidden_array = explode(',', $request->hidden_array);
             if (count($hidden_array)) {
@@ -180,11 +181,28 @@ class Fann extends Strategy
             }
         }
 
+        $num_samples = $this->getParam('num_samples');
         if (isset($request->num_samples)) {
-            if (intval($request->num_samples) !== intval($this->getParam('num_samples'))) {
+            $num_samples = intval($request->num_samples);
+            if ($num_samples < 2) {
+                $num_samples = 2;
+            }
+            if ($num_samples !== intval($this->getParam('num_samples'))) {
                 $topology_changed = true;
             }
+            $this->setNumSamples($num_samples);
         }
+
+        $use_volume = 0;
+        if (isset($request->use_volume)) {
+            if (intval($request->use_volume)) {
+                $use_volume = 1;
+            }
+        }
+        if ($use_volume !== intval($this->getParam('use_volume'))) {
+            $topology_changed = true;
+        }
+        $this->setParam('use_volume', $use_volume);
 
         if ($topology_changed) {
             error_log('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
@@ -192,7 +210,7 @@ class Fann extends Strategy
             $this->deleteFiles();
         }
 
-        foreach (['num_samples', 'target_distance'] as $param) {
+        foreach (['target_distance'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
             }
@@ -460,7 +478,7 @@ class Fann extends Strategy
     }
 
 
-    public function runFann($input, $ignore_bias = false)
+    public function run($input, $ignore_bias = false)
     {
         try {
             $output = fann_run($this->getFann(), $input);
@@ -470,7 +488,7 @@ class Fann extends Strategy
             return $output[0];
         } catch (\Exception $e) {
             error_log('fann_run error: '.$e->getMessage()."\n".
-                        ' Input: '.var_export($input, true));
+                        ' Input: '.serialize($input));
             return null;
         }
     }
@@ -500,7 +518,7 @@ class Fann extends Strategy
 
     public function nextSample($size = null, $reset = false)
     {
-        static $___sample = array();
+        static $___sample = [];
 
         if ($reset == 'reset') {
             $___sample = [];
@@ -513,23 +531,26 @@ class Fann extends Strategy
             return null;
         }
 
-        $target_sample_size = $size ? $size : $this->getParam('num_samples') + $this->getParam('target_distance');
-        //echo ' '.$this->_sample_iterator;
+        if (!$size) {
+            $size = $this->getParam('num_samples') + $this->getParam('target_distance');
+        }
+
         while ($candle = $candles->byKey($this->_sample_iterator)) {
             $this->_sample_iterator++;
             $___sample[] = $candle;
-            $current_sample_size = count($___sample);
-            if ($current_sample_size <  $target_sample_size) {
+            $current_size = count($___sample);
+            if ($current_size <  $size) {
                 continue;
             }
-            if ($current_sample_size == $target_sample_size) {
+            if ($current_size == $size) {
                 return $___sample;
             }
-            if ($current_sample_size >  $target_sample_size) {
+            if ($current_size >  $size) {
                 array_shift($___sample);
                 return $___sample;
             }
         }
+        return null;
     }
 
 
@@ -542,9 +563,16 @@ class Fann extends Strategy
         $data = [];
         $images = 0;
         $num_samples = $this->getParam('num_samples');
+        $use_volume = $this->getParam('use_volume');
 
         $this->resetSample();
         while ($sample = $this->nextSample()) {
+            if ($use_volume) {
+                $volumes = [];
+                for ($i = 0; $i < $num_samples - 1; $i++) {
+                    $volumes[] = intval($sample[$i]->volume);
+                }
+            }
             $input = [];
             for ($i = 0; $i < $num_samples; $i++) {
                 if ($i < $num_samples - 1) {
@@ -582,6 +610,15 @@ class Fann extends Strategy
             $output = array($output);
             */
 
+            if ($use_volume) {
+                // Normalize volumes to -1, 1
+                $min = min($volumes);
+                $max = max($volumes);
+                foreach ($volumes as $k => $v) {
+                    $volumes[$k] = Series::normalize($v, $min, $max);
+                }
+            }
+
             // Normalize input to -1, 1, output is delta of last input and output scaled
             $min = min($input);
             $max = max($input);
@@ -597,7 +634,11 @@ class Fann extends Strategy
                 $output = -1;
             }
 
-            $data[] = array('input'  => $input, 'output' => array($output));
+            if ($use_volume) {
+                $input = array_merge($volumes, $input);
+            }
+
+            $data[] = array('input'  => $input, 'output' => [$output]);
 
             /*
             $images++;
@@ -742,8 +783,12 @@ class Fann extends Strategy
 
     public function getNumInput()
     {
+        $fields = 4; // O, H, L, C
+        if ($this->getParam('use_volume')) {
+            $fields++;
+        }
         // last sample has only open
-        return $this->getParam('num_samples') * 4 - 3;
+        return ($this->getParam('num_samples') -1) * $fields + 1;
     }
 
 

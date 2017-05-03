@@ -159,6 +159,8 @@ class FannTraining extends Model
 
         while ($this->shouldRun()) {
 
+            $this->setProgress('state', 'training');
+
             $this->setProgress(
                 'epochs',
                 $this->progress['epochs'] + $this->progress['epoch_jump']
