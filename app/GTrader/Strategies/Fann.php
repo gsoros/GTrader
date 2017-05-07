@@ -809,7 +809,10 @@ class Fann extends Strategy
         $dir = $this->getParam('path');
         if (!is_dir($dir)) {
             if (!mkdir($dir)) {
-                throw new \Exception('Failed to create directory '.$dir);
+                throw new \Exception('Failed to create '.$dir);
+            }
+            if (!chmod($dir, 0775)) {
+                throw new \Exception('Failed to chmod '.$dir);
             }
         }
         return $dir.DIRECTORY_SEPARATOR.$this->getParam('id').'.fann';
