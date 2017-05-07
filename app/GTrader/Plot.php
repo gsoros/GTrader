@@ -21,21 +21,26 @@ class Plot
         $width = $this->getParam('width');
         $height = $this->getParam('height');
         if ($width <= 1 || $height <= 1) {
-            return 'Plot::getImage(): Missing width or height.';
+            error_log('Plot::getImage(): Missing width or height.');
+            return '';
         }
         $labels = $this->getParam('labels');
         if (!is_array($labels)) {
-            return 'Plot::getImage(): labels is not an array.';
+            error_log('Plot::getImage(): labels is not an array.');
+            return '';
         }
         if (!count($labels)) {
-            return 'Plot::getImage(): labels is empty.';
+            error_log('Plot::getImage(): labels is empty.');
+            return '';
         }
         $values = $this->getParam('values');
         if (!is_array($values)) {
-            return 'Plot::getImage(): values is not an array.';
+            error_log('Plot::getImage(): values is not an array.');
+            return '';
         }
         if (!count($values)) {
-            return 'Plot::getImage(): values is empty.';
+            error_log('Plot::getImage(): values is empty.');
+            return '';
         }
 
         $this->_plot = new PHPlot_truecolor($width, $height);

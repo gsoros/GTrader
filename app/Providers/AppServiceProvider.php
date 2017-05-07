@@ -17,25 +17,31 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        /*
+        // Log all queries
         DB::listen(function ($query) {
 
-            $replace = function ($sql, $bindings)
-            {
+            $replace = function ($sql, $bindings) {
                 $needle = '?';
-                foreach ($bindings as $replace)
-                {
+                foreach ($bindings as $replace) {
                     $pos = strpos($sql, $needle);
-                    if ($pos !== false)
-                    {
+                    if ($pos !== false) {
                         $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
                     }
                 }
                 return $sql;
             };
             $sql = $replace($query->sql, $query->bindings);
-            //error_log($sql);
-
+            error_log($sql);
         });
+        */
+
+        // Save some memory
+        DB::connection()->disableQueryLog();
+
+        // Set memory limit
+        ini_set('memory_limit', \Config::get('app.memory_limit', '512M'));
+
     }
 
     /**

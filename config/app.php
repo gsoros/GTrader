@@ -258,4 +258,13 @@ return [
 
     'allow_password_resets' => env('ALLOW_PASSWORD_RESETS', true),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | App memory limit
+    |--------------------------------------------------------------------------
+    */
+
+    'memory_limit' => env('APP_MEMORY_LIMIT', '512M'),
+
 ];
