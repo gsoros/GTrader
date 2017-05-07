@@ -67,7 +67,8 @@ class PHPlot extends Chart
                             ($refresh * 1000).", 'refresh".
                             $this->getParam('name')."');";
                 if ($this->last_close) {
-                    $refresh .= "document.title = '".number_format($this->last_close, 2)." - GTrader';";
+                    $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
+                                    \Config::get('app.name', 'GTrader')."';";
                 }
                 $refresh .= '</script>';
             }
