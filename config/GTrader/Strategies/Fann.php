@@ -15,9 +15,9 @@ return [
     // apply ema to the prediction
     'prediction_ema'                => 0,
      // trade only if prediction is over this fraction of candle open price
-    'prediction_long_threshold'     => 200,
+    'long_threshold'                => 200,
     // trade only if prediction is under this fraction of candle open price
-    'prediction_short_threshold'    => 200,
+    'short_threshold'               => 200,
     // do not trade if last trade was more recent than this value
     'min_trade_distance'            => 0,
     // compensate for the bias of the null sample

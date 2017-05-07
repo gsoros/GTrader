@@ -210,7 +210,7 @@ class Fann extends Strategy
             $this->deleteFiles();
         }
 
-        foreach (['target_distance'] as $param) {
+        foreach (['target_distance', 'long_threshold', 'short_threshold'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
             }

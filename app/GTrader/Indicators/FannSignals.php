@@ -40,8 +40,8 @@ class FannSignals extends Indicator
         //$this->candles->ohlc4()->reset();
 
         $spitfire = $owner->getParam('spitfire');
-        $long_threshold = $owner->getParam('prediction_long_threshold');
-        $short_threshold = $owner->getParam('prediction_short_threshold');
+        $long_threshold = $owner->getParam('long_threshold');
+        $short_threshold = $owner->getParam('short_threshold');
         if ($long_threshold == 0 || $short_threshold == 0) {
             throw new \Exception('Threshold is zero');
         }
