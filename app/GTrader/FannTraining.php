@@ -166,6 +166,8 @@ class FannTraining extends Model
                 $this->progress['epochs'] + $this->progress['epoch_jump']
             );
 
+            $this->saveProgress();
+
             // Do the actual training
             $train_strategy->train($this->progress['epoch_jump']);
 
@@ -178,6 +180,12 @@ class FannTraining extends Model
                 $test_strategy->getIndicatorLastValue($indicator, $indicator_params, true)
             );
 
+            // Get train MSER
+            $this->setProgress(
+                'train_mser',
+                number_format($train_strategy->getMSER(), 2)
+            );
+
             // Save test value to history
             $train_strategy->saveHistory(
                 $this->progress['epochs'],
@@ -185,11 +193,12 @@ class FannTraining extends Model
                 $this->progress['test']
             );
 
-            // Save test MSER to history
+
+            // Save train MSER to history
             $train_strategy->saveHistory(
                 $this->progress['epochs'],
-                'test_MSER',
-                $train_strategy->getMSER()
+                'train_MSER',
+                $this->progress['train_mser']
             );
 
             $this->setProgress(
@@ -198,9 +207,6 @@ class FannTraining extends Model
             );
 
             if ($this->progress['test'] > $this->progress['test_max'] * $test_regression) {
-
-                // There is improvement
-                $this->setProgress('no_improvement', 0);
 
                 /*
                 if ($this->progress['test'] > $this->progress['test_max']) {
@@ -226,12 +232,15 @@ class FannTraining extends Model
 
                 if ($this->progress['verify'] > $this->progress['verify_max']) {
 
-                    $this->setProgress('verify_max',$this->progress['verify']);
+                    $this->setProgress('verify_max', $this->progress['verify']);
 
                     // Update test max
                     if ($this->progress['test'] > $this->progress['test_max']) {
                         $this->setProgress('test_max', $this->progress['test']);
                     }
+
+                    // There is improvement
+                    $this->setProgress('no_improvement', 0);
 
                     // Save the fann
                     $train_strategy->saveFann();

@@ -238,8 +238,8 @@ class Fann extends Strategy
         return view(
             'Strategies/FannListItem',
             [
-                    'strategy' => $this,
-                    'training_status' => $training_status
+                'strategy' => $this,
+                'training_status' => $training_status
             ]
         );
     }
@@ -322,8 +322,8 @@ class Fann extends Strategy
             } else {
                 throw new \Exception('Unknown fann type');
             }
-            //fann_randomize_weights($this->_fann, -0.5, 0.5);
-            fann_randomize_weights($this->_fann, -0.01, 0.01);
+            fann_randomize_weights($this->_fann, -0.77, 0.77);
+            //fann_randomize_weights($this->_fann, -0.1, 0.1);
         }
         $this->initFann();
         return true;
@@ -694,17 +694,17 @@ class Fann extends Strategy
         $desired_error = 0.0000001;
 
         /* Fixed topology */
-        $epochs_between_reports = 100;
+        $epochs_between_reports = 0;
 
         /* Cascade */
         $max_neurons = $max_epochs / 10;
         if ($max_neurons < 1) {
             $max_neurons = 1;
         }
-        if ($max_neurons > 100) {
-            $max_neurons = 100;
+        if ($max_neurons > 1000) {
+            $max_neurons = 1000;
         }
-        $neurons_between_reports = 10;
+        $neurons_between_reports = 0;
 
         //echo 'Training... '; flush();
         if ($this->getParam('fann_type') === 'fixed') {

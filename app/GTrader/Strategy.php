@@ -49,21 +49,21 @@ class Strategy
 
         if ('new' === $id) {
             $id = DB::table('strategies')
-                        ->insertGetId([
-                            'user_id' => $user_id,
-                            'name' => $this->getParam('name'),
-                            'strategy' => serialize($this)
-                        ]);
+                ->insertGetId([
+                    'user_id' => $user_id,
+                    'name' => $this->getParam('name'),
+                    'strategy' => serialize($this)
+                ]);
             $this->setParam('id', $id);
             return $this;
         }
         $affected = DB::table('strategies')
-                        ->where('id', $id)
-                        ->where('user_id', $user_id)
-                        ->update([
-                            'name' => $this->getParam('name'),
-                            'strategy' => serialize($this)
-                        ]);
+            ->where('id', $id)
+            ->where('user_id', $user_id)
+            ->update([
+                'name' => $this->getParam('name'),
+                'strategy' => serialize($this)
+            ]);
         return $this;
     }
 

@@ -4,7 +4,9 @@
 <div class="row bdr-rad">
     <div class="col-sm-12">
         <h4>Training Progress for
-            <span title="ID: {{ $strategy->getParam('id') }}">{{ $strategy->getParam('name') }}</span>
+            <span title="Strategy ID: {{ $strategy->getParam('id') }} Training ID: {{ $training->id }}">
+                {{ $strategy->getParam('name') }}
+            </span>
         </h4>
         {!! $chart->toHTML() !!}
     </div>
@@ -22,9 +24,8 @@
         </span>
         &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
         &nbsp; Test: <span class="editable" id="trainProgressTest"></span>
-        &nbsp; Test Max: <span class="editable" id="trainProgressTestMax"></span>
+        &nbsp; Train MSER: <span class="editable" id="trainProgressTrainMSER"></span>
         &nbsp; Verify: <span class="editable" id="trainProgressVerify"></span>
-        &nbsp; Verify Max: <span class="editable" id="trainProgressVerifyMax"></span>
         &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
         &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
         &nbsp; Epochs Between Tests: <span class="editable" id="trainProgressEpochJump"></span>
@@ -49,10 +50,9 @@
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
                     $('#trainProgressEpochs').html(reply.epochs);
-                    $('#trainProgressTest').html(reply.test);
-                    $('#trainProgressTestMax').html(reply.test_max);
-                    $('#trainProgressVerify').html(reply.verify);
-                    $('#trainProgressVerifyMax').html(reply.verify_max);
+                    $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
+                    $('#trainProgressTrainMSER').html(reply.train_mser);
+                    $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
@@ -86,9 +86,8 @@
         $('#trainProgressState').html('queued');
         $('#trainProgressEpochs').html(' ... ');
         $('#trainProgressTest').html(' ... ');
-        $('#trainProgressTestMax').html(' ... ');
+        $('#trainProgressTrainMSER').html(' ... ');
         $('#trainProgressVerify').html(' ... ');
-        $('#trainProgressVerifyMax').html(' ... ');
         $('#trainProgressSignals').html(' ... ');
         $('#trainProgressNoImprovement').html(' ... ');
         $('#trainProgressEpochJump').html(' ... ');

@@ -35,7 +35,8 @@ class Balance extends Indicator
         $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([
             'exchange_id' => $exchange->getId(),
-            'user_id' => $owner->getParam('user_id', 0)]);
+            'user_id' => $owner->getParam('user_id', 0)
+        ]);
 
         // Get defaults from exchange config file
         $leverage = $exchange->getParam('leverage');
@@ -94,8 +95,10 @@ class Balance extends Indicator
                         // close last short
                         if ($prev_signal['price']) {
                             // avoid division by zero
-                            $capital += $stake / $prev_signal['price'] * ($prev_signal['price']
-                                        - $signal['price']) * $leverage;
+                            $capital +=
+                                $stake / $prev_signal['price'] *
+                                ($prev_signal['price'] - $signal['price']) *
+                                $leverage;
                         }
                         $upl = 0;
                     }
@@ -110,8 +113,10 @@ class Balance extends Indicator
                         // close last long
                         if ($prev_signal['price']) {
                             // avoid division by zero
-                            $capital += $stake / $prev_signal['price'] * ($signal['price']
-                                        - $prev_signal['price']) * $leverage;
+                            $capital +=
+                                $stake / $prev_signal['price'] *
+                                ($signal['price'] - $prev_signal['price']) *
+                                $leverage;
                         }
                         $upl = 0;
                     }
