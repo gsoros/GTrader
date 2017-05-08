@@ -11,9 +11,15 @@
             class="center-block"
             style="position: relative; top: 122px; width: 90%; height: 61px; margin-bottom: -61px"></div>
         <script>
-            [   {name: 'train_slider', start: 0, end: 33},
-                {name: 'test_slider', start: 33, end: 66},
-                {name: 'verify_slider', start: 66, end: 100}
+            [   {   name: 'train_slider',
+                    start: {{ \Config::get('GTrader.FannTraining.train_range.start_percent') }},
+                    end: {{ \Config::get('GTrader.FannTraining.train_range.end_percent') }}},
+                {name: 'test_slider',
+                    start: {{ \Config::get('GTrader.FannTraining.test_range.start_percent') }},
+                    end: {{ \Config::get('GTrader.FannTraining.test_range.end_percent') }}},
+                {name: 'verify_slider',
+                    start: {{ \Config::get('GTrader.FannTraining.verify_range.start_percent') }},
+                    end: {{ \Config::get('GTrader.FannTraining.verify_range.end_percent') }}}
             ].forEach(function(item) {
                 noUiSlider.create(document.getElementById(item.name), {
                     start: [item.start, item.end],
