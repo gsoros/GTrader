@@ -152,6 +152,7 @@ class FannTraining extends Model
 
     protected function test(string $type)
     {
+        /*
         if ($this->options['crosstrain'] && 'test' === $type) {
             return
                 $this->getStrategy('test')
@@ -167,6 +168,7 @@ class FannTraining extends Model
                         true
                     );
         }
+        */
         return
             $this->getStrategy($type)
                 ->getIndicatorLastValue(
@@ -296,23 +298,6 @@ class FannTraining extends Model
         $verify_strategy->setCandles($verify_candles);
         $this->setStrategy('verify', $verify_strategy);
 
-        foreach ([
-            'epochs' => 0,              // current epoch count
-            'epoch_jump' => 1,          // number of epochs between value checks
-            'no_improvement' => 0,      // keep track of the length of the period without improvement
-            'test' => 0,                // test value
-            'verify' => 0,              // verify value
-            'signals' => 0,
-            'state' => 'training',
-        ] as $field => $default) {
-            if (!isset($this->progress[$field])) {
-                $this->setProgress($field, $default);
-            }
-        }
-
-        $this->setProgress('test_max', 0);
-        $this->setProgress('verify_max', 0);
-        $this->saveProgress();
     }
 
 
