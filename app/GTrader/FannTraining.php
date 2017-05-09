@@ -101,6 +101,7 @@ class FannTraining extends Model
             $this->increaseJump();
         }
         $this->setProgress('state', 'queued');
+        $this->saveProgress();
         $this->saveFann($this->getParam('suffix'));
         $this->releaseLock();
     }
