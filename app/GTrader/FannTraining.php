@@ -129,21 +129,6 @@ class FannTraining extends Model
 
     protected function test(string $type)
     {
-        if ('test' === $type && $this->options['crosstrain']) {
-        return
-            $this->getStrategy('train')
-                ->getIndicatorLastValue(
-                    $this->getParam('indicator'),
-                    $this->getParam('indicator_params'),
-                    true
-                ) +
-            $this->getStrategy('test')
-                ->getIndicatorLastValue(
-                    $this->getParam('indicator'),
-                    $this->getParam('indicator_params'),
-                    true
-                );
-        }
         return
             $this->getStrategy($type)
                 ->getIndicatorLastValue(
@@ -183,6 +168,7 @@ class FannTraining extends Model
             $test_candles = $this->getStrategy('test')->getCandles();
             $this->getStrategy('train')->setCandles($test_candles);
             $this->getStrategy('test')->setCandles($train_candles);
+            $this->setProgress('test_max', $this->test('test'));
         }
         return $this;
     }
