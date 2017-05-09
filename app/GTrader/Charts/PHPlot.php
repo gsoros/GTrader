@@ -197,18 +197,22 @@ class PHPlot extends Chart
         $plot_type = $candles->size() < 260 ? 'candles' : 'line';
         $price = $times = [];
         $candles->reset();
+        $ymin = 0;
+        $ymax = 0;
         while ($c = $candles->next()) {
             $price[] = ('candles' === $plot_type) ?
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:
                 ['', $c->time, $c->close];
             $times[] = $c->time;
             $this->last_close = $c->close;
+            $ymin = min($ymin, min($c->open, $c->high, $c->low, $c->close));
+            $ymax = min($ymax, max($c->open, $c->high, $c->low, $c->close));
         }
         $this->world = [
             'xmin' => $times[0],
             'xmax' => $times[count($times) - 1],
-            'ymin' => null,
-            'ymax' => null
+            'ymin' => $ymin,
+            'ymax' => $ymax
         ];
         $this->setWorld();
         $this->_plot->setTitle($title);
