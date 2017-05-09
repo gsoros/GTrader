@@ -68,8 +68,8 @@ class FannTraining extends Model
         }
 
         while ($this->shouldRun()) {
-            $this->increaseEpoch();
             $this->swapIfCrossTraining();
+            $this->increaseEpoch();
             $this->train();
             $this->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''));
             $this->saveHistory('train_mser', $this->getProgress('train_mser'));
@@ -172,11 +172,12 @@ class FannTraining extends Model
 
     protected function swapIfCrossTraining()
     {
-        if (!$this->options['crosstrain']) {
+        $current_epoch = $this->getProgress('epoch');
+
+        if (!$this->options['crosstrain'] || !$current_epoch) {
             return $this;
         }
 
-        $current_epoch = $this->getProgress('epoch');
         $last_epoch = max(
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_crosstrain_swap')
