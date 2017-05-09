@@ -89,6 +89,7 @@ class FannTraining extends Model
                 if ($this->acceptable('verify')) {
                     $this->setProgress('test_max', $test);
                     $this->setProgress('verify_max', $verify);
+                    error_log('*** Setting verify_max to '.$verify.' ***');
                     $this->setProgress('last_improvement_epoch', $this->getProgress('epoch'));
                     $this->setProgress('no_improvement', 0);
                     $this->setProgress('epoch_jump', 1);
@@ -151,6 +152,21 @@ class FannTraining extends Model
 
     protected function test(string $type)
     {
+        if ($this->options['crosstrain'] && 'test' === $type) {
+            return
+                $this->getStrategy('test')
+                    ->getIndicatorLastValue(
+                        $this->getParam('indicator'),
+                        $this->getParam('indicator_params'),
+                        true
+                    ) +
+                $this->getStrategy('train')
+                    ->getIndicatorLastValue(
+                        $this->getParam('indicator'),
+                        $this->getParam('indicator_params'),
+                        true
+                    );
+        }
         return
             $this->getStrategy($type)
                 ->getIndicatorLastValue(
@@ -294,8 +310,8 @@ class FannTraining extends Model
             }
         }
 
-        $this->setProgress('test_max', $this->test('test'));
-        $this->setProgress('verify_max', $this->test('verify'));
+        $this->setProgress('test_max', 0);
+        $this->setProgress('verify_max', 0);
         $this->saveProgress();
     }
 

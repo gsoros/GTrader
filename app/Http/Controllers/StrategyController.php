@@ -239,8 +239,8 @@ class StrategyController extends Controller
         } else {
             $last_epoch = $strategy->getLastTrainingEpoch();
             error_log('Continuing training from epoch '.$last_epoch);
-            //$training->setProgress('epochs', $last_epoch);
-            $training->progress = ['epochs' => $last_epoch];
+            //$training->setProgress('epoch', $last_epoch);
+            $training->progress = ['epoch' => $last_epoch];
         }
 
         $training->save();
