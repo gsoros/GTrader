@@ -60,6 +60,13 @@ class FannTraining extends Model
         $this->obtainLock();
         $this->setProgress('state', 'training');
         $this->saveProgress();
+
+        // Ignore the first 100 epochs
+        if (!$this->getProgress('epoch') && $this->shouldRun()) {
+            $this->getStrategy('train')->train(100);
+            $this->setProgress('epoch', $this->getProgress('epoch') + 100);
+        }
+
         while ($this->shouldRun()) {
             $this->increaseEpoch();
             $this->swapIfCrossTraining();
@@ -176,7 +183,8 @@ class FannTraining extends Model
         );
         error_log('Epoch: '.$current_epoch.' Last: '.$last_epoch);
 
-        if ($this->acceptable('test', 70) &&
+        if ($this->getProgress('test') > 100 &&
+            $this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) {
 
             error_log('*** Swap ***');
