@@ -162,8 +162,8 @@ class FannTraining extends Model
         if ($current_epoch >= $last_epoch + $this->options['crosstrain']) {
             error_log('Swap');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
-            $this->setProgress('epoch_jump', 1);
-            $this->setProgress('no_improvement', 0);
+            //$this->setProgress('epoch_jump', 1);
+            //$this->setProgress('no_improvement', 0);
             $train_candles = $this->getStrategy('train')->getCandles();
             $test_candles = $this->getStrategy('test')->getCandles();
             $this->getStrategy('train')->setCandles($test_candles);
