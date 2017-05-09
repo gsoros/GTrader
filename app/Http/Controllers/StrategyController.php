@@ -193,19 +193,22 @@ class StrategyController extends Controller
         $epoch = $candles->getEpoch();
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
+        $options = [];
         foreach (['train', 'test', 'verify'] as $item) {
-            ${$item.'_start'} = floor($epoch + $total / 100 * ${$item.'_start_percent'});
-            ${$item.'_end'} = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
+            $options[$item.'_start'] = floor($epoch + $total / 100 * ${$item.'_start_percent'});
+            $options[$item.'_end']   = ceil( $epoch + $total / 100 * ${$item.'_end_percent'});
         }
 
-        $options = [
-            'train_start' => $train_start,
-            'train_end' => $train_end,
-            'test_start' => $test_start,
-            'test_end' => $test_end,
-            'verify_start' => $verify_start,
-            'verify_end' => $verify_end
-        ];
+        $options['crosstrain'] = 0;
+        if (isset($request->crosstrain)) {
+            $options['crosstrain'] = intval($request->crosstrain);
+        }
+        if ($options['crosstrain'] < 2) {
+            $options['crosstrain'] = 0;
+        }
+        if ($options['crosstrain'] > 10000) {
+            $options['crosstrain'] = 10000;
+        }
 
         $training = FannTraining::firstOrNew([
             'strategy_id'   => $strategy_id,

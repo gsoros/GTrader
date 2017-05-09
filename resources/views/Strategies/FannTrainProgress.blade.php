@@ -22,7 +22,7 @@
             Paused
         @endif
         </span>
-        &nbsp; Epoch: <span class="editable" id="trainProgressEpochs"></span>
+        &nbsp; Epoch: <span class="editable" id="trainProgressEpoch"></span>
         &nbsp; Test: <span class="editable" id="trainProgressTest"></span>
         &nbsp; Train MSER: <span class="editable" id="trainProgressTrainMSER"></span>
         &nbsp; Verify: <span class="editable" id="trainProgressVerify"></span>
@@ -49,14 +49,14 @@
                     }
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
-                    $('#trainProgressEpochs').html(reply.epochs);
+                    $('#trainProgressEpoch').html(reply.epoch);
                     $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
                     $('#trainProgressTrainMSER').html(reply.train_mser);
                     $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
                     $('#trainProgressSignals').html(reply.signals);
                     $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
-                    var new_epoch = parseInt(reply.epochs);
+                    var new_epoch = parseInt(reply.epoch);
                     if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {
                         last_epoch = new_epoch;
                         window.GTrader.request(
@@ -84,7 +84,7 @@
             });
         }
         $('#trainProgressState').html('queued');
-        $('#trainProgressEpochs').html(' ... ');
+        $('#trainProgressEpoch').html(' ... ');
         $('#trainProgressTest').html(' ... ');
         $('#trainProgressTrainMSER').html(' ... ');
         $('#trainProgressVerify').html(' ... ');

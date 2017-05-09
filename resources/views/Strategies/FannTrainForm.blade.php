@@ -59,6 +59,21 @@
             </label>
         </div>
     </div>
+    <div class="col-sm-6 editable"
+        title="Swap training and test ranges after this number of epochs without improvement">
+        <label for="crosstrain">Crosstrain</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
+                id="crosstrain">
+            <option value="0">No crosstain</option>
+            <option value="10">10</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="500" selected>500</option>
+            <option value="1000">1000</option>
+            <option value="2500">2500</option>
+            <option value="5000">5000</option>
+        </select>
+    </div>
 </div>
 <div class="row bdr-rad">
     <div class="col-sm-12">
@@ -76,7 +91,8 @@
                                         test_end_percent: test_slider.noUiSlider.get()[1],
                                         verify_start_percent: verify_slider.noUiSlider.get()[0],
                                         verify_end_percent: verify_slider.noUiSlider.get()[1],
-                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0
+                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
+                                        crosstrain: $('#crosstrain').val()
                                     }
                                 ))"
                     type="button"
