@@ -75,6 +75,9 @@ class FannTraining extends Model
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify);
                 $this->saveHistory('verify', $verify);
+                if ($this->acceptable('verify', 50)) {
+                    $this->brake(50);
+                }
                 if ($this->acceptable('verify')) {
                     $this->setProgress('test_max', $test);
                     $this->setProgress('verify_max', $verify);
@@ -91,6 +94,17 @@ class FannTraining extends Model
         $this->setProgress('state', 'queued');
         $this->saveFann($this->getParam('suffix'));
         $this->releaseLock();
+    }
+
+
+    protected function brake(int $percent)
+    {
+        $jump = floor($this->getProgress('epoch_jump') * (100 - $percent) / 100);
+        if ($jump < 2) {
+            $jump = 1;
+        }
+        $this->setProgress('epoch_jump', $jump);
+        return $this;
     }
 
 
@@ -159,7 +173,7 @@ class FannTraining extends Model
             $this->getProgress('last_crosstrain_swap')
         );
         error_log('Epoch: '.$current_epoch.' Last: '.$last_epoch);
-        if ($this->acceptable('test', 50) &&
+        if ($this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) {
             error_log('Swap');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
