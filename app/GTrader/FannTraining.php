@@ -51,6 +51,7 @@ class FannTraining extends Model
 
     protected $lock;
     protected $strategies = [];
+    protected $saved_fann;
 
 
     public function run()
@@ -167,23 +168,48 @@ class FannTraining extends Model
         if (!$this->options['crosstrain']) {
             return $this;
         }
+
         $current_epoch = $this->getProgress('epoch');
         $last_epoch = max(
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_crosstrain_swap')
         );
         error_log('Epoch: '.$current_epoch.' Last: '.$last_epoch);
+
         if ($this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) {
-            error_log('Swap');
+
+            error_log('*** Swap ***');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
-            //$this->setProgress('epoch_jump', 1);
-            //$this->setProgress('no_improvement', 0);
+
+            error_log('Before: '.$this->getProgress('test_before_swap').
+                        ' Now: '.$this->getProgress('test'));
+            if ($this->getProgress('test') < $this->getProgress('test_before_swap')) {
+                error_log('Reverting fann');
+                if (is_resource($this->saved_fann)) {
+                    $this->getStrategy('train')->setFann($this->saved_fann);
+                } else {
+                    error_log('Saved fann not resource');
+                }
+            }
+
+            // Swap train and test ranges
             $train_candles = $this->getStrategy('train')->getCandles();
             $test_candles = $this->getStrategy('test')->getCandles();
             $this->getStrategy('train')->setCandles($test_candles);
             $this->getStrategy('test')->setCandles($train_candles);
-            $this->setProgress('test_max', $this->test('test'));
+
+            $test = $this->test('test');
+
+            // Set test baseline
+            $this->setProgress('test_max', $test);
+
+            // Save test for reverting
+            $this->setProgress('test_before_swap', $test);
+
+            // Save fann for reverting
+            $this->saved_fann = $this->getStrategy('train')->copyFann();
+
         }
         return $this;
     }
