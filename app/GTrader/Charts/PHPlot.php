@@ -203,7 +203,7 @@ class PHPlot extends Chart
             $times[] = $c->time;
             $this->last_close = $c->close;
         }
-
+        $this->_plot->setPlotAreaWorld($times[0], null, $times[count($times) - 1]);
         $this->_plot->setTitle($title);
         $colors = 'candles' === $plot_type ?
             ['#b0100010', '#00600010','grey:90', 'grey:90'] :

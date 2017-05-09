@@ -3,13 +3,13 @@
         <h3>Select ranges for {{ $strategy->getParam('name') }}</h3>
         <div id="train_slider"
             class="center-block"
-            style="width: 90%; height: 61px; margin-bottom: -61px"></div>
+            style="width: 95%; height: 61px; margin-bottom: -61px"></div>
         <div id="test_slider"
             class="center-block"
-            style="position: relative; top: 61px; width: 90%; height: 61px; margin-bottom: -61px"></div>
+            style="position: relative; top: 61px; width: 95%; height: 61px; margin-bottom: -61px"></div>
         <div id="verify_slider"
             class="center-block"
-            style="position: relative; top: 122px; width: 90%; height: 61px; margin-bottom: -61px"></div>
+            style="position: relative; top: 122px; width: 95%; height: 61px; margin-bottom: -61px"></div>
         <script>
             [   {   name: 'train_slider',
                     start: {{ \Config::get('GTrader.FannTraining.train_range.start_percent') }},

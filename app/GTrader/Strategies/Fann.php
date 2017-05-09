@@ -75,10 +75,11 @@ class Fann extends Strategy
             'resolution' => $resolution
         ]);
         $training_chart = Chart::make(null, [
-                            'candles' => $candles,
-                            'name' => 'trainingChart',
-                            'height' => 200,
-                            'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings']]);
+            'candles' => $candles,
+            'name' => 'trainingChart',
+            'height' => 200,
+            'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings']
+        ]);
         $training_chart->saveToSession();
         return $training_chart;
     }
