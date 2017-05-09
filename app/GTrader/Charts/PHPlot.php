@@ -205,8 +205,20 @@ class PHPlot extends Chart
                 ['', $c->time, $c->close];
             $times[] = $c->time;
             $this->last_close = $c->close;
-            $ymin = min($ymin, min($c->open, $c->high, $c->low, $c->close));
-            $ymax = min($ymax, max($c->open, $c->high, $c->low, $c->close));
+            $cmin = min($c->open, $c->high, $c->low, $c->close);
+            if (!$ymin) {
+                $ymin = $cmin;
+            }
+            if ($cmin < $ymin) {
+                $ymin = $cmin;
+            }
+            $ymax = max($ymax, max($c->open, $c->high, $c->low, $c->close));
+        }
+        if ($ymin <= 0) {
+            $ymin = null;
+        }
+        if ($ymax <= 0) {
+            $ymax = null;
         }
         $this->world = [
             'xmin' => $times[0],
@@ -317,13 +329,22 @@ class PHPlot extends Chart
     }
 
 
-    protected function setWorld()
+    protected function setWorld(string $axes='xy')
     {
+        $xmin = $ymin = $xmax = $ymax = null;
+        if (strstr($axes, 'x')) {
+            $xmin = $this->world['xmin'];
+            $xmax = $this->world['xmax'];
+        }
+        if (strstr($axes, 'y')) {
+            $ymin = $this->world['ymin'];
+            $ymax = $this->world['ymax'];
+        }
         $this->_plot->setPlotAreaWorld(
-            $this->world['xmin'],
-            $this->world['ymin'],
-            $this->world['xmax'],
-            $this->world['ymax']
+            $xmin,
+            $ymin,
+            $xmax,
+            $ymax
         );
         return $this;
     }
@@ -349,9 +370,11 @@ class PHPlot extends Chart
         $this->_plot->setPlotType('lines');
         $this->_plot->SetDataColors([$color]);
         $this->_plot->SetTickLabelColor($color);
+        $world_set = false;
         if (isset($display['y_axis_pos'])) {
             if ($display['y_axis_pos'] === 'right') {
-                $this->_plot->SetPlotAreaWorld();
+                $this->setWorld('x');
+                $world_set = true;
                 $this->_plot->SetYTickPos('plotright');
                 $this->_plot->SetYTickLabelPos('plotright');
                 $this->_plot->TuneYAutoRange(0);
@@ -359,7 +382,9 @@ class PHPlot extends Chart
         }
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $this->_plot->SetLegend([$indicator->getDisplaySignature()]);
-        $this->setWorld();
+        if (!$world_set) {
+            $this->setWorld();
+        }
         $this->_plot->DrawGraph();
         return $this;
     }
