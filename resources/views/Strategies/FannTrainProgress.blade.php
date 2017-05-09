@@ -54,7 +54,7 @@
                     $('#trainProgressTrainMSER').html(reply.train_mser);
                     $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
                     $('#trainProgressSignals').html(reply.signals);
-                    $('#trainProgressNoImprovement').html(10 - parseInt(reply.no_improvement));
+                    $('#trainProgressNoImprovement').html(11 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
                     var new_epoch = parseInt(reply.epoch);
                     if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {

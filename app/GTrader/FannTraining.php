@@ -70,12 +70,12 @@ class FannTraining extends Model
             $this->setProgress('test', $test);
             $this->saveHistory('test', $test);
             $this->setProgress('no_improvement', $this->getProgress('no_improvement') + 1);
-            if ($this->testImproved()) {
+            if ($this->testAcceptable()) {
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify);
                 $this->saveHistory('verify', $verify);
-                if ($this->verifyImproved()) {
+                if ($this->verifyAcceptable()) {
                     $this->setProgress('test_max', $test);
                     $this->setProgress('verify_max', $verify);
                     $this->setProgress('last_improvement_epoch', $this->getProgress('epoch'));
@@ -159,7 +159,8 @@ class FannTraining extends Model
             $this->getProgress('last_crosstrain_swap')
         );
         error_log('Epoch: '.$current_epoch.' Last: '.$last_epoch);
-        if ($current_epoch >= $last_epoch + $this->options['crosstrain']) {
+        if ($this->testAcceptable(false) &&
+            $current_epoch >= $last_epoch + $this->options['crosstrain']) {
             error_log('Swap');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
             //$this->setProgress('epoch_jump', 1);
@@ -235,9 +236,7 @@ class FannTraining extends Model
             'epoch_jump' => 1,          // number of epochs between value checks
             'no_improvement' => 0,      // keep track of the length of the period without improvement
             'test' => 0,                // test value
-            'test_max' => 0,            // max test value
             'verify' => 0,              // verify value
-            'verify_max' => 0,          // max verify value
             'signals' => 0,
             'state' => 'training',
         ] as $field => $default) {
@@ -246,6 +245,8 @@ class FannTraining extends Model
             }
         }
 
+        $this->setProgress('test_max', $this->test('test'));
+        $this->setProgress('verify_max', $this->test('verify'));
         $this->saveProgress();
     }
 
@@ -267,14 +268,14 @@ class FannTraining extends Model
     }
 
 
-    protected function testImproved()
+    protected function testAcceptable(bool $allow_regression=true)
     {
-        $test_regression = .9;  // allow this amount of regression to test max
+        $test_regression = $allow_regression ? .9 : 1;
         return $this->getProgress('test') > $this->getProgress('test_max') * $test_regression;
     }
 
 
-    protected function verifyImproved()
+    protected function verifyAcceptable()
     {
         return $this->getProgress('verify') > $this->getProgress('verify_max');
     }
