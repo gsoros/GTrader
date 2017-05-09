@@ -15,6 +15,7 @@ class PHPlot extends Chart
     protected $_plot;
     protected $_image_map;
     protected $last_close;
+    protected $world = [];
 
 
     public function toHTML(string $content = '')
@@ -203,7 +204,13 @@ class PHPlot extends Chart
             $times[] = $c->time;
             $this->last_close = $c->close;
         }
-        $this->_plot->setPlotAreaWorld($times[0], null, $times[count($times) - 1]);
+        $this->world = [
+            'xmin' => $times[0],
+            'xmax' => $times[count($times) - 1],
+            'ymin' => null,
+            'ymax' => null
+        ];
+        $this->setWorld();
         $this->_plot->setTitle($title);
         $colors = 'candles' === $plot_type ?
             ['#b0100010', '#00600010','grey:90', 'grey:90'] :
@@ -306,6 +313,18 @@ class PHPlot extends Chart
     }
 
 
+    protected function setWorld()
+    {
+        $this->_plot->setPlotAreaWorld(
+            $this->world['xmin'],
+            $this->world['ymin'],
+            $this->world['xmax'],
+            $this->world['ymax']
+        );
+        return $this;
+    }
+
+
     protected function plotIndicator($indicator)
     {
         $display = $indicator->getParam('display');
@@ -336,6 +355,7 @@ class PHPlot extends Chart
         }
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $this->_plot->SetLegend([$indicator->getDisplaySignature()]);
+        $this->setWorld();
         $this->_plot->DrawGraph();
         return $this;
     }
@@ -386,6 +406,7 @@ class PHPlot extends Chart
             $legend .= ' ('.join(', ', $params).')';
         }
         $this->_plot->SetLegend([$legend, '']);
+        $this->setWorld();
         $this->_plot->DrawGraph();
         self::nextLegendY();
         $this->_plot->SetYDataLabelPos('none');
