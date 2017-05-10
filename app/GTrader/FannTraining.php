@@ -331,8 +331,10 @@ class FannTraining extends Model
 
     protected function acceptable(string $type, int $allowed_regression_percent=0)
     {
+        $progress = $this->getProgress($type);
         return
-            $this->getProgress($type) >=
+            $progress &&
+            $progress >=
             $this->getProgress($type.'_max') *
             (100 - $allowed_regression_percent) / 100;
     }
