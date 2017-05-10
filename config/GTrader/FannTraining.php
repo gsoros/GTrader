@@ -9,8 +9,8 @@ return [
     'max_boredom'           => 10,   // increase jump size after this many checks without improvement
     'epoch_jump_max'        => 100,  // max amount of epochs between tests
     'test_regression'       => .9,   // allow this amount of regression to test max
-    'indicator'             => 'Balance',
-    //'indicator'           => 'Profitability',
+    //'indicator'             => 'Balance',
+    'indicator'           => 'Profitability',
     'indicator_params'      => [],
     //'indicator'            = 'Avg',
     //'indicator_params'    = ['indicator' => ['base' => 'Balance_mode_fixed_capital_100']],

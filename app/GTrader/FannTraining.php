@@ -333,7 +333,7 @@ class FannTraining extends Model
     {
         $progress = $this->getProgress($type);
         return
-            $progress &&
+            $progress > 0 &&
             $progress >=
             $this->getProgress($type.'_max') *
             (100 - $allowed_regression_percent) / 100;
@@ -400,6 +400,7 @@ class FannTraining extends Model
 
     protected function setProgress($key, $value)
     {
+        //error_log('setProgress('.$key.', '.$value.')');
         $progress = $this->progress;
         if (!is_array($progress)) {
             $progress = [];
