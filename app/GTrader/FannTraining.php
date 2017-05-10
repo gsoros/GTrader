@@ -224,9 +224,10 @@ class FannTraining extends Model
         );
         error_log('Epoch: '.$current_epoch.' Last: '.$last_epoch);
 
-        if ($this->getProgress('test') > 100 &&
+        if (($this->getProgress('test') > 100 &&
             $this->acceptable('test', 70) &&
-            $current_epoch >= $last_epoch + $this->options['crosstrain']) {
+            $current_epoch >= $last_epoch + $this->options['crosstrain']) ||
+            $current_epoch >= $last_epoch + $this->options['crosstrain'] * 10) {
 
             error_log('*** Swap ***');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
