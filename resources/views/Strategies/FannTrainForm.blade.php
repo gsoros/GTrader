@@ -37,17 +37,40 @@
     </div>
 </div>
 <div class="row bdr-rad">
+    <div class="col-sm-6 editable"
+        title="Swap training and test ranges after this number of epochs without improvement">
+        <label for="crosstrain">Cross-train</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
+                id="crosstrain">
+            <option value="0" selected>No cross-train</option>
+            <option value="10">10</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+            <option value="2500">2500</option>
+            <option value="5000">5000</option>
+        </select>
+    </div>
+    <div class="col-sm-6 editable"
+        title="Select the indicator to maximise training on">
+        <label for="maximize_for">Maximise Strategy For</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
+                id="maximize_for">
+            @foreach (\Config::get('GTrader.FannTraining.indicators') as $ind)
+                <option value="{{ $ind['name'] }}">{{ $ind['name'] }}</option>
+            @endforeach
+        </select>
+    </div>
     <div class="col-sm-6 editable">
         @php
-            if ($strategy->hasBeenTrained())
-            {
+            if ($strategy->hasBeenTrained()) {
                 $disabled = '';
                 $checked = '';
             }
-            else
-            {
-                $disabled = 'disabled';
-                $checked = 'checked';
+            else {
+                $disabled = ' disabled';
+                $checked = ' checked';
             }
         @endphp
         <div class="form-check form-check-inline {{ $disabled }}">
@@ -55,24 +78,9 @@
                 <input class="form-check-input"
                         type="checkbox"
                         id="from_scratch"
-                        value="1" {{ $checked }} {{ $disabled }}> Train from scratch
+                        value="1"{{ $checked }}{{ $disabled }}> Train From Scratch
             </label>
         </div>
-    </div>
-    <div class="col-sm-6 editable"
-        title="Swap training and test ranges after this number of epochs without improvement">
-        <label for="crosstrain">Crosstrain</label>
-        <select class="btn-primary btn btn-mini form-control form-control-sm"
-                id="crosstrain">
-            <option value="0">No crosstain</option>
-            <option value="10">10</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="500" selected>500</option>
-            <option value="1000">1000</option>
-            <option value="2500">2500</option>
-            <option value="5000">5000</option>
-        </select>
     </div>
 </div>
 <div class="row bdr-rad">
@@ -92,7 +100,8 @@
                                         verify_start_percent: verify_slider.noUiSlider.get()[0],
                                         verify_end_percent: verify_slider.noUiSlider.get()[1],
                                         from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
-                                        crosstrain: $('#crosstrain').val()
+                                        crosstrain: $('#crosstrain').val(),
+                                        maximize_for: $('#maximize_for').val()
                                     }
                                 ))"
                     type="button"

@@ -210,6 +210,19 @@ class StrategyController extends Controller
             $options['crosstrain'] = 10000;
         }
 
+        $options['indicator_class'] = \Config::get('GTrader.FannTraining.indicator.class');
+        $options['indicator_params'] = \Config::get('GTrader.FannTraining.indicator.params');
+        if (isset($request->maximize_for)) {
+            $available = \Config::get('GTrader.FannTraining.indicators');
+            foreach ($available as $ind) {
+                if ($ind['name'] == $request->maximize_for)  {
+                    $options['indicator_class'] = $ind['class'];
+                    $options['indicator_params'] = $ind['params'];
+                    break;
+                }
+            }
+        }
+
         $training = FannTraining::firstOrNew([
             'strategy_id'   => $strategy_id,
             'status'        => 'training'

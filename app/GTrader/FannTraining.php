@@ -153,6 +153,16 @@ class FannTraining extends Model
 
     protected function test(string $type)
     {
+        static $cache;
+
+        if (!is_array($cache)) {
+            foreach (['class', 'params'] as $val) {
+                $cache['indicator_'.$val] =
+                    isset($this->options['indicator_'.$val]) ?
+                        $this->options['indicator_'.$val] :
+                        $this->getParam('indicator.'.$val);
+            }
+        }
         /*
         if ($this->options['crosstrain'] && 'test' === $type) {
             return
@@ -170,11 +180,12 @@ class FannTraining extends Model
                     );
         }
         */
+        //error_log($cache['indicator_class'].' '.serialize($cache['indicator_params']));
         return
             $this->getStrategy($type)
                 ->getIndicatorLastValue(
-                    $this->getParam('indicator'),
-                    $this->getParam('indicator_params'),
+                    $cache['indicator_class'],
+                    $cache['indicator_params'],
                     true
                 );
     }
@@ -309,6 +320,7 @@ class FannTraining extends Model
         $verify_strategy->setCandles($verify_candles);
         $this->setStrategy('verify', $verify_strategy);
 
+        $this->setProgress('epoch_jump', 1);
     }
 
 
