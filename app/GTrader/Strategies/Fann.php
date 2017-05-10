@@ -348,13 +348,13 @@ class Fann extends Strategy
         if ($this->getParam('fann_type') === 'fixed') {
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_INCREMENTAL);
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_BATCH);
-            fann_set_training_algorithm($this->_fann, FANN_TRAIN_RPROP);
-            //fann_set_training_algorithm($this->_fann, FANN_TRAIN_QUICKPROP);
+            //fann_set_training_algorithm($this->_fann, FANN_TRAIN_RPROP);
+            fann_set_training_algorithm($this->_fann, FANN_TRAIN_QUICKPROP);
             //fann_set_training_algorithm($this->_fann, FANN_TRAIN_SARPROP);
         }
         //fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_LINEAR);
         fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_TANH);
-        //fann_set_learning_rate($this->_fann, 0.5);
+        fann_set_learning_rate($this->_fann, 0.2);
         $this->_bias = null;
         return true;
     }

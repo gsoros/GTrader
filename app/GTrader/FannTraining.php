@@ -195,6 +195,9 @@ class FannTraining extends Model
 
         $current_epoch = $this->getProgress('epoch');
 
+        if (!isset($this->options['crosstrain'])) {
+            return $this;
+        }
         if (!$this->options['crosstrain'] || !$current_epoch) {
             return $this;
         }
