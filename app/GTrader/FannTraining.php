@@ -56,10 +56,10 @@ class FannTraining extends Model
 
     public function run()
     {
-        $this->init();
-        $this->obtainLock();
-        $this->setProgress('state', 'training');
-        $this->saveProgress();
+        $this->init()
+            ->obtainLock()
+            ->setProgress('state', 'training')
+            ->saveProgress();
 
         // Ignore the first 100 epochs
         if (!$this->getProgress('epoch') && $this->shouldRun()) {
@@ -68,42 +68,47 @@ class FannTraining extends Model
         }
 
         while ($this->shouldRun()) {
-            $this->swapIfCrossTraining();
-            $this->increaseEpoch();
-            $this->train();
-            $this->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''));
-            $this->saveHistory('train_mser', $this->getProgress('train_mser'));
-            $this->copyFann('train', 'test');
+
+            $this->swapIfCrossTraining()
+                ->increaseEpoch()
+                ->train()
+                ->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''))
+                ->saveHistory('train_mser', $this->getProgress('train_mser'))
+                ->copyFann('train', 'test');
+
             $test = $this->test('test');
-            $this->setProgress('test', $test);
-            $this->saveHistory('test', $test);
-            $this->setProgress('no_improvement', $this->getProgress('no_improvement') + 1);
+
+            $this->setProgress('test', $test)
+                ->saveHistory('test', $test)
+                ->setProgress('no_improvement', $this->getProgress('no_improvement') + 1);
+
             if ($this->acceptable('test', 10)) {
+
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
-                $this->setProgress('verify', $verify);
-                $this->saveHistory('verify', $verify);
+                $this->setProgress('verify', $verify)
+                    ->saveHistory('verify', $verify);
                 if ($this->acceptable('verify', 50)) {
                     $this->brake(50);
                 }
                 if ($this->acceptable('verify')) {
-                    $this->setProgress('test_max', $test);
-                    $this->setProgress('verify_max', $verify);
-                    error_log('*** Setting verify_max to '.$verify.' ***');
-                    $this->setProgress('last_improvement_epoch', $this->getProgress('epoch'));
-                    $this->setProgress('no_improvement', 0);
-                    $this->setProgress('epoch_jump', 1);
-                    $this->saveFann();
+
+                    $this->setProgress('test_max', $test)
+                        ->setProgress('verify_max', $verify)
+                        ->setProgress('last_improvement_epoch', $this->getProgress('epoch'))
+                        ->setProgress('no_improvement', 0)
+                        ->setProgress('epoch_jump', 1)
+                        ->saveFann();
                 }
             }
-            $this->setProgress('signals', $this->getStrategy('test')->getNumSignals(true));
-            $this->saveProgress();
-            $this->increaseJump();
+            $this->setProgress('signals', $this->getStrategy('test')->getNumSignals(true))
+                ->saveProgress()
+                ->increaseJump();
         }
-        $this->setProgress('state', 'queued');
-        $this->saveProgress();
-        $this->saveFann($this->getParam('suffix'));
-        $this->releaseLock();
+        $this->setProgress('state', 'queued')
+            ->saveProgress()
+            ->saveFann($this->getParam('suffix'))
+            ->releaseLock();
     }
 
 
@@ -321,6 +326,8 @@ class FannTraining extends Model
         $this->setStrategy('verify', $verify_strategy);
 
         $this->setProgress('epoch_jump', 1);
+
+        return $this;
     }
 
 
