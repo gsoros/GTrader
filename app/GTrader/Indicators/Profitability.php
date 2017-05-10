@@ -33,7 +33,7 @@ class Profitability extends Indicator
 
         $winners = 0;
         $losers = 0;
-        $score = 50;
+        $score = 0;
 
         $candles = $this->getCandles();
         $candles->reset();
@@ -58,8 +58,9 @@ class Profitability extends Indicator
                         }
                     }
                 }
-                $total = $winners + $losers;
-                $score = $total ? $winners / $total * 100 : 50;
+                //$total = $winners + $losers;
+                //$score = $total ? $winners / $total * 100 + $winners: 0;
+                $score = $winners - $losers;
 
                 $prev_signal = $signal;
             }
