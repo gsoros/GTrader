@@ -27,9 +27,18 @@ class Profitability extends Indicator
         $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun($force_rerun);
 
+        if (!$owner->hasIndicatorClass('Balance')) {
+            error_log('Adding invisible balance indicator');
+            $owner->addIndicator('Balance', ['display' => ['visible' => false]]);
+        }
+        $balance_ind = $owner->getFirstIndicatorByClass('Balance');
+        $balance_sig = $balance_ind->getSignature();
+        $balance_ind->checkAndRun($force_rerun);
+
         $signature = $this->getSignature();
 
         $prev_signal = false;
+        $prev_balance = false;
 
         $winners = 0;
         $losers = 0;
@@ -41,20 +50,17 @@ class Profitability extends Indicator
         while ($candle = $candles->next()) {
 
             if ($signal = $candle->$signal_sig) {
-                if ($signal['signal'] == 'long') {
-                    if ($prev_signal && $prev_signal['signal'] == 'short') {
-                        if ($signal['price'] < $prev_signal['price']) {
-                            $winners++;
-                        } elseif ($signal['price'] > $prev_signal['price']) {
-                            $losers++;
-                        }
-                    }
-                } elseif ($signal['signal'] == 'short') {
-                    if ($prev_signal && $prev_signal['signal'] == 'long') {
-                        if ($signal['price'] > $prev_signal['price']) {
-                            $winners++;
-                        } elseif ($signal['price'] < $prev_signal['price']) {
-                            $losers++;
+                if (in_array($signal['signal'], ['long', 'short'])) {
+                    if ($prev_signal &&
+                        $prev_signal['signal'] !== $signal['signal']) {
+
+                        if (isset($candle->$balance_sig)) {
+                            if ($candle->$balance_sig > $prev_balance) {
+                                $winners++;
+                            } elseif ($candle->$balance_sig < $prev_balance) {
+                                $losers++;
+                            }
+                            $prev_balance = $candle->$balance_sig;
                         }
                     }
                 }
