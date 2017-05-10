@@ -109,6 +109,8 @@ class FannTraining extends Model
             ->saveProgress()
             ->saveFann($this->getParam('suffix'))
             ->releaseLock();
+
+        return $this;
     }
 
 
@@ -153,6 +155,7 @@ class FannTraining extends Model
     protected function saveFann(string $suffix = '')
     {
         $this->getStrategy('train')->saveFann($suffix);
+        return $this;
     }
 
 
