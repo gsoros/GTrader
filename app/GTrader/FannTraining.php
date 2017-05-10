@@ -191,6 +191,8 @@ class FannTraining extends Model
 
     protected function swapIfCrossTraining()
     {
+        static $reverts = 0;
+
         $current_epoch = $this->getProgress('epoch');
 
         if (!$this->options['crosstrain'] || !$current_epoch) {
@@ -213,11 +215,16 @@ class FannTraining extends Model
             error_log('Before: '.$this->getProgress('test_before_swap').
                         ' Now: '.$this->getProgress('test'));
             if ($this->getProgress('test') < $this->getProgress('test_before_swap')) {
-                error_log('Reverting fann');
-                if (is_resource($this->saved_fann)) {
-                    $this->getStrategy('train')->setFann($this->saved_fann);
+                if ($reverts < 3) {
+                    error_log('Reverting fann');
+                    if (is_resource($this->saved_fann)) {
+                        $this->getStrategy('train')->setFann($this->saved_fann);
+                        $reverts++;
+                    } else {
+                        error_log('Saved fann not resource');
+                    }
                 } else {
-                    error_log('Saved fann not resource');
+                    $reverts = 0;
                 }
             }
 
