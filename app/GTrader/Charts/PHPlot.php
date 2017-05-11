@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\Page;
-use PHPlot_truecolor;
+//use PHPlot_truecolor;
 //use GTrader\Util;
 
 class PHPlot extends Chart
@@ -22,8 +22,8 @@ class PHPlot extends Chart
         $content = view(
             'Charts/PHPlot',
             [
-                    'name' => $this->getParam('name'),
-                    'disabled' => $this->getParam('disabled', [])
+                'name' => $this->getParam('name'),
+                'disabled' => $this->getParam('disabled', [])
             ]
         );
 
@@ -40,7 +40,7 @@ class PHPlot extends Chart
         //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
         if ($width > 0 && $height > 0) {
             $image_map_disabled = in_array('map', $this->getParam('disabled', []));
-            $this->_plot = new PHPlot_truecolor($width, $height);
+            $this->initPlot($width, $height);
             $this->_plot->SetPrintImage(false);
             $this->_plot->SetFailureImage(false);
             $map_name = 'map-'.$this->getParam('name');

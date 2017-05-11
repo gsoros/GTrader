@@ -12,12 +12,10 @@ trait HasIndicators
         if (!is_object($indicator)) {
             $indicator = Indicator::make($indicator, $params);
         }
-        //error_log(get_class($this).' checking indicator '.$indicator->getSignature());
         if (!$indicator->canBeOwnedBy($this)) {
             return $this;
         }
         if ($this->hasIndicator($indicator->getSignature())) {
-            //error_log('addIndicator() we already have it, updating params');
             $existing = $this->getIndicator($indicator->getSignature());
             $existing->setParams($indicator->getParams());
             return $this;
@@ -43,6 +41,7 @@ trait HasIndicators
     {
         $class = Indicator::getClassFromSignature($sig);
         $params = Indicator::getParamsFromSignature($sig);
+        //error_log($class.', ['.json_encode($params).']');
         return $this->addIndicator($class, $params);
     }
 

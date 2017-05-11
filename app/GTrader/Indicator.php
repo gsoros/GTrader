@@ -143,7 +143,7 @@ abstract class Indicator
             $params[$key] = $piece;
             $key = false;
         }
-        return $params;
+        return ['indicator' => $params];
     }
 
 }

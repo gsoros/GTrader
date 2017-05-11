@@ -34,7 +34,7 @@ class Plot
             return '';
         }
 
-        $this->_plot = new PHPlot_truecolor($width, $height);
+        $this->initPlot($width, $height);
         $this->_plot->SetPrintImage(false);
         $this->_plot->SetFailureImage(false);
         $this->plot($data);
@@ -42,6 +42,12 @@ class Plot
                 $this->_plot->EncodeImage().'">';
     }
 
+
+    protected function initPlot($width, $height)
+    {
+        $this->_plot = new PHPlot_truecolor($width, $height);
+        return $this;
+    }
 
 
     protected function plot(array $data)
