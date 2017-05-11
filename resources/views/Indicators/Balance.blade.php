@@ -2,7 +2,7 @@
     $uid = uniqid();
     $sig = $indicator->getSignature();
     $mode = $indicator->getParam('indicator.mode');
-    $initial_capital = $indicator->getParam('indicator.initial_capital');
+    $capital = $indicator->getParam('indicator.capital');
 @endphp
 
 <h5>Balance</h5>
@@ -22,12 +22,12 @@
         </select>
     </div>
     <div class="col-sm-5">
-        <label for="initial_capital_{{ $uid }}">Initial Capital</label>
+        <label for="capital_{{ $uid }}">Initial Capital</label>
         <input class="btn-primary btn-mini form-control form-control-sm"
                 type="number"
-                id="initial_capital_{{ $uid }}"
+                id="capital_{{ $uid }}"
                 title="Select the initial cap for the indicator"
-                value="{{ $initial_capital }}">
+                value="{{ $capital }}">
     </div>
     <div class="col-sm-2">
         <button id="save_{{ $uid }}"
@@ -43,7 +43,7 @@
     window.save{{ $uid }} = function(){
         var params = {
             mode: $('#mode_{{ $uid }}').val(),
-            initial_capital: Math.abs(parseInt($('#initial_capital_{{ $uid }}').val()))
+            capital: Math.abs(parseInt($('#capital_{{ $uid }}').val()))
         };
         window.GTrader.request(
             'indicator',
