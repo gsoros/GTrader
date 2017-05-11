@@ -136,9 +136,12 @@ class Fann extends Strategy
         $items = DB::table('fann_history')
             ->select('epoch', 'name', 'value')
             ->where('strategy_id', $this->getParam('id'))
-            ->orderBy('epoch')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('epoch', 'desc')
+            ->orderBy('name', 'desc')
+            ->limit(15000)
+            ->get()
+            ->reverse()
+            ->values();
         foreach ($items as $item) {
             if (!in_array($item->name, $labels)) {
                 $labels[] = $item->name;

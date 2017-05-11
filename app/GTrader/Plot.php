@@ -77,6 +77,11 @@ class Plot
                 if ($xvalue > $xmax) {
                     $xmax = $xvalue;
                 }
+                if (!isset($xmin)) {
+                    $xmin = $xvalue;
+                } else {
+                    $xmin = min($xmin, $xvalue);
+                }
             }
         }
         foreach ($data as $label => $values) {
@@ -89,7 +94,7 @@ class Plot
             $this->_plot->setPlotType('lines');
             $this->_plot->SetDataColors([$color]);
             $this->_plot->SetTickLabelColor($color);
-            $this->_plot->SetPlotAreaWorld(0, null, $xmax);
+            $this->_plot->SetPlotAreaWorld($xmin, null, $xmax);
             $this->_plot->TuneYAutoRange(0);
             $this->_plot->SetLegendPixels(35, self::nextLegendY());
             $this->_plot->SetLegend([$label]);
