@@ -439,6 +439,43 @@ class Fann extends Strategy
     }
 
 
+    public function getHistoryNumRecords()
+    {
+        return DB::table('fann_history')
+            ->where('strategy_id', $this->getParam('id'))
+            ->count();
+    }
+
+
+    public function pruneHistory(int $nth = 2)
+    {
+        if ($nth < 2) {
+            $nth = 2;
+        }
+        $epochs = DB::table('fann_history')
+            ->select('epoch')
+            ->distinct()
+            ->where('strategy_id', $this->getParam('id'))
+            ->get();
+        $count = 1;
+        $deleted = 0;
+        foreach ($epochs as $epoch) {
+            if ($count == $nth) {
+                $deleted +=  DB::table('fann_history')
+                    ->where('strategy_id', $this->getParam('id'))
+                    ->where('epoch', $epoch->epoch)
+                    ->delete();
+            }
+            $count ++;
+            if ($count > $nth) {
+                $count = 1;
+            }
+        }
+        error_log($deleted.' history records deleted.');
+        return $this;
+    }
+
+
     public function getLastTrainingEpoch()
     {
         $res = DB::table('fann_history')

@@ -74,7 +74,8 @@ class FannTraining extends Model
                 ->train()
                 ->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''))
                 ->saveHistory('train_mser', $this->getProgress('train_mser'))
-                ->copyFann('train', 'test');
+                ->copyFann('train', 'test')
+                ->pruneHistory();
 
             $test = $this->test('test');
 
@@ -98,6 +99,7 @@ class FannTraining extends Model
                         ->setProgress('last_improvement_epoch', $this->getProgress('epoch'))
                         ->setProgress('no_improvement', 0)
                         ->setProgress('epoch_jump', 1)
+                        ->saveProgress()
                         ->saveFann();
                 }
             }
@@ -373,6 +375,21 @@ class FannTraining extends Model
                 $name,
                 $value
             );
+        return $this;
+    }
+
+
+    protected function pruneHistory(int $limit = 15000, int $epochs = 1000, int $nth = 2)
+    {
+        $current_epoch = $this->getProgress('epoch');
+        if ($current_epoch <= $this->getProgress('last_history_prune') + $epochs) {
+            return $this;
+        }
+        if ($this->getStrategy('train')->getHistoryNumRecords() > $limit) {
+            error_log('Pruning history');
+            $this->setProgress('last_history_prune', $current_epoch);
+            $this->getStrategy('train')->pruneHistory($nth);
+        }
         return $this;
     }
 
