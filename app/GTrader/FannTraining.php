@@ -331,8 +331,10 @@ class FannTraining extends Model
         $verify_strategy->setCandles($verify_candles);
         $this->setStrategy('verify', $verify_strategy);
 
-        $this->setProgress('epoch_jump', 1)
-            ->setProgress('last_improvement_epoch', 0);
+        $this->setProgress('epoch_jump', 1);
+        if (!$this->getProgress('last_improvement_epoch')) {
+            $this->setProgress('last_improvement_epoch', 0);
+        }
 
         return $this;
     }
