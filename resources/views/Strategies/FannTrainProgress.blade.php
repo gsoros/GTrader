@@ -22,13 +22,20 @@
             Paused
         @endif
         </span>
-        &nbsp; Epoch: <span class="editable" id="trainProgressEpoch"></span>
-        &nbsp; Test: <span class="editable" id="trainProgressTest"></span>
-        &nbsp; Train MSER: <span class="editable" id="trainProgressTrainMSER"></span>
-        &nbsp; Verify: <span class="editable" id="trainProgressVerify"></span>
-        &nbsp; Signals: <span class="editable" id="trainProgressSignals"></span>
-        &nbsp; Step Up In: <span class="editable" id="trainProgressNoImprovement"></span>
-        &nbsp; Epochs Between Tests: <span class="editable" id="trainProgressEpochJump"></span>
+        &nbsp; Epoch:
+        <span class="editable" id="trainProgressEpoch" title="Current epoch / Last improvement at"></span>
+        &nbsp; Test:
+        <span class="editable" id="trainProgressTest" title="Current / Best"></span>
+        &nbsp; Train MSER:
+        <span class="editable" id="trainProgressTrainMSER"></span>
+        &nbsp; Verify:
+        <span class="editable" id="trainProgressVerify" title="Current / Best"></span>
+        &nbsp; Signals:
+        <span class="editable" id="trainProgressSignals"></span>
+        &nbsp; Step Up In:
+        <span class="editable" id="trainProgressNoImprovement"></span>
+        &nbsp; Epochs Between Tests:
+        <span class="editable" id="trainProgressEpochJump"></span>
     </div>
 </div>
 @if ('paused' != $training->status)
@@ -49,7 +56,7 @@
                     }
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
-                    $('#trainProgressEpoch').html(reply.epoch);
+                    $('#trainProgressEpoch').html(reply.epoch + ' / ' + reply.last_improvement_epoch);
                     $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
                     $('#trainProgressTrainMSER').html(reply.train_mser);
                     $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
