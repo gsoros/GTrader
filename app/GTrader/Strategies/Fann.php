@@ -321,13 +321,18 @@ class Fann extends Strategy
             } else {
                 throw new \Exception('Unknown fann type');
             }
-            fann_randomize_weights($this->_fann, -0.77, 0.77);
-            //fann_randomize_weights($this->_fann, -0.01, 0.01);
+            $this->reset();
         }
         $this->initFann();
         return true;
     }
 
+
+    public function reset()
+    {
+        fann_randomize_weights($this->_fann, -0.77, 0.77);
+        return true;
+    }
 
 
     public function initFann()

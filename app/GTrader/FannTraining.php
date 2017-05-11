@@ -70,6 +70,7 @@ class FannTraining extends Model
         while ($this->shouldRun()) {
 
             $this->swapIfCrossTraining()
+                ->resetIfNoImprovement()
                 ->increaseEpoch()
                 ->train()
                 ->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''))
@@ -112,6 +113,20 @@ class FannTraining extends Model
             ->saveFann($this->getParam('suffix'))
             ->releaseLock();
 
+        return $this;
+    }
+
+
+    protected function resetIfNoImprovement()
+    {
+        $last = max(
+            $this->getProgress('last_improvement_epoch'),
+            $this->getProgress('last_reset')
+        );
+        if ($last < $this->getProgress('epoch') - $this->getParam('reset_after')) {
+            $this->setProgress('last_reset', $this->getProgress('epoch'));
+            $this->getStrategy('train')->reset();
+        }
         return $this;
     }
 
