@@ -147,6 +147,7 @@ class Fann extends Strategy
             }
             $data[$item->name][$item->epoch] = $item->value;
         }
+        ksort($data);
         $plot = new Plot([
             'name' => 'History',
             'width' => $width,
