@@ -56,7 +56,10 @@
                     }
                     var state = ('undefined' === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
-                    $('#trainProgressEpoch').html(reply.epoch + ' / ' + reply.last_improvement_epoch);
+                    var epoch = ('undefined' === reply.epoch) ? 0 : reply.epoch;
+                    var lie = reply.last_improvement_epoch;
+                    lie = ('undefined' === lie) ? 0 : lie;
+                    $('#trainProgressEpoch').html(epoch + ' / ' + lie);
                     $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
                     $('#trainProgressTrainMSER').html(reply.train_mser);
                     $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);

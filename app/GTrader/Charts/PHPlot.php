@@ -12,7 +12,6 @@ use PHPlot_truecolor;
 class PHPlot extends Chart
 {
 
-    protected $_plot;
     protected $_image_map;
     protected $last_close;
     protected $world = [];
@@ -442,26 +441,5 @@ class PHPlot extends Chart
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->RemoveCallback('data_color');
         return $this;
-    }
-
-
-    public static function nextColor()
-    {
-        static $index = 0;
-        $colors = ['#22226640', 'yellow:110', 'maroon:100', 'brown:70'];
-        $color = $colors[$index];
-        $index ++;
-        if ($index >= count($colors)) {
-            $index = 0;
-        }
-        return $color;
-    }
-
-    public static function nextLegendY()
-    {
-        static $y = 20;
-        $ret = $y;
-        $y += 30;
-        return $ret;
     }
 }

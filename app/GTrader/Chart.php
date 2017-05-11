@@ -8,8 +8,9 @@ use GTrader\Exchange;
 use GTrader\Strategy;
 use GTrader\Indicator;
 use GTrader\Page;
+use GTrader\Plot;
 
-abstract class Chart
+abstract class Chart extends Plot
 {
     use Skeleton, HasCandles, HasIndicators, HasStrategy
     {
@@ -232,11 +233,13 @@ abstract class Chart
 
     public function getBasesAvailable(string $except_signature = null)
     {
-        $bases = ['open' => 'Open',
-                    'high' => 'High',
-                    'low' => 'Low',
-                    'close' => 'Close',
-                    'volume' => 'Volume'];
+        $bases = [
+            'open' => 'Open',
+            'high' => 'High',
+            'low' => 'Low',
+            'close' => 'Close',
+            'volume' => 'Volume'
+        ];
         foreach ($this->getIndicatorsVisibleSorted() as $ind) {
             if (!$ind->getParam('display.top_level') &&
                 $except_signature != $ind->getSignature()) {

@@ -310,8 +310,8 @@ class Fann extends Strategy
                     [$this->getParam('num_output')]
                 );
                 //error_log('calling fann_create_standard('.join(', ', $params).')');
-                $this->_fann = call_user_func_array('fann_create_standard', $params);
-                //$this->_fann = call_user_func_array('fann_create_shortcut', $params);
+                //$this->_fann = call_user_func_array('fann_create_standard', $params);
+                $this->_fann = call_user_func_array('fann_create_shortcut', $params);
             } elseif ($this->getParam('fann_type') === 'cascade') {
                 $this->_fann = fann_create_shortcut(
                     $this->getNumLayers(),
