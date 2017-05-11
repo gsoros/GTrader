@@ -79,6 +79,12 @@ class Plot
                 $out[$label][] = ['', $xvalue, $yvalue];
             }
         }
+        if (!isset($xmin)) {
+            return $this;
+        }
+        if ($xmin == $xmax) {
+            return $this;
+        }
         foreach ($out as $label => $values) {
             if (!count($values)) {
                 continue;

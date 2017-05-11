@@ -54,11 +54,11 @@
                     catch (err) {
                         console.log(err);
                     }
-                    var state = ('undefined' === reply.state) ? 'queued' : reply.state;
+                    var state = (undefined === reply.state) ? 'queued' : reply.state;
                     $('#trainProgressState').html(state);
-                    var epoch = ('undefined' === reply.epoch) ? 0 : reply.epoch;
+                    var epoch = (undefined === reply.epoch) ? 0 : reply.epoch;
                     var lie = reply.last_improvement_epoch;
-                    lie = ('undefined' === lie) ? 0 : lie;
+                    lie = (undefined === lie) ? 0 : lie;
                     $('#trainProgressEpoch').html(epoch + ' / ' + lie);
                     $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
                     $('#trainProgressTrainMSER').html(reply.train_mser);
@@ -88,8 +88,9 @@
                     }
                 },
                 complete: function() {
-                    if ($('#trainProgress').length)
+                    if ($('#trainProgress').length) {
                         pollTimeout = setTimeout(pollStatus, 3000);
+                    }
                 }
             });
         }
