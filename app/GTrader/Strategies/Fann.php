@@ -491,7 +491,11 @@ class Fann extends Strategy
     public function deleteFiles()
     {
         $fann = $this->path();
-        foreach ([$fann, $fann.'.train'] as $file) {
+        foreach ([
+            $fann,
+            $fann.'.train',
+            storage_path('logs/'.$this->getParam('training_log_prefix').$this->getParam('id').'.log')
+        ] as $file) {
             error_log('Checking to delete '.$file);
             if (is_file($file)) {
                 if (!is_writable($file)) {

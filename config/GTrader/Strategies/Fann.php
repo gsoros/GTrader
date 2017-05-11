@@ -21,5 +21,6 @@ return [
     // do not trade if last trade was more recent than this value
     'min_trade_distance'            => 0,
     // compensate for the bias of the null sample
-    'bias_compensation'             => 0
+    'bias_compensation'             => 0,
+    'training_log_prefix'           => 'fanntraining_',
 ];

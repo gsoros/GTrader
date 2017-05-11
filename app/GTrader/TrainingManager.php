@@ -93,12 +93,16 @@ class TrainingManager
                     base_path('artisan').' training:run '.
                     $slot.' '.$training->id;
 
-        echo $command."\n";
 
         if (substr(php_uname(), 0, 7) === "Windows") {
             pclose(popen('start /B '. $command, 'r'));
         } else {
-            exec($command.' >> /dev/null 2>&1 &');
+            $strategy = Strategy::load($training->strategy_id);
+            $prefix = $strategy->getParam('training_log_prefix');
+            $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
+            $command = $command.' >> '.$log_file.' 2>&1 &';
+            error_log($command);
+            exec($command);
         }
 
         sleep(2); // allow child process some time to obtain lock
