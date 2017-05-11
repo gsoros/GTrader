@@ -389,8 +389,13 @@ class FannTraining extends Model
         }
         if ($this->getStrategy('train')->getHistoryNumRecords() > $limit) {
             error_log('Pruning history');
-            $this->setProgress('last_history_prune', $current_epoch);
+            $state = $this->getProgress('state');
+            $this->setProgress('last_history_prune', $current_epoch)
+                ->setProgress('state', 'pruning history')
+                ->saveProgress();
             $this->getStrategy('train')->pruneHistory($nth);
+            $this->setProgress('state', $state)
+                ->saveProgress();
         }
         return $this;
     }
