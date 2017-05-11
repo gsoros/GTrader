@@ -131,8 +131,7 @@ class Fann extends Strategy
 
     public function getHistoryPlot(int $width, int $height)
     {
-        $labels = [];
-        $values = [];
+        $data = [];
         $items = DB::table('fann_history')
             ->select('epoch', 'name', 'value')
             ->where('strategy_id', $this->getParam('id'))
@@ -143,22 +142,17 @@ class Fann extends Strategy
             ->reverse()
             ->values();
         foreach ($items as $item) {
-            if (!in_array($item->name, $labels)) {
-                $labels[] = $item->name;
+            if (!array_key_exists($item->name, $data)) {
+                $data[$item->name] = [];
             }
-            $index = array_search($item->name, $labels);
-            if (!isset($values[$index])) {
-                $values[$index] = [];
-            }
-            $values[$index][$item->epoch] = $item->value;
+            $data[$item->name][$item->epoch] = $item->value;
         }
         $plot = new Plot([
             'name' => 'History',
             'width' => $width,
             'height' => $height,
-            'labels' => $labels,
-            'values' => $values //[[10 => 1, 11 => 3, 12 => 4], [10 => 2, 11 => 5, 12 => 6]],
-            ]);
+            'data' => $data
+        ]);
         return $plot->toHTML();
     }
 

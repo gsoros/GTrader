@@ -24,36 +24,27 @@ class Plot
             error_log('Plot::getImage(): Missing width or height.');
             return '';
         }
-        $labels = $this->getParam('labels');
-        if (!is_array($labels)) {
-            error_log('Plot::getImage(): labels is not an array.');
+        $data = $this->getParam('data');
+        if (!is_array($data)) {
+            error_log('Plot::getImage(): data is not an array.');
             return '';
         }
-        if (!count($labels)) {
-            error_log('Plot::getImage(): labels is empty.');
-            return '';
-        }
-        $values = $this->getParam('values');
-        if (!is_array($values)) {
-            error_log('Plot::getImage(): values is not an array.');
-            return '';
-        }
-        if (!count($values)) {
-            error_log('Plot::getImage(): values is empty.');
+        if (!count($data)) {
+            error_log('Plot::getImage(): data is empty.');
             return '';
         }
 
         $this->_plot = new PHPlot_truecolor($width, $height);
         $this->_plot->SetPrintImage(false);
         $this->_plot->SetFailureImage(false);
-        $this->plot($labels, $values);
+        $this->plot($data);
         return '<img class="img-responsive" src="'.
                 $this->_plot->EncodeImage().'">';
     }
 
 
 
-    protected function plot(array $labels, array $values)
+    protected function plot(array $data)
     {
         $this->_plot->SetBackgroundColor('black');
         $this->_plot->SetGridColor('DarkGreen:100');
@@ -63,28 +54,32 @@ class Plot
         $this->_plot->SetTextColor('grey');
         $this->_plot->SetDataType('data-data');
 
-        $data = [];
+        $out = [];
         $xmax = 0;
-        reset($labels);
-        while (list($index, $label) = each($labels)) {
-            if (!is_array($values[$index])) {
+        reset($data);
+        while (list($label, $values) = each($data)) {
+            if (!is_array($values)) {
                 continue;
             }
-            $data[$label] = [];
-            reset($values[$index]);
-            while (list($xvalue, $yvalue) = each($values[$index])) {
-                $data[$label][] = ['', $xvalue, $yvalue];
-                if ($xvalue > $xmax) {
-                    $xmax = $xvalue;
-                }
-                if (!isset($xmin)) {
-                    $xmin = $xvalue;
-                } else {
-                    $xmin = min($xmin, $xvalue);
-                }
+            if (!count($values)) {
+                continue;
+            }
+            if (($xmax_tmp = max(array_keys($values))) > $xmax) {
+                $xmax = $xmax_tmp;
+            }
+            $xmin_tmp = min(array_keys($values));
+            if (!isset($xmin)) {
+                $xmin = $xmin_tmp;
+            } else {
+                $xmin = min($xmin, $xmin_tmp);
+            }
+            $out[$label] = [];
+            reset($values);
+            while (list($xvalue, $yvalue) = each($values)) {
+                $out[$label][] = ['', $xvalue, $yvalue];
             }
         }
-        foreach ($data as $label => $values) {
+        foreach ($out as $label => $values) {
             if (!count($values)) {
                 continue;
             }
