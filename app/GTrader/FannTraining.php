@@ -89,7 +89,7 @@ class FannTraining extends Model
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
                     ->saveHistory('verify', $verify);
-                if ($this->acceptable('verify', 50)) {
+                if ($this->acceptable('verify', 80)) {
                     $this->brake(50);
                 }
                 if ($this->acceptable('verify')) {
