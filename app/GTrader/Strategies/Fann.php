@@ -303,7 +303,6 @@ class Fann extends Strategy
         if (!is_resource($this->_fann)) {
             $this->createFann();
         }
-        $this->initFann();
         return true;
     }
 
@@ -341,6 +340,7 @@ class Fann extends Strategy
         } else {
             throw new \Exception('Unknown fann type');
         }
+        $this->initFann();
         $this->reset();
         return true;
     }
