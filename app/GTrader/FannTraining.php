@@ -127,7 +127,8 @@ class FannTraining extends Model
         );
         if ($last < $this->getProgress('epoch') - $this->getParam('reset_after')) {
             error_log('Reset training');
-            $this->setProgress('last_reset', $this->getProgress('epoch'));
+            $this->setProgress('last_reset', $this->getProgress('epoch'))
+                ->brake(100);
             $this->getStrategy('train')->createFann();
         }
         return $this;
