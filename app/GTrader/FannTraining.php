@@ -61,11 +61,13 @@ class FannTraining extends Model
             ->setProgress('state', 'training')
             ->saveProgress();
 
+        /*
         // Ignore the first 100 epochs
         if (!$this->getProgress('epoch') && $this->shouldRun()) {
             $this->getStrategy('train')->train(100);
             //$this->setProgress('epoch', $this->getProgress('epoch') + 100);
         }
+        */
 
         while ($this->shouldRun()) {
 
