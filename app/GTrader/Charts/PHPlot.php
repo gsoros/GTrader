@@ -222,8 +222,8 @@ class PHPlot extends Chart
         $this->world = [
             'xmin' => $times[0],
             'xmax' => $times[count($times) - 1],
-            'ymin' => $ymin,
-            'ymax' => $ymax
+            'ymin' => intval($ymin),
+            'ymax' => intval($ymax),
         ];
         $this->setWorld();
         $this->_plot->setTitle($title);
@@ -428,6 +428,7 @@ class PHPlot extends Chart
         $this->_plot->SetPointSizes(14);
         $this->_plot->SetYDataLabelPos('plotin');
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
+        $this->_plot->SetYTickLabelPos('none');
         $legend = $indicator->getParam('display.name');
         $params = $indicator->getParam('indicator');
         if (count($params)) {
