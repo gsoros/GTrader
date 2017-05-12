@@ -113,6 +113,12 @@ class Fann extends Strategy
             'visible_indicators' => ['Balance', 'Profitability']
         ]);
 
+        $sig = $training->getMaximizeSig();
+        if (!$progress_chart->hasIndicator($sig)) {
+            $progress_chart->addIndicatorBySignature($sig);
+            $this->save();
+        }
+
         if (!$progress_chart->hasIndicatorClass('Balance')) {
             $progress_chart->addIndicator('Balance');
             $this->save();

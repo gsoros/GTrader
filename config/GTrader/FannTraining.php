@@ -12,9 +12,18 @@ return [
     'reset_after'           => 1000, // re-randomize weights after this number of uneventful epochs
     'indicators'            => [
         [
-            'name' => 'Balance',
+            'name' => 'Balance Fixed',
             'class' => 'Balance',
-            'params' => [],
+            'params' => [
+                'indicator' => ['mode' => 'fixed'],
+            ],
+        ],
+        [
+            'name' => 'Balance Dynamic',
+            'class' => 'Balance',
+            'params' => [
+                'indicator' => ['mode' => 'dynamic'],
+            ],
         ],
         [
             'name' => 'Profitability',

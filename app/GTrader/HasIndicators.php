@@ -105,11 +105,7 @@ trait HasIndicators
             error_log('getIndicatorLastValue: '.$sig.' not found.');
             return 0;
         }
-        $indicator->checkAndRun($force_rerun);
-        if ($last = $indicator->getCandles()->last()) {
-            return $last->$sig;
-        }
-        return 0;
+        return $indicator->getLastValue($force_rerun);
     }
 
 

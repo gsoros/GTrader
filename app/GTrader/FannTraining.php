@@ -177,43 +177,32 @@ class FannTraining extends Model
     }
 
 
-    protected function test(string $type)
+    public function getMaximizeSig()
     {
         static $cache;
 
         if (!is_array($cache)) {
             foreach (['class', 'params'] as $val) {
-                $cache['indicator_'.$val] =
+                $cache[$val] =
                     isset($this->options['indicator_'.$val]) ?
                         $this->options['indicator_'.$val] :
                         $this->getParam('indicator.'.$val);
             }
+            $indicator = Indicator::make($cache['class'], $cache['params']);
+            $cache['sig'] = $indicator->getSignature();
         }
-        /*
-        if ($this->options['crosstrain'] && 'test' === $type) {
-            return
-                $this->getStrategy('test')
-                    ->getIndicatorLastValue(
-                        $this->getParam('indicator'),
-                        $this->getParam('indicator_params'),
-                        true
-                    ) +
-                $this->getStrategy('train')
-                    ->getIndicatorLastValue(
-                        $this->getParam('indicator'),
-                        $this->getParam('indicator_params'),
-                        true
-                    );
+        return $cache['sig'];
+    }
+
+
+    protected function test(string $type)
+    {
+        $strat = $this->getStrategy($type);
+        $sig = $this->getMaximizeSig();
+        if (!$strat->hasIndicator($sig)) {
+            $strat->addIndicatorBySignature($sig);
         }
-        */
-        //error_log($cache['indicator_class'].' '.serialize($cache['indicator_params']));
-        return
-            $this->getStrategy($type)
-                ->getIndicatorLastValue(
-                    $cache['indicator_class'],
-                    $cache['indicator_params'],
-                    true
-                );
+        return $strat->getIndicator($sig)->getLastValue(true);
     }
 
     protected function increaseEpoch()

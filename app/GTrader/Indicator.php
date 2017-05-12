@@ -146,4 +146,15 @@ abstract class Indicator
         return ['indicator' => $params];
     }
 
+
+    public function getLastValue(bool $force_rerun = false)
+    {
+        $sig = $this->getSignature();
+        $this->checkAndRun($force_rerun);
+        if ($last = $this->getCandles()->last()) {
+            return $last->$sig;
+        }
+        return 0;
+    }
+
 }
