@@ -133,12 +133,11 @@
                     <span class="glyphicon glyphicon-pause"></span> Pause Training
                 </button>
             @endif
-            <button onClick="clearTimeout(pollTimeout);
-                                window.GTrader.request(
-                                    'strategy',
-                                    'trainStop',
-                                    'id={{ $strategy->getParam('id') }}'
-                                    )"
+            <button onClick="window.GTrader.request(
+                                'strategy',
+                                'trainStop',
+                                'id={{ $strategy->getParam('id') }}'
+                                )"
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Stop Training">

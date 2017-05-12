@@ -41,10 +41,10 @@ class Fann extends Strategy
     {
         if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
             //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
-            $this->createFann(FANN_WAKEUP_PREFERRED_SUFFX);
+            $this->loadOrCreateFann(FANN_WAKEUP_PREFERRED_SUFFX);
         } else {
             //error_log('Fann::__wakeup() path: '.$this->path());
-            $this->createFann();
+            $this->loadOrCreateFann();
         }
     }
 
@@ -277,53 +277,65 @@ class Fann extends Strategy
     }
 
 
-    public function createFann(string $prefer_suffix = '')
+    public function loadOrCreateFann(string $prefer_suffix = '')
     {
         if (is_resource($this->_fann)) {
-            throw new \Exception('createFann called but _fann is already a resource');
+            throw new \Exception('loadOrCreateFann called but _fann is already a resource');
         }
 
         // try first with suffix, if supplied
         if (strlen($prefer_suffix)) {
-            $path = $this->path().$prefer_suffix;
-            if (is_file($path) && is_readable($path)) {
-                //error_log('creating fann from '.$path);
-                $this->_fann = fann_create_from_file($path);
-            }
+            $this->loadFann($this->path().$prefer_suffix);
         }
+
         // try without suffix
         if (!is_resource($this->_fann)) {
-            $path = $this->path();
-            if (is_file($path) && is_readable($path)) {
-                //error_log('creating fann from '.$path);
-                $this->_fann = fann_create_from_file($path);
-            }
+            $this->loadFann($this->path());
         }
+
         // create a new fann
         if (!is_resource($this->_fann)) {
-            //error_log('Fann::createFann() Brand New! Input: '.$this->getNumInput());
-            if ($this->getParam('fann_type') === 'fixed') {
-                $params = array_merge(
-                    [$this->getNumLayers()],
-                    [$this->getNumInput()],
-                    $this->getParam('hidden_array'),
-                    [$this->getParam('num_output')]
-                );
-                //error_log('calling fann_create_standard('.join(', ', $params).')');
-                //$this->_fann = call_user_func_array('fann_create_standard', $params);
-                $this->_fann = call_user_func_array('fann_create_shortcut', $params);
-            } elseif ($this->getParam('fann_type') === 'cascade') {
-                $this->_fann = fann_create_shortcut(
-                    $this->getNumLayers(),
-                    $this->getNumInput(),
-                    $this->getParam('num_output')
-                );
-            } else {
-                throw new \Exception('Unknown fann type');
-            }
-            $this->reset();
+            $this->createFann();
         }
         $this->initFann();
+        return true;
+    }
+
+
+    public function loadFann($path)
+    {
+        if (is_file($path) && is_readable($path)) {
+            //error_log('creating fann from '.$path);
+            $this->_fann = fann_create_from_file($path);
+            return true;
+        }
+        return false;
+    }
+
+
+    public function createFann()
+    {
+        //error_log('Fann::createFann() Input: '.$this->getNumInput());
+        if ($this->getParam('fann_type') === 'fixed') {
+            $params = array_merge(
+                [$this->getNumLayers()],
+                [$this->getNumInput()],
+                $this->getParam('hidden_array'),
+                [$this->getParam('num_output')]
+            );
+            //error_log('calling fann_create_shortcut('.join(', ', $params).')');
+            //$this->_fann = call_user_func_array('fann_create_standard', $params);
+            $this->_fann = call_user_func_array('fann_create_shortcut', $params);
+        } elseif ($this->getParam('fann_type') === 'cascade') {
+            $this->_fann = fann_create_shortcut(
+                $this->getNumLayers(),
+                $this->getNumInput(),
+                $this->getParam('num_output')
+            );
+        } else {
+            throw new \Exception('Unknown fann type');
+        }
+        $this->reset();
         return true;
     }
 
@@ -366,7 +378,7 @@ class Fann extends Strategy
     public function getFann()
     {
         if (!is_resource($this->_fann)) {
-            $this->createFann();
+            $this->loadOrCreateFann();
         }
         return $this->_fann;
     }

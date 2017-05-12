@@ -247,7 +247,7 @@ class StrategyController extends Controller
             error_log('Training from scratch.');
             $strategy->destroyFann();
             $strategy->deleteFiles();
-            $strategy->createFann();
+            $strategy->loadOrCreateFann();
             $strategy->deleteHistory();
         } else {
             $last_epoch = $strategy->getLastTrainingEpoch();
