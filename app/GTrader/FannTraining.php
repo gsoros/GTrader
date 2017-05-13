@@ -124,7 +124,7 @@ class FannTraining extends Model
         if (!isset($this->options['reset_after'])) {
             return $this;
         }
-        if ($this->options['reset_after']) {
+        if (!$this->options['reset_after']) {
             return $this;
         }
 
