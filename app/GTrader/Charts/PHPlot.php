@@ -193,11 +193,12 @@ class PHPlot extends Chart
             $candles->getParam('resolution').' '.
             date('Y-m-d H:i', $candles->next()->time).' - '.
             date('Y-m-d H:i', $candles->last()->time);
-        $plot_type = $candles->size() < 260 ? 'candles' : 'line';
+        // Candles need at least 4 pixels width
+        $plot_type = $candles->size() < $this->getParam('width', 1024) / 4 ? 'candles' : 'line';
         $price = $times = [];
-        $candles->reset();
         $ymin = 0;
         $ymax = 0;
+        $candles->reset();
         while ($c = $candles->next()) {
             $price[] = ('candles' === $plot_type) ?
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:

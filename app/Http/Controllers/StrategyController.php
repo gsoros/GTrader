@@ -210,6 +210,17 @@ class StrategyController extends Controller
             $options['crosstrain'] = 10000;
         }
 
+        $options['reset_after'] = 0;
+        if (isset($request->reset_after)) {
+            $options['reset_after'] = intval($request->reset_after);
+        }
+        if ($options['reset_after'] < 100) {
+            $options['reset_after'] = 0;
+        }
+        if ($options['reset_after'] > 10000) {
+            $options['reset_after'] = 10000;
+        }
+
         $options['indicator_class'] = \Config::get('GTrader.FannTraining.indicator.class');
         $options['indicator_params'] = \Config::get('GTrader.FannTraining.indicator.params');
         if (isset($request->maximize_for)) {

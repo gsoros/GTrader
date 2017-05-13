@@ -121,11 +121,18 @@ class FannTraining extends Model
 
     protected function resetIfNoImprovement()
     {
+        if (!isset($this->options['reset_after'])) {
+            return $this;
+        }
+        if ($this->options['reset_after']) {
+            return $this;
+        }
+
         $last = max(
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_reset')
         );
-        if ($last < $this->getProgress('epoch') - $this->getParam('reset_after')) {
+        if ($last < $this->getProgress('epoch') - $this->options['reset_after']) {
             error_log('Reset training');
             $this->setProgress('last_reset', $this->getProgress('epoch'))
                 ->brake(100);

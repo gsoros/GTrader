@@ -47,9 +47,21 @@
             <option value="100">100</option>
             <option value="250">250</option>
             <option value="500">500</option>
-            <option value="1000">1000</option>
-            <option value="2500">2500</option>
-            <option value="5000">5000</option>
+            <option value="1000">1 000</option>
+            <option value="2500">2 500</option>
+            <option value="5000">5 000</option>
+        </select>
+    </div>
+    <div class="col-sm-6 editable"
+        title="Restart training from scratch after this number of epochs without improvement">
+        <label for="reset_after">Reset</label>
+        <select class="btn-primary btn btn-mini form-control form-control-sm"
+                id="reset_after">
+            <option value="0">No reset</option>
+            <option value="100">100</option>
+            <option value="1000">1 000</option>
+            <option value="5000" selected>5 000</option>
+            <option value="10000">10 000</option>
         </select>
     </div>
     <div class="col-sm-6 editable"
@@ -101,6 +113,7 @@
                                         verify_end_percent: verify_slider.noUiSlider.get()[1],
                                         from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
                                         crosstrain: $('#crosstrain').val(),
+                                        reset_after: $('#reset_after').val(),
                                         maximize_for: $('#maximize_for').val()
                                     }
                                 ))"

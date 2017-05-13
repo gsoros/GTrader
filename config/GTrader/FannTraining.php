@@ -9,7 +9,6 @@ return [
     'max_boredom'           => 10,   // increase jump size after this number of uneventful epochs
     'epoch_jump_max'        => 100,  // max amount of epochs between tests
     'test_regression'       => .9,   // allow this amount of regression to test max
-    'reset_after'           => 1000, // re-randomize weights after this number of uneventful epochs
     'indicators'            => [
         [
             'name' => 'Balance Fixed',

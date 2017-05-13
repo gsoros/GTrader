@@ -5,7 +5,8 @@
 /.idea
 Homestead.json
 Homestead.yaml
-.env
+.env*
+.notes*
 *.geany
 public/css/*.css
 public/js/*.js
