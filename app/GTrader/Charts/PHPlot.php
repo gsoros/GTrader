@@ -316,6 +316,7 @@ class PHPlot extends Chart
         //$plot->SetLineWidths([1, 1, 1, 1]);
         $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
         $this->_plot->SetLineWidths('candles' === $plot_type ? 1 : 2);
+        $this->_plot->SetYScaleType('log');
         $this->_plot->TuneYAutoRange(0);
         $this->_plot->DrawGraph();
         $this->_image_map = $image_map;
