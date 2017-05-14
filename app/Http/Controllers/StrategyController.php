@@ -138,9 +138,9 @@ class StrategyController extends Controller
 
         $default_prefs = [];
         foreach (['train', 'test', 'verify'] as $item) {
-            $default_prefs[$item.'start_percent'] =
+            $default_prefs[$item.'_start_percent'] =
                 \Config::get('GTrader.FannTraining.'.$item.'_range.start_percent');
-            $default_prefs[$item.'end_percent'] =
+            $default_prefs[$item.'_end_percent'] =
                 \Config::get('GTrader.FannTraining.'.$item.'_range.end_percent');
         }
 
