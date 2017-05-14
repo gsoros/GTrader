@@ -28,6 +28,31 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'preferences' => 'array',
+    ];
+
+
+    public function getPreference(string $key, $default = null)
+    {
+        $prefs = $this->preferences;
+        return isset($prefs[$key]) ? $prefs[$key] : $default;
+    }
+
+
+    public function setPreference(string $key, $value)
+    {
+        $prefs = $this->preferences;
+        $prefs = is_array($prefs) ? $prefs : [];
+        $this->preferences = array_merge_recursive($prefs, [$key => $value]);
+        return $this;
+    }
+
+    /**
      * Get the configs for the exchanges.
      */
     public function exchangeConfigs()

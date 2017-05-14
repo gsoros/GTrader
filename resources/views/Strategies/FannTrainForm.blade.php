@@ -12,14 +12,14 @@
             style="position: relative; top: 122px; width: 95%; height: 61px; margin-bottom: -61px"></div>
         <script>
             [   {   name: 'train_slider',
-                    start: {{ \Config::get('GTrader.FannTraining.train_range.start_percent') }},
-                    end: {{ \Config::get('GTrader.FannTraining.train_range.end_percent') }}},
+                    start: {{ $preferences['train_start_percent'] }},
+                    end: {{ $preferences['train_end_percent'] }}},
                 {name: 'test_slider',
-                    start: {{ \Config::get('GTrader.FannTraining.test_range.start_percent') }},
-                    end: {{ \Config::get('GTrader.FannTraining.test_range.end_percent') }}},
+                    start: {{ $preferences['test_start_percent'] }},
+                    end: {{ $preferences['test_end_percent'] }}},
                 {name: 'verify_slider',
-                    start: {{ \Config::get('GTrader.FannTraining.verify_range.start_percent') }},
-                    end: {{ \Config::get('GTrader.FannTraining.verify_range.end_percent') }}}
+                    start: {{ $preferences['verify_start_percent'] }},
+                    end: {{ $preferences['verify_end_percent'] }}}
             ].forEach(function(item) {
                 noUiSlider.create(document.getElementById(item.name), {
                     start: [item.start, item.end],
