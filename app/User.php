@@ -48,7 +48,7 @@ class User extends Authenticatable
     {
         $prefs = $this->preferences;
         $prefs = is_array($prefs) ? $prefs : [];
-        $this->preferences = array_merge_recursive($prefs, [$key => $value]);
+        $this->preferences = array_replace_recursive($prefs, [$key => $value]);
         return $this;
     }
 
