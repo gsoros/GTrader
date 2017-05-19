@@ -179,19 +179,6 @@ class StrategyController extends Controller
             error_log('Resolution not found ');
             return response('Resolution not found.', 403);
         }
-        $prefs = [];
-        foreach (['train', 'test', 'verify'] as $item) {
-            ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
-            ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
-            if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
-                error_log('Start or end not found for '.$item);
-                return response('Input error.', 403);
-            }
-            $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
-            $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
-        }
-
-        Auth::user()->setPreference('fann_training', $prefs)->save();
 
         $training = FannTraining::where('strategy_id', $strategy_id)
                         ->where('status', 'training')->first();
@@ -203,7 +190,22 @@ class StrategyController extends Controller
             ]);
             return response($html, 200);
         }
-        $candles = new Series(['exchange' => $exchange,
+
+        $prefs = [];
+        foreach (['train', 'test', 'verify'] as $item) {
+            ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
+            ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
+            if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
+                error_log('Start or end not found for '.$item);
+                return response('Input error.', 403);
+            }
+            $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
+            $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
+        }
+        Auth::user()->setPreference('fann_training', $prefs)->save();
+
+        $candles = new Series([
+            'exchange' => $exchange,
             'symbol' => $symbol,
             'resolution' => $resolution,
             'limit' => 0
@@ -251,6 +253,15 @@ class StrategyController extends Controller
                 }
             }
         }
+
+        $strategy->setParam(
+            'last_training',
+            array_merge([
+                'exchange' => $exchange,
+                'symbol' => $symbol,
+                'resolution' => $resolution,
+            ], $options))
+            ->save();
 
         $training = FannTraining::firstOrNew([
             'strategy_id'   => $strategy_id,

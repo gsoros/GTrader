@@ -11,7 +11,7 @@ class Avg extends Indicator
     public function basedOnIndicator()
     {
         $available = $this->getParam('available');
-        $base = $this->getParam('indicator.base');
+        $base = str_replace('-', '_', $this->getParam('indicator.base'));
         $class = Indicator::getClassFromSignature($base);
         return array_key_exists($class, $available);
     }
@@ -21,7 +21,7 @@ class Avg extends Indicator
         if (!($owner = $this->getOwner())) {
             return null;
         }
-        $base = $this->getParam('indicator.base');
+        $base = str_replace('-', '_', $this->getParam('indicator.base'));
         $owner->addIndicatorBySignature($base);
         if (!($indicator = $owner->getIndicator($base))) {
             error_log(get_class($this).': could not find indicator '.$base.' for '.get_class($owner));
@@ -82,7 +82,7 @@ class Avg extends Indicator
     {
         $this->runDependencies($force_rerun);
 
-        $base = $this->getParam('indicator.base');
+        $base = str_replace('-', '_', $this->getParam('indicator.base'));
 
         $signature = $this->getSignature();
 

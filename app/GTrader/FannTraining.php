@@ -209,10 +209,14 @@ class FannTraining extends Model
     {
         $strat = $this->getStrategy($type);
         $sig = $this->getMaximizeSig();
-        if (!$strat->hasIndicator($sig)) {
+        if (!($ind = $strat->getIndicator($sig))) {
             $strat->addIndicatorBySignature($sig);
+            if (!($ind = $strat->getIndicator($sig))) {
+                $strat->getCandles()->addIndicatorBySignature($sig);
+                $ind = $strat->getCandles()->getIndicator($sig);
+            }
         }
-        return $strat->getIndicator($sig)->getLastValue(true);
+        return $ind->getLastValue(true);
     }
 
     protected function increaseEpoch()

@@ -24,11 +24,9 @@ trait HasIndicators
         if (!$indicator->getParam('available.'.$class.'.allow_multiple') &&
             $this->hasIndicatorClass($class)) {
             $existing = $this->getFirstIndicatorByClass($class);
-            //error_log('Boo: '.$class.' '.$existing->getSignature());
             $existing->setParams($indicator->getParams());
             return $this;
         }
-        //error_log(get_class($this).' adding indicator '.$indicator->getSignature());
         $indicator->setOwner($this);
         $this->indicators[] = $indicator;
         $indicator->createDependencies();
@@ -41,7 +39,6 @@ trait HasIndicators
     {
         $class = Indicator::getClassFromSignature($sig);
         $params = Indicator::getParamsFromSignature($sig);
-        //error_log($class.', ['.json_encode($params).']');
         return $this->addIndicator($class, $params);
     }
 
@@ -76,7 +73,6 @@ trait HasIndicators
 
     public function hasIndicatorClass(string $class, array $filters = [])
     {
-        //error_log('hasIndicatorClass('.$class.', '.serialize($filters).')');
         foreach ($this->getIndicators() as $indicator) {
             if ($indicator->getShortClass() === $class) {
                 if (!count($filters)) {
