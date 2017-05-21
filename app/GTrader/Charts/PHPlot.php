@@ -221,8 +221,8 @@ class PHPlot extends Chart
             $ymax = null;
         }
         $this->world = [
-            'xmin' => $times[0],
-            'xmax' => $times[count($times) - 1],
+            'xmin' => $times[0] - $candles->getParam('resolution'),
+            'xmax' => $times[count($times) - 1] + $candles->getParam('resolution'),
             'ymin' => intval($ymin),
             'ymax' => intval($ymax),
         ];
