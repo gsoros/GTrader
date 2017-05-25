@@ -138,6 +138,7 @@ class Bot extends Model
         $last_signal_time = array_pop($signal_times);
         $last_signal = array_pop($signals);
         $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
+        //error_log('bot:run() last_signal: '.json_encode($last_signal));
 
         // See if signal is recent enough
         if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution) {

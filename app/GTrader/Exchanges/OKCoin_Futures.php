@@ -365,7 +365,7 @@ class OKCoin_Futures extends Exchange
         $trade->time = time();
         $trade->remote_id = $reply->order_id;
         $trade->exchange_id = $this->getId();
-        $trade->symbol_id = self::getSymbolIdByRemoteName($order->symbol);
+        $trade->symbol_id = self::getSymbolIdByRemoteName($symbol);
         $trade->user_id = $user_id;
         $trade->bot_id = $bot_id;
         $trade->amount_ordered = $num_contracts;
@@ -375,7 +375,7 @@ class OKCoin_Futures extends Exchange
         $trade->action = $action;
         $trade->type = 'limit';
         $trade->fee = 0;
-        $trade->fee_currency = substr($order->symbol, 0, 3);
+        $trade->fee_currency = substr($symbol, 0, 3);
         $trade->status = 'submitted';
         $trade->leverage = $leverage;
         $trade->contract = '';
