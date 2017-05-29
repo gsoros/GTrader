@@ -10,7 +10,7 @@ class Plot
 
     protected $_plot;
 
-    public function toHTML(string $content = '')
+    public function toHTML(string $content = null)
     {
         return $this->getImage();
     }

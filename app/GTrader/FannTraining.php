@@ -180,7 +180,7 @@ class FannTraining extends Model
     }
 
 
-    protected function saveFann(string $suffix = '')
+    protected function saveFann(string $suffix = null)
     {
         $this->getStrategy('train')->saveFann($suffix);
         return $this;
