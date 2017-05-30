@@ -17,7 +17,7 @@ class PHPlot extends Chart
     protected $world = [];
 
 
-    public function toHTML(string $content = null)
+    public function toHTML(string $content = '')
     {
         $content = view(
             'Charts/PHPlot',

@@ -23,7 +23,9 @@ class Profitability extends Indicator
     {
         $owner = $this->getOwner();
 
-        $signal_ind = $owner->getSignalsIndicator();
+        if (!($signal_ind = $owner->getSignalsIndicator())) {
+            return $this;
+        }
         $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun($force_rerun);
 

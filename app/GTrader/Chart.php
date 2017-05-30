@@ -312,7 +312,7 @@ abstract class Chart extends Plot
      * @param $content
      * @return string
      */
-    public function toHTML(string $content = null)
+    public function toHTML(string $content = '')
     {
         return view('Chart', [
             'name' => $this->getParam('name'),

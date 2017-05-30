@@ -8,7 +8,7 @@ use GTrader\Page;
 class Dummy extends Chart
 {
 
-    public function toHTML(string $content = null)
+    public function toHTML(string $content = '')
     {
         $html = parent::toHTML();
         Page::add('scripts_bottom', '<script src="'.mix('/js/Dummy.js').'"></script>');

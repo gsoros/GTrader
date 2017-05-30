@@ -146,7 +146,9 @@ class Strategy
 
     public function getSignalsIndicator()
     {
-        $class = $this->getParam('signals_indicator_class');
+        if (!($class = $this->getParam('signals_indicator_class'))) {
+            return null;
+        }
 
         foreach ($this->getIndicators() as $indicator) {
             if ($class === $indicator->getShortClass()) {

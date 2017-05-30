@@ -283,7 +283,7 @@ class Fann extends Strategy
     }
 
 
-    public function loadOrCreateFann(string $prefer_suffix = null)
+    public function loadOrCreateFann(string $prefer_suffix = '')
     {
         if (is_resource($this->_fann)) {
             throw new \Exception('loadOrCreateFann called but _fann is already a resource');
@@ -410,7 +410,7 @@ class Fann extends Strategy
     }
 
 
-    public function saveFann(string $suffix = null)
+    public function saveFann(string $suffix = '')
     {
         $fn = $this->path().$suffix;
         if (!fann_save($this->getFann(), $fn)) {
