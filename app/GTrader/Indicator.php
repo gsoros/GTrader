@@ -65,9 +65,15 @@ abstract class Indicator
         $param_str = '';
         if (is_array($params)) {
             if (count($params)) {
-                foreach ($params as $value) {
+                foreach ($params as $key => $value) {
                     if (strlen($param_str)) {
                         $param_str .= ', ';
+                    }
+                    if ('select' === $this->getParam('adjustable.'.$key.'.type')) {
+                        if ($option = $this->getParam('adjustable.'.$key.'.options.'.$value)) {
+                            $param_str .= $option;
+                            continue;
+                        }
                     }
                     $param_str .= explode('_', $value)[0];
                 }
@@ -157,4 +163,13 @@ abstract class Indicator
         return 0;
     }
 
+
+    public function getForm(array $bases = [], array $pass_vars = [])
+    {
+        return view('IndicatorForm', [
+            'indicator' => $this,
+            'bases' => $bases,
+            'pass_vars' => $pass_vars,
+        ]);
+    }
 }

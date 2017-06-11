@@ -164,20 +164,23 @@ abstract class Chart extends Plot
 
     public function handleSettingsFormRequest(Request $request)
     {
-        return view('ChartSettings', [
-                        'indicators' => $this->getIndicatorsVisibleSorted(),
-                        'available' => $this->getIndicatorsAvailable(),
-                        'name' => $this->getParam('name')]);
+        return view(
+            'ChartSettings', [
+                'indicators' => $this->getIndicatorsVisibleSorted(),
+                'available' => $this->getIndicatorsAvailable(),
+                'name' => $this->getParam('name'),
+            ]
+        );
     }
 
 
     public function handleIndicatorFormRequest(Request $request)
     {
         $indicator = $this->getIndicator($request->signature);
-        return view('Indicators/'.$indicator->getShortClass(), [
-                                        'name' => $this->getParam('name'),
-                                        'indicator' => $indicator,
-                                        'chart'     => $this]);
+        return $indicator->getForm(
+            $this->getBasesAvailable($request->signature),
+            ['name' => $this->getParam('name')]
+        );
     }
 
 

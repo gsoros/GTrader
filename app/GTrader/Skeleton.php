@@ -43,7 +43,7 @@ trait Skeleton
                 }
             }
         }
-        if ($conf = self::getClassConf($class)) {
+        if (is_array($conf = self::getClassConf($class))) {
             return array_replace_recursive($parent_conf, $conf);
         }
         return $parent_conf;

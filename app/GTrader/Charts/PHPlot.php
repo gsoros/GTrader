@@ -427,7 +427,7 @@ class PHPlot extends Chart
         $this->_plot->SetPlotType('linepoints');
         $this->_plot->SetPointShapes('target');
         $this->_plot->SetLineStyles(['dashed']);
-        $this->_plot->SetPointSizes(14);
+        $this->_plot->SetPointSizes(floor($this->getParam('width', 1024) / 100));
         $this->_plot->SetYDataLabelPos('plotin');
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $this->_plot->SetYTickLabelPos('none');

@@ -38,7 +38,7 @@ class Series extends Collection
     {
         return ['params', 'indicators'];
     }
-    
+
     public function __wakeup()
     {
         //$this->_load();
@@ -275,8 +275,39 @@ class Series extends Collection
     }
 
 
+    public function extract(string $field)
+    {
+        $this->reset();
+        $ret = [];
+        while ($candle = $this->next()) {
+            $ret[] = isset($candle[$field]) ? $candle[$field] : null;
+        }
+        return $ret;
+    }
 
 
+
+    public function setValues(string $field, array $values, $fill_value = null)
+    {
+        $count_vals = count($values);
+        $size = $this->size();
+        if ($count_vals !== $size) {
+            $diff = $size - $count_vals;
+            if ($diff > 0) {
+                if (is_null($fill_value)) {
+                    $fill_value = reset($values);
+                }
+                $values = array_merge(array_fill(0, $diff, $fill_value), $values);
+            }
+        }
+        reset($values);
+        foreach ($values as $key => $value) {
+            if (isset($this->items[$key])) {
+                $this->items[$key][$field] = $value;
+            }
+        }
+        return $this;
+    }
 
 
 

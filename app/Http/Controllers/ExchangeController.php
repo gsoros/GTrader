@@ -36,7 +36,7 @@ class ExchangeController extends Controller
             return $error;
         }
 
-        return view('Exchange/'.$class.'_form', [
+        return view('Exchanges/'.$class.'_form', [
                         'exchange' => $exchange,
                         'options' => $config->options
                     ]);

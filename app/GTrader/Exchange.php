@@ -226,6 +226,6 @@ abstract class Exchange
         foreach ($default->getParam('available_exchanges') as $class) {
             $exchanges[] = self::make($class);
         }
-        return view('Exchange/List', ['exchanges' => $exchanges]);
+        return view('Exchanges/List', ['exchanges' => $exchanges]);
     }
 }

@@ -1,10 +1,8 @@
 <?php
 
 return [
-    'indicator' =>  [
-                    ],
-    'display' =>    [
-                        'name'              => 'Profitability',
-                        'y_axis_pos'        => 'right',
-                    ],
+    'display' => [
+        'name' => 'Profitability',
+        'y_axis_pos' => 'right',
+    ],
 ];
