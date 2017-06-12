@@ -295,7 +295,11 @@ class Series extends Collection
 
         $key = 0;
         while ($candle = $this->byKey($key)) {
-            $candle->$field = isset($values[$key]) ? $values[$key] : $fill_value;
+            $fill = $fill_value;
+            if (in_array($fill, ['open', 'high', 'low', 'close'])) {
+                $fill = $candle->$fill;
+            }
+            $candle->$field = isset($values[$key]) ? $values[$key] : $fill;
             //error_log(json_encode($candle->$field));
             $key++;
         }

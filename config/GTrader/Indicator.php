@@ -14,6 +14,7 @@ return [
         'Rsi'               => ['allow_multiple' => true],
         'StochRsi'          => ['allow_multiple' => true],
         'Macd'              => ['allow_multiple' => false],
+        'Bbands'            => ['allow_multiple' => false],
     ],
     'output' => [
         0 => '',

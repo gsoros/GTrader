@@ -122,11 +122,11 @@ class Plot
         return $color;
     }
 
-    public static function nextLegendY()
+    public static function nextLegendY(int $step = 1)
     {
         static $y = 20;
         $ret = $y;
-        $y += 30;
+        $y += 20 * $step;
         return $ret;
     }
 }
