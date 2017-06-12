@@ -363,6 +363,9 @@ class PHPlot extends Chart
         $data = [];
         $colors = [];
         $last_color = null;
+        if (!is_array($output)) {
+            $output = [0 => ''];
+        }
         foreach ($output as $output_index => $output_name) {
             $sig = $indicator->getSignature();
             if ($output_name) {
