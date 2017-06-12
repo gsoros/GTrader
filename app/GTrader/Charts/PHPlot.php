@@ -355,38 +355,61 @@ class PHPlot extends Chart
     {
         $display = $indicator->getParam('display');
         $params = $indicator->getParam('indicator');
-        $sig = $indicator->getSignature();
-        $color = self::nextColor();
         $candles = $this->getCandles();
-        $candles->reset();
-        $data = [];
-        while ($candle = $candles->next()) {
-            $data[] = ['', $candle->time, isset($candle->$sig) ? $candle->$sig : ''];
-        }
-        if (!count($data)) {
-            return $this;
-        }
-        $this->_plot->SetDataValues($data);
-        $this->_plot->SetLineWidths(2);
-        $this->_plot->setPlotType('lines');
-        $this->_plot->SetDataColors([$color]);
-        $this->_plot->SetTickLabelColor($color);
+
+        $first_output = true;
+        $output = $indicator->getParam('output');
+        end($output);
+        $last_output_index = key($output);
+        reset($output);
         $world_set = false;
-        if (isset($display['y_axis_pos'])) {
-            if ($display['y_axis_pos'] === 'right') {
-                $this->setWorld('x');
-                $world_set = true;
-                $this->_plot->SetYTickPos('plotright');
-                $this->_plot->SetYTickLabelPos('plotright');
-                $this->_plot->TuneYAutoRange(0);
+        foreach ($output as $output_index => $output_name) {
+            $last_output = $output_index === $last_output_index;
+            $color = self::nextColor();
+            $sig = $indicator->getSignature();
+            if ($output_name) {
+                $sig .= '_'.$output_name;
             }
+            $candles->reset();
+            $data = [];
+            while ($candle = $candles->next()) {
+                $data[] = ['', $candle->time, isset($candle->$sig) ? $candle->$sig : ''];
+            }
+            if (!count($data)) {
+                return $this;
+            }
+            $this->_plot->SetDataValues($data);
+            $this->_plot->SetLineWidths(2);
+            $this->_plot->setPlotType('lines');
+            $this->_plot->SetDataColors([$color]);
+            $this->_plot->SetTickLabelColor($color);
+            if (!$world_set) {
+                if (isset($display['y_axis_pos'])) {
+                    if ($display['y_axis_pos'] === 'right') {
+                        $this->setWorld('x');
+                        $world_set = true;
+                        $this->_plot->SetYTickPos('plotright');
+                        $this->_plot->SetYTickLabelPos('plotright');
+                        $this->_plot->TuneYAutoRange(0);
+                    }
+                }
+            }
+            if ($first_output) {
+                $legend = [$indicator->getDisplaySignature().' '.$output_name];
+            }
+            else {
+                $legend[] = $output_name;
+            }
+            if (!$world_set) {
+                $this->setWorld();
+            }
+            if ($last_output) {
+                $this->_plot->SetLegendPixels(35, self::nextLegendY());
+                $this->_plot->SetLegend($legend);
+            }
+            $this->_plot->DrawGraph();
+            $first_output = false;
         }
-        $this->_plot->SetLegendPixels(35, self::nextLegendY());
-        $this->_plot->SetLegend([$indicator->getDisplaySignature()]);
-        if (!$world_set) {
-            $this->setWorld();
-        }
-        $this->_plot->DrawGraph();
         return $this;
     }
 

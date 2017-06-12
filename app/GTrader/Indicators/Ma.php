@@ -8,14 +8,30 @@ use GTrader\Indicators\Trader;
 class Ma extends Trader
 {
 
+    public function __construct()
+    {
+        $this->setParam(
+            'adjustable.type.options',
+            \Config::get('GTrader.Indicators.Trader.MA_TYPES')
+        );
+        parent::__construct();
+    }
+
+    public function getMaType()
+    {
+        return $this->getParam('indicator.type');
+    }
+
     public function traderCalc(array $values)
     {
         if (!($values = trader_ma(
             $values,
             $this->getParam('indicator.length'),
-            $this->getParam('indicator.type')))) {
-            throw new \Exception('trader_ma returned false');
+            $this->getMaType()
+        ))) {
+            error_log('trader_ma returned false');
+            return [];
         }
-        return $values;
+        return [$values];
     }
 }

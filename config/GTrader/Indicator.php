@@ -12,8 +12,13 @@ return [
         'Profitability'     => ['allow_multiple' => false],
         'Avg'               => ['allow_multiple' => true],
         'Rsi'               => ['allow_multiple' => true],
+        'StochRsi'          => ['allow_multiple' => true],
+        'Macd'              => ['allow_multiple' => false],
     ],
-    'default_child' => 'Ema',
+    'output' => [
+        0 => '',
+    ],
+    'default_child' => 'Ma',
     'display' => [
         'name'              => 'Unnamed Indicator',
         'visible'           => true

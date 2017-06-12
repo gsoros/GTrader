@@ -26,13 +26,15 @@
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="{{ $key }}_{{ $uid }}"
                 title="Select the {{ $param['name'] }} for the indicator">
-            @foreach ($param['options'] as $opt_k => $opt_v)
-                <option
-                @if ($opt_k == $indicator->getParam('indicator.'.$key))
-                    selected
-                @endif
-                value="{{ $opt_k }}">{{ $opt_v }}</option>
-            @endforeach
+            @if (is_array($param['options']))
+                @foreach ($param['options'] as $opt_k => $opt_v)
+                    <option
+                    @if ($opt_k == $indicator->getParam('indicator.'.$key))
+                        selected
+                    @endif
+                    value="{{ $opt_k }}">{{ $opt_v }}</option>
+                @endforeach
+            @endif
         </select>
         @elseif ('number' === $param['type'])
         <input type="number"

@@ -269,8 +269,8 @@ class Fann extends Strategy
         if ($ema_len > 1) {
             $candles = $this->getCandles();
             $indicator = Indicator::make(
-                'Ema',
-                ['indicator' => ['price' => $indicator->getSignature(), 'length' => $ema_len],
+                'Ma',
+                ['indicator' => ['base' => $indicator->getSignature(), 'length' => $ema_len],
                  'display' => ['visible' => false],
                  'depends' => [$indicator]]
             );

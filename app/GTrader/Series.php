@@ -289,22 +289,15 @@ class Series extends Collection
 
     public function setValues(string $field, array $values, $fill_value = null)
     {
-        $count_vals = count($values);
-        $size = $this->size();
-        if ($count_vals !== $size) {
-            $diff = $size - $count_vals;
-            if ($diff > 0) {
-                if (is_null($fill_value)) {
-                    $fill_value = reset($values);
-                }
-                $values = array_merge(array_fill(0, $diff, $fill_value), $values);
-            }
+        if (is_null($fill_value)) {
+            $fill_value = reset($values);
         }
-        reset($values);
-        foreach ($values as $key => $value) {
-            if (isset($this->items[$key])) {
-                $this->items[$key][$field] = $value;
-            }
+
+        $key = 0;
+        while ($candle = $this->byKey($key)) {
+            $candle->$field = isset($values[$key]) ? $values[$key] : $fill_value;
+            //error_log(json_encode($candle->$field));
+            $key++;
         }
         return $this;
     }

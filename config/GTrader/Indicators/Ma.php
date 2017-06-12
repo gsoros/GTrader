@@ -4,7 +4,7 @@ return [
     'indicator' => [
         'base' => 'close',
         'length' => 20,
-        'type' => TRADER_MA_TYPE_SMA,
+        'type' => TRADER_MA_TYPE_EMA,
     ],
     'adjustable' => [
         'base' => [
@@ -21,7 +21,6 @@ return [
         'type' => [
             'name' => 'Type',
             'type' => 'select',
-            'options' => TRADER_MA_TYPES,
         ],
     ],
     'display' => [

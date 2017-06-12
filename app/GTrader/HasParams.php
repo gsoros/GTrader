@@ -44,6 +44,13 @@ trait HasParams
     }
 
 
+    public function unSetParam(string $key = null)
+    {
+        Arr::forget($this->params, $key);
+        return $this;
+    }
+
+
     public function setParams(array $params = [])
     {
         $this->params = array_replace_recursive($this->params, $params);
