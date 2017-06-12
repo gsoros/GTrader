@@ -507,7 +507,7 @@ class Fann extends Strategy
             ->orderBy('epoch', 'desc')
             ->limit(1)
             ->first();
-        return intval($res->epoch);
+        return is_object($res) ? intval($res->epoch) : 0;
     }
 
 
