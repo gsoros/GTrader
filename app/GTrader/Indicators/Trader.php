@@ -11,7 +11,6 @@ if (!extension_loaded('trader')) {
 /** Indicators using the Trader PHP extension */
 abstract class Trader extends HasBase
 {
-    protected $allowed_owners = ['GTrader\\Series'];
 
     public function __construct()
     {

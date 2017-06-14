@@ -4,31 +4,39 @@ namespace GTrader;
 
 trait HasIndicators
 {
-    protected $indicators = [];
+    public $indicators = [];
+
+
+    public function getIndicatorOwner()
+    {
+        return $this;
+    }
 
 
     public function addIndicator($indicator, array $params = [])
     {
+        $owner = $this->getIndicatorOwner();
+
         if (!is_object($indicator)) {
             $indicator = Indicator::make($indicator, $params);
         }
-        if (!$indicator->canBeOwnedBy($this)) {
+        if (!$indicator->canBeOwnedBy($owner)) {
             return $this;
         }
-        if ($this->hasIndicator($indicator->getSignature())) {
-            $existing = $this->getIndicator($indicator->getSignature());
+        if ($owner->hasIndicator($indicator->getSignature())) {
+            $existing = $owner->getIndicator($indicator->getSignature());
             $existing->setParams($indicator->getParams());
             return $this;
         }
         $class = $indicator->getShortClass();
         if (!$indicator->getParam('available.'.$class.'.allow_multiple') &&
-            $this->hasIndicatorClass($class)) {
-            $existing = $this->getFirstIndicatorByClass($class);
+            $owner->hasIndicatorClass($class)) {
+            $existing = $owner->getFirstIndicatorByClass($class);
             $existing->setParams($indicator->getParams());
             return $this;
         }
-        $indicator->setOwner($this);
-        $this->indicators[] = $indicator;
+        $indicator->setOwner($owner);
+        $owner->indicators[] = $indicator;
         $indicator->createDependencies();
 
         return $this;
@@ -107,9 +115,9 @@ trait HasIndicators
 
     public function unsetIndicator(Indicator $indicator)
     {
-        foreach ($this->indicators as $key => $existing) {
+        foreach ($this->getIndicatorOwner()->indicators as $key => $existing) {
             if ($indicator === $existing) {
-                unset($this->indicators[$key]);
+                unset($this->getIndicatorOwner()->indicators[$key]);
             }
         }
         return $this;
@@ -129,7 +137,7 @@ trait HasIndicators
 
     public function getIndicators()
     {
-        return $this->indicators;
+        return $this->getIndicatorOwner()->indicators;
     }
 
 
@@ -195,7 +203,7 @@ trait HasIndicators
 
     public function unsetAllIndicators()
     {
-        $this->indicators = [];
+        $this->getIndicatorOwner()->indicators = [];
         return $this;
     }
 

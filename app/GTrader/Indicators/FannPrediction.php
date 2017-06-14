@@ -7,21 +7,19 @@ use GTrader\Series;
 
 class FannPrediction extends Indicator
 {
-    protected $allowed_owners = ['GTrader\\Strategies\\Fann'];
-
 
     public function calculate(bool $force_rerun = false)
     {
         $signature = $this->getSignature();
 
-        $owner = $this->getOwner();
-        $num_samples = $owner->getNumSamples();
-        $use_volume = $owner->getParam('use_volume');
+        $strategy = $this->getOwner()->getStrategy();
+        $num_samples = $strategy->getNumSamples();
+        $use_volume = $strategy->getParam('use_volume');
 
         $prediction = [];
 
-        $owner->resetSample();
-        while ($sample = $owner->nextSample($num_samples)) {
+        $strategy->resetSample();
+        while ($sample = $strategy->nextSample($num_samples)) {
             if ($use_volume) {
                 $volumes = [];
                 for ($i = 0; $i < $num_samples - 1; $i++) {
@@ -61,7 +59,7 @@ class FannPrediction extends Indicator
                 $input = array_merge($volumes, $input);
             }
 
-            $pred = $owner->run($input);
+            $pred = $strategy->run($input);
             $prediction[$sample[count($sample)-1]->time] = $pred;
         }
 
@@ -72,7 +70,7 @@ class FannPrediction extends Indicator
             //error_log('P:'.$val);
             //$price = series::ohlc4($candle);
             $price = $candle->open;
-            $candle->$signature = $price + $price * $val * $owner->getParam('output_scaling') / 100;
+            $candle->$signature = $price + $price * $val * $strategy->getParam('output_scaling') / 100;
             //$candles->set($candle);
         }
         return $this;

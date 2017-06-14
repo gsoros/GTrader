@@ -10,7 +10,7 @@ use GTrader\Util;
 
 class Series extends Collection
 {
-    use HasParams, HasIndicators;
+    use HasParams, HasIndicators, HasStrategy;
 
     private $_loaded;
     private $_iter = 0;
@@ -41,7 +41,6 @@ class Series extends Collection
 
     public function __wakeup()
     {
-        //$this->_load();
     }
 
 

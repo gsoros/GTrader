@@ -60,7 +60,7 @@ abstract class HasBase extends Indicator
             return $this;
         }
         if (!($indicator = $this->getOrAddBaseIndicator())) {
-            error_log('Avg::runDependencies() could not getOrAdd base indicator for '.get_class($this));
+            error_log('HasBase::runDependencies() could not getOrAdd base indicator for '.get_class($this));
             return $this;
         }
         $this->setParam('display.y_axis_pos', 'right');

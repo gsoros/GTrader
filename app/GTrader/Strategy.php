@@ -4,11 +4,31 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use GTrader\Series;
 use GTrader\Page;
 
 class Strategy
 {
-    use Skeleton, HasCandles, HasIndicators;
+    use Skeleton, HasCandles, HasIndicators
+    {
+        HasCandles::setCandles as private __hasCandlesSetCandles;
+    }
+
+
+    public function getIndicatorOwner()
+    {
+        return $this->getCandles();
+    }
+
+
+    public function setCandles(Series &$candles)
+    {
+        $this->__hasCandlesSetCandles($candles);
+        $candles->setStrategy($this);
+        return $this;
+    }
+
+
 
     public static function load(int $id)
     {
@@ -29,10 +49,9 @@ class Strategy
 
     public function __clone()
     {
-        foreach ($this->indicators as $key => $indicator) {
+        foreach ($this->getIndicators() as $indicator) {
             $new_indicator = clone $indicator;
-            $new_indicator->setOwner($this);
-            $this->indicators[$key] = $new_indicator;
+            $this->addIndicator($new_indicator);
         }
     }
 

@@ -15,6 +15,7 @@ abstract class Chart extends Plot
     use Skeleton, HasCandles, HasIndicators, HasStrategy
     {
         Skeleton::__construct as private __skeletonConstruct;
+        HasStrategy::setStrategy as private __hasStrategySetStrategy;
     }
 
 
@@ -69,6 +70,20 @@ abstract class Chart extends Plot
             return;
         }
         $this->setStrategy($strategy);
+    }
+
+
+    public function getIndicatorOwner()
+    {
+        return $this->getCandles();
+    }
+
+
+    public function setStrategy(Strategy &$strategy)
+    {
+        $this->__hasStrategySetStrategy($strategy);
+        $this->getCandles()->setStrategy($strategy);
+        return $this;
     }
 
 
@@ -205,7 +220,7 @@ abstract class Chart extends Plot
     public function handleIndicatorDeleteRequest(Request $request)
     {
         $indicator = $this->getIndicator($request->signature);
-        $indicator->getOwner()->unsetIndicators($indicator->getSignature());
+        $this->unsetIndicators($indicator->getSignature());
         return $this->handleSettingsFormRequest($request);
     }
 
@@ -345,57 +360,6 @@ abstract class Chart extends Plot
     }
 
 
-    public function addIndicator($indicator, array $params = [])
-    {
-        if (!is_object($indicator)) {
-            $indicator = Indicator::make($indicator, $params);
-        }
-
-        if ($this->hasIndicator($indicator->getSignature())) {
-            return $this;
-        }
-
-        $candles = $this->getCandles();
-        if ($indicator->canBeOwnedBy($candles)) {
-            $candles->addIndicator($indicator);
-        } else {
-            $strategy = $this->getStrategy();
-            if ($indicator->canBeOwnedBy($strategy)) {
-                $strategy->addIndicator($indicator);
-            }
-        }
-
-        $indicator->createDependencies();
-        return $this;
-    }
-
-
-    public function getIndicators()
-    {
-        $candles_ind = [];
-        if ($candles = $this->getCandles()) {
-            $candles_ind = $candles->getIndicators();
-        }
-
-        $strat_ind = [];
-        if ($strategy = $this->getStrategy()) {
-            $strat_ind = $strategy->getIndicators();
-        }
-
-        return array_merge($candles_ind, $strat_ind);
-    }
-
-
-    public function unsetIndicator(Indicator $indicator)
-    {
-        $signature = $indicator->getSignature();
-        if ($this->getCandles()->hasIndicator($signature)) {
-            $this->getCandles()->unsetIndicator($indicator);
-        } elseif ($this->getStrategy()->hasIndicator($signature)) {
-            $this->getStrategy()->unsetIndicator($indicator);
-        }
-        return $this;
-    }
 
     public function getIndicatorsVisibleSorted()
     {

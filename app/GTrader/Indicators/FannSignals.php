@@ -7,15 +7,13 @@ use GTrader\Series;
 
 class FannSignals extends Indicator
 {
-    protected $allowed_owners = ['GTrader\\Strategies\\Fann'];
-
 
     public function createDependencies()
     {
         $owner = $this->getOwner();
         if (is_object($owner)) {
             /* just calling the owner's method will create the dependency */
-            $owner->getPredictionIndicator();
+            $owner->getStrategy()->getPredictionIndicator();
         }
         return $this;
     }
@@ -25,10 +23,10 @@ class FannSignals extends Indicator
     {
         $signature = $this->getSignature();
 
-        $owner = $this->getOwner();
+        $strategy = $this->getOwner()->getStrategy();
         $candles = $this->getCandles();
 
-        $indicator = $this->getOwner()->getPredictionIndicator();
+        $indicator = $strategy->getPredictionIndicator();
         $indicator->checkAndRun($force_rerun);
         $indicator_sig = $indicator->getSignature();
 
@@ -39,15 +37,15 @@ class FannSignals extends Indicator
         //$trade_indicator = 'ohlc4';
         //$this->candles->ohlc4()->reset();
 
-        $spitfire = $owner->getParam('spitfire');
-        $long_threshold = $owner->getParam('long_threshold');
-        $short_threshold = $owner->getParam('short_threshold');
+        $spitfire = $strategy->getParam('spitfire');
+        $long_threshold = $strategy->getParam('long_threshold');
+        $short_threshold = $strategy->getParam('short_threshold');
         if ($long_threshold == 0 || $short_threshold == 0) {
             throw new \Exception('Threshold is zero');
         }
-        $min_distance = $owner->getParam('min_trade_distance');
+        $min_distance = $strategy->getParam('min_trade_distance');
         $resolution = $candles->getParam('resolution');
-        $num_input = $owner->getNumInput();
+        $num_input = $strategy->getNumInput();
 
         $candles->reset();
         while ($candle = $candles->next()) {

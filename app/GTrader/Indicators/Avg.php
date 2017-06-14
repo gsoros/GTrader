@@ -8,21 +8,6 @@ use GTrader\Indicators\HasBase;
 class Avg extends HasBase
 {
 
-    public function getAllowedOwners()
-    {
-        if (!$this->basedOnIndicator()) {
-            return ['GTrader\\Series'];
-        }
-        return ['GTrader\\Strategy'];
-        /*
-        if (!($indicator = $this->getOrAddBaseIndicator())) {
-            return ['GTrader\\Series'];
-        }
-        return $indicator->getAllowedOwners();
-        */
-    }
-
-
     public function calculate(bool $force_rerun = false)
     {
         $this->runDependencies($force_rerun);

@@ -6,14 +6,13 @@ use GTrader\Indicator;
 
 class Profitability extends Indicator
 {
-    protected $allowed_owners = ['GTrader\\Strategy'];
 
     public function createDependencies()
     {
         $owner = $this->getOwner();
         if (is_object($owner)) {
             /* just calling the owner's method will create the dependency */
-            $owner->getSignalsIndicator();
+            $owner->getStrategy()->getSignalsIndicator();
         }
         return $this;
     }
@@ -21,19 +20,19 @@ class Profitability extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $owner = $this->getOwner();
+        $strategy = $this->getOwner()->getStrategy();
 
-        if (!($signal_ind = $owner->getSignalsIndicator())) {
+        if (!($signal_ind = $strategy->getSignalsIndicator())) {
             return $this;
         }
         $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun($force_rerun);
 
-        if (!$owner->hasIndicatorClass('Balance')) {
+        if (!$strategy->hasIndicatorClass('Balance')) {
             error_log('Adding invisible balance indicator');
-            $owner->addIndicator('Balance', ['display' => ['visible' => false]]);
+            $strategy->addIndicator('Balance', ['display' => ['visible' => false]]);
         }
-        $balance_ind = $owner->getFirstIndicatorByClass('Balance');
+        $balance_ind = $strategy->getFirstIndicatorByClass('Balance');
         $balance_sig = $balance_ind->getSignature();
         $balance_ind->checkAndRun($force_rerun);
 

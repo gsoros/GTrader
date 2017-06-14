@@ -8,15 +8,13 @@ use GTrader\UserExchangeConfig;
 
 class Balance extends Indicator
 {
-    protected $allowed_owners = ['GTrader\\Strategy'];
-
 
     public function createDependencies()
     {
         $owner = $this->getOwner();
         if (is_object($owner)) {
             /* just calling the owner's method will create the dependency */
-            $owner->getSignalsIndicator();
+            $owner->getStrategy()->getSignalsIndicator();
         }
         return $this;
     }
@@ -30,12 +28,12 @@ class Balance extends Indicator
             throw new \Exception('Mode must be either dynamic or fixed.');
         }
 
-        $owner = $this->getOwner();
+        $strategy = $this->getOwner()->getStrategy();
 
         $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([
             'exchange_id' => $exchange->getId(),
-            'user_id' => $owner->getParam('user_id', 0)
+            'user_id' => $strategy->getParam('user_id', 0)
         ]);
 
         // Get defaults from exchange config file
@@ -52,7 +50,7 @@ class Balance extends Indicator
             }
         }
 
-        if (!($signal_ind = $owner->getSignalsIndicator())) {
+        if (!($signal_ind = $strategy->getSignalsIndicator())) {
             return $this;
         }
         $signal_sig = $signal_ind->getSignature();
