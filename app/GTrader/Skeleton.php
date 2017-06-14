@@ -22,7 +22,7 @@ namespace GTrader;
 
 trait Skeleton
 {
-    use HasParams;
+    use HasParams, ClassUtils;
 
 
     public function __construct(array $params = [])
@@ -47,24 +47,6 @@ trait Skeleton
             return array_replace_recursive($parent_conf, $conf);
         }
         return $parent_conf;
-    }
-
-
-    protected static function getClassConf(string $class, $key = null)
-    {
-        //error_log('getClassConf('.$class.', '.$key.')');
-        if (!is_null($key)) {
-            $key = '.'.$key;
-        }
-        $conf = \Config::get(str_replace('\\', '.', $class).$key);
-        return $conf;
-    }
-
-
-    public function getShortClass()
-    {
-        $reflect = new \ReflectionClass($this);
-        return $reflect->getShortName();
     }
 
 

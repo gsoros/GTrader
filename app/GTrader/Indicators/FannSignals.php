@@ -10,10 +10,15 @@ class FannSignals extends Indicator
 
     public function createDependencies()
     {
-        $owner = $this->getOwner();
-        if (is_object($owner)) {
-            /* just calling the owner's method will create the dependency */
-            $owner->getStrategy()->getPredictionIndicator();
+        $strategy = $this->getOwner()->getStrategy();
+        if (!$strategy) {
+            return $this;
+        }
+        if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
+            return $this;
+        }
+        if (is_object($strategy)) {
+            $strategy->getPredictionIndicator();
         }
         return $this;
     }
@@ -24,6 +29,13 @@ class FannSignals extends Indicator
         $signature = $this->getSignature();
 
         $strategy = $this->getOwner()->getStrategy();
+        if (!$strategy) {
+            return $this;
+        }
+        if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
+            return $this;
+        }
+
         $candles = $this->getCandles();
 
         $indicator = $strategy->getPredictionIndicator();

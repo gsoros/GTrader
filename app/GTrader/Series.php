@@ -10,7 +10,7 @@ use GTrader\Util;
 
 class Series extends Collection
 {
-    use HasParams, HasIndicators, HasStrategy;
+    use HasParams, HasIndicators, HasStrategy, ClassUtils;
 
     private $_loaded;
     private $_iter = 0;

@@ -396,6 +396,7 @@ class PHPlot extends Chart
         if (!count($data)) {
             return $this;
         }
+
         $this->_plot->SetDataValues($data);
         $this->_plot->SetLineWidths(2);
         $this->_plot->setPlotType('lines');

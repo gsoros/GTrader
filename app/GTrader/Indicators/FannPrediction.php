@@ -13,6 +13,15 @@ class FannPrediction extends Indicator
         $signature = $this->getSignature();
 
         $strategy = $this->getOwner()->getStrategy();
+        if (!$strategy) {
+            error_log('FannPrediction::calculate() no strategy');
+            return $this;
+        }
+        if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
+            error_log('FannPrediction::calculate() not fann strategy');
+            return $this;
+        }
+
         $num_samples = $strategy->getNumSamples();
         $use_volume = $strategy->getParam('use_volume');
 

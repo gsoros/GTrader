@@ -33,6 +33,7 @@ abstract class Chart extends Plot
         if ($candles = $this->getCandles()) {
             if ($strategy = $this->getStrategy()) {
                 if ($candles !== $strategy->getCandles()) {
+                    error_log('Chart->getCandles !== $strategy->getCandles()');
                     $strategy->setCandles($candles);
                 }
             }
@@ -69,6 +70,7 @@ abstract class Chart extends Plot
         if (!($strategy = Strategy::load($strategy_id))) {
             return;
         }
+
         $this->setStrategy($strategy);
     }
 
@@ -81,8 +83,10 @@ abstract class Chart extends Plot
 
     public function setStrategy(Strategy &$strategy)
     {
+        $candles = $this->getCandles();
+        $strategy->setCandles($candles);
         $this->__hasStrategySetStrategy($strategy);
-        $this->getCandles()->setStrategy($strategy);
+        $candles->setStrategy($strategy);
         return $this;
     }
 
