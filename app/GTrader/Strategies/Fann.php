@@ -629,7 +629,10 @@ class Fann extends Strategy
         $inputs = $this->getParam('inputs', []);
         $candles = $this->getCandles();
         foreach ($inputs as $sig) {
-            if (!($indicator = $candles->getOrAddIndicator($sig))) {
+            if (!($indicator = $candles->getOrAddIndicator(
+                $sig,
+                ['display' => ['visible' => false]]
+            ))) {
                 //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
                 continue;
             }
@@ -845,6 +848,7 @@ class Fann extends Strategy
             //exit();
 
             $input = $this->normalizeInput($input);
+            //error_log('candlesToData() norm_input: '.json_encode($input));
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
@@ -855,6 +859,7 @@ class Fann extends Strategy
             } elseif ($output < -1) {
                 $output = -1;
             }
+            error_log('candlesToData() output: '.$output);
 
             $data[] = ['input'  => $input, 'output' => [$output]];
         }
