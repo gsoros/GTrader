@@ -87,7 +87,7 @@ class TrainingManager
 
     protected function assign(int $slot, Training $training)
     {
-        echo 'Assigning training '.$training->id.' to slot '.$slot."\n";
+        error_log('Assigning training '.$training->id.' to slot '.$slot);
 
         $command = $this->getParam('php_command').' '.
                     base_path('artisan').' training:run '.
@@ -101,7 +101,7 @@ class TrainingManager
             $prefix = $strategy->getParam('training_log_prefix');
             $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
             $command = $command.' >> '.$log_file.' 2>&1 &';
-            error_log($command);
+            error_log('prefix: '.$prefix.' command:'.$command);
             exec($command);
         }
 
