@@ -656,6 +656,9 @@ class Fann extends Strategy
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_type = 'ohlc';
             }
+            elseif ('volume' === $sig) {
+                $norm_type = 'individual';
+            }
             elseif ($indicator = $this->getCandles()->getOrAddIndicator($sig)) {
                 if (!($norm_type = $indicator->getNormalizeType())) {
                     error_log('Fann::getInputGroups() could not getNormalizeType() for '.$sig);
