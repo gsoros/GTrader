@@ -839,7 +839,7 @@ class Fann extends Strategy
             //error_log('candlesToData S: '.json_encode($sample));
             list($input, $last_ohlc4, $output) = $this->sample2io($sample);
 
-            error_log('candlesToData() input: '.json_encode($input));
+            //error_log('candlesToData() input: '.json_encode($input));
             //error_log('candlesToData() last_ohlc4: '.json_encode($last_ohlc4));
             //error_log('candlesToData() output: '.json_encode($output));
             //exit();
