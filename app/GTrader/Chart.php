@@ -181,123 +181,16 @@ abstract class Chart extends Plot
     }
 
 
-    public function handleSettingsFormRequest(Request $request)
+    public function viewIndicatorsList()
     {
         return view(
-            'ChartSettings', [
+            'Indicators/List', [
+                'owner' => $this,
                 'indicators' => $this->getIndicatorsVisibleSorted(),
                 'available' => $this->getIndicatorsAvailable(),
                 'name' => $this->getParam('name'),
             ]
         );
-    }
-
-
-    public function handleIndicatorFormRequest(Request $request)
-    {
-        $indicator = $this->getIndicator($request->signature);
-        return $indicator->getForm(
-            $this->getBasesAvailable($request->signature),
-            ['name' => $this->getParam('name')]
-        );
-    }
-
-
-    public function handleIndicatorNewRequest(Request $request)
-    {
-        if (!$request->signature) {
-            error_log('handleIndicatorNewRequest without signature');
-            return $this->handleSettingsFormRequest($request);
-        }
-
-        $indicator = Indicator::make($request->signature);
-        if ($this->hasIndicator($indicator->getSignature())) {
-            $indicator = $this->getIndicator($indicator->getSignature());
-            $indicator->setParam('display.visible', true);
-        } else {
-            $this->addIndicator($indicator);
-        }
-        return $this->handleSettingsFormRequest($request);
-    }
-
-
-    public function handleIndicatorDeleteRequest(Request $request)
-    {
-        $indicator = $this->getIndicator($request->signature);
-        $this->unsetIndicators($indicator->getSignature());
-        return $this->handleSettingsFormRequest($request);
-    }
-
-
-    public function handleIndicatorSaveRequest(Request $request)
-    {
-        if ($indicator = $this->getIndicator($request->signature)) {
-            $jso = json_decode($request->params);
-            foreach ($indicator->getParam('indicator') as $param => $val) {
-                if (isset($jso->$param)) {
-                    $indicator->setParam('indicator.'.$param, $jso->$param);
-                    if ($param === 'base') {
-                        $indicator->setParam('depends', []);
-                        $dependency = $this->getIndicator($jso->$param);
-                        if (is_object($dependency)) {
-                            $indicator->setParam('depends', [$dependency]);
-                        }
-                    }
-                }
-            }
-            $this->unsetIndicators($indicator->getSignature());
-            $indicator->setParam('display.visible', true);
-            $this->addIndicator($indicator);
-        }
-        return $this->handleSettingsFormRequest($request);
-    }
-
-
-    public function getBasesAvailable(string $except_signature = null)
-    {
-        $bases = [
-            'open' => 'Open',
-            'high' => 'High',
-            'low' => 'Low',
-            'close' => 'Close',
-            'volume' => 'Volume'
-        ];
-        foreach ($this->getIndicatorsVisibleSorted() as $ind) {
-            if (!$ind->getParam('display.top_level') &&
-                $except_signature != $ind->getSignature()) {
-                $bases[$ind->getSignature()] = $ind->getDisplaySignature();
-            }
-        }
-        return $bases;
-    }
-
-
-    public function getIndicatorsAvailable()
-    {
-        $indicator = Indicator::make();
-        $config = $indicator->getParam('available');
-        $candles = $this->getCandles();
-        $strategy = $this->getStrategy();
-        $available = [];
-        foreach ($config as $class => $params) {
-            $exists = $this->hasIndicatorClass($class, ['display.visible' => true]);
-            if (!$exists || ($exists && true === $params['allow_multiple'])) {
-                $indicator = Indicator::make($class);
-                if (is_object($strategy)) {
-                    if ($indicator->canBeOwnedBy($strategy)) {
-                        $available[$class] = $indicator->getParam('display.name');
-                        continue;
-                    }
-                }
-                if (is_object($candles)) {
-                    if ($indicator->canBeOwnedBy($candles)) {
-                        $available[$class] = $indicator->getParam('display.name');
-                    }
-                }
-            }
-        }
-        //error_log(serialize($available));
-        return $available;
     }
 
 

@@ -29,9 +29,9 @@ abstract class HasBase extends Indicator
             return null;
         }
         $base = $this->getBase();
-        $owner->addIndicatorBySignature($base);
-        if (!($indicator = $owner->getIndicator($base))) {
-            error_log(get_class($this).': could not find indicator '.$base.' for '.get_class($owner));
+        if (!($indicator = $owner->getOrAddIndicator($base))) {
+            error_log(get_class($this).'::getOrAddBaseIndicator() could not find indicator '.
+                $base.' for '.get_class($owner));
             return null;
         }
         return $indicator;
@@ -48,6 +48,7 @@ abstract class HasBase extends Indicator
         }
         return $this;
     }
+
 
     public function runDependencies(bool $force_rerun = false)
     {
@@ -67,4 +68,5 @@ abstract class HasBase extends Indicator
         $indicator->checkAndRun($force_rerun);
         return $this;
     }
+
 }

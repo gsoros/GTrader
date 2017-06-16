@@ -299,9 +299,11 @@ class Series extends Collection
                 $fill = $candle->$fill;
             }
             $candle->$field = isset($values[$key]) ? $values[$key] : $fill;
-            //error_log(json_encode($candle->$field));
+            //error_log($field.': '.$candle->$field);
+            //$last_candle = $candle;
             $key++;
         }
+        //error_log('Series::setValues() last_candle: '.json_encode($last_candle));
         return $this;
     }
 
@@ -560,9 +562,9 @@ class Series extends Collection
     public static function normalize($in, $in_min, $in_max, $out_min = -1, $out_max = 1)
     {
         if ($in_max - $in_min == 0) {
-            return $out_max - $out_min;
+            //error_log('Series::normalize() division by zero: '.$in.' '.$in_min.' '.$in_max.' '.$out_min.' '.$out_max);
+            return $out_min + $out_max;
         }
-        //throw new \Exception('Division by zero: '.$in.' '.$in_min.'-'.$in_max.' '.$out_min.'-'.$out_max);
         return ($out_max - $out_min) / ($in_max - $in_min) * ($in - $in_max) + $out_max;
     }
 }

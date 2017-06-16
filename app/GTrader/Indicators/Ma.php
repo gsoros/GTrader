@@ -8,13 +8,13 @@ use GTrader\Indicators\Trader;
 class Ma extends Trader
 {
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
+        parent::__construct($params);
         $this->setParam(
             'adjustable.type.options',
             \Config::get('GTrader.Indicators.Trader.MA_TYPES')
         );
-        parent::__construct();
     }
 
     public function getMaType()

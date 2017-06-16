@@ -8,9 +8,9 @@ use GTrader\Indicators\Trader;
 class Bbands extends Trader
 {
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
 
         $this->setParam(
             'adjustable.matype.options',

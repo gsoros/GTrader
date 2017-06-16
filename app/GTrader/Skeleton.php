@@ -56,7 +56,6 @@ trait Skeleton
         if (is_null($class)) {
             $class = self::getClassConf($called, 'default_child');
             if (!$class) {
-                //error_log('No default child class for '.get_called_class());
                 $class = $called;
             }
 
@@ -65,6 +64,10 @@ trait Skeleton
             $class = __NAMESPACE__.'\\'
                     .self::getClassConf($called, 'children_ns').'\\'
                     .$class;
+        }
+        if (!class_exists($class)) {
+            throw new \Exception('Skeleton::make() Class '.$class.' does not exist');
+            return false;
         }
         return new $class($params);
     }

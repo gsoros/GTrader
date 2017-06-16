@@ -1,0 +1,143 @@
+@php
+    $uid = uniqid();
+    foreach ([
+        'name' => '',
+        'owner_class' => 'Chart',
+        'owner_id' => 0,
+        'target_element' => 'settings_content',
+        'available' => [],
+        'display_outputs' => false,
+    ] as $varname => $default) {
+        $$varname = isset($$varname) ? $$varname : $default;
+    };
+@endphp
+@if (count($indicators))
+    <div class="row">
+        @foreach ($indicators as $indicator)
+            @php
+                $uid = uniqid();
+                $sig = $indicator->getSignature();
+                $params = $indicator->getParam('indicator');
+                $num_params = is_array($params) ? count($params) : 0;
+
+                if ($display_outputs) {
+                    $inputs = $owner->getParam('inputs', []);
+                    $outputs = $indicator->getParam('outputs', ['']);
+                    $num_outputs = count($outputs);
+                    $output_checkboxes = [];
+                    foreach ($outputs as $key => $value) {
+                        $cbname = $sig;
+                        $cblabel = $indicator->getParam('display.name');
+                        if (strlen($value)) {
+                            $cbname .= '_'.$value;
+                            $cblabel = $value;
+                        }
+                        $output_checkboxes[] = [
+                            'value' => $cbname,
+                            'label' => $cblabel,
+                            'checked' => false !== array_search($cbname, $inputs),
+                        ];
+                    }
+                }
+            @endphp
+            <div id="form_{{ $uid }}" class="col-sm-12 editable trans">
+                <span title="{{ $indicator->getParam('display.description') }}">
+                    @if ($display_outputs)
+                        @if (1 === $num_outputs)
+                            @php
+                            $checkbox = array_shift($output_checkboxes);
+                            @endphp
+                            <input type="checkbox"
+                                name="inputs[]"
+                                value="{{ $checkbox['value'] }}"
+                                @if ($checkbox['checked'])
+                                    checked
+                                @endif
+                            >
+                        @endif
+                    @endif
+                    {{ $indicator->getDisplaySignature() }}
+                </span>
+                <div class="form-group editbuttons">
+                    @if ($num_params)
+                        <button class="btn btn-primary btn-sm editbutton trans"
+                                title="Edit"
+                                onClick="window.GTrader.request(
+                                    'indicator',
+                                    'form',
+                                    {
+                                        owner_class: '{{ $owner_class }}',
+                                        owner_id: '{{ $owner_id }}',
+                                        name: '{{ $name }}',
+                                        signature: '{{ $sig }}',
+                                        target_element: '{{ $target_element }}'
+                                    },
+                                    'GET',
+                                    'form_{{ $uid }}'
+                                ); return false">
+                            <span class="glyphicon glyphicon-wrench"></span>
+                        </button>
+                    @endif
+                    <button class="btn btn-primary btn-sm editbutton trans"
+                            title="Delete"
+                            onClick="window.GTrader.request(
+                                'indicator',
+                                'delete',
+                                'owner_class={{ $owner_class }}' +
+                                    '&owner_id={{ $owner_id }}' +
+                                    '&name={{ $name }}' +
+                                    '&signature={{ $sig }}',
+                                'GET',
+                                '{{ $target_element }}'
+                            ); return false">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                </div>
+                @if ($display_outputs)
+                    @if (1 < $num_outputs)
+                        <div>
+                            @foreach ($output_checkboxes as $checkbox)
+                                <input type="checkbox"
+                                    name="inputs[]"
+                                    value="{{ $checkbox['value'] }}"
+                                    @if ($checkbox['checked'])
+                                        checked
+                                    @endif
+                                    >
+                                    {{ $checkbox['label'] }} &nbsp;
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
+            </div>
+        @endforeach
+    </div>
+@endif
+<div class="row editable trans text-right">
+    <div class="col-sm-12">
+        New indicator:
+        <select class="btn-primary btn btn-mini"
+                id="new_indicator_{{ $uid }}"
+                title="Select the type of indicator">
+            @foreach ($available as $class => $indicator)
+            <option value="{{ $class }}">{{ $indicator }}</option>
+            @endforeach
+        </select>
+        <button onClick="window.GTrader.request(
+                    'indicator',
+                    'new',
+                    {
+                        owner_class: '{{ $owner_class }}',
+                        owner_id: '{{ $owner_id }}',
+                        name: '{{ $name }}',
+                        signature: $('#new_indicator_{{ $uid }}').val()
+                    },
+                    'GET',
+                    '{{ $target_element }}'
+                ); return false"
+                class="btn btn-primary btn-sm trans"
+                title="Add new indicator">
+            <span class="glyphicon glyphicon-ok"></span>
+        </button>
+    </div>
+</div>

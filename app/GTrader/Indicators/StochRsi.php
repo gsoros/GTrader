@@ -8,9 +8,9 @@ use GTrader\Indicators\Trader;
 class StochRsi extends Trader
 {
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
         $this->setParam(
             'adjustable.matype.options',
             \Config::get('GTrader.Indicators.Trader.MA_TYPES')
@@ -34,7 +34,7 @@ class StochRsi extends Trader
             error_log('trader_stochrsi returned false');
             return [];
         }
-        //error_log(count($values[0]).' + '.count($values[1]));
+        //error_log('StochRsi: '.json_encode($values[0]));
         return $values;
     }
 }

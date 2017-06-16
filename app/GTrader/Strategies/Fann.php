@@ -72,13 +72,13 @@ class Fann extends Strategy
             'limit' => 0,
             'exchange' => $exchange,
             'symbol' => $symbol,
-            'resolution' => $resolution
+            'resolution' => $resolution,
         ]);
         $training_chart = Chart::make(null, [
             'candles' => $candles,
             'name' => 'trainingChart',
             'height' => 200,
-            'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings']
+            'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
         $training_chart->saveToSession();
         return $training_chart;
@@ -87,10 +87,12 @@ class Fann extends Strategy
 
     public function getTrainingProgressChart(FannTraining $training)
     {
-        $candles = new Series(['limit' => 0,
-                                'exchange' => Exchange::getNameById($training->exchange_id),
-                                'symbol' => Exchange::getSymbolNameById($training->symbol_id),
-                                'resolution' => $training->resolution]);
+        $candles = new Series([
+            'limit' => 0,
+            'exchange' => Exchange::getNameById($training->exchange_id),
+            'symbol' => Exchange::getSymbolNameById($training->symbol_id),
+            'resolution' => $training->resolution,
+        ]);
 
         $highlights = [];
         foreach (['train', 'test', 'verify'] as $range) {
@@ -110,7 +112,7 @@ class Fann extends Strategy
             'disabled' => ['title', 'strategy', 'map', 'settings'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
-            'visible_indicators' => ['Balance', 'Profitability']
+            'visible_indicators' => ['Balance', 'Profitability'],
         ]);
 
         $sig = $training->getMaximizeSig();
@@ -168,6 +170,16 @@ class Fann extends Strategy
     {
         $topology_changed = false;
 
+        $inputs = isset($request->inputs) ? $request->inputs : ['open'];
+        $inputs = is_array($inputs) ? $inputs : ['open'];
+        $inputs = count($inputs) ? $inputs : ['open'];
+        if ($this->getParam('inputs', []) !== $inputs) {
+            $topology_changed = true;
+            $this->setParam('inputs', $inputs);
+            error_log('New inputs: '.json_encode($inputs));
+        }
+
+
         if (isset($request->hidden_array)) {
             $hidden_array = explode(',', $request->hidden_array);
             if (count($hidden_array)) {
@@ -186,28 +198,17 @@ class Fann extends Strategy
             }
         }
 
-        $num_samples = $this->getParam('num_samples');
-        if (isset($request->num_samples)) {
-            $num_samples = intval($request->num_samples);
-            if ($num_samples < 2) {
-                $num_samples = 2;
+        $sample_size = $this->getParam('sample_size');
+        if (isset($request->sample_size)) {
+            $sample_size = intval($request->sample_size);
+            if ($sample_size < 2) {
+                $sample_size = 2;
             }
-            if ($num_samples !== intval($this->getParam('num_samples'))) {
+            if ($sample_size !== intval($this->getParam('sample_size'))) {
                 $topology_changed = true;
             }
-            $this->setNumSamples($num_samples);
+            $this->setSampleSize($sample_size);
         }
-
-        $use_volume = 0;
-        if (isset($request->use_volume)) {
-            if (intval($request->use_volume)) {
-                $use_volume = 1;
-            }
-        }
-        if ($use_volume !== intval($this->getParam('use_volume'))) {
-            $topology_changed = true;
-        }
-        $this->setParam('use_volume', $use_volume);
 
         if ($topology_changed) {
             error_log('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
@@ -254,22 +255,23 @@ class Fann extends Strategy
     {
         $class = $this->getParam('prediction_indicator_class');
 
+        $candles = $this->getCandles();
+
         $indicator = null;
-        foreach ($this->getIndicators() as $candidate) {
+        foreach ($candles->getIndicators() as $candidate) {
             if ($class === $candidate->getShortClass()) {
                 $indicator = $candidate;
             }
         }
         if (is_null($indicator)) {
             $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
-            $this->addIndicator($indicator);
+            $candles->addIndicator($indicator);
         }
 
         $ema_len = $this->getParam('prediction_ema');
         if ($ema_len > 1) {
-            $candles = $this->getCandles();
             $indicator = Indicator::make(
-                'Ma',
+                'Ema',
                 ['indicator' => ['base' => $indicator->getSignature(), 'length' => $ema_len],
                  'display' => ['visible' => false],
                  'depends' => [$indicator]]
@@ -590,12 +592,16 @@ class Fann extends Strategy
 
         $candles = $this->getCandles();
 
+        //error_log('nextSample() candles: '.$candles->debugObjId());
+        //error_log(json_encode($candles->first()));
+        //exit();
+
         if (!$candles->size()) {
             return null;
         }
 
         if (!$size) {
-            $size = $this->getParam('num_samples') + $this->getParam('target_distance');
+            $size = $this->getParam('sample_size') + $this->getParam('target_distance');
         }
 
         while ($candle = $candles->byKey($this->_sample_iterator)) {
@@ -606,6 +612,7 @@ class Fann extends Strategy
                 continue;
             }
             if ($current_size == $size) {
+                //error_log('nextSample S: '.json_encode($___sample));
                 return $___sample;
             }
             if ($current_size >  $size) {
@@ -617,77 +624,226 @@ class Fann extends Strategy
     }
 
 
-    public function candlesToData($name, $force = false)
+    public function runInputIndicators(bool $force_rerun = false)
+    {
+        $inputs = $this->getParam('inputs', []);
+        $candles = $this->getCandles();
+        foreach ($inputs as $sig) {
+            if (!($indicator = $candles->getOrAddIndicator($sig))) {
+                //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
+                continue;
+            }
+            $indicator->checkAndRun($force_rerun);
+        }
+        return $this;
+    }
+
+
+    public function getInputGroups(bool $force_rerun = false)
+    {
+        static $groups = null;
+
+        if (!is_null($groups) && !$force_rerun) {
+            return $groups;
+        }
+
+        $inputs = $this->getParam('inputs', []);
+        $groups = [];
+
+        reset($inputs);
+        foreach ($inputs as $sig) {
+            if (in_array($sig, ['open', 'high', 'low', 'close'])) {
+                //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
+                $norm_type = 'ohlc';
+            }
+            elseif ($indicator = $this->getCandles()->getOrAddIndicator($sig)) {
+                if (!($norm_type = $indicator->getNormalizeType())) {
+                    error_log('Fann::getInputGroups() could not getNormalizeType() for '.$sig);
+                    continue;
+                }
+            }
+            else {
+                error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
+                continue;
+            }
+            if ('ohlc' === $norm_type) {
+                $groups['ohlc'][$sig] = true;
+                continue;
+            }
+            if ('range' === $norm_type) {
+                if (is_null($min = $indicator->getParam('range.min', null)) ||
+                    is_null($max = $indicator->getParam('range.max', null))) {
+                    error_log('Fann::getInputGroups() min or max range not set for '.$sig);
+                    continue;
+                }
+                $groups['range'][$sig] = ['min' => $min, 'max' => $max];
+                continue;
+            }
+            if ('individual' === $norm_type) {
+                $groups['individual'][$sig] = true;
+                continue;
+            }
+            error_log('Fann::getInputGroups() unknown normalize type for '.$sig);
+        }
+        //error_log('getInputGroups() groups: '.json_encode($groups));
+        return $groups;
+    }
+
+
+    public function sample2io(array $sample, bool $input_only = false) {
+        /*
+        input: [
+            'ohlc' => [
+                0 => [
+                    'values' => [1, 2, 3, ...]
+                ]
+            ],
+            'range' => [
+                'Rsi_base_close_length_14' => [
+                    'min' => -100,
+                    'max' => 100,
+                    'values' => [1, 2, 3, ...]
+                ]
+            ],
+            'individual' => [
+                'Ema_base_volume_length_20' => [
+                    'values' => [1, 2, 3, ...]
+                ],
+                'Macd_base_open_blabla' => [
+                    'values' => [1, 2, 3, ...]
+                ]
+            ]
+        ]
+        */
+        $groups = $this->getInputGroups();
+
+        $input = [];
+        $in_sample_size = $out_sample_size = $this->getParam('sample_size');
+
+        if (!$input_only) {
+            $in_sample_size += $this->getParam('target_distance');
+        }
+
+        if ($in_sample_size !== ($actual_size = count($sample))) {
+            error_log('Fann::sample2io() wrong sample size ('.$actual_size.' vs. '.$in_sample_size.')');
+        }
+
+        for ($i = 0; $i < $out_sample_size; $i++) {
+            if ($i < $out_sample_size - 1) {
+                reset($groups);
+                foreach ($groups as $group_name => $group) {
+                    //error_log('sample2io() group_name: '.$group_name);
+                    reset($group);
+                    foreach ($group as $sig => $params) {
+                        $key = $sig;
+                        $value = floatval($sample[$i]->$sig);
+                        //if (!$value) {
+                        //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
+                        //    exit();
+                        //}
+                        if ('ohlc' === $group_name) {
+                            $key = 0;
+                        }
+                        if (!isset($input[$group_name][$key])) {
+                            $input[$group_name][$key] = ['values' => []];
+                        }
+                        if ('range' === $group_name) {
+                            $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
+                        }
+                        $input[$group_name][$key]['values'][] = $value;
+                    }
+                }
+                continue;
+            }
+            // for the last input candle, we only care about the fields which are based on "open"
+            reset($groups);
+            foreach ($groups as $group_name => $group) {
+                reset($group);
+                foreach ($group as $sig => $params) {
+                    if ($this->indicatorIsBasedOn($sig, 'open')) {
+                        $value = floatval($sample[$i]->$sig);
+                        $key = ('ohlc' === $group_name) ? 0 : $sig;
+                        $input[$group_name][$key]['values'][] = $value;
+                    }
+                }
+            }
+            $last_ohlc4 = Series::ohlc4($sample[$i]);
+        }
+
+        if ($input_only) {
+            return $input;
+        }
+        return [$input, $last_ohlc4, Series::ohlc4($sample[count($sample)-1])];
+    }
+
+
+    public function normalizeInput(array $input)
+    {
+        // Normalize input to -1, 1
+        reset($input);
+        foreach ($input as $group_name => $group) {
+            reset($group);
+            foreach ($group as $sig => $params) {
+                $min = $max = null;
+                if ('range' === $group_name) {
+                    $min = isset($params['min']) ? $params['min'] : null;
+                    $max = isset($params['max']) ? $params['max'] : null;
+                    if (is_null($min) || is_null($max)) {
+                        error_log('Fann::normalizeInput() warning: min or max range is null for '.$group_name.': '.$sig);
+                    }
+                }
+                if (is_null($min) || is_null($max)) {
+                    $min = min($params['values']);
+                    $max = max($params['values']);
+                }
+                reset($params['values']);
+                foreach ($params['values'] as $k => $v) {
+                    $input[$group_name][$sig]['values'][$k] = Series::normalize($v, $min, $max);
+                }
+            }
+        }
+
+        // collapse normalized input groups
+        $norm_input = [];
+        reset($input);
+        foreach ($input as $group_name => $group) {
+            reset($group);
+            foreach ($group as $sig => $params) {
+                $norm_input = array_merge($norm_input, $input[$group_name][$sig]['values']);
+            }
+        }
+
+        return $norm_input;
+    }
+
+
+    public function candlesToData(string $name, bool $force_rerun = false)
     {
 
-        if (isset($this->_data[$name]) && !$force) {
+        if (isset($this->_data[$name]) && !$force_rerun) {
             return true;
         }
+
+        $this->runInputIndicators($force_rerun);
+
         $data = [];
-        $images = 0;
-        $num_samples = $this->getParam('num_samples');
-        $use_volume = $this->getParam('use_volume');
+        $sample_size = $this->getParam('sample_size');
+
+        $groups = $this->getInputGroups();
 
         $this->resetSample();
         while ($sample = $this->nextSample()) {
-            if ($use_volume) {
-                $volumes = [];
-                for ($i = 0; $i < $num_samples - 1; $i++) {
-                    $volumes[] = intval($sample[$i]->volume);
-                }
-            }
-            $input = [];
-            for ($i = 0; $i < $num_samples; $i++) {
-                if ($i < $num_samples - 1) {
-                    $input[] = floatval($sample[$i]->open);
-                    $input[] = floatval($sample[$i]->high);
-                    $input[] = floatval($sample[$i]->low);
-                    $input[] = floatval($sample[$i]->close);
-                    continue;
-                }
-                // we only care about the open price for the last input candle
-                $input[] = floatval($sample[$i]->open);
-                $last_ohlc4 = Series::ohlc4($sample[$i]);
-            }
-            $output = Series::ohlc4($sample[count($sample)-1]);
-            //$img_data = join(',', $input).','.$output;
-            //error_log($img_data);
+            //error_log('candlesToData S: '.json_encode($sample));
+            list($input, $last_ohlc4, $output) = $this->sample2io($sample);
 
-            /*// Normalize both input and output to -1, 1
-            $min = min(min($input), $output);
-            $max = max(max($input), $output);
-            foreach ($input as $k => $v) $input[$k] = series::normalize($v, $min, $max);
-            $output = array(series::normalize($output, $min, $max));
-            */
+            error_log('candlesToData() input: '.json_encode($input));
+            //error_log('candlesToData() last_ohlc4: '.json_encode($last_ohlc4));
+            //error_log('candlesToData() output: '.json_encode($output));
+            //exit();
 
-            /*// Normalize input to -0.5, 0.5, output to bandpass -1, 1
-            //$io_factor = 2;
-            // Normalize input to -0.1, 0.1, output to bandpass -1, 1
-            $io_factor = 10;
-            $min = min($input);
-            $max = max($input);
-            foreach ($input as $k => $v) $input[$k] = series::normalize($v, $min, $max, -1/$io_factor, 1/$io_factor);
-            $output = series::normalize($output, $min, $max, -1/$io_factor, 1/$io_factor);
-            if ($output > 1) $output = 1;
-            else if ($output < -1) $output = -1;
-            $output = array($output);
-            */
+            $input = $this->normalizeInput($input);
 
-            if ($use_volume) {
-                // Normalize volumes to -1, 1
-                $min = min($volumes);
-                $max = max($volumes);
-                foreach ($volumes as $k => $v) {
-                    $volumes[$k] = Series::normalize($v, $min, $max);
-                }
-            }
-
-            // Normalize input to -1, 1, output is delta of last input and output scaled
-            $min = min($input);
-            $max = max($input);
-            foreach ($input as $k => $v) {
-                $input[$k] = Series::normalize($v, $min, $max);
-            }
+            // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
             //error_log($delta);
             $output = $delta * 100 / $last_ohlc4 / $this->getParam('output_scaling');
@@ -697,25 +853,11 @@ class Fann extends Strategy
                 $output = -1;
             }
 
-            if ($use_volume) {
-                $input = array_merge($volumes, $input);
-            }
-
-            $data[] = array('input'  => $input, 'output' => [$output]);
-
-            /*
-            $images++;
-            $img_data = join(',', $input).','.$output[0];
-            if ($images > 100) {
-            $images = 0;
-            echo '<img src="graph.php?d='.$img_data.'&amp;t='.round($output[0], 3).'" />';
-            flush();
-            }
-            */
+            $data[] = ['input'  => $input, 'output' => [$output]];
         }
 
-        //dump($data);
         $this->_data[$name] = $data;
+        //error_log('candlesToData() '.json_encode($data));
         return true;
     }
 
@@ -729,7 +871,7 @@ class Fann extends Strategy
             count($this->_data['test']),
             $this->getNumInput(),
             $this->getParam('num_output'),
-            array($this, 'createCallback')
+            [$this, 'createCallback']
         );
 
         $mse = fann_test_data($this->getFann(), $test_data);
@@ -750,7 +892,7 @@ class Fann extends Strategy
             count($this->_data['train']),
             $this->getNumInput(),
             $this->getParam('num_output'),
-            array($this, 'createCallback')
+            [$this, 'createCallback']
         );
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
 
@@ -808,8 +950,6 @@ class Fann extends Strategy
             throw new \Exception('callback type not set');
         }
 
-        //error_log('train callback: '.$num_data.' '.$num_input.' '.$num_output.' '.$this->_callback_iterator.' '.
-        //      count($this->_data[$this->_callback_type]));
         $this->_callback_iterator++;
         return is_array($this->_data[$this->_callback_type][$this->_callback_iterator-1]) ?
             $this->_data[$this->_callback_type][$this->_callback_iterator-1] :
@@ -831,27 +971,41 @@ class Fann extends Strategy
     }
 
 
-    public function getNumSamples()
+    public function getSampleSize()
     {
-        return $this->getParam('num_samples');
+        return $this->getParam('sample_size');
     }
 
 
-    public function setNumSamples(int $num)
+    public function setSampleSize(int $num)
     {
-        $this->setParam('num_samples', $num);
+        $this->setParam('sample_size', $num);
         return $this;
     }
 
 
     public function getNumInput()
     {
-        $fields = 4; // O, H, L, C
-        if ($this->getParam('use_volume')) {
-            $fields++;
+        static $cache = null;
+
+        if (!is_null($cache)) {
+            return $cache;
         }
-        // last sample has only open
-        return ($this->getParam('num_samples') -1) * $fields + 1;
+
+        $input_count = count($inputs = $this->getParam('inputs', []));
+        $input_count_based_on_open = 0;
+        foreach ($inputs as $sig) {
+            if ($this->indicatorIsBasedOn($sig, 'open')) {
+                $input_count_based_on_open++;
+            }
+        }
+
+        $cache = ($this->getParam('sample_size') - 1) * $input_count + $input_count_based_on_open;
+        if ($cache < 1) {
+            $cache = 1;
+        }
+        //error_log('Fann::getNumInput() = '.$cache);
+        return $cache;
     }
 
 

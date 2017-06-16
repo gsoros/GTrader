@@ -2,8 +2,6 @@
 
 namespace GTrader;
 
-use Illuminate\Support\Arr;
-
 trait ClassUtils
 {
     protected static function getClassConf(string $class, $key = null)

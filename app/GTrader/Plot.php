@@ -113,7 +113,7 @@ class Plot
     public static function nextColor()
     {
         static $index = 0;
-        $colors = ['#22226640', 'yellow:110', 'maroon:100', 'brown:70'];
+        $colors = ['#22226640', 'yellow:110', 'maroon:70', 'brown:70'];
         $color = $colors[$index];
         $index ++;
         if ($index >= count($colors)) {

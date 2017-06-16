@@ -358,15 +358,13 @@ class PHPlot extends Chart
         $candles = $this->getCandles();
 
         $first_output = true;
-        $output = $indicator->getParam('output');
+        $outputs = $indicator->getParam('outputs', ['']);
         $world_set = false;
         $data = [];
         $colors = [];
         $last_color = null;
-        if (!is_array($output)) {
-            $output = [0 => ''];
-        }
-        foreach ($output as $output_index => $output_name) {
+
+        foreach ($outputs as $output_index => $output_name) {
             $sig = $indicator->getSignature();
             if ($output_name) {
                 $sig .= '_'.$output_name;
@@ -418,7 +416,7 @@ class PHPlot extends Chart
             $this->setWorld();
         }
 
-        $this->_plot->SetLegendPixels(35, self::nextLegendY(count($output)));
+        $this->_plot->SetLegendPixels(35, self::nextLegendY(count($outputs)));
         $this->_plot->SetLegend($legend);
 
         $this->_plot->DrawGraph();

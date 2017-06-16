@@ -7,9 +7,9 @@ use GTrader\Indicators\Ma;
 /** Exponential Moving Average */
 class Ema extends Ma
 {
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
         $this->unSetParam('indicator.type')
             ->unSetParam('adjustable.type');
     }

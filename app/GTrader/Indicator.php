@@ -4,7 +4,7 @@ namespace GTrader;
 
 use GTrader\Chart;
 
-abstract class Indicator
+abstract class Indicator implements \JsonSerializable
 {
     use Skeleton, HasOwner
     {
@@ -18,12 +18,29 @@ abstract class Indicator
     {
         $this->__skeletonConstruct($params);
 
-        $this->allowed_owners = ['GTrader\\Series'];
+        $this->allowed_owners = ['GTrader\\Series', 'GTrader\\Strategy'];
 
         if (!$this->getParam('display.y_axis_pos')) {
             $this->setParam('display.y_axis_pos', 'left');
         }
     }
+
+
+    public function __clone()
+    {
+        $this->calculated = false;
+    }
+
+
+    public function jsonSerialize()
+    {
+        //return get_object_vars($this);
+        return [
+            'class' => get_class($this),
+            'params' => $this->getParam('indicator'),
+        ];
+    }
+
 
 
     abstract public function calculate(bool $force_rerun = false);
@@ -109,6 +126,7 @@ abstract class Indicator
     public function checkAndRun(bool $force_rerun = false)
     {
         if (!$force_rerun && $this->calculated) {
+            //error_log($this->getSignature().' has already run');
             return $this;
         }
 
@@ -126,29 +144,29 @@ abstract class Indicator
     }
 
 
-    public static function getClassFromSignature($sig)
+    public static function getClassFromSignature(string $signature)
     {
-        return explode('_', $sig)[0];
+        return explode('_', $signature)[0];
     }
 
 
-    public static function getParamsFromSignature($sig)
+    public static function getParamsFromSignature(string $signature)
     {
-        $pieces = explode('_', $sig);
+        $pieces = explode('_', $signature);
         // First elem is the class
         array_shift($pieces);
         if (!count($pieces)) {
             return [];
         }
         $params = [];
-        $key = false;
+        $key = null;
         while (list($junk, $piece) = each($pieces)) {
-            if (!$key) {
+            if (is_null($key)) {
                 $key = $piece;
                 continue;
             }
             $params[$key] = $piece;
-            $key = false;
+            $key = null;
         }
         return ['indicator' => $params];
     }
@@ -165,12 +183,15 @@ abstract class Indicator
     }
 
 
-    public function getForm(array $bases = [], array $pass_vars = [])
+    public function getForm(array $params = [])
     {
-        return view('IndicatorForm', [
-            'indicator' => $this,
-            'bases' => $bases,
-            'pass_vars' => $pass_vars,
-        ]);
+        return view('Indicators/Form',
+            array_merge($params, ['indicator' => $this])
+        );
+    }
+
+    public function getNormalizeType()
+    {
+        return $this->getParam('normalize_type');
     }
 }

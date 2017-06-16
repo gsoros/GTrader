@@ -208,16 +208,15 @@ class FannTraining extends Model
     protected function test(string $type)
     {
         $strat = $this->getStrategy($type);
+        $candles = $strat->getCandles();
         $sig = $this->getMaximizeSig();
-        if (!($ind = $strat->getIndicator($sig))) {
-            $strat->addIndicatorBySignature($sig);
-            if (!($ind = $strat->getIndicator($sig))) {
-                $strat->getCandles()->addIndicatorBySignature($sig);
-                $ind = $strat->getCandles()->getIndicator($sig);
-            }
+        if (!($ind = $candles->getOrAddIndicator($sig))) {
+            error_log('FannTraining::test() could not getOrAddIndicator()');
+            return 0;
         }
         return $ind->getLastValue(true);
     }
+
 
     protected function increaseEpoch()
     {

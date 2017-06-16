@@ -8,9 +8,9 @@ use GTrader\Indicators\Trader;
 class Macd extends Trader
 {
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
         foreach (['fast', 'slow', 'signal'] as $type) {
             $this->setParam(
                 'adjustable.'.$type.'matype.options',
@@ -38,7 +38,7 @@ class Macd extends Trader
             error_log('trader_macdext returned false');
             return [];
         }
-        //error_log(count($values[0]).' + '.count($values[1]));
+        //error_log('Macd: '.json_encode($values[0]));
         return $values;
     }
 }

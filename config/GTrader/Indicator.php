@@ -16,12 +16,11 @@ return [
         'Macd'              => ['allow_multiple' => false],
         'Bbands'            => ['allow_multiple' => false],
     ],
-    'output' => [
-        0 => '',
-    ],
+    'outputs' => [''],
+    'normalize_type' => 'ohlc',
     'default_child' => 'Ma',
     'display' => [
         'name'              => 'Unnamed Indicator',
-        'visible'           => true
+        'visible'           => true,
     ],
 ];

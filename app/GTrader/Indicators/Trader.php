@@ -12,15 +12,16 @@ if (!extension_loaded('trader')) {
 abstract class Trader extends HasBase
 {
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
         trader_set_unstable_period(TRADER_FUNC_UNST_ALL, 0);
-        parent::__construct();
+        parent::__construct($params);
     }
 
     public function calculate(bool $force_rerun = false)
     {
         if (!($candles = $this->getCandles())) {
+            error_log('Trader::calculate() could not getCandles()');
             return $this;
         }
 
@@ -28,8 +29,10 @@ abstract class Trader extends HasBase
 
         $values = $this->traderCalc($candles->extract($this->getBase()));
 
-        foreach ($this->getParam('output') as $output_index => $output_name) {
-            $name = $this->getSignature();
+        $sig = $this->getSignature();
+
+        foreach ($this->getParam('outputs', []) as $output_index => $output_name) {
+            $name = $sig;
             if (strlen($output_name)) {
                 $name .= '_'.$output_name;
             }

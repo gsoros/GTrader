@@ -1,31 +1,33 @@
-<form id="strategyForm">
+<form class="form-horizontal" id="strategyForm">
     <input type="hidden" name="id" value="{{ $strategy->getParam('id') }}">
     <div class="row bdr-rad">
-        <div class="col-sm-3">
+        <div class="col-sm-12">
             Common Strategy Settings
         </div>
-        <div class="col-sm-4">
-            <div class="editable form-group">
-                <label for="name">Name</label>
+    </div>
+    <div class="row bdr-rad">
+        <div class="form-group editable">
+            <label class="col-sm-3 control-label" for="name">Name</label>
+            <div class="col-sm-9">
                 <input class="btn-primary form-control form-control-sm"
-                        type="text"
-                        id="name"
-                        name="name"
-                        title="Strategy Name"
-                        value="{{ $strategy->getParam('name') }}">
+                    type="text"
+                    id="name"
+                    name="name"
+                    title="Strategy Name"
+                    value="{{ $strategy->getParam('name') }}">
             </div>
         </div>
-        <div class="col-sm-4">
-            <div class="editable form-group">
-                <label for="setting2">Description</label>
+        <div class="form-group editable">
+            <label  class="col-sm-3 control-label" for="setting2">Description</label>
+            <div class="col-sm-9">
                 <textarea class="btn-primary form-control form-control-sm"
-                        name="description"
-                        title="Description">{{ $strategy->getParam('description') }}</textarea>
+                    name="description"
+                    title="Description">{{ $strategy->getParam('description') }}</textarea>
             </div>
         </div>
     </div>
     {!! $child_settings !!}
-    <div class="row bdr-rad">
+    <div class="row bdr-rad editable">
         <div class="col-sm-12">
             <span class="pull-right">
                 <button onClick="window.GTrader.request('strategy', 'list')"

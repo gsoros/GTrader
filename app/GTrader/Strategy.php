@@ -12,12 +12,7 @@ class Strategy
     use Skeleton, HasCandles, HasIndicators
     {
         HasCandles::setCandles as private __hasCandlesSetCandles;
-    }
-
-
-    public function getIndicatorOwner()
-    {
-        return $this->getCandles();
+        HasIndicators::getBasesAvailable as public __HasIndicatorsGetBasesAvailable;
     }
 
 
@@ -104,6 +99,23 @@ class Strategy
     }
 
 
+    public function viewIndicatorsList()
+    {
+        return view(
+            'Indicators/List', [
+                'owner' => $this,
+                'indicators' => $this->getIndicatorsFilteredSorted([], ['display.name']),
+                'available' => $this->getIndicatorsAvailable(),
+                'name' => 'strategy_'.$this->getParam('id'),
+                'owner_class' => 'Strategy',
+                'owner_id' => $this->getParam('id'),
+                'display_outputs' => true,
+                'target_element' => 'strategy_indicators_list',
+            ]
+        );
+    }
+
+
     public static function getListOfUser(int $user_id)
     {
         $strategies_db = DB::table('strategies')
@@ -169,14 +181,15 @@ class Strategy
             return null;
         }
 
-        foreach ($this->getIndicators() as $indicator) {
+        $candles = $this->getCandles();
+        foreach ($candles->getIndicators() as $indicator) {
             if ($class === $indicator->getShortClass()) {
                 return $indicator;
             }
         }
         error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
         $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
-        $this->addIndicator($indicator);
+        $candles->addIndicator($indicator);
 
         return $indicator;
     }
@@ -214,5 +227,23 @@ class Strategy
     public function getNumSignals(bool $force_rerun = false)
     {
         return count($this->getSignals($force_rerun));
+    }
+
+
+    /*
+    public function getBasesAvailable(string $except_signature = null, array $bases = null)
+    {
+        return $this->__HasIndicatorsGetBasesAvailable($except_signature, ['open' => 'Open']);
+    }
+    */
+
+
+    public function createIndicator(string $signature)
+    {
+        $indicator = Indicator::make($signature);
+        if ($indicator->getParam('indicator.base')) {
+            $indicator->setParam('indicator.base', 'open');
+        }
+        return $indicator;
     }
 }

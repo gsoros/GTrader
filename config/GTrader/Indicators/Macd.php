@@ -6,9 +6,9 @@ return [
         'fastperiod' => 12,
         'slowperiod' => 26,
         'signalperiod' => 9,
-        'fastmatype' => TRADER_MA_TYPE_SMA,
-        'slowmatype' => TRADER_MA_TYPE_SMA,
-        'signalmatype' => TRADER_MA_TYPE_SMA,
+        'fastmatype' => TRADER_MA_TYPE_EMA,
+        'slowmatype' => TRADER_MA_TYPE_EMA,
+        'signalmatype' => TRADER_MA_TYPE_EMA,
     ],
     'adjustable' => [
         'base' => [
@@ -32,7 +32,7 @@ return [
         'signalperiod' => [
             'name' => 'Signal Period',
             'type' => 'number',
-            'min' => 2,
+            'min' => 1,
             'step' => 1,
             'max' => 99,
         ],
@@ -49,11 +49,8 @@ return [
             'type' => 'select',
         ],
     ],
-    'output' => [
-        0 => 'Fast',
-        1 => 'Slow',
-        2 => 'Signal',
-    ],
+    'outputs' => ['Fast', 'Slow', 'Signal'],
+    'normalize_type' => 'individual',
     'display' => [
         'name' => 'MACD',
         'description' => 'Moving Average Convergence/Divergence',

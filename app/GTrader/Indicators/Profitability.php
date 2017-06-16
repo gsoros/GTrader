@@ -7,6 +7,13 @@ use GTrader\Indicator;
 class Profitability extends Indicator
 {
 
+    public function __construct(array $params = [])
+    {
+        parent::__construct($params);
+        $this->allowed_owners = ['GTrader\\Series'];
+    }
+
+
     public function createDependencies()
     {
         $owner = $this->getOwner();
@@ -21,6 +28,7 @@ class Profitability extends Indicator
     public function calculate(bool $force_rerun = false)
     {
         $strategy = $this->getOwner()->getStrategy();
+        $candles = $this->getCandles();
 
         if (!($signal_ind = $strategy->getSignalsIndicator())) {
             return $this;
@@ -28,11 +36,14 @@ class Profitability extends Indicator
         $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun($force_rerun);
 
-        if (!$strategy->hasIndicatorClass('Balance')) {
-            error_log('Adding invisible balance indicator');
-            $strategy->addIndicator('Balance', ['display' => ['visible' => false]]);
+        if (!$candles->hasIndicatorClass('Balance')) {
+            error_log('Profitability::calculate() adding invisible balance indicator');
+            $candles->addIndicator('Balance', ['display' => ['visible' => false]]);
         }
-        $balance_ind = $strategy->getFirstIndicatorByClass('Balance');
+        if (!($balance_ind = $candles->getFirstIndicatorByClass('Balance'))) {
+            error_log('Profitability::calculate() could not find balance indicator');
+            return $this;
+        }
         $balance_sig = $balance_ind->getSignature();
         $balance_ind->checkAndRun($force_rerun);
 
@@ -45,7 +56,6 @@ class Profitability extends Indicator
         $losers = 0;
         $score = 0;
 
-        $candles = $this->getCandles();
         $candles->reset();
 
         while ($candle = $candles->next()) {

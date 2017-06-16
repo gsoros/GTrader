@@ -28,7 +28,7 @@ class BotController extends Controller
     }
 
 
-    public function new(Request $request)
+    public function create(Request $request)
     {
         $user_id = Auth::id();
         $name = 'New Bot';

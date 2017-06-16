@@ -32,13 +32,14 @@ Route::get('/plot.image',               'ChartController@image');
 Route::get('/settings.form',            'ChartController@settingsForm');
 Route::get('/strategy.selectorOptions', 'ChartController@strategySelectorOptions');
 Route::get('/strategy.select',          'ChartController@strategySelect');
-Route::get('/indicator.form',           'ChartController@indicatorForm');
-Route::get('/indicator.new',            'ChartController@indicatorNew');
-Route::get('/indicator.delete',         'ChartController@indicatorDelete');
-Route::post('/indicator.save',          'ChartController@indicatorSave');
+
+Route::get('/indicator.form',           'IndicatorController@form');
+Route::get('/indicator.new',            'IndicatorController@create');
+Route::get('/indicator.delete',         'IndicatorController@delete');
+Route::post('/indicator.save',          'IndicatorController@save');
 
 Route::get('/strategy.list',            'StrategyController@list');
-Route::get('/strategy.new',             'StrategyController@new');
+Route::get('/strategy.new',             'StrategyController@create');
 Route::get('/strategy.form',            'StrategyController@form');
 Route::get('/strategy.delete',          'StrategyController@delete');
 Route::post('/strategy.save',           'StrategyController@save');
@@ -52,7 +53,7 @@ Route::get('/strategy.trainPause',      'StrategyController@trainPause');
 Route::get('/strategy.trainResume',     'StrategyController@trainResume');
 
 Route::get('/bot.list',                 'BotController@list');
-Route::get('/bot.new',                  'BotController@new');
+Route::get('/bot.new',                  'BotController@create');
 Route::get('/bot.form',                 'BotController@form');
 Route::get('/bot.delete',               'BotController@delete');
 Route::post('/bot.save',                'BotController@save');

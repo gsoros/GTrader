@@ -39,11 +39,7 @@ return [
             'type' => 'select',
         ],
     ],
-    'output' => [
-        0 => 'Upper',
-        1 => 'Middle',
-        2 => 'Lower',
-    ],
+    'outputs' => ['Upper', 'Middle', 'Lower'],
     'display' => [
         'name' => 'BBands',
         'description' => 'Bollinger Bands',

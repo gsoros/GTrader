@@ -9,6 +9,12 @@ use GTrader\UserExchangeConfig;
 class Balance extends Indicator
 {
 
+    public function __construct(array $params = [])
+    {
+        parent::__construct($params);
+        $this->allowed_owners = ['GTrader\\Series'];
+    }
+
     public function createDependencies()
     {
         $owner = $this->getOwner();
@@ -28,7 +34,10 @@ class Balance extends Indicator
             throw new \Exception('Mode must be either dynamic or fixed.');
         }
 
-        $strategy = $this->getOwner()->getStrategy();
+        if (!($strategy = $this->getOwner()->getStrategy())) {
+            error_log('Balance::calculate() could not find strategy');
+            return $this;
+        }
 
         $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([

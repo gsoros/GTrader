@@ -109,72 +109,10 @@ class ChartController extends Controller
             error_log('settingsForm: no chart in session');
             return response('No such chart in session.', 403);
         }
-        $form = $chart->handleSettingsFormRequest($request);
+        $form = $chart->viewIndicatorsList();
         $chart->saveToSession();
 
         return response($form, 200);
     }
 
-
-    public function indicatorForm(Request $request)
-    {
-        if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('indicatorForm: no chart in session');
-            return response('No such chart in session.', 403);
-        }
-        if (! $chart->hasIndicator($request->signature)) {
-            error_log('indicatorForm: indicator not found in chart');
-            return response('No such indicator in that chart.', 403);
-        }
-        $form = $chart->handleIndicatorFormRequest($request);
-        $chart->saveToSession();
-
-        return response($form, 200);
-    }
-
-
-    public function indicatorNew(Request $request)
-    {
-        if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('indicatorNew: no chart in session');
-            return response('No such chart in session.', 403);
-        }
-        $form = $chart->handleIndicatorNewRequest($request);
-        $chart->saveToSession();
-        $chart->save();
-
-        return response($form, 200);
-    }
-
-
-    public function indicatorDelete(Request $request)
-    {
-        if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('indicatorDelete: no chart in session');
-            return response('No such chart in session.', 403);
-        }
-        if (! $chart->hasIndicator($request->signature)) {
-            error_log('indicatorDelete: indicator not found in chart');
-            return response('No such indicator in that chart.', 403);
-        }
-        $form = $chart->handleIndicatorDeleteRequest($request);
-        $chart->saveToSession();
-        $chart->save();
-
-        return response($form, 200);
-    }
-
-
-    public function indicatorSave(Request $request)
-    {
-        if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('indicatorSave: no chart in session');
-            return response('No such chart in session.', 403);
-        }
-        $form = $chart->handleIndicatorSaveRequest($request);
-        $chart->saveToSession();
-        $chart->save();
-
-        return response($form, 200);
-    }
 }
