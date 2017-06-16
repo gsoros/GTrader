@@ -98,7 +98,7 @@ class TrainingManager
             pclose(popen('start /B '. $command, 'r'));
         } else {
             $strategy = Strategy::load($training->strategy_id);
-            $prefix = $strategy->getParam('training_log_prefix');
+            $prefix = $strategy->getParam('training_log_prefix', 'fanntraining_');
             $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
             $command = $command.' >> '.$log_file.' 2>&1 &';
             error_log('prefix: '.$prefix.' command:'.$command);
