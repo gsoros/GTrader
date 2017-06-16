@@ -20,6 +20,7 @@
 
 namespace GTrader;
 
+
 trait Skeleton
 {
     use HasParams, ClassUtils;
@@ -29,6 +30,11 @@ trait Skeleton
     {
         $this->setParams(self::loadConfRecursive(get_class($this)));
         $this->setParams($params);
+    }
+
+
+    public function __wakeup()
+    {
     }
 
 

@@ -11,6 +11,7 @@ use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Strategies\Fann as FannStrategy;
 use GTrader\TrainingManager;
+use GTrader\Util;
 
 class FannTraining extends Model
 {
@@ -108,7 +109,8 @@ class FannTraining extends Model
             }
             $this->setProgress('signals', $this->getStrategy('test')->getNumSignals(true))
                 ->saveProgress()
-                ->increaseJump();
+                ->increaseJump()
+                ->logMemoryUsage();
         }
         $this->setProgress('state', 'queued')
             ->saveProgress()
@@ -490,6 +492,13 @@ class FannTraining extends Model
         DB::table($this->table)
             ->where('id', $this->id)
             ->update(['progress' => json_encode($this->progress)]);
+        return $this;
+    }
+
+
+    protected function logMemoryUsage()
+    {
+        error_log('Memory used: '.Util::getMemoryUsage());
         return $this;
     }
 

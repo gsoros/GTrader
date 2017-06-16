@@ -28,4 +28,12 @@ class Util
                     var_export($e->getTraceAsString(), true).
                     "\n----End Backtrace");
     }
+
+    public static function getMemoryUsage()
+    {
+        $unit = ['b','kb','mb','gb','tb','pb'];
+        $size = memory_get_usage(true);
+        return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2).' '.$unit[$i];
+    }
+
 }

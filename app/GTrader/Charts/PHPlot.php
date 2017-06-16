@@ -7,7 +7,7 @@ use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\Page;
 //use PHPlot_truecolor;
-//use GTrader\Util;
+use GTrader\Util;
 
 class PHPlot extends Chart
 {
@@ -73,6 +73,7 @@ class PHPlot extends Chart
                 $refresh .= '</script>';
             }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
+            error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
             return $this->_image_map.'<img class="img-responsive" src="'.
                     $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
         }

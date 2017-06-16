@@ -39,6 +39,7 @@ class Fann extends Strategy
 
     public function __wakeup()
     {
+        parent::__wakeup();
         if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
             //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
             $this->loadOrCreateFann(FANN_WAKEUP_PREFERRED_SUFFX);
@@ -859,7 +860,7 @@ class Fann extends Strategy
             } elseif ($output < -1) {
                 $output = -1;
             }
-            error_log('candlesToData() output: '.$output);
+            //error_log('candlesToData() output: '.$output);
 
             $data[] = ['input'  => $input, 'output' => [$output]];
         }

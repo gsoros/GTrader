@@ -15,7 +15,6 @@ class TrainingManager
     {
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock)) {
-            echo "Another TrainingManager process is running.\n";
             return false;
         }
         echo "TrainingManager:run()\n";
@@ -43,10 +42,8 @@ class TrainingManager
 
     protected function main()
     {
-        echo "main()\n";
         // Check for any trainings
         $trainings = Training::where('status', 'training')->get();
-        echo 'Trainings: '.count($trainings)."\n";
         foreach ($trainings as $training) {
             // Check if we have a free trainer slot
             while (is_null($slot = $this->getSlot())) {
@@ -101,7 +98,7 @@ class TrainingManager
             $prefix = $strategy->getParam('training_log_prefix', 'fanntraining_');
             $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
             $command = $command.' >> '.$log_file.' 2>&1 &';
-            error_log('prefix: '.$prefix.' command:'.$command);
+            error_log('command: '.$command);
             exec($command);
         }
 
