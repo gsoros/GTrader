@@ -2,40 +2,41 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
-        'period' => 14,
-        'fastk' => 14,
-        'fastd' => 3,
-        'matype' => TRADER_MA_TYPE_SMA,
+        'fastkperiod' => 14,
+        'slowkperiod' => 3,
+        'slowkmatype' => TRADER_MA_TYPE_SMA,
+        'slowdperiod' => 14,
+        'slowdmatype' => TRADER_MA_TYPE_SMA,
+
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
-        ],
-        'period' => [
-            'name' => 'Period',
-            'type' => 'number',
-            'min' => 2,
-            'step' => 1,
-            'max' => 99,
-        ],
-        'fastk' => [
+        'fastkperiod' => [
             'name' => 'FastK Period',
             'type' => 'number',
             'min' => 1,
             'step' => 1,
             'max' => 99,
         ],
-        'fastd' => [
-            'name' => 'FastD Period',
+        'slowkperiod' => [
+            'name' => 'SlowK Period',
             'type' => 'number',
             'min' => 1,
             'step' => 1,
             'max' => 99,
         ],
-        'matype' => [
-            'name' => 'FastD MA Type',
+        'slowkmatype' => [
+            'name' => 'SlowK MA Type',
+            'type' => 'select',
+        ],
+        'slowdperiod' => [
+            'name' => 'SlowD Period',
+            'type' => 'number',
+            'min' => 1,
+            'step' => 1,
+            'max' => 99,
+        ],
+        'slowdmatype' => [
+            'name' => 'SlowD MA Type',
             'type' => 'select',
         ],
     ],
@@ -46,8 +47,8 @@ return [
         'max' => 100,
     ],
     'display' => [
-        'name' => 'StochRSI',
-        'description' => 'Stochastic Relative Strength Index',
+        'name' => 'Stoch',
+        'description' => 'Stochastic',
         'y_axis_pos' => 'right',
         'top_level' => true,
     ],

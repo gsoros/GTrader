@@ -12,6 +12,7 @@ return [
         'Profitability'     => ['allow_multiple' => false],
         'Avg'               => ['allow_multiple' => true],
         'Rsi'               => ['allow_multiple' => true],
+        'Stoch'             => ['allow_multiple' => true],
         'StochRsi'          => ['allow_multiple' => true],
         'Macd'              => ['allow_multiple' => true],
         'Bbands'            => ['allow_multiple' => true],

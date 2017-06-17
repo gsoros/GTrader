@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use GTrader\Indicators\HasBase;
+use GTrader\Series;
 
 if (!extension_loaded('trader')) {
     throw new \Exception('Trader extension not loaded');
@@ -27,7 +28,7 @@ abstract class Trader extends HasBase
 
         $this->runDependencies($force_rerun);
 
-        $values = $this->traderCalc($candles->extract($this->getBase()));
+        $values = $this->traderCalc($this->extract($candles));
 
         $sig = $this->getSignature();
 
@@ -46,6 +47,10 @@ abstract class Trader extends HasBase
         return $this;
     }
 
+    public function extract(Series $candles)
+    {
+        return $candles->extract($this->getBase());
+    }
 
     abstract function traderCalc(array $values);
 }

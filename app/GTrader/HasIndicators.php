@@ -15,7 +15,10 @@ trait HasIndicators
     }
 
 
-    public function addIndicator($indicator, array $params = [])
+    public function addIndicator(
+        $indicator,
+        array $params = [],
+        array $params_if_new = [])
     {
         $owner = $this->getIndicatorOwner();
 
@@ -40,6 +43,7 @@ trait HasIndicators
             $existing->setParams($indicator->getParams());
             return $existing;
         }
+        $indicator->setParams($params_if_new);
         $indicator->setOwner($owner);
         $owner->indicators[] = $indicator;
         $indicator->createDependencies();
@@ -48,11 +52,14 @@ trait HasIndicators
     }
 
 
-    public function addIndicatorBySignature(string $signature, array $params = [])
+    public function addIndicatorBySignature(
+        string $signature,
+        array $params = [],
+        array $params_if_new = [])
     {
         $class = Indicator::getClassFromSignature($signature);
         $sig_params = Indicator::getParamsFromSignature($signature);
-        return $this->addIndicator($class, array_replace_recursive($sig_params, $params));
+        return $this->addIndicator($class, array_replace_recursive($sig_params, $params, $params_if_new));
     }
 
 
@@ -74,13 +81,16 @@ trait HasIndicators
     }
 
 
-    public function getOrAddIndicator(string $signature, array $params = [])
+    public function getOrAddIndicator(
+        string $signature,
+        array $params = [],
+        array $params_if_new = [])
     {
         if (in_array($signature, ['open', 'high', 'low', 'close', 'volume'])) {
             return false;
         }
         if (!($indicator = $this->getIndicator($signature))) {
-            if (!($indicator = $this->addIndicatorBySignature($signature, $params))) {
+            if (!($indicator = $this->addIndicatorBySignature($signature, $params, $params_if_new))) {
                 return false;
             }
         }
@@ -374,18 +384,16 @@ trait HasIndicators
             return true;
         }
         $params = ['display' => ['visible' => false]];
-        if (!($indicator = $this->getOrAddIndicator($signature, $params))) {
+        if (!($indicator = $this->getOrAddIndicator($signature, [], $params))) {
             return false;
         }
-        if ($target_base === ($base = $indicator->getParam('indicator.base', ''))) {
-            return true;
-        }
-        if (!($base_indicator = $this->getOrAddIndicator($base, $params))) {
+        if (!$indicator->hasBase()) {
             return false;
         }
-        if ($this->indicatorIsBasedOn($base_indicator->getSignature(), $target_base)) {
+        if ($indicator->basedOn($target_base)) {
             return true;
         }
+
         return false;
     }
 }

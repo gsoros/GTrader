@@ -194,4 +194,9 @@ abstract class Indicator implements \JsonSerializable
     {
         return $this->getParam('normalize_type');
     }
+
+    public function hasBase()
+    {
+        return false;
+    }
 }

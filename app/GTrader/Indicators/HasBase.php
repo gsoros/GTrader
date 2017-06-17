@@ -13,6 +13,32 @@ abstract class HasBase extends Indicator
         return str_replace('-', '_', $this->getParam('indicator.base'));
     }
 
+    public function hasBase()
+    {
+        return true;
+    }
+
+    public function basedOn(string $target_base)
+    {
+        if (!$this->hasBase()) {
+            return false;
+        }
+        if ($target_base === ($base = $this->getBase())) {
+            return true;
+        }
+        $params = ['display' => ['visible' => false]];
+        if (!($base_indicator = $this->getOwner()->getOrAddIndicator($base, [], $params))) {
+            return false;
+        }
+        if (!$base_indicator->hasBase()) {
+            return false;
+        }
+        if ($base_indicator->basedOn($target_base)) {
+            return true;
+        }
+        return false;
+    }
+
     public function basedOnIndicator()
     {
         $available = $this->getParam('available');
@@ -29,7 +55,8 @@ abstract class HasBase extends Indicator
             return null;
         }
         $base = $this->getBase();
-        if (!($indicator = $owner->getOrAddIndicator($base))) {
+        $params = ['display' => ['visible' => false]];
+        if (!($indicator = $owner->getOrAddIndicator($base, [], $params))) {
             error_log(get_class($this).'::getOrAddBaseIndicator() could not find indicator '.
                 $base.' for '.get_class($owner));
             return null;
