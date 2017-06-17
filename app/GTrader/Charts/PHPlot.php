@@ -189,8 +189,8 @@ class PHPlot extends Chart
         }
         $candles->reset(); // loads
         $title = in_array('title', $this->getParam('disabled', [])) ? '' :
-            "\n".$candles->getParam('exchange').' '.
-            $candles->getParam('symbol').' '.
+            "\n".str_replace('_', '', $candles->getParam('exchange')).' '.
+            strtoupper(str_replace('_', '', $candles->getParam('symbol'))).' '.
             $candles->getParam('resolution').' '.
             date('Y-m-d H:i', $candles->next()->time).' - '.
             date('Y-m-d H:i', $candles->last()->time);
