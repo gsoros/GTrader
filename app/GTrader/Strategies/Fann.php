@@ -656,6 +656,7 @@ class Fann extends Strategy
 
         reset($inputs);
         foreach ($inputs as $sig) {
+            $norm_type = $to_zero = null;
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_type = 'ohlc';
@@ -667,6 +668,9 @@ class Fann extends Strategy
                 if (!($norm_type = $indicator->getNormalizeType())) {
                     error_log('Fann::getInputGroups() could not getNormalizeType() for '.$sig);
                     continue;
+                }
+                if ('individual' === $norm_type) {
+                    $to_zero = $indicator->getParam('normalize_to_zero');
                 }
             }
             else {
@@ -687,7 +691,7 @@ class Fann extends Strategy
                 continue;
             }
             if ('individual' === $norm_type) {
-                $groups['individual'][$sig] = true;
+                $groups['individual'][$sig] = $to_zero ? ['to_zero' => true] : true;
                 continue;
             }
             error_log('Fann::getInputGroups() unknown normalize type for '.$sig);
@@ -757,7 +761,11 @@ class Fann extends Strategy
                         if ('range' === $group_name) {
                             $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
                         }
+                        // inividual
                         $input[$group_name][$key]['values'][] = $value;
+                        if (isset($params['to_zero'])) {
+                            $input[$group_name][$key]['to_zero'] = true;
+                        }
                     }
                 }
                 continue;
@@ -802,6 +810,13 @@ class Fann extends Strategy
                 if (is_null($min) || is_null($max)) {
                     $min = min($params['values']);
                     $max = max($params['values']);
+                }
+                if (isset($params['to_zero'])) {
+                    if ($min < 0 && $max < 0) {
+                        $max = 0;
+                    } elseif ($min > 0 && $max > 0) {
+                        $min = 0;
+                    }
                 }
                 reset($params['values']);
                 foreach ($params['values'] as $k => $v) {
@@ -849,7 +864,7 @@ class Fann extends Strategy
             //exit();
 
             $input = $this->normalizeInput($input);
-            //error_log('candlesToData() norm_input: '.json_encode($input));
+            error_log('candlesToData() norm_input: '.json_encode($input));
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;

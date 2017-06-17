@@ -51,6 +51,7 @@ return [
     ],
     'outputs' => ['Fast', 'Slow', 'Signal'],
     'normalize_type' => 'individual',
+    'normalize_to_zero' => true,
     'display' => [
         'name' => 'MACD',
         'description' => 'Moving Average Convergence/Divergence',
