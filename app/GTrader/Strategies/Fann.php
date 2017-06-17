@@ -864,7 +864,7 @@ class Fann extends Strategy
             //exit();
 
             $input = $this->normalizeInput($input);
-            error_log('candlesToData() norm_input: '.json_encode($input));
+            //error_log('candlesToData() norm_input: '.json_encode($input));
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
