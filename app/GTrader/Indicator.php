@@ -77,7 +77,7 @@ abstract class Indicator implements \JsonSerializable
     public function getDisplaySignature()
     {
         $name = $this->getParam('display.name');
-        $params = $this->getParam('indicator');
+        $params = $this->getParam('adjustable');
         //$param_str = (is_array($params)) ? join(', ', $params) : null;
 
         $param_str = '';
@@ -87,13 +87,17 @@ abstract class Indicator implements \JsonSerializable
                     if (strlen($param_str)) {
                         $param_str .= ', ';
                     }
-                    if ('select' === $this->getParam('adjustable.'.$key.'.type')) {
-                        if ($option = $this->getParam('adjustable.'.$key.'.options.'.$value)) {
-                            $param_str .= $option;
-                            continue;
+                    if (isset($value['type'])) {
+                        if ('select' === $value['type']) {
+                            if (isset($value['options'])) {
+                                if ($selected = $value['options'][$this->getParam('indicator.'.$key)]) {
+                                    $param_str .= $selected;
+                                    continue;
+                                }
+                            }
                         }
                     }
-                    $param_str .= explode('_', $value)[0];
+                    $param_str .= ucfirst(explode('_', $this->getParam('indicator.'.$key))[0]);
                 }
             }
         }

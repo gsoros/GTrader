@@ -31,7 +31,8 @@ class Balance extends Indicator
         $mode = $this->getParam('indicator.mode');
 
         if (!in_array($mode, array('dynamic', 'fixed'))) {
-            throw new \Exception('Mode must be either dynamic or fixed.');
+            error_log('Balance::calculate() mode must be either dynamic or fixed.');
+            return $this;
         }
 
         if (!($strategy = $this->getOwner()->getStrategy())) {
@@ -60,6 +61,7 @@ class Balance extends Indicator
         }
 
         if (!($signal_ind = $strategy->getSignalsIndicator())) {
+            error_log('Balance::calculate() signal indicator not found.');
             return $this;
         }
         $signal_sig = $signal_ind->getSignature();

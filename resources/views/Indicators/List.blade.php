@@ -17,8 +17,8 @@
             @php
                 $uid = uniqid();
                 $sig = $indicator->getSignature();
-                $params = $indicator->getParam('indicator');
-                $num_params = is_array($params) ? count($params) : 0;
+                $adjustable = $indicator->getParam('adjustable');
+                $num_params = is_array($adjustable) ? count($adjustable) : 0;
 
                 if ($display_outputs) {
                     $inputs = $owner->getParam('inputs', []);

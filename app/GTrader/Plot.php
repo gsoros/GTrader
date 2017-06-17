@@ -124,9 +124,9 @@ class Plot
 
     public static function nextLegendY(int $step = 1)
     {
-        static $y = 20;
+        static $y = 25;
         $ret = $y;
-        $y += 20 * $step;
+        $y += 25 * $step;
         return $ret;
     }
 }

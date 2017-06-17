@@ -16,6 +16,7 @@ return [
         'StochRsi'          => ['allow_multiple' => true],
         'Macd'              => ['allow_multiple' => true],
         'Bbands'            => ['allow_multiple' => true],
+        'Obv'               => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',
