@@ -11,7 +11,7 @@ use GTrader\Chart;
 //use GTrader\Series;
 use GTrader\Strategy;
 //use GTrader\Indicator;
-//use GTrader\Util;
+use GTrader\Util;
 use GTrader\Bot;
 
 class HomeController extends Controller
@@ -62,5 +62,25 @@ class HomeController extends Controller
         $chart->saveToSession()->save();
 
         return view('dashboard')->with($viewData);
+    }
+
+
+    public function test()
+    {
+        $count = 100000;
+        $baseline = memory_get_usage();
+
+        for ($i=0; $i<$count; $i++) {
+            $key = bin2hex(random_bytes(50));
+            $max = getrandmax();
+            $val = (rand(0, $max) - ($max / 2)) / $max / 2 ;
+            $a[] = [$key => $val];
+        }
+        return view('basic')->with([
+            'content' =>
+                $count.' pieces of random key-value pairs like <code>["'.
+                $key.'" => '.$val.']</code> use approx. '.
+                Util::humanBytes(memory_get_usage() - $baseline)
+        ]);
     }
 }

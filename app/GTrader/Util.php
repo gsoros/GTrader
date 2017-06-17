@@ -29,11 +29,16 @@ class Util
                     "\n----End Backtrace");
     }
 
-    public static function getMemoryUsage()
+    public static function humanBytes($bytes)
     {
-        $unit = ['b','kb','mb','gb','tb','pb'];
-        $size = memory_get_usage(true);
-        return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2).' '.$unit[$i];
+        $unit = ['B','kB','MB','GB','TB','PB', 'EB', 'ZB', 'YB'];
+        return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2).$unit[$i];
+    }
+
+    public static function getMemoryUsage(bool $real_usage = false)
+    {
+        return self::humanBytes(memory_get_usage($real_usage));
+
     }
 
 }
