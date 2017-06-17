@@ -12,14 +12,14 @@ return [
     'adjustable' => [
         'fastkperiod' => [
             'name' => 'FastK Period',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 1,
             'step' => 1,
             'max' => 99,
         ],
         'slowkperiod' => [
             'name' => 'SlowK Period',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 1,
             'step' => 1,
             'max' => 99,
@@ -30,7 +30,7 @@ return [
         ],
         'slowdperiod' => [
             'name' => 'SlowD Period',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 1,
             'step' => 1,
             'max' => 99,

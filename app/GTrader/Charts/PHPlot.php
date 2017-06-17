@@ -380,6 +380,7 @@ class PHPlot extends Chart
                     continue;
                 }
                 $data[$index-1] =  ['', $candle->time, $value];
+                $last_candle = $candle;
             }
             $last_color = self::nextColor();
             $colors[] = $last_color;
@@ -391,8 +392,8 @@ class PHPlot extends Chart
             }
             $first_output = false;
         }
-
         if (!count($data)) {
+            error_log('plotIndicator() '.$sig.' empty data');
             return $this;
         }
 

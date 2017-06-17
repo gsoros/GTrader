@@ -16,7 +16,11 @@
 </h5>
 <form class="form-horizontal row">
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
-        <div class="form-group">
+        <div class="form-group"
+            @if (isset($param['description']))
+                title="{{ $param['description'] }}"
+            @endif
+        >
             <label class="col-sm-3 control-label" for="{{ $key }}_{{ $uid }}">{{ $param['name'] }}</label>
             <div class="col-sm-9">
                 @if ('base' === $param['type'])
@@ -45,7 +49,7 @@
                         @endforeach
                     @endif
                 </select>
-                @elseif ('number' === $param['type'])
+                @elseif (in_array($param['type'], ['int', 'float']))
                 <input type="number"
                     class="btn-primary btn btn-mini form-control form-control-sm"
                     id="{{ $key }}_{{ $uid }}"

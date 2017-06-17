@@ -65,6 +65,9 @@ abstract class Indicator implements \JsonSerializable
                     if (strlen($param_str)) {
                         $param_str .= '_';
                     }
+                    if ('float' === $this->getParam('adjustable.'.$key.'.type')) {
+                        $value = str_replace('.', 'd', $value);
+                    }
                     $param_str .= $key.'_'.str_replace('_', '-', $value);
                 }
             }
@@ -157,8 +160,8 @@ abstract class Indicator implements \JsonSerializable
     public static function getParamsFromSignature(string $signature)
     {
         $pieces = explode('_', $signature);
-        // First elem is the class
-        array_shift($pieces);
+        // First element is the class
+        $indicator = Indicator::make(array_shift($pieces));
         if (!count($pieces)) {
             return [];
         }
@@ -168,6 +171,10 @@ abstract class Indicator implements \JsonSerializable
             if (is_null($key)) {
                 $key = $piece;
                 continue;
+            }
+            if ('float' === $indicator->getParam('adjustable.'.$key.'.type')) {
+                $piece = floatval(str_replace('d', '.', $piece));
+                //error_log('Indicator::getParamsFromSignature() float '.$key.' = '.$piece);
             }
             $params[$key] = $piece;
             $key = null;

@@ -16,7 +16,7 @@ return [
         ],
         'capital' => [
             'name' => 'Initial Capital',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 1,
             'step' => 1,
             'max' => 1000,

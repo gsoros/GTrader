@@ -12,7 +12,7 @@ return [
         ],
         'period' => [
             'name' => 'Period',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 2,
             'step' => 1,
             'max' => 99,

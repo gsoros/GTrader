@@ -13,7 +13,7 @@ return [
         ],
         'length' => [
             'name' => 'Length',
-            'type' => 'number',
+            'type' => 'int',
             'min' => 2,
             'step' => 1,
             'max' => 1000,
