@@ -10,6 +10,9 @@ abstract class HasBase extends Indicator
 
     public function getBase()
     {
+        if (!$this->hasBase()) {
+            return null;
+        }
         return str_replace('-', '_', $this->getParam('indicator.base'));
     }
 
