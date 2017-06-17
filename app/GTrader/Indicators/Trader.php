@@ -37,6 +37,9 @@ abstract class Trader extends HasBase
             if (strlen($output_name)) {
                 $name .= '_'.$output_name;
             }
+            if (!isset($values[$output_index])) {
+                continue;
+            }
             $candles->setValues(
                 $name,
                 $values[$output_index],

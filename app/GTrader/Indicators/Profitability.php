@@ -4,6 +4,7 @@ namespace GTrader\Indicators;
 
 use GTrader\Indicator;
 
+/* Winners vs. losers */
 class Profitability extends Indicator
 {
 

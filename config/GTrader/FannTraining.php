@@ -25,7 +25,7 @@ return [
             ],
         ],
         [
-            'name' => 'Profitability',
+            'name' => 'Winners vs. losers',
             'class' => 'Profitability',
             'params' => [],
         ],

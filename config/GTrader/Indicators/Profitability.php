@@ -3,7 +3,7 @@
 return [
     'normalize_type' => 'individual',
     'display' => [
-        'name' => 'Profitability',
+        'name' => 'Winners vs. losers',
         'y_axis_pos' => 'right',
     ],
 ];
