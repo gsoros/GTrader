@@ -84,18 +84,19 @@ class FannSignals extends Indicator
                     continue;
                 }
 
-                $price_long = $price_short = $candle->open;
-
                 if ($candle->$indicator_sig >
                     $candle->open + $candle->open / $long_threshold &&
                     ($last['signal'] != 'long' || $spitfire)) {
+                    $price = 'ohlc4' === $long_source ?
+                        Series::ohlc4($candle) :
+                        $candle->$long_source;
                     $candle->$signature = [
                         'signal' => 'long',
-                        'price' => $candle->$long_source,
+                        'price' => $price,
                     ];
                     $last = [
                         'time' => $candle->time,
-                        'signal' => 'long'
+                        'signal' => 'long',
                     ];
                     continue;
                 }
@@ -103,13 +104,16 @@ class FannSignals extends Indicator
                 if ($candle->$indicator_sig <
                     $candle->open - $candle->open / $short_threshold &&
                     ($last['signal'] != 'short' || $spitfire)) {
+                    $price = 'ohlc4' === $short_source ?
+                        Series::ohlc4($candle) :
+                        $candle->$short_source;
                     $candle->$signature = [
                         'signal' => 'short',
-                        'price' => $candle->$short_source,
+                        'price' => $price,
                     ];
                     $last = [
                         'time' => $candle->time,
-                        'signal' => 'short'
+                        'signal' => 'short',
                     ];
                 }
             }

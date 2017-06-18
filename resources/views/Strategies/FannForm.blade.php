@@ -81,7 +81,13 @@
         <div class="col-sm-9">
             <select class="btn-primary form-control form-control-sm" name="long_source" id="long_source">
             @php
-            $sources = ['open' => 'Open', 'high' => 'High', 'low' => 'Low', 'close' => 'Close'];
+            $sources = [
+                'open' => 'Open',
+                'high' => 'High',
+                'low' => 'Low',
+                'close' => 'Close',
+                'ohlc4' => 'OHLC4',
+            ];
             $setting = $strategy->getParam('long_source', 'open');
             @endphp
             @foreach ($sources as $value => $label)
