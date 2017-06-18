@@ -77,6 +77,42 @@
     </div>
 
     <div class="form-group editable">
+        <label class="col-sm-3 control-label" for="long_source">Long signal price source</label>
+        <div class="col-sm-9">
+            <select class="btn-primary form-control form-control-sm" name="long_source" id="long_source">
+            @php
+            $sources = ['open' => 'Open', 'high' => 'High', 'low' => 'Low', 'close' => 'Close'];
+            $setting = $strategy->getParam('long_source', 'open');
+            @endphp
+            @foreach ($sources as $value => $label)
+                <option
+                @if ($value === $setting)
+                    selected
+                @endif
+                value="{{ $value }}">{{ $label }}</option>
+            @endforeach
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group editable">
+        <label class="col-sm-3 control-label" for="long_source">Short signal price source</label>
+        <div class="col-sm-9">
+            <select class="btn-primary form-control form-control-sm" name="short_source" id="short_source">
+            @php
+            $setting = $strategy->getParam('short_source', 'open');
+            @endphp
+            @foreach ($sources as $value => $label)
+                @if ($value === $setting)
+                    selected
+                @endif
+                <option value="{{ $value }}">{{ $label }}</option>
+            @endforeach
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group editable">
         <label for="long_threshold" class="col-sm-3 control-label">Long threshold</label>
         <div class="col-sm-9">
             <input class="btn-primary form-control form-control-sm"

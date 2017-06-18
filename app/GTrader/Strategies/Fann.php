@@ -223,6 +223,12 @@ class Fann extends Strategy
             }
         }
 
+        foreach (['long_source', 'short_source'] as $param) {
+            if (isset($request->$param)) {
+                $this->setParam($param, $request->$param);
+            }
+        }
+
         parent::handleSaveRequest($request);
         return $this;
     }

@@ -62,6 +62,8 @@ class FannSignals extends Indicator
             throw new \Exception('Threshold is zero');
         }
         $min_distance = $strategy->getParam('min_trade_distance');
+        $long_source = $strategy->getParam('long_source', 'open');
+        $short_source = $strategy->getParam('short_source', 'open');
         $resolution = $candles->getParam('resolution');
         $num_input = $strategy->getNumInput();
 
@@ -85,15 +87,30 @@ class FannSignals extends Indicator
                 $price_long = $price_short = $candle->open;
 
                 if ($candle->$indicator_sig >
-                            $candle->open + $candle->open / $long_threshold &&
-                            ($last['signal'] != 'long' || $spitfire)) {
-                    $candle->$signature = ['signal' => 'long', 'price' => $price_long];
-                    $last = ['time' => $candle->time, 'signal' => 'long'];
-                } elseif ($candle->$indicator_sig <
-                            $candle->open - $candle->open / $short_threshold &&
-                            ($last['signal'] != 'short' || $spitfire)) {
-                    $candle->$signature = ['signal' => 'short', 'price' => $price_short];
-                    $last = ['time' => $candle->time, 'signal' => 'short'];
+                    $candle->open + $candle->open / $long_threshold &&
+                    ($last['signal'] != 'long' || $spitfire)) {
+                    $candle->$signature = [
+                        'signal' => 'long',
+                        'price' => $candle->$long_source,
+                    ];
+                    $last = [
+                        'time' => $candle->time,
+                        'signal' => 'long'
+                    ];
+                    continue;
+                }
+
+                if ($candle->$indicator_sig <
+                    $candle->open - $candle->open / $short_threshold &&
+                    ($last['signal'] != 'short' || $spitfire)) {
+                    $candle->$signature = [
+                        'signal' => 'short',
+                        'price' => $candle->$short_source,
+                    ];
+                    $last = [
+                        'time' => $candle->time,
+                        'signal' => 'short'
+                    ];
                 }
             }
         }
