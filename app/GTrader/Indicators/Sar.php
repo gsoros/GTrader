@@ -8,8 +8,13 @@ use GTrader\Series;
 /** Parabolic Stop And Reverse */
 class Sar extends Trader
 {
-    public function hasBase()
+
+    public function basedOn(string $target_base)
     {
+        // Trick fann to include this indicator in the most recent candle
+        if ('open' === $target_base) {
+            return true;
+        }
         return false;
     }
 

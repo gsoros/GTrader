@@ -230,13 +230,6 @@ class Strategy
     }
 
 
-    /*
-    public function getBasesAvailable(string $except_signature = null, array $bases = null)
-    {
-        return $this->__HasIndicatorsGetBasesAvailable($except_signature, ['open' => 'Open']);
-    }
-    */
-
 
     public function createIndicator(string $signature)
     {

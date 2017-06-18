@@ -202,8 +202,8 @@ class Fann extends Strategy
         $sample_size = $this->getParam('sample_size');
         if (isset($request->sample_size)) {
             $sample_size = intval($request->sample_size);
-            if ($sample_size < 2) {
-                $sample_size = 2;
+            if ($sample_size < 1) {
+                $sample_size = 1;
             }
             if ($sample_size !== intval($this->getParam('sample_size'))) {
                 $topology_changed = true;

@@ -42,6 +42,9 @@
                 id="sample_size"
                 name="sample_size"
                 title="Sample size"
+                min="1"
+                step="1"
+                max="99"
                 value="{{ $strategy->getParam('sample_size') }}">
         </div>
     </div>
@@ -65,6 +68,9 @@
                 type="number"
                 id="target_distance"
                 name="target_distance"
+                min="1"
+                step="1"
+                max="99"
                 title="Prediction distance in candles"
                 value="{{ $strategy->getParam('target_distance') }}">
         </div>
@@ -77,6 +83,9 @@
                 type="number"
                 id="long_threshold"
                 name="long_threshold"
+                min="1"
+                step="1"
+                max="1000"
                 title="Prediction fraction of price to trigger a long signal"
                 value="{{ $strategy->getParam('long_threshold') }}">
         </div>
@@ -86,6 +95,9 @@
                 type="number"
                 id="short_threshold"
                 name="short_threshold"
+                min="1"
+                step="1"
+                max="1000"
                 title="Prediction fraction of price to trigger a short signal"
                 value="{{ $strategy->getParam('short_threshold') }}">
         </div>
