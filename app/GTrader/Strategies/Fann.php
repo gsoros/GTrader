@@ -126,6 +126,8 @@ class Fann extends Strategy
             $progress_chart->addIndicator('Balance');
             $this->save();
         }
+        $balance_ind = $progress_chart->getFirstIndicatorByClass('Balance');
+        $balance_ind->setParam('display.visible', true);
 
         if (!$progress_chart->hasIndicatorClass('Profitability')) {
             $progress_chart->addIndicator('Profitability');
