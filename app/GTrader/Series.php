@@ -309,6 +309,29 @@ class Series extends Collection
 
 
 
+    public function realSlice(int $offset, int $length = null, bool $preserve_keys = false)
+    {
+        $this->_load();
+        return array_slice($this->items, $offset, $length, $preserve_keys);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /** Simple Moving Average */
     public function sma($len = 0, $price = 'close')
     {

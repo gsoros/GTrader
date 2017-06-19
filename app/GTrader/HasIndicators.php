@@ -387,13 +387,12 @@ trait HasIndicators
         if (!($indicator = $this->getOrAddIndicator($signature, [], $params))) {
             return false;
         }
+        if (!method_exists($indicator, 'hasBase')) {
+            return false;
+        }
         if (!$indicator->hasBase()) {
             return false;
         }
-        if ($indicator->basedOn($target_base)) {
-            return true;
-        }
-
-        return false;
+        return $indicator->basedOn($target_base);
     }
 }

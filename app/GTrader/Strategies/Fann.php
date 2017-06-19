@@ -588,25 +588,13 @@ class Fann extends Strategy
     public function resetSample()
     {
         $this->_sample_iterator = 0;
-        $this->nextSample(null, 'reset');
         return true;
     }
 
 
-    public function nextSample($size = null, $reset = false)
+    public function nextSample($size = null)
     {
-        static $___sample = [];
-
-        if ($reset == 'reset') {
-            $___sample = [];
-            return true;
-        }
-
         $candles = $this->getCandles();
-
-        //error_log('nextSample() candles: '.$candles->debugObjId());
-        //error_log(json_encode($candles->first()));
-        //exit();
 
         if (!$candles->size()) {
             return null;
@@ -616,23 +604,15 @@ class Fann extends Strategy
             $size = $this->getParam('sample_size') + $this->getParam('target_distance');
         }
 
-        while ($candle = $candles->byKey($this->_sample_iterator)) {
-            $this->_sample_iterator++;
-            $___sample[] = $candle;
-            $current_size = count($___sample);
-            if ($current_size <  $size) {
-                continue;
-            }
-            if ($current_size == $size) {
-                //error_log('nextSample S: '.json_encode($___sample));
-                return $___sample;
-            }
-            if ($current_size >  $size) {
-                array_shift($___sample);
-                return $___sample;
-            }
+        $sample = $candles->realSlice($this->_sample_iterator, $size);
+
+        if ($size !== count($sample)) {
+            return null;
         }
-        return null;
+
+        $this->_sample_iterator++;
+
+        return $sample;
     }
 
 

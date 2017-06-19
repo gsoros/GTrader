@@ -2,16 +2,25 @@
 
 return [
     'indicator' =>  [
+        'simulation_lookback' => 0,
         'start' => 0,
         'offset' => .005,
-        'accelInitLong' => 0.05,
-        'accelLong' => .1,
-        'accelMaxLong' => .2,
-        'accelInitShort' => .05,
-        'accelShort' => .1,
-        'accelMaxShort' => .2,
+        'accelInitLong' => 0.02,
+        'accelLong' => .02,
+        'accelMaxLong' => .1,
+        'accelInitShort' => .02,
+        'accelShort' => .02,
+        'accelMaxShort' => .1,
     ],
     'adjustable' => [
+        'simulation_lookback' => [
+            'name' => 'Simulation lookback',
+            'description' => 'Description TODO',
+            'type' => 'int',
+            'min' => 0,
+            'step' => 1,
+            'max' => 99,
+        ],
         'start' => [
             'name' => 'Start',
             'description' => 'Start value and direction. 0 for auto, >0 for long, <0 for short.',
@@ -25,7 +34,7 @@ return [
             'description' => 'Percent offset added/removed to initial stop on short/long reversal.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .005,
             'max' => 10,
         ],
         'accelInitLong' => [
@@ -33,7 +42,7 @@ return [
             'description' => 'Acceleration factor initial value for the long direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
         'accelLong' => [
@@ -41,7 +50,7 @@ return [
             'description' => 'Acceleration Factor for the long direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
         'accelMaxLong' => [
@@ -49,7 +58,7 @@ return [
             'description' => 'Acceleration Factor maximum value for the long direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
         'accelInitShort' => [
@@ -57,7 +66,7 @@ return [
             'description' => 'Acceleration factor initial value for the short direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
         'accelShort' => [
@@ -65,7 +74,7 @@ return [
             'description' => 'Acceleration Factor for the short direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
         'accelMaxShort' => [
@@ -73,7 +82,7 @@ return [
             'description' => 'Acceleration Factor maximum value for the short direction.',
             'type' => 'float',
             'min' => 0,
-            'step' => .05,
+            'step' => .01,
             'max' => 10,
         ],
     ],
