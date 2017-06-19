@@ -8,11 +8,12 @@ use GTrader\Series;
 /** Parabolic Stop And Reverse */
 class Sar extends Trader
 {
+/*
     public function hasBase()
     {
         return false;
     }
-/*
+*/
     public function basedOn(string $target_base)
     {
         // Trick fann to include this indicator in the most recent candle
@@ -21,7 +22,7 @@ class Sar extends Trader
         }
         return false;
     }
-*/
+
 
     protected function trader_sarext(array $high, array $low)
     {
@@ -43,7 +44,8 @@ class Sar extends Trader
     {
         $new_values = [];
 
-        $lookback = intval($this->getParam('indicator.simulation_lookback'));
+        $lookback = intval($this->getParam('indicator.simulationLookback'));
+
         if (1 < $lookback) {
             if ($open_count = count($values['open'])) {
                 $ocml = $open_count - $lookback;
@@ -75,6 +77,7 @@ class Sar extends Trader
                 $new_values[$k] = -$v;
             }
         }
+
         return [$new_values];
     }
 
@@ -85,7 +88,7 @@ class Sar extends Trader
             'low' => $candles->extract('low'),
         ];
 
-        if (1 < intval($this->getParam('indicator.simulation_lookback'))) {
+        if (1 < intval($this->getParam('indicator.simulationLookback'))) {
             $values['open'] = $candles->extract('open');
         }
 

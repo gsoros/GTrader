@@ -2,7 +2,7 @@
 
 return [
     'indicator' =>  [
-        'simulation_lookback' => 0,
+        'simulationLookback' => 0,
         'start' => 0,
         'offset' => .005,
         'accelInitLong' => 0.02,
@@ -13,7 +13,7 @@ return [
         'accelMaxShort' => .1,
     ],
     'adjustable' => [
-        'simulation_lookback' => [
+        'simulationLookback' => [
             'name' => 'Simulation lookback',
             'description' => 'Description TODO',
             'type' => 'int',
