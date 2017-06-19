@@ -124,10 +124,11 @@
             $setting = $strategy->getParam('short_source', 'open');
             @endphp
             @foreach ($sources as $value => $label)
+                <option
                 @if ($value === $setting)
                     selected
                 @endif
-                <option value="{{ $value }}">{{ $label }}</option>
+                value="{{ $value }}">{{ $label }}</option>
             @endforeach
             </select>
         </div>
