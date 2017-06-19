@@ -18,7 +18,7 @@ class Sar extends Trader
     {
         // Trick fann to include this indicator in the most recent candle
         if ('open' === $target_base) {
-            return true;
+            return $this->getLookBack() ? true : false;
         }
         return false;
     }
@@ -40,40 +40,50 @@ class Sar extends Trader
         );
     }
 
-    public function traderCalc(array $values)
+    protected function getLookBack()
     {
-        $new_values = [];
+        return 1 < ($lookback = intval($this->getParam('indicator.simulationLookback'))) ? $lookback : false;
 
-        $lookback = intval($this->getParam('indicator.simulationLookback'));
+    }
 
-        if (1 < $lookback) {
-            if ($open_count = count($values['open'])) {
-                $ocml = $open_count - $lookback;
-                for ($i = 0; $i < $ocml; $i++) {
-                    $high = array_slice($values['high'], $i, $lookback);
-                    array_push($high, $values['open'][$i + $lookback]);
-                    $low = array_slice($values['low'], $i, $lookback);
-                    array_push($low, $values['open'][$i + $lookback]);
-                    $sar = $this->trader_sarext($high, $low);
-                    if (count($new_values)) {
-                        array_push($new_values, array_pop($sar));
-                        continue;
-                    }
-                    $new_values = $sar;
-                }
-                //error_log('Sar with lookback: '.json_encode($new_values));
-            }
+    protected function simulatedSar($values)
+    {
+        if (!($lookback = $this->getLookBack())) {
+            return false;
+        }
+        if (!($open_count = count($values['open']))) {
+            return false;
         }
 
-        if (!count($new_values)) {
+        $new_values = [];
+        $ocml = $open_count - $lookback;
+
+        for ($i = 0; $i < $ocml; $i++) {
+            $high = array_slice($values['high'], $i, $lookback);
+            array_push($high, $values['open'][$i + $lookback]);
+            $low = array_slice($values['low'], $i, $lookback);
+            array_push($low, $values['open'][$i + $lookback]);
+            $sar = $this->trader_sarext($high, $low);
+            if (count($new_values)) {
+                array_push($new_values, array_pop($sar));
+                continue;
+            }
+            $new_values = $sar;
+        }
+
+        return count($new_values) ? $new_values : false;
+    }
+
+    public function traderCalc(array $values)
+    {
+        if (!($new_values = $this->simulatedSar($values))) {
             if (!($new_values = $this->trader_sarext($values['high'], $values['low']))) {
-                error_log('trader_sarext() returned false');
                 return [];
             }
         }
 
         foreach ($new_values as $k => $v) {
-            if ($v < 0) {
+            if ($v < 0) { // faster than abs()
                 $new_values[$k] = -$v;
             }
         }
@@ -88,7 +98,7 @@ class Sar extends Trader
             'low' => $candles->extract('low'),
         ];
 
-        if (1 < intval($this->getParam('indicator.simulationLookback'))) {
+        if ($this->getLookBack()) {
             $values['open'] = $candles->extract('open');
         }
 
