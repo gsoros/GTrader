@@ -77,6 +77,21 @@
     </div>
 
     <div class="form-group editable">
+        <label class="col-sm-3 control-label" for="min_trade_distance">Minimum trade distance</label>
+        <div class="col-sm-9">
+            <input class="btn-primary form-control form-control-sm"
+                type="number"
+                id="min_trade_distance"
+                name="min_trade_distance"
+                min="0"
+                step="1"
+                max="99"
+                title="Do not trade if last trade was more recent than this number of candles"
+                value="{{ $strategy->getParam('min_trade_distance') }}">
+        </div>
+    </div>
+
+    <div class="form-group editable">
         <label class="col-sm-3 control-label" for="long_source">Long signal price source</label>
         <div class="col-sm-9">
             <select class="btn-primary form-control form-control-sm" name="long_source" id="long_source">
