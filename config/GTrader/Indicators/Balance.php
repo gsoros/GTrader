@@ -2,7 +2,7 @@
 
 return [
     'indicator' => [
-        'mode' => 'dynamic',
+        'mode' => 'fixed',
         'capital' => 100,
     ],
     'adjustable' => [

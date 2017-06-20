@@ -34,19 +34,26 @@ class FannPrediction extends Indicator
 
         $prediction = [];
 
+        //$dumptime = strtotime('2017-06-11 10:00:00');
+
         $strategy->resetSample();
         while ($sample = $strategy->nextSample($sample_size)) {
 
             $input = $strategy->sample2io($sample, true);
 
-            $input = $strategy->normalizeInput($input);
+            $norm_input = $strategy->normalizeInput($input);
 
-            $pred = $strategy->run($input);
+            $pred = $strategy->run($norm_input);
             $prediction[$sample[count($sample)-1]->time] = $pred;
+
+            //if ($dumptime == $sample[count($sample)-1]->time) {
+            //    error_log('FannPred calc() input: '.json_encode($input).' pred: '.$pred);
+            //}
         }
 
         $candles = $this->getCandles();
         $candles->reset();
+
         while ($candle = $candles->next()) {
             $val = isset($prediction[$candle->time]) ? $prediction[$candle->time] : 0;
             //error_log('P:'.$val);

@@ -51,6 +51,10 @@ class Candle extends Model
         return $this;
     }
 
+    public function dump()
+    {
+        return json_encode($this->attributes);
+    }
 
     /*
     * Perform a heikin ashi calculation

@@ -732,12 +732,17 @@ class Fann extends Strategy
             error_log('Fann::sample2io() wrong sample size ('.$actual_size.' vs. '.$in_sample_size.')');
         }
 
+        //$dumptime = strtotime('2017-06-11 10:00:00');
+
         for ($i = 0; $i < $out_sample_size; $i++) {
             reset($groups);
             foreach ($groups as $group_name => $group) {
                 //error_log('sample2io() group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
+                    //if ($dumptime == $sample[$i]->time) {
+                    //    error_log('Fann::sample2io() params: '.json_encode($params));
+                    //}
                     if ($i == $out_sample_size - 1) {
                         // for the last input candle, we only care about the fields which are based on "open"
                         if (!$this->indicatorIsBasedOn($sig, 'open')) {
