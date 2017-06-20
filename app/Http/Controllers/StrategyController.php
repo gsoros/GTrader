@@ -206,7 +206,7 @@ class StrategyController extends Controller
             $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
         }
         foreach (['crosstrain', 'reset_after', 'maximize_for'] as $item) {
-            if ($request->$item) {
+            if (isset($request->$item)) {
                 $prefs[$item] = $request->$item;
             }
         }
