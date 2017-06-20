@@ -40,7 +40,13 @@ class User extends Authenticatable
     public function getPreference(string $key, $default = null)
     {
         $prefs = $this->preferences;
-        return isset($prefs[$key]) ? $prefs[$key] : $default;
+        if (isset($prefs[$key])) {
+            if (is_array($prefs[$key]) && is_array($default)) {
+                return array_replace_recursive($default, $prefs[$key]);
+            }
+            return $prefs[$key];
+        }
+        return $default;
     }
 
 

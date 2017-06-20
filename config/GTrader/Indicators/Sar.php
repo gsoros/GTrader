@@ -2,7 +2,7 @@
 
 return [
     'indicator' =>  [
-        'simulationLookback' => 0,
+        'simulationLookback' => 30,
         'start' => 0,
         'offset' => .005,
         'accelInitLong' => 0.02,

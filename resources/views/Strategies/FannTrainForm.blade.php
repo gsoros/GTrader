@@ -42,14 +42,22 @@
         <label for="crosstrain">Cross-train</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="crosstrain">
-            <option value="0" selected>No cross-train</option>
-            <option value="10">10</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="500">500</option>
-            <option value="1000">1 000</option>
-            <option value="2500">2 500</option>
-            <option value="5000">5 000</option>
+            @foreach ([
+                0 => 'No cross-train',
+                10 => '10',
+                100 => '100',
+                250 => '250',
+                500 => '500',
+                1000 => '1 000',
+                2500 => '2 500',
+                5000 => '5 000',
+            ] as $val => $lab)
+                <option value="{{ $val }}"
+                @if ($val == $preferences['crosstrain'])
+                    selected
+                @endif
+                >{{ $lab }}</option>
+            @endforeach
         </select>
     </div>
     <div class="col-sm-6 editable"
@@ -57,13 +65,22 @@
         <label for="reset_after">Reset</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="reset_after">
-            <option value="0">No reset</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="500">500</option>
-            <option value="1000">1 000</option>
-            <option value="5000" selected>5 000</option>
-            <option value="10000">10 000</option>
+            @foreach ([
+                0 => 'No reset',
+                100 => '100',
+                250 => '250',
+                500 => '500',
+                1000 => '1 000',
+                2500 => '2 500',
+                5000 => '5 000',
+                10000 => '10 000',
+            ] as $val => $lab)
+                <option value="{{ $val }}"
+                @if ($val == $preferences['reset_after'])
+                    selected
+                @endif
+                >{{ $lab }}</option>
+            @endforeach
         </select>
     </div>
     <div class="col-sm-6 editable"
@@ -72,7 +89,11 @@
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="maximize_for">
             @foreach (\Config::get('GTrader.FannTraining.indicators') as $ind)
-                <option value="{{ $ind['name'] }}">{{ $ind['name'] }}</option>
+                <option value="{{ $ind['name'] }}"
+                @if ($ind['name'] == $preferences['maximize_for'])
+                    selected
+                @endif
+                >{{ $ind['name'] }}</option>
             @endforeach
         </select>
     </div>

@@ -202,6 +202,11 @@ class StrategyController extends Controller
             $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
             $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
         }
+        foreach (['crosstrain', 'reset_after', 'maximize_for'] as $item) {
+            if ($request->$item) {
+                $prefs[$item] = $request->$item;
+            }
+        }
         Auth::user()->setPreference('fann_training', $prefs)->save();
 
         $candles = new Series([
