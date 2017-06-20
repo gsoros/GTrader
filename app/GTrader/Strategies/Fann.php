@@ -769,9 +769,26 @@ class Fann extends Strategy
                 reset($group);
                 foreach ($group as $sig => $params) {
                     if ($this->indicatorIsBasedOn($sig, 'open')) {
+                        $key = $sig;
                         $value = floatval($sample[$i]->$sig);
-                        $key = ('ohlc' === $group_name) ? 0 : $sig;
+                        //if (!$value) {
+                        //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
+                        //    exit();
+                        //}
+                        if ('ohlc' === $group_name) {
+                            $key = 0;
+                        }
+                        if (!isset($input[$group_name][$key])) {
+                            $input[$group_name][$key] = ['values' => []];
+                        }
+                        if ('range' === $group_name) {
+                            $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
+                        }
+                        // inividual
                         $input[$group_name][$key]['values'][] = $value;
+                        if (isset($params['to_zero'])) {
+                            $input[$group_name][$key]['to_zero'] = true;
+                        }
                     }
                 }
             }
@@ -851,7 +868,7 @@ class Fann extends Strategy
             //error_log('candlesToData S: '.json_encode($sample));
             list($input, $last_ohlc4, $output) = $this->sample2io($sample);
 
-            //error_log('candlesToData() input: '.json_encode($input));
+            //error_log('candlesToData() input:      '.json_encode($input));
             //error_log('candlesToData() last_ohlc4: '.json_encode($last_ohlc4));
             //error_log('candlesToData() output: '.json_encode($output));
             //exit();
