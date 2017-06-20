@@ -123,11 +123,11 @@ class StrategyController extends Controller
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where(function ($query) {
-                                        $query->where('status', 'training')
-                                            ->orWhere('status', 'paused');
-                                })
-                                ->first();
+            ->where(function ($query) {
+                    $query->where('status', 'training')
+                        ->orWhere('status', 'paused');
+            })
+            ->first();
         if (is_object($training)) {
             $html = view('Strategies/FannTrainProgress', [
                 'strategy' => $strategy,
@@ -142,6 +142,9 @@ class StrategyController extends Controller
                 \Config::get('GTrader.FannTraining.'.$item.'_range.start_percent');
             $default_prefs[$item.'_end_percent'] =
                 \Config::get('GTrader.FannTraining.'.$item.'_range.end_percent');
+        }
+        foreach (['crosstrain', 'reset_after', 'maximize_for'] as $item) {
+            $default_prefs[$item] = \Config::get('GTrader.FannTraining.'.$item);
         }
 
         $html = view('Strategies/FannTrainForm', [
