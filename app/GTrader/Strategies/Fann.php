@@ -733,62 +733,36 @@ class Fann extends Strategy
         }
 
         for ($i = 0; $i < $out_sample_size; $i++) {
-            if ($i < $out_sample_size - 1) {
-                reset($groups);
-                foreach ($groups as $group_name => $group) {
-                    //error_log('sample2io() group_name: '.$group_name);
-                    reset($group);
-                    foreach ($group as $sig => $params) {
-                        $key = $sig;
-                        $value = floatval($sample[$i]->$sig);
-                        //if (!$value) {
-                        //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
-                        //    exit();
-                        //}
-                        if ('ohlc' === $group_name) {
-                            $key = 0;
-                        }
-                        if (!isset($input[$group_name][$key])) {
-                            $input[$group_name][$key] = ['values' => []];
-                        }
-                        if ('range' === $group_name) {
-                            $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
-                        }
-                        // inividual
-                        $input[$group_name][$key]['values'][] = $value;
-                        if (isset($params['to_zero'])) {
-                            $input[$group_name][$key]['to_zero'] = true;
-                        }
-                    }
-                }
-                continue;
-            }
-            // for the last input candle, we only care about the fields which are based on "open"
             reset($groups);
             foreach ($groups as $group_name => $group) {
+                //error_log('sample2io() group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
-                    if ($this->indicatorIsBasedOn($sig, 'open')) {
-                        $key = $sig;
-                        $value = floatval($sample[$i]->$sig);
-                        //if (!$value) {
-                        //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
-                        //    exit();
-                        //}
-                        if ('ohlc' === $group_name) {
-                            $key = 0;
+                    if ($i == $out_sample_size - 1) {
+                        // for the last input candle, we only care about the fields which are based on "open"
+                        if (!$this->indicatorIsBasedOn($sig, 'open')) {
+                            continue;
                         }
-                        if (!isset($input[$group_name][$key])) {
-                            $input[$group_name][$key] = ['values' => []];
-                        }
-                        if ('range' === $group_name) {
-                            $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
-                        }
-                        // inividual
-                        $input[$group_name][$key]['values'][] = $value;
-                        if (isset($params['to_zero'])) {
-                            $input[$group_name][$key]['to_zero'] = true;
-                        }
+                    }
+                    $key = $sig;
+                    $value = floatval($sample[$i]->$sig);
+                    //if (!$value) {
+                    //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
+                    //    exit();
+                    //}
+                    if ('ohlc' === $group_name) {
+                        $key = 0;
+                    }
+                    if (!isset($input[$group_name][$key])) {
+                        $input[$group_name][$key] = ['values' => []];
+                    }
+                    if ('range' === $group_name) {
+                        $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
+                    }
+                    // inividual
+                    $input[$group_name][$key]['values'][] = $value;
+                    if (isset($params['to_zero'])) {
+                        $input[$group_name][$key]['to_zero'] = true;
                     }
                 }
             }
@@ -868,13 +842,13 @@ class Fann extends Strategy
             //error_log('candlesToData S: '.json_encode($sample));
             list($input, $last_ohlc4, $output) = $this->sample2io($sample);
 
-            //error_log('candlesToData() input:      '.json_encode($input));
+            error_log('candlesToData() input:      '.json_encode($input));
             //error_log('candlesToData() last_ohlc4: '.json_encode($last_ohlc4));
             //error_log('candlesToData() output: '.json_encode($output));
             //exit();
 
             $input = $this->normalizeInput($input);
-            //error_log('candlesToData() norm_input: '.json_encode($input));
+            error_log('candlesToData() norm_input: '.json_encode($input));
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
@@ -885,7 +859,7 @@ class Fann extends Strategy
             } elseif ($output < -1) {
                 $output = -1;
             }
-            //error_log('candlesToData() output: '.$output);
+            error_log('candlesToData() output: '.$output);
 
             $data[] = ['input'  => $input, 'output' => [$output]];
         }
