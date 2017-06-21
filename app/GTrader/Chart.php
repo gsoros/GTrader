@@ -62,7 +62,7 @@ abstract class Chart extends Plot
 
     public function __wakeup()
     {
-        //error_log('Chart::__wakeup()');
+        parent::__wakeup();
         // we need a strategy fresh from the db on each wakeup
         if (!($strategy_id = $this->getParam('strategy_id'))) {
             return;
