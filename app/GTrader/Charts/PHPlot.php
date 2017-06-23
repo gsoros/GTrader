@@ -125,7 +125,7 @@ class PHPlot extends Chart
             $end = 0;
             $this->setParam('refresh', 30); // seconds
         }
-        error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
+        //error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command) {
             case 'ESR':
                 foreach (['exchange', 'symbol', 'resolution'] as $arg) {

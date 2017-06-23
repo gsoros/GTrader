@@ -466,6 +466,7 @@ trait HasIndicators
 
     public function purgeIndicators()
     {
+        $this->updateReferences();
         foreach ($this->getIndicators() as $ind) {
             //error_log('purgeIndicators() checking '.$ind->getSignature().' refs: '.$ind->refCount());
             if (!$ind->refCount() && !$ind->getParam('display.visible')) {

@@ -88,8 +88,8 @@ abstract class HasInputs extends Indicator
         $inds = [];
         foreach ($inputs as $input) {
             if (!($indicator = $owner->getOrAddIndicator($input, [], $params))) {
-                error_log(get_class($this).'::getOrAddInputIndicators() could not find indicator '.
-                    $input.' for '.get_class($owner));
+                //error_log(get_class($this).'::getOrAddInputIndicators() could not find indicator '.
+                //    $input.' for '.get_class($owner));
                 return null;
             }
             $inds[] = $indicator;
@@ -104,7 +104,7 @@ abstract class HasInputs extends Indicator
             return $this;
         }
         if (!$this->getOrAddInputIndicators()) {
-            error_log('Could not getOrAdd input indicators for '.get_class($this));
+            //error_log('Could not getOrAdd input indicators for '.get_class($this));
         }
         return $this;
     }
@@ -123,7 +123,7 @@ abstract class HasInputs extends Indicator
             return true;
         }
         if (! $inds = $this->getOrAddInputIndicators()) {
-            error_log('HasInputs::runDependencies() could not getOrAdd input indicators for '.get_class($this));
+            //error_log('HasInputs::runDependencies() could not getOrAdd input indicators for '.get_class($this));
             return $this;
         }
         $this->setParam('display.y_axis_pos', 'right');
