@@ -654,7 +654,7 @@ class Fann extends Strategy
 
         reset($inputs);
         foreach ($inputs as $sig) {
-            $norm_type = $norm_to = null;
+            $norm_type = $norm_to = $indicator = null;
             $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
@@ -667,12 +667,14 @@ class Fann extends Strategy
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
                 continue;
             }
-            $indicator->addRef($this->getShortClass());
-            if (!($norm_params = $indicator->getNormalizeParams())) {
-                error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
-                continue;
+            if (!is_null($indicator)) {
+                $indicator->addRef($this->getShortClass());
+                if (!($norm_params = $indicator->getNormalizeParams())) {
+                    error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
+                    continue;
+                }
+                $norm_type = $norm_params['type'];
             }
-            $norm_type = $norm_params['type'];
             if ('individual' === $norm_type) {
                 $norm_to = $norm_params['to'];
             }
