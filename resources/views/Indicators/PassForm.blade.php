@@ -1,7 +1,6 @@
 <script>
     var disableElements_{{ $uid }} = function () {
         var mode = $('#mode_{{ $uid }}').val();
-        console.log('mode is: ' + mode);
         if ('high' == mode) {
             $('#form_group_{{ $uid }}_input_lowRef').hide();
             $('#form_group_{{ $uid }}_input_highRef').show();

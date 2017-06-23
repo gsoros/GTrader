@@ -62,10 +62,11 @@ abstract class Trader extends HasInputs
 
     public function extract(Series $candles)
     {
-        if (! $input = $this->getInput()) {
-            return [];
+        $out = [];
+        foreach ($this->getInputs() as $input) {
+            $out[$input] = $candles->extract($input);
         }
-        return $candles->extract($input);
+        return $out;
     }
 
     abstract function traderCalc(array $values);
