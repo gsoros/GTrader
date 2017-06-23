@@ -338,9 +338,16 @@ trait HasIndicators
     public function handleIndicatorDeleteRequest(Request $request)
     {
         $sig = urldecode($request->signature);
-        error_log('del '.$sig);
+        error_log('handleIndicatorDeleteRequest() '.$sig);
         $indicator = $this->getIndicator($sig);
-        $this->unsetIndicators($sig);
+        $this->updateReferences();
+        if ($indicator->refCount()) {
+            error_log('handleIndicatorDeleteRequest() has refCount, hiding');
+            $indicator->setParam('display.visible', false);
+        }
+        else {
+            $this->unsetIndicators($sig);
+        }
         return $this->viewIndicatorsList();
     }
 
@@ -454,6 +461,7 @@ trait HasIndicators
         foreach ($this->getIndicators() as $ind) {
             $ind->updateReferences();
         }
+        return $this;
     }
 
     public function purgeIndicators()

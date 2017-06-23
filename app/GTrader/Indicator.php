@@ -318,10 +318,19 @@ abstract class Indicator //implements \JsonSerializable
     public function updateReferences()
     {
         $sig = $this->getSignature();
+        if (! $owner = $this->getOwner()) {
+            error_log('Indicator::updateReferences() no owner');
+            return $this;
+        }
         if ($this->hasInputs()) {
             foreach ($this->getInputs() as $input_sig) {
-                $this->getOwner()->getOrAddIndicator($input_sig)->addRef($sig);
+                if (! $ind = $owner->getOrAddIndicator($input_sig)) {
+                    error_log('Indicator::updateReferences() coild not getOrAdd '.$input_sig);
+                    continue;
+                }
+                $ind->addRef($sig);
             }
         }
+        return $this;
     }
 }
