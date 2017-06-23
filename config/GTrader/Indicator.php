@@ -20,6 +20,7 @@ return [
         'Bbands'            => ['allow_multiple' => true],
         'Obv'               => ['allow_multiple' => true],
         'Sar'               => ['allow_multiple' => true],
+        'Ibs'               => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',

@@ -18,7 +18,7 @@ class Avg extends HasInputs
 
         $input = $candles->key($this->getInput());
 
-        $signature = $candles->key($$this->getSignature());
+        $signature = $candles->key($this->getSignature());
 
         $total = 0;
         $count = 0;
