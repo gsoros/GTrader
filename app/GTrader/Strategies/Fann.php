@@ -760,12 +760,19 @@ class Fann extends Strategy
                     // inividual
                     if (isset($params['outputs'])) {
                         if (is_array($params['outputs'])) {
+                            $outputs_added = 0;
                             foreach ($params['outputs'] as $output_name) {
-                                $sig_key_output = $this->getCandles()->key($key.':::'.$output_name);
-                                $value = floatval($sample[$i]->$sig_key_output);
-                                $input[$group_name][$key]['values'][] = $value;
+                                $sig_key_output = $sig_key;
+                                if ($output_name) {
+                                    $outputs_added++;
+                                    $sig_key_output = $this->getCandles()->key($key.':::'.$output_name);
+                                    $value = floatval($sample[$i]->$sig_key_output);
+                                    $input[$group_name][$key]['values'][] = $value;
+                                }
                             }
-                            continue;
+                            if ($outputs_added) {
+                                continue;
+                            }
                         }
                     }
                     $value = floatval($sample[$i]->$sig_key);
