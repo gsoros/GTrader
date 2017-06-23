@@ -187,9 +187,10 @@ class Strategy
                 return $indicator;
             }
         }
-        error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
+        //error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
         $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
         $candles->addIndicator($indicator);
+        $indicator->addRef($this->getShortClass());
 
         return $indicator;
     }
@@ -233,10 +234,12 @@ class Strategy
 
     public function createIndicator(string $signature)
     {
-        $indicator = Indicator::make($signature);
-        if ($indicator->getParam('indicator.source')) {
-            $indicator->setParam('indicator.source', 'open');
+        $ind = Indicator::make($signature);
+        if ($ind->hasInputs()) {
+            foreach ($ind->getInputs() as $input) {
+                $ind->setParam('indicator.'.$input, 'open');
+            }
         }
-        return $indicator;
+        return $ind;
     }
 }

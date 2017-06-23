@@ -61,7 +61,7 @@ trait HasIndicators
     {
         $class = Indicator::getClassFromSignature($signature);
         $sig_params = Indicator::getParamsFromSignature($signature);
-        return $this->addIndicator($class, array_replace_recursive($sig_params, $params, $params_if_new));
+        return $this->addIndicator($class, array_replace_recursive($sig_params, $params), $params_if_new);
     }
 
 
@@ -87,10 +87,14 @@ trait HasIndicators
 
 
     public function getOrAddIndicator(
-        string $signature,
+        $signature,
         array $params = [],
         array $params_if_new = [])
     {
+        if (!is_string($signature)) {
+            $signature = json_encode($signature);
+            //error_log('HasIndicators::getOrAddIndicator() warning, converted to string: '.$signature);
+        }
         if (in_array($signature, ['open', 'high', 'low', 'close', 'volume'])) {
             return false;
         }

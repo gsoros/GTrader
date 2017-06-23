@@ -24,7 +24,9 @@ class FannSignals extends Indicator
             return $this;
         }
         if (is_object($strategy)) {
-            $strategy->getPredictionIndicator();
+            if ($ind = $strategy->getPredictionIndicator()) {
+                $ind->addRef($this->getSignature());
+            }
         }
         return $this;
     }

@@ -6,6 +6,16 @@ use GTrader\Indicator;
 
 class Constant extends Indicator
 {
+    public function getNormalizeParams()
+    {
+        return array_replace_recursive(
+            parent::getNormalizeParams(),
+            [
+                'type' => 'individual',
+                'to' => $this->getParam('indicator.value'),
+            ]
+        );
+    }
 
     public function getDisplaySignature(string $format = 'long')
     {

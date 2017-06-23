@@ -17,7 +17,11 @@ abstract class HasInputs extends Indicator
         //error_log('HasInputs::getInputs() params: '.json_encode($this->getParam('indicator')));
         foreach ($this->getParam('indicator') as $k => $v) {
             if ('input_' === substr($k, 0, 6)) {
-                //error_log('getInputs() input found: '.$k);
+                if (!is_string($v)) {
+                    $v = json_encode($v);
+                    //error_log('HasInputs::getInputs() val is not a str: '.$v);
+                    //print_r(debug_backtrace()); exit;
+                }
                 $inputs[$k] = $v;
             }
         }
@@ -30,7 +34,11 @@ abstract class HasInputs extends Indicator
             return null;
         }
         if (!is_null($name)) {
-            return $this->getParam('indicator.'.$name);
+            $name = $this->getParam('indicator.'.$name);
+            if (!is_string($name)) {
+                $name = json_encode($name);
+            }
+            return $name;
         }
         $inputs = $this->getInputs();
         return array_shift($inputs);

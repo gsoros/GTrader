@@ -85,6 +85,14 @@ abstract class Indicator //implements \JsonSerializable
         }
         foreach ($params as $key => $value) {
             $type = $this->getParam('adjustable.'.$key.'.type');
+            /*
+            if (is_object($value)) {
+                echo 'Error: got object as value: ';
+                var_dump($value);
+                print_r(debug_backtrace());
+                exit;
+            }
+            */
             if ('bool' === $type) {
                 $value = intval($value);
             }
@@ -95,14 +103,16 @@ abstract class Indicator //implements \JsonSerializable
                 else if (! $ind = $owner->getOrAddIndicator($value)) {
                     //error_log('getSignatureObject() could not getOrAddIndicator '.json_encode($value));
                 }
-                else if ($ind->debugObjId() === $this->debugObjId()) {
-                    error_log('getSignatureObject() trying to recreate myself');
-                }
-                else {
-                    $value = [
-                        'class' => $ind->getShortClass(),
-                        'params' => $ind->getSignatureObject(),
-                    ];
+                if (is_object($ind)) {
+                    if ($ind->debugObjId() === $this->debugObjId()) {
+                        error_log('getSignatureObject() trying to recreate myself');
+                    }
+                    else {
+                        $value = [
+                            'class' => $ind->getShortClass(),
+                            'params' => $ind->getSignatureObject(),
+                        ];
+                    }
                 }
             }
             $o->$key = $value;
@@ -305,9 +315,13 @@ abstract class Indicator //implements \JsonSerializable
         );
     }
 
-    public function getNormalizeType()
+    public function getNormalizeParams()
     {
-        return $this->getParam('normalize_type');
+        return [
+            'type' => $this->getParam('normalize_type', 'individual'),
+            'to' => $this->getParam('normalize_to', null),
+            'range' => $this->getParam('range', ['min' => null, 'max' => null]),
+        ];
     }
 
     public function hasInputs()

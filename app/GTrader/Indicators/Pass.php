@@ -7,6 +7,55 @@ use GTrader\Indicators\HasInputs;
 class Pass extends HasInputs
 {
 
+    protected function getInputIndicator($signature)
+    {
+        return $this->getOwner()->getOrAddIndicator($signature);
+    }
+
+    protected function getInputNormParams(string $source = 'source')
+    {
+        $norm = parent::getNormalizeParams();
+        $input = $this->getParam('indicator.input_'.$source, 'open');
+        if (in_array($input, ['open', 'high', 'low', 'close'])) {
+            return array_replace_recursive($norm, ['type' => 'ohlc']);
+        }
+        if (!$indicator = $this->getInputIndicator($input)) {
+            return array_replace_recursive($norm, ['type' => 'individual']);
+        }
+        //error_log('Pass::getInputNormParams() return norm from ind: '.json_encode($indicator->getNormalizeParams()));
+        return $indicator->getNormalizeParams();
+    }
+
+
+    public function getNormalizeParams()
+    {
+        $mode = $this->getParam('indicator.mode');
+        $norm = parent::getNormalizeParams();
+        if (in_array($mode, ['high', 'low'])) {
+            return array_replace_recursive(
+                $this->getInputNormParams($mode.'Ref'),
+                $this->getInputNormParams('source')
+            );
+        }
+        // Band
+        $high = $this->getInputNormParams('highRef');
+        $low = $this->getInputNormParams('lowRef');
+        if ($high === $low) {
+            return $high;
+        }
+        if ('range' === $high['type'] && 'range' === $low['type']) {
+            return array_replace_recursive($norm, [
+                'type' => 'range',
+                'range' => [
+                    'min' => min($high['range']['min'], $low['range']['min']),
+                    'max' => max($high['range']['max'], $low['range']['max'])
+                ],
+            ]);
+        }
+        // TODO handle more possible scenarios
+        return $norm;
+    }
+
     public function getDisplaySignature(string $format = 'long')
     {
         $mode = $this->getParam('indicator.mode');
@@ -81,7 +130,6 @@ class Pass extends HasInputs
             in_array($input, ['open', 'high', 'low', 'close']) ? 'left' : 'right'
         );
         //dd($this->getParams());
-        // TODO set normalize params
 
         $signature = $candles->key($this->getSignature());
 

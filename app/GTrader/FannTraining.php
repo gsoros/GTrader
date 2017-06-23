@@ -212,10 +212,12 @@ class FannTraining extends Model
         $strat = $this->getStrategy($type);
         $candles = $strat->getCandles();
         $sig = $this->getMaximizeSig();
-        if (!($ind = $candles->getOrAddIndicator($sig))) {
+        $params = ['display' => ['visible' => false]];
+        if (!($ind = $candles->getOrAddIndicator($sig, [], $params))) {
             error_log('FannTraining::test() could not getOrAddIndicator()');
             return 0;
         }
+        $ind->addRef($this->getShortClass());
         return $ind->getLastValue(true);
     }
 

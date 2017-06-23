@@ -176,6 +176,12 @@ class Fann extends Strategy
         $inputs = isset($request->inputs) ? $request->inputs : ['open'];
         $inputs = is_array($inputs) ? $inputs : ['open'];
         $inputs = count($inputs) ? $inputs : ['open'];
+        foreach ($inputs as $k => $input) {
+            if (!is_string($input)) {
+                error_log('Fann::handleSaveRequest() input not a string: '.json_encode($input));
+                $inputs[$k] = strval($input);
+            }
+        }
         if ($this->getParam('inputs', []) !== $inputs) {
             $topology_changed = true;
             $this->setParam('inputs', $inputs);
@@ -622,14 +628,13 @@ class Fann extends Strategy
     {
         $inputs = $this->getParam('inputs', []);
         $candles = $this->getCandles();
+        $params = ['display' => ['visible' => false]];
         foreach ($inputs as $sig) {
-            if (!($indicator = $candles->getOrAddIndicator(
-                $sig,
-                ['display' => ['visible' => false]]
-            ))) {
+            if (! $indicator = $candles->getOrAddIndicator($sig, [], $params)) {
                 //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
                 continue;
             }
+            $indicator->addRef($this->getShortClass());
             $indicator->checkAndRun($force_rerun);
         }
         return $this;
@@ -650,6 +655,7 @@ class Fann extends Strategy
         reset($inputs);
         foreach ($inputs as $sig) {
             $norm_type = $norm_to = null;
+            $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_type = 'ohlc';
@@ -657,26 +663,26 @@ class Fann extends Strategy
             elseif ('volume' === $sig) {
                 $norm_type = 'individual';
             }
-            elseif ($indicator = $this->getCandles()->getOrAddIndicator($sig)) {
-                if (!($norm_type = $indicator->getNormalizeType())) {
-                    error_log('Fann::getInputGroups() could not getNormalizeType() for '.$sig);
-                    continue;
-                }
-                if ('individual' === $norm_type) {
-                    $norm_to = $indicator->getParam('normalize_to', null);
-                }
-            }
-            else {
+            elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig, [], $params)) {
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
                 continue;
             }
-            if ('ohlc' === $norm_type) {
+            $indicator->addRef($this->getShortClass());
+            if (!($norm_params = $indicator->getNormalizeParams())) {
+                error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
+                continue;
+            }
+            $norm_type = $norm_params['type'];
+            if ('individual' === $norm_type) {
+                $norm_to = $norm_params['to'];
+            }
+            else if ('ohlc' === $norm_type) {
                 $groups['ohlc'][$sig] = true;
                 continue;
             }
-            if ('range' === $norm_type) {
-                if (is_null($min = $indicator->getParam('range.min', null)) ||
-                    is_null($max = $indicator->getParam('range.max', null))) {
+            else if ('range' === $norm_type) {
+                if (is_null($min = $norm_params['range']['min']) ||
+                    is_null($max = $norm_params['range']['max'])) {
                     error_log('Fann::getInputGroups() min or max range not set for '.$sig);
                     continue;
                 }
@@ -687,38 +693,15 @@ class Fann extends Strategy
                 $groups['individual'][$sig] = !is_null($norm_to) ? ['normalize_to' => $norm_to] : true;
                 continue;
             }
-            error_log('Fann::getInputGroups() unknown normalize type for '.$sig);
+            error_log('Fann::getInputGroups() unknown type in '.json_encode($norm_params).' for '.$sig);
         }
-        error_log('getInputGroups() groups: '.json_encode($groups));
+        //echo 'getInputGroups() groups: '; print_r($groups); exit;
         return $groups;
     }
 
 
     public function sample2io(array $sample, bool $input_only = false) {
-        /*
-        input: [
-            'ohlc' => [
-                0 => [
-                    'values' => [1, 2, 3, ...]
-                ]
-            ],
-            'range' => [
-                'Rsi_base_close_length_14' => [
-                    'min' => -100,
-                    'max' => 100,
-                    'values' => [1, 2, 3, ...]
-                ]
-            ],
-            'individual' => [
-                'Ema_base_volume_length_20' => [
-                    'values' => [1, 2, 3, ...]
-                ],
-                'Macd_base_open_blabla' => [
-                    'values' => [1, 2, 3, ...]
-                ]
-            ]
-        ]
-        */
+
         $groups = $this->getInputGroups();
 
         $input = [];
@@ -854,7 +837,9 @@ class Fann extends Strategy
             //exit();
 
             $input = $this->normalizeInput($input);
-            //error_log('candlesToData() norm_input: '.json_encode($input));
+            //if (array_diff($input, [-1,0,1]))
+            //    error_log('candlesToData() norm_input: '.json_encode($input));
+
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
