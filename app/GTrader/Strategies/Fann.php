@@ -655,8 +655,8 @@ class Fann extends Strategy
         reset($inputs);
         foreach ($inputs as $sig) {
             $norm_type = $norm_to = $indicator = null;
-            $output = 0;
-            $naked_sig = '';
+            $output = '';
+            $naked_sig = $sig;
             $norm_params = ['type' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
             $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {

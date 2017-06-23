@@ -24,10 +24,15 @@ trait HasIndicators
 
         if (!is_object($indicator)) {
             $ind_str = $indicator;
-            //error_log('addIndicator make() '.$indicator.' '.json_encode($params));
-            if (!($indicator = Indicator::make($indicator, $params))) {
-                error_log('addIndicator() could not make('.$ind_str.')');
-                return false;
+            if ($indicator) {
+                //error_log('addIndicator make() '.$indicator.' '.json_encode($params));
+                if (!($indicator = Indicator::make($indicator, $params))) {
+                    error_log('addIndicator() could not make('.$ind_str.')');
+                    return false;
+                }
+            }
+            else {
+                error_log('addIndicator() tried to make ind without class');
             }
         }
         if (!$indicator->canBeOwnedBy($owner)) {
