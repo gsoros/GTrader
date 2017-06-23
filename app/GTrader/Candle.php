@@ -15,6 +15,20 @@ class Candle extends Model
     public $timestamps = false;
 
 
+    public function __get($key)
+    {
+        if ('Constant' === Indicator::getClassFromSignature($key)) {
+            //error_log('Candle::__get() constant request: '.$key);
+            $params = Indicator::getParamsFromSignature($key);
+            //error_log('Candle::__get() params '.json_encode($params));
+            if (isset($params['indicator']['value'])) {
+                //error_log('Candle::__get() return: '.json_encode($params['indicator']['value']));
+                return $params['indicator']['value'];
+            }
+        }
+        return parent::__get($key);
+    }
+
     public function save(array $options = [])
     {
 

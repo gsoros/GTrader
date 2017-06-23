@@ -2,16 +2,16 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
+        'input_source' => 'close',
         'period' => 30,
         'devup' => 2,
         'devdown' => 2,
         'matype' => TRADER_MA_TYPE_SMA,
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
         'period' => [
             'name' => 'Period',
@@ -44,7 +44,7 @@ return [
         'name' => 'BBands',
         'description' => 'Bollinger Bands',
         'y_axis_pos' => 'left',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => null,
 ];

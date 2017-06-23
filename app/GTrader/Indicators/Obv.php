@@ -15,7 +15,7 @@ class Obv extends Trader
 
     public function traderCalc(array $values)
     {
-        if (!($values = trader_obv($values['base'], $values['volume']))) {
+        if (!($values = trader_obv($values['input'], $values['volume']))) {
             error_log('trader_obv returned false');
             return [];
         }
@@ -25,7 +25,7 @@ class Obv extends Trader
     public function extract(Series $candles)
     {
         return [
-            'base' => $candles->extract($this->getBase()),
+            'input' => $candles->extract($candles->key($this->getInput())),
             'volume' => $candles->extract('volume'),
         ];
     }

@@ -26,7 +26,7 @@ class Ma extends Trader
     {
         if (!($values = trader_ma(
             $values,
-            $this->getParam('indicator.length'),
+            $this->getParam('indicator.length', 1),
             $this->getMaType()
         ))) {
             error_log('trader_ma returned false');

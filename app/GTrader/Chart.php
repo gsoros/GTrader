@@ -3,6 +3,7 @@
 namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GTrader\Exchange;
 use GTrader\Strategy;
@@ -180,6 +181,29 @@ abstract class Chart extends Plot
         return $this;
     }
 
+
+    public function delete()
+    {
+        if (! $name = $this->getParam('name')) {
+            error_log('Chart::delete() called but we have no name.');
+            return this;
+        }
+        $aff = DB::table('charts')
+                        ->where('user_id', Auth::id())
+                        ->where('name', $name)
+                        ->delete();
+        return $this;
+    }
+
+    public function deleteFromSession()
+    {
+        if (! $name = $this->getParam('name')) {
+            error_log('Chart::deleteFromSession() called but we have no name.');
+            return this;
+        }
+        session([$name => null]);
+        return $this;
+    }
 
     public function viewIndicatorsList()
     {

@@ -2,13 +2,13 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
+        'input_source' => 'close',
         'period' => 14,
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
         'period' => [
             'name' => 'Period',
@@ -22,7 +22,7 @@ return [
         'name' => 'RSI',
         'description' => 'Relative Strength Index',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => 50,
     'normalize_type' => 'range',

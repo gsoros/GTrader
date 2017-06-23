@@ -72,7 +72,7 @@ trait Skeleton
                     .$class;
         }
         if (!class_exists($class)) {
-            throw new \Exception('Skeleton::make() Class '.$class.' does not exist');
+            error_log($called.'::make() Class '.$class.' does not exist');
             return false;
         }
         return new $class($params);

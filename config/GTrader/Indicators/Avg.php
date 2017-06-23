@@ -2,19 +2,19 @@
 
 return [
     'indicator' => [
-        'base' => 'close',
+        'input_source' => 'close',
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
     ],
     'display' => [
         'name' => 'Average',
         'description' => 'Average',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
 
 ];

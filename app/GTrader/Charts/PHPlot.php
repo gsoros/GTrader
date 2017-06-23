@@ -73,7 +73,7 @@ class PHPlot extends Chart
                 $refresh .= '</script>';
             }
             $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
-            error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
+            //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
             return $this->_image_map.'<img class="img-responsive" src="'.
                     $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
         }
@@ -370,11 +370,15 @@ class PHPlot extends Chart
             if ($output_name) {
                 $sig .= '_'.$output_name;
             }
+            $sig = $candles->key($sig);
             $index = 0;
             $candles->reset();
             while ($candle = $candles->next()) {
                 $index++;
-                $value = isset($candle->$sig) ? $candle->$sig : '';
+                $value = $candle->$sig;
+                if (is_null($value)) {
+                    $value = '';
+                }
                 if (isset($data[$index-1])) {
                     $data[$index-1][] = $value;
                     continue;
@@ -430,9 +434,9 @@ class PHPlot extends Chart
 
     public function plotSignals($indicator)
     {
-        $sig = $indicator->getSignature();
-
         $candles = $this->getCandles();
+        $sig = $candles->key($indicator->getSignature());
+
         $candles->reset();
         $data = $signals = [];
         //dd($this);

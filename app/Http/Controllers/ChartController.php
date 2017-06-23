@@ -52,6 +52,7 @@ class ChartController extends Controller
         set_time_limit(480);
 
         $image = $chart->handleImageRequest($request);
+        $chart->purgeIndicators();
         $chart->saveToSession();
         //$chart->save();
         return response($image, 200);
@@ -113,6 +114,22 @@ class ChartController extends Controller
         $chart->saveToSession();
 
         return response($form, 200);
+    }
+
+
+    public function delete(Request $request)
+    {
+        if (! $chart = Chart::loadFromSession($request->name)) {
+            error_log('no chart in session');
+            if (! $chart = Chart::loadFromDB(Auth::id(), $request->name)) {
+                error_log('no chart in db');
+                return response('No such chart.', 403);
+            }
+        }
+
+        $chart->deleteFromSession();
+        $chart->delete();
+        return response('OK', 200);
     }
 
 }

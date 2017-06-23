@@ -32,7 +32,9 @@ class FannSignals extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $signature = $this->getSignature();
+        $candles = $this->getCandles();
+
+        $signature = $candles->key($this->getSignature());
 
         $strategy = $this->getOwner()->getStrategy();
         if (!$strategy) {
@@ -42,11 +44,9 @@ class FannSignals extends Indicator
             return $this;
         }
 
-        $candles = $this->getCandles();
-
         $indicator = $strategy->getPredictionIndicator();
         $indicator->checkAndRun($force_rerun);
-        $indicator_sig = $indicator->getSignature();
+        $indicator_sig = $candles->key($indicator->getSignature());
 
         $last = ['time' => 0, 'signal' => ''];
         $candles_seen = 0;

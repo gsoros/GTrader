@@ -179,7 +179,7 @@ class Fann extends Strategy
         if ($this->getParam('inputs', []) !== $inputs) {
             $topology_changed = true;
             $this->setParam('inputs', $inputs);
-            error_log('New inputs: '.json_encode($inputs));
+            //error_log('Fann::handleSaveRequest() new inputs: '.json_encode($inputs));
         }
 
 
@@ -286,7 +286,7 @@ class Fann extends Strategy
         if ($ema_len > 1) {
             $indicator = Indicator::make(
                 'Ema',
-                ['indicator' => ['base' => $indicator->getSignature(), 'length' => $ema_len],
+                ['indicator' => ['source' => $indicator->getSignature(), 'length' => $ema_len],
                  'display' => ['visible' => false],
                  'depends' => [$indicator]]
             );
@@ -649,7 +649,7 @@ class Fann extends Strategy
 
         reset($inputs);
         foreach ($inputs as $sig) {
-            $norm_type = $to_zero = null;
+            $norm_type = $norm_to = null;
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_type = 'ohlc';
@@ -663,7 +663,7 @@ class Fann extends Strategy
                     continue;
                 }
                 if ('individual' === $norm_type) {
-                    $to_zero = $indicator->getParam('normalize_to_zero');
+                    $norm_to = $indicator->getParam('normalize_to', null);
                 }
             }
             else {
@@ -684,12 +684,12 @@ class Fann extends Strategy
                 continue;
             }
             if ('individual' === $norm_type) {
-                $groups['individual'][$sig] = $to_zero ? ['to_zero' => true] : true;
+                $groups['individual'][$sig] = !is_null($norm_to) ? ['normalize_to' => $norm_to] : true;
                 continue;
             }
             error_log('Fann::getInputGroups() unknown normalize type for '.$sig);
         }
-        //error_log('getInputGroups() groups: '.json_encode($groups));
+        error_log('getInputGroups() groups: '.json_encode($groups));
         return $groups;
     }
 
@@ -740,17 +740,18 @@ class Fann extends Strategy
                 //error_log('sample2io() group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
+                    $sig_key = $this->getCandles()->key($sig);
                     //if ($dumptime == $sample[$i]->time) {
                     //    error_log('Fann::sample2io() params: '.json_encode($params));
                     //}
                     if ($i == $out_sample_size - 1) {
                         // for the last input candle, we only care about the fields which are based on "open"
-                        if (!$this->indicatorIsBasedOn($sig, 'open')) {
+                        if (!$this->indicatorHasInput($sig, 'open')) {
                             continue;
                         }
                     }
                     $key = $sig;
-                    $value = floatval($sample[$i]->$sig);
+                    $value = floatval($sample[$i]->$sig_key);
                     //if (!$value) {
                     //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
                     //    exit();
@@ -766,8 +767,8 @@ class Fann extends Strategy
                     }
                     // inividual
                     $input[$group_name][$key]['values'][] = $value;
-                    if (isset($params['to_zero'])) {
-                        $input[$group_name][$key]['to_zero'] = true;
+                    if (isset($params['normalize_to'])) {
+                        $input[$group_name][$key]['normalize_to'] = $params['normalize_to'];
                     }
                 }
             }
@@ -800,11 +801,11 @@ class Fann extends Strategy
                     $min = min($params['values']);
                     $max = max($params['values']);
                 }
-                if (isset($params['to_zero'])) {
-                    if ($min < 0 && $max < 0) {
-                        $max = 0;
-                    } elseif ($min > 0 && $max > 0) {
-                        $min = 0;
+                if (isset($params['normalize_to'])) {
+                    if ($min < $params['normalize_to'] && $max < $params['normalize_to']) {
+                        $max = $params['normalize_to'];
+                    } elseif ($min > $params['normalize_to'] && $max > $params['normalize_to']) {
+                        $min = $params['normalize_to'];
                     }
                 }
                 reset($params['values']);
@@ -1008,7 +1009,7 @@ class Fann extends Strategy
         $input_count = count($inputs = $this->getParam('inputs', []));
         $input_count_based_on_open = 0;
         foreach ($inputs as $sig) {
-            if ($this->indicatorIsBasedOn($sig, 'open')) {
+            if ($this->indicatorHasInput($sig, 'open')) {
                 $input_count_based_on_open++;
             }
         }

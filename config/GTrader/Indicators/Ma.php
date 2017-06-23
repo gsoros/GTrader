@@ -2,14 +2,14 @@
 
 return [
     'indicator' => [
-        'base' => 'close',
+        'input_source' => 'close',
         'length' => 20,
         'type' => TRADER_MA_TYPE_EMA,
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
         'length' => [
             'name' => 'Length',

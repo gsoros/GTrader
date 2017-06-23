@@ -50,7 +50,7 @@ return [
         'name' => 'Stoch',
         'description' => 'Stochastic',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => 50,
 ];

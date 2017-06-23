@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Collection;
 use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\Candle;
+use GTrader\Indicator;
 use GTrader\Util;
 
 class Series extends Collection
@@ -14,6 +15,7 @@ class Series extends Collection
 
     private $_loaded;
     private $_iter = 0;
+    private $_map = [];
 
     public function __construct(array $params = [])
     {
@@ -41,6 +43,25 @@ class Series extends Collection
 
     public function __wakeup()
     {
+    }
+
+
+    public function key(string $signature = null)
+    {
+        if (in_array($signature, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
+            return $signature;
+        }
+        if (isset($this->_map[$signature])) {
+            return $this->_map[$signature];
+        }
+        if (in_array($signature, $this->_map)) {
+            return $signature;
+        }
+        if ('Constant' === Indicator::getClassFromSignature($signature)) {
+            return $signature;
+        }
+        $this->_map[$signature] = Util::uniqidReal();
+        return $this->_map[$signature];
     }
 
 
@@ -127,12 +148,14 @@ class Series extends Collection
 
     public function add($candle)
     {
+        $this->_load();
         $this->items[] = $candle;
     }
 
 
     public function reset()
     {
+        $this->_load();
         $this->_iter = 0;
         return $this;
     }
@@ -225,15 +248,16 @@ class Series extends Collection
         }
 
         $candle = Candle::select('time')
-                        ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
-                        ->where('exchanges.name', $exchange)
-                        ->join('symbols', function ($join) {
-                            $join->on('candles.symbol_id', '=', 'symbols.id')
-                                ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
-                        })
-                        ->where('symbols.name', $symbol)
-                        ->where('resolution', $resolution)
-                        ->orderBy('time')->first();
+            ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
+            ->where('exchanges.name', $exchange)
+            ->join('symbols', function ($join) {
+                $join->on('candles.symbol_id', '=', 'symbols.id')
+                    ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
+            })
+            ->where('symbols.name', $symbol)
+            ->where('resolution', $resolution)
+            ->orderBy('time')
+            ->first();
 
         $epoch = isset($candle->time) ? $candle->time : null;
         $cache[$exchange][$symbol][$resolution] = $epoch;
@@ -276,6 +300,7 @@ class Series extends Collection
 
     public function extract(string $field)
     {
+        $field = $this->key($field);
         $this->reset();
         $ret = [];
         while ($candle = $this->next()) {
@@ -288,6 +313,7 @@ class Series extends Collection
 
     public function setValues(string $field, array $values, $fill_value = null)
     {
+        $field = $this->key($field);
         if (is_null($fill_value)) {
             $fill_value = reset($values);
         }

@@ -12,7 +12,7 @@ class Strategy
     use Skeleton, HasCandles, HasIndicators
     {
         HasCandles::setCandles as private __hasCandlesSetCandles;
-        HasIndicators::getBasesAvailable as public __HasIndicatorsGetBasesAvailable;
+        HasIndicators::getSourcesAvailable as public __HasIndicatorsGetSourcesAvailable;
     }
 
 
@@ -234,8 +234,8 @@ class Strategy
     public function createIndicator(string $signature)
     {
         $indicator = Indicator::make($signature);
-        if ($indicator->getParam('indicator.base')) {
-            $indicator->setParam('indicator.base', 'open');
+        if ($indicator->getParam('indicator.source')) {
+            $indicator->setParam('indicator.source', 'open');
         }
         return $indicator;
     }

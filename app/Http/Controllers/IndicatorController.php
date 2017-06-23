@@ -31,8 +31,9 @@ class IndicatorController extends Controller
         if (! $owner = $this->loadOwner($request)) {
             return response('Could not load owner.', 403);
         }
-        if (! $owner->hasIndicator($request->signature)) {
-            error_log('indicatorController::form() indicator not found');
+        $sig = urldecode($request->signature);
+        if (! $owner->hasIndicator($sig)) {
+            error_log('indicatorController::form() indicator not found. Sig: '.$sig);
             return response('Indicator not found.', 403);
         }
         $form = $owner->handleIndicatorFormRequest($request);
@@ -59,8 +60,9 @@ class IndicatorController extends Controller
         if (! $owner = $this->loadOwner($request)) {
             return response('Could not load owner.', 403);
         }
-        if (! $owner->hasIndicator($request->signature)) {
-            error_log('indicatorDelete: indicator not found');
+        $sig = urldecode($request->signature);
+        if (! $owner->hasIndicator($sig)) {
+            error_log('indicatorDelete: indicator '.$sig.' not found');
             return response('Indicator not found.', 403);
         }
         $form = $owner->handleIndicatorDeleteRequest($request);

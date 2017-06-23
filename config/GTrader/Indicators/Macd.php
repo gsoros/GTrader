@@ -2,7 +2,7 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
+        'input_source' => 'close',
         'fastperiod' => 12,
         'slowperiod' => 26,
         'signalperiod' => 9,
@@ -11,9 +11,9 @@ return [
         'signalmatype' => TRADER_MA_TYPE_EMA,
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
         'fastperiod' => [
             'name' => 'Fast Period',
@@ -51,12 +51,12 @@ return [
     ],
     'outputs' => ['Fast', 'Slow', 'Signal'],
     'normalize_type' => 'individual',
-    'normalize_to_zero' => true,
+    'normalize_to' => 0,
     'display' => [
         'name' => 'MACD',
         'description' => 'Moving Average Convergence/Divergence',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => 0,
 ];

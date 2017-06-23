@@ -29,7 +29,7 @@
                         $cbname = $sig;
                         $cblabel = $indicator->getParam('display.name');
                         if (strlen($value)) {
-                            $cbname .= '_'.$value;
+                            $cbname .= ':::'.$value;
                             $cblabel = $value;
                         }
                         $output_checkboxes[] = [
@@ -69,7 +69,7 @@
                                         owner_class: '{{ $owner_class }}',
                                         owner_id: '{{ $owner_id }}',
                                         name: '{{ $name }}',
-                                        signature: '{{ $sig }}',
+                                        signature: '{{ urlencode($sig) }}',
                                         target_element: '{{ $target_element }}'
                                     },
                                     'GET',
@@ -86,7 +86,7 @@
                                 'owner_class={{ $owner_class }}' +
                                     '&owner_id={{ $owner_id }}' +
                                     '&name={{ $name }}' +
-                                    '&signature={{ $sig }}',
+                                    '&signature={{ urlencode($sig) }}',
                                 'GET',
                                 '{{ $target_element }}'
                             ); return false">

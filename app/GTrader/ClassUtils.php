@@ -30,6 +30,6 @@ trait ClassUtils
 
     public function debugObjId()
     {
-        return get_class($this).' '.md5(spl_object_hash($this));
+        return $this->getShortClass().' '.md5(spl_object_hash($this));
     }
 }

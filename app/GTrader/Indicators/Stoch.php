@@ -27,7 +27,7 @@ class Stoch extends Trader
         return $this;
     }
 
-    public function hasBase()
+    public function hasInputs()
     {
         return false;
     }

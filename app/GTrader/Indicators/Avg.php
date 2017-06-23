@@ -2,23 +2,23 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasBase;
+use GTrader\Indicators\HasInputs;
 
 /** Average */
-class Avg extends HasBase
+class Avg extends HasInputs
 {
 
     public function calculate(bool $force_rerun = false)
     {
         $this->runDependencies($force_rerun);
 
-        $base = $this->getBase();
-
-        $signature = $this->getSignature();
-
         if (!($candles = $this->getCandles())) {
             return $this;
         }
+
+        $input = $candles->key($this->getInput());
+
+        $signature = $candles->key($$this->getSignature());
 
         $total = 0;
         $count = 0;
@@ -26,11 +26,11 @@ class Avg extends HasBase
         $candles->reset();
         while ($candle = $candles->next()) {
 
-            if (!isset($candle->$base)) {
-                error_log('Avg::calculate() '.$signature.' candle->'.$base.' is not set');
+            if (!isset($candle->$input)) {
+                error_log('Avg::calculate() '.$signature.' candle->'.$input.' is not set');
                 break;
             }
-            $total += $candle->$base;
+            $total += $candle->$input;
             $count ++;
 
             $candle->$signature = $total / $count;

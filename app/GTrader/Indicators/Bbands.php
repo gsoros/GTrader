@@ -18,10 +18,12 @@ class Bbands extends Trader
         );
     }
 
+/*
     public function runDependencies(bool $force_rerun = false)
     {
         return $this;
     }
+*/
 
     public function traderCalc(array $values)
     {

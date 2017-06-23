@@ -2,16 +2,16 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
+        'input_source' => 'close',
         'period' => 14,
         'fastk' => 14,
         'fastd' => 3,
         'matype' => TRADER_MA_TYPE_SMA,
     ],
     'adjustable' => [
-        'base' => [
-            'name' => 'Base',
-            'type' => 'base',
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
         ],
         'period' => [
             'name' => 'Period',
@@ -49,7 +49,7 @@ return [
         'name' => 'StochRSI',
         'description' => 'Stochastic Relative Strength Index',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => 50,
 ];

@@ -17,10 +17,11 @@ class Balance extends Indicator
 
     public function createDependencies()
     {
-        $owner = $this->getOwner();
-        if (is_object($owner)) {
-            /* just calling the owner's method will create the dependency */
-            $owner->getStrategy()->getSignalsIndicator();
+        if (is_object($owner = $this->getOwner())) {
+            if ((is_object($strategy = $owner->getStrategy()))) {
+                /* just calling the owner's method will create the dependency */
+                $owner->getStrategy()->getSignalsIndicator();
+            }
         }
         return $this;
     }
@@ -28,9 +29,11 @@ class Balance extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
+        $candles = $this->getCandles();
+
         $mode = $this->getParam('indicator.mode');
 
-        if (!in_array($mode, array('dynamic', 'fixed'))) {
+        if (!in_array($mode, ['dynamic', 'fixed'])) {
             error_log('Balance::calculate() mode must be either dynamic or fixed.');
             return $this;
         }
@@ -40,7 +43,7 @@ class Balance extends Indicator
             return $this;
         }
 
-        $exchange = Exchange::make($this->getCandles()->getParam('exchange'));
+        $exchange = Exchange::make($candles->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([
             'exchange_id' => $exchange->getId(),
             'user_id' => $strategy->getParam('user_id', 0)
@@ -64,10 +67,10 @@ class Balance extends Indicator
             error_log('Balance::calculate() signal indicator not found.');
             return $this;
         }
-        $signal_sig = $signal_ind->getSignature();
+        $signal_sig = $candles->key($signal_ind->getSignature());
         $signal_ind->checkAndRun($force_rerun);
 
-        $signature = $this->getSignature();
+        $signature = $candles->key($this->getSignature());
 
         $capital = floatval($this->getParam('indicator.capital'));
         $upl = 0;
@@ -76,7 +79,6 @@ class Balance extends Indicator
         $liquidated = false;
         $prev_signal = false;
 
-        $candles = $this->getCandles();
         $candles->reset();
 
         while ($candle = $candles->next()) {

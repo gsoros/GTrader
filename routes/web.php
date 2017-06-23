@@ -16,6 +16,7 @@
 Auth::routes();
 
 if (\Config::get('app.env') === 'local') {
+    Route::get('/deletechart', 'ChartController@delete');
     Route::get('/test', 'HomeController@test');
     Route::get('/phpinfo', function() {
         ob_start();

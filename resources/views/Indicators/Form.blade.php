@@ -17,28 +17,57 @@
 <form class="form-horizontal row">
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
         <div class="form-group"
+            id="form_group_{{ $uid }}_{{ $key }}"
             @if (isset($param['description']))
                 title="{{ $param['description'] }}"
             @endif
         >
-            <label class="col-sm-3 control-label" for="{{ $key }}_{{ $uid }}">{{ $param['name'] }}</label>
+            <label class="col-sm-3 control-label" for="{{ $key }}_{{ $uid }}">
+                @if ('bool' !== $param['type'])
+                    {{ $param['name'] }}
+                @endif
+            </label>
             <div class="col-sm-9">
-                @if ('base' === $param['type'])
+
+                @if ('string' === $param['type'])
+                <input class="btn-primary btn btn-mini form-control form-control-sm"
+                        id="{{ $key }}_{{ $uid }}"
+                        title="{{ $param['description'] or '' }}"
+                        value="{{ $indicator->getParam('indicator.'.$key) }}">
+                </select>
+
+                @elseif ('source' === $param['type'])
                 <select class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
-                        title="Select the base for the indicator">
-                    @foreach ($bases as $signature => $display_name)
+                        title="{{ $param['description'] or 'Select the source' }}">
+                    @foreach ($sources as $signature => $display_name)
                         <option
                         @if ($signature === $indicator->getParam('indicator.'.$key))
                             selected
                         @endif
-                        value="{{ $signature }}">{{ $display_name }}</option>
+                        value="{{ urlencode($signature) }}">{{ $display_name }}</option>
                     @endforeach
                 </select>
+
+                @elseif ('bool' === $param['type'])
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label" title="{{ $param['description'] or '' }}">
+                        <input class="form-check-input"
+                            id="{{ $key }}_{{ $uid }}"
+                        type="checkbox"
+                        value="1"
+                        @if ($indicator->getParam('indicator.'.$key))
+                            checked
+                        @endif
+                        >
+                        {{ $param['name'] }}
+                    </label>
+                </div>
+
                 @elseif ('select' === $param['type'])
                 <select class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
-                        title="Select the {{ $param['name'] }} for the indicator">
+                        title="{{ $param['description'] or '' }}">
                     @if (is_array($param['options']))
                         @foreach ($param['options'] as $opt_k => $opt_v)
                             <option
@@ -49,15 +78,29 @@
                         @endforeach
                     @endif
                 </select>
+
                 @elseif (in_array($param['type'], ['int', 'float']))
-                <input type="number"
-                    class="btn-primary btn btn-mini form-control form-control-sm"
-                    id="{{ $key }}_{{ $uid }}"
-                    title="Min: {{ $param['min'] }}, max: {{ $param['max'] }}, step: {{ $param['step'] }}"
-                    min="{{ $param['min'] }}"
-                    step="{{ $param['step'] }}"
-                    max="{{ $param['max'] }}"
-                    value="{{ $indicator->getParam('indicator.'.$key) }}">
+                    @php
+                        $opts = $title = '';
+                        foreach (['min', 'max', 'step'] as $field) {
+                            if (isset($param[$field])) {
+                                if (strlen($opts)) {
+                                    $opts .= ' ';
+                                }
+                                $opts .= $field.'="'.$param[$field].'"';
+                                if (strlen($title)) {
+                                    $title .= ',';
+                                }
+                                $title .= ' '.$field.': '.$param[$field];
+                            }
+                        }
+                    @endphp
+                    <input type="number"
+                        class="btn-primary btn btn-mini form-control form-control-sm"
+                        id="{{ $key }}_{{ $uid }}"
+                        title="{{ ucfirst($param['type']) }} {{ $title }} {{ $param['description'] or '' }}"
+                        {!! $opts !!}
+                        value="{{ $indicator->getParam('indicator.'.$key) }}">
                 @endif
             </div>
         </div>
@@ -76,7 +119,11 @@
     window.save{{ $uid }} = function(){
         var params = {
             @foreach ($indicator->getParam('adjustable', []) as $key => $param)
-                {{ $key }}: $('#{{ $key }}_{{ $uid }}').val(),
+                @if ('bool' == $indicator->getParam('adjustable.'.$key.'.type'))
+                    {{ $key }}: $('#{{ $key }}_{{ $uid }}').is(':checked') ? 1 : 0,
+                @else
+                    {{ $key }}: $('#{{ $key }}_{{ $uid }}').val(),
+                @endif
             @endforeach
         };
         window.GTrader.request(
@@ -93,7 +140,7 @@
                 name: '{{ $name }}',
                 owner_class: '{{ $owner_class }}',
                 owner_id: '{{ $owner_id }}',
-                signature: '{{ $sig }}',
+                signature: '{!! $sig !!}',
                 params: JSON.stringify(params)
             },
             'POST',
@@ -101,3 +148,4 @@
         return false;
     };
 </script>
+@includeIf('Indicators.'.$indicator->getShortClass().'Form')

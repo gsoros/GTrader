@@ -90,6 +90,6 @@ return [
         'name' => 'SAR',
         'description' => 'Parabolic Stop And Reverse',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
 ];

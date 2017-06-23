@@ -23,14 +23,17 @@ trait HasIndicators
         $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
+            $ind_str = $indicator;
+            //error_log('addIndicator make() '.$indicator.' '.json_encode($params));
             if (!($indicator = Indicator::make($indicator, $params))) {
-                error_log('addIndicator() could not make() '.$indicator);
+                error_log('addIndicator() could not make('.$ind_str.')');
                 return false;
             }
         }
         if (!$indicator->canBeOwnedBy($owner)) {
             return false;
         }
+        $indicator->setOwner($owner);
         if ($owner->hasIndicator($sig = $indicator->getSignature())) {
             $existing = $owner->getIndicator($sig);
             $existing->setParam('indicator', $indicator->getParam('indicator'));
@@ -44,8 +47,7 @@ trait HasIndicators
             return $existing;
         }
         $indicator->setParams($params_if_new);
-        $indicator->setOwner($owner);
-        $owner->indicators[] = $indicator;
+        $owner->indicators[$sig] = $indicator;
         $indicator->createDependencies();
 
         return $indicator;
@@ -65,13 +67,16 @@ trait HasIndicators
 
     public function getIndicator(string $signature)
     {
-        foreach ($this->getIndicators() as $indicator) {
-            if (($ind_sig = $indicator->getSignature()) === $signature) {
+        //error_log('getIndicator() '.$signature.' inds: '.json_encode($this->getIndicators()));
+        foreach ($this->getIndicators() as $existing_sig => $indicator) {
+            //error_log('getIndicator() comparing '.$signature.' to '.$existing_sig);
+            if ($existing_sig === $signature) {
+                //error_log('getIndicator() bingo');
                 return $indicator;
             }
             if (1 < count($outputs = $indicator->getParam('outputs', []))) {
                 foreach ($outputs as $output) {
-                    if ($ind_sig.'_'.$output === $signature) {
+                    if ($existing_sig.':::'.$output === $signature) {
                         return $indicator;
                     }
                 }
@@ -151,20 +156,26 @@ trait HasIndicators
 
     public function unsetIndicator(Indicator $indicator)
     {
-        foreach ($this->getIndicatorOwner()->indicators as $key => $existing) {
-            if ($indicator === $existing) {
-                unset($this->getIndicatorOwner()->indicators[$key]);
-            }
+        $sig = $indicator->getSignature();
+        if (!isset($this->getIndicatorOwner()->indicators[$sig])) {
+            error_log('unsetIndicator() but not set: '.$sig);
+            return $this;
         }
+        if (0 < $indicator->refCount()) {
+            error_log('unsetIndicator() warning: refcount is non-zero');
+        }
+        error_log('unsetting '.$sig);
+        unset($this->getIndicatorOwner()->indicators[$sig]);
         return $this;
     }
 
 
     public function unsetIndicators(string $signature)
     {
-        foreach ($this->getIndicators() as $indicator) {
-            if ($indicator->getSignature() === $signature) {
-                $this->unsetIndicator($indicator);
+        foreach ($this->getIndicators() as $existing_sig => $existing_ind) {
+            //error_log($existing_sig.' vs '.$signature);
+            if ($existing_sig === $signature) {
+                $this->unsetIndicator($existing_ind);
             }
         }
         return $this;
@@ -246,7 +257,7 @@ trait HasIndicators
 
     public function calculateIndicators()
     {
-        foreach ($this->getIndicators() as &$indicator) {
+        foreach ($this->getIndicators() as $indicator) {
             $indicator->checkAndRun();
         }
         return $this;
@@ -294,27 +305,26 @@ trait HasIndicators
                 $pass_params[$val] = $request[$val];
             }
         }
-        $indicator = $this->getIndicator($request->signature);
+        $sig = urldecode($request->signature);
+        if (! $indicator = $this->getIndicator($sig)) {
+            error_log('HasIndicators::handleIndicatorFormRequest() could not find indicator '.$sig);
+        }
         return $indicator->getForm(
-            array_merge(['bases' => $this->getBasesAvailable($request->signature)], $pass_params)
+            array_merge(['sources' => $this->getSourcesAvailable(urldecode($request->signature))], $pass_params)
         );
     }
 
 
     public function handleIndicatorNewRequest(Request $request)
     {
-        if (!$request->signature) {
+        if (!$sig = urldecode($request->signature)) {
             error_log('handleIndicatorNewRequest without signature');
             return $this->viewIndicatorsList();
         }
-
-        $indicator = $this->createIndicator($request->signature);
-        if ($this->hasIndicator($indicator->getSignature())) {
-            $indicator = $this->getIndicator($indicator->getSignature());
+        if ($indicator = $this->addIndicatorBySignature($sig)) {
             $indicator->setParam('display.visible', true);
-        } else {
-            $this->addIndicator($indicator);
         }
+
         return $this->viewIndicatorsList();
     }
 
@@ -327,40 +337,72 @@ trait HasIndicators
 
     public function handleIndicatorDeleteRequest(Request $request)
     {
-        $indicator = $this->getIndicator($request->signature);
-        $this->unsetIndicators($indicator->getSignature());
+        $sig = urldecode($request->signature);
+        error_log('del '.$sig);
+        $indicator = $this->getIndicator($sig);
+        $this->unsetIndicators($sig);
         return $this->viewIndicatorsList();
     }
 
 
     public function handleIndicatorSaveRequest(Request $request)
     {
-        if ($indicator = $this->getIndicator($request->signature)) {
-            $jso = json_decode($request->params);
-            foreach ($indicator->getParam('indicator') as $param => $val) {
-                if (isset($jso->$param)) {
-                    $indicator->setParam('indicator.'.$param, $jso->$param);
-                    if ($param === 'base') {
-                        $indicator->setParam('depends', []);
-                        $dependency = $this->getIndicator($jso->$param);
-                        if (is_object($dependency)) {
-                            $indicator->setParam('depends', [$dependency]);
+        //error_log('handleIndicatorSaveRequest() req: '.json_encode($request->all()));
+        $sig = urldecode($request->signature);
+        if (! $indicator = $this->getIndicator($sig)) {
+            error_log('handleIndicatorSaveRequest() cannot find indicator '.$sig);
+            return $this->viewIndicatorsList();
+        }
+        $indicator = clone $indicator;
+        $jso = json_decode($request->params);
+        $params_if_new = ['display' => ['visible' => false]];
+        foreach ($indicator->getParam('adjustable') as $key => $param) {
+            $val = null;
+            if (isset($jso->$key)) {
+               $val = $jso->$key;
+            }
+            if ('bool' === ($type = $param['type'])) {
+                $val = boolval($val);
+            }
+            else if ('string' === $type) {
+                $val = strval($val);
+            }
+            else if ('int' === $type) {
+                $val = intval($val);
+            }
+            else if ('float' === $type) {
+                $val = floatval($val);
+            }
+            else if ('select' === $type) {
+                if (isset($param['options'])) {
+                    if (is_array($param['options'])) {
+                        if (!array_key_exists($val, $param['options'])) {
+                            $val = null;
                         }
                     }
                 }
             }
-            $this->unsetIndicators($indicator->getSignature());
-            $indicator->setParam('display.visible', true);
-            $this->addIndicator($indicator);
+            else if ('source' === $type) {
+                $val = urldecode($val);
+                $indicator->setParam('depends', []);
+                $dependency = $this->getOrAddIndicator($val, [], $params_if_new);
+                if (is_object($dependency)) {
+                    $indicator->setParam('depends', [$dependency]);
+                }
+            }
+            $indicator->setParam('indicator.'.$key, $val);
         }
+        $this->unsetIndicators($sig);
+        $indicator->setParam('display.visible', true);
+        $this->addIndicator($indicator);
         return $this->viewIndicatorsList();
     }
 
 
-    public function getBasesAvailable(string $except_signature = null, array $bases = null)
+    public function getSourcesAvailable(string $except_signature = null, array $sources = null)
     {
-        if (!is_array($bases)) {
-            $bases = [
+        if (!is_array($sources)) {
+            $sources = [
                 'open' => 'Open',
                 'high' => 'High',
                 'low' => 'Low',
@@ -369,30 +411,59 @@ trait HasIndicators
             ];
         }
         foreach ($this->getIndicatorsFilteredSorted([], ['display.name']) as $ind) {
-            if (!$ind->getParam('display.top_level') &&
-                $except_signature != $ind->getSignature()) {
-                $bases[$ind->getSignature()] = $ind->getDisplaySignature();
+            if ($ind->getParam('display.top_level')) {
+                continue;
+            }
+            if ($except_signature === ($sig = $ind->getSignature())) {
+                continue;
+            }
+            $outputs = $ind->getParam('outputs');
+            if (1 >= count($outputs)) {
+                $sources[$sig] = $ind->getDisplaySignature();
+                continue;
+            }
+            foreach ($outputs as $output) {
+                $sources[$sig.'_'.$output] = $ind->getDisplaySignature().' '.$output;
             }
         }
-        return $bases;
+        return $sources;
     }
 
 
-    public function indicatorIsBasedOn(string $signature, string $target_base = 'open')
+    public function indicatorHasInput(string $signature, string $target_sig = 'open')
     {
-        if ($signature === $target_base) {
+        if ($signature === $target_sig) {
             return true;
         }
         $params = ['display' => ['visible' => false]];
         if (!($indicator = $this->getOrAddIndicator($signature, [], $params))) {
             return false;
         }
-        if (!method_exists($indicator, 'hasBase')) {
+        if (!method_exists($indicator, 'hasInputs')) {
             return false;
         }
-        if (!$indicator->hasBase()) {
+        if (!$indicator->hasInputs()) {
             return false;
         }
-        return $indicator->basedOn($target_base);
+        return $indicator->inputFrom($target_sig);
+    }
+
+
+    public function updateReferences()
+    {
+        foreach ($this->getIndicators() as $ind) {
+            $ind->updateReferences();
+        }
+    }
+
+    public function purgeIndicators()
+    {
+        foreach ($this->getIndicators() as $ind) {
+            //error_log('purgeIndicators() checking '.$ind->getSignature().' refs: '.$ind->refCount());
+            if (!$ind->refCount() && !$ind->getParam('display.visible')) {
+                error_log('purgeIndicators() removing '.$ind->getSignature());
+                $this->getIndicatorOwner()->unsetIndicator($ind);
+            }
+        }
     }
 }

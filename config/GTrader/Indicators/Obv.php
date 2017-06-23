@@ -2,13 +2,13 @@
 
 return [
     'indicator' =>  [
-        'base' => 'close',
+        'input_source' => 'close',
     ],
     'display' => [
         'name' => 'OBV',
         'description' => 'On Balance Volume',
         'y_axis_pos' => 'right',
-        'top_level' => true,
+        'top_level' => false,
     ],
     'fill_value' => null,
     'normalize_type' => 'individual',

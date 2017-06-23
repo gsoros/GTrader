@@ -2,7 +2,7 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasBase;
+use GTrader\Indicators\HasInputs;
 use GTrader\Series;
 
 if (!extension_loaded('trader')) {
@@ -10,7 +10,7 @@ if (!extension_loaded('trader')) {
 }
 
 /** Indicators using the Trader PHP extension */
-abstract class Trader extends HasBase
+abstract class Trader extends HasInputs
 {
 
     public function __construct(array $params = [])
@@ -52,7 +52,10 @@ abstract class Trader extends HasBase
 
     public function extract(Series $candles)
     {
-        return $candles->extract($this->getBase());
+        if (! $input = $this->getInput()) {
+            return [];
+        }
+        return $candles->extract($input);
     }
 
     abstract function traderCalc(array $values);

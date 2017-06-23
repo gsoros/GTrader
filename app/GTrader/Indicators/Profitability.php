@@ -34,8 +34,8 @@ class Profitability extends Indicator
         if (!($signal_ind = $strategy->getSignalsIndicator())) {
             return $this;
         }
-        $signal_sig = $signal_ind->getSignature();
         $signal_ind->checkAndRun($force_rerun);
+        $signal_sig = $candles->key($signal_ind->getSignature());
 
         if (!$candles->hasIndicatorClass('Balance')) {
             error_log('Profitability::calculate() adding invisible balance indicator');
@@ -45,10 +45,10 @@ class Profitability extends Indicator
             error_log('Profitability::calculate() could not find balance indicator');
             return $this;
         }
-        $balance_sig = $balance_ind->getSignature();
         $balance_ind->checkAndRun($force_rerun);
+        $balance_sig = $candles->key($balance_ind->getSignature());
 
-        $signature = $this->getSignature();
+        $signature = $candles->key($this->getSignature());
 
         $prev_signal = false;
         $prev_balance = false;

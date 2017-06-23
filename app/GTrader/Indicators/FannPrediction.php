@@ -16,7 +16,9 @@ class FannPrediction extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $signature = $this->getSignature();
+        $candles = $this->getCandles();
+
+        $signature = $candles->key($this->getSignature());
 
         $strategy = $this->getOwner()->getStrategy();
         if (!$strategy) {
@@ -51,7 +53,6 @@ class FannPrediction extends Indicator
             //}
         }
 
-        $candles = $this->getCandles();
         $candles->reset();
 
         while ($candle = $candles->next()) {
