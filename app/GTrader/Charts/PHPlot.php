@@ -368,7 +368,7 @@ class PHPlot extends Chart
         foreach ($outputs as $output_index => $output_name) {
             $sig = $indicator->getSignature();
             if ($output_name) {
-                $sig .= '_'.$output_name;
+                $sig .= ':::'.$output_name;
             }
             $sig = $candles->key($sig);
             $index = 0;

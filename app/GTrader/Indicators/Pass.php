@@ -135,11 +135,13 @@ class Pass extends HasInputs
 
         $candles->reset();
         while ($candle = $candles->next()) {
-            $val = $candle->$source;
+            $val = floatval($candle->$source);
             if ('high' === $mode) {
+                //error_log('IS: '.$input.' V: '.$val.' HR: '.$candle->$high_ref); //continue;
                 $val = $this->pass($mode, $val, $candle->$high_ref, $inc);
             }
             else if ('low' === $mode) {
+                //error_log('IS: '.$input.' V: '.$val.' LR: '.$candle->$low_ref); continue;
                 $val = $this->pass($mode, $val, $candle->$low_ref, $inc);
             }
             else if ('band' === $mode) {

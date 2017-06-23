@@ -47,6 +47,7 @@ class FannSignals extends Indicator
         }
 
         $indicator = $strategy->getPredictionIndicator();
+        $indicator->addRef($this->getSignature());
         $indicator->checkAndRun($force_rerun);
         $indicator_sig = $candles->key($indicator->getSignature());
 

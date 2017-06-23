@@ -58,5 +58,5 @@ return [
         'y_axis_pos' => 'right',
         'top_level' => false,
     ],
-    'fill_value' => 0,
+    'fill_value' => null, // fills with fist valid value
 ];

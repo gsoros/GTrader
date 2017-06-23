@@ -655,6 +655,8 @@ class Fann extends Strategy
         reset($inputs);
         foreach ($inputs as $sig) {
             $norm_type = $norm_to = $indicator = null;
+            $output = 0;
+            $naked_sig = '';
             $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
@@ -674,6 +676,9 @@ class Fann extends Strategy
                     continue;
                 }
                 $norm_type = $norm_params['type'];
+                $output = Indicator::getOutputFromSignature($sig);
+                // sig str without output
+                $naked_sig = $indicator->getSignature();
             }
             if ('individual' === $norm_type) {
                 $norm_to = $norm_params['to'];
@@ -692,7 +697,10 @@ class Fann extends Strategy
                 continue;
             }
             if ('individual' === $norm_type) {
-                $groups['individual'][$sig] = !is_null($norm_to) ? ['normalize_to' => $norm_to] : true;
+                if (!is_null($norm_to) && !isset($groups['individual'][$naked_sig]['normalize_to'])) {
+                    $groups['individual'][$naked_sig]['normalize_to'] = $norm_to;
+                }
+                $groups['individual'][$naked_sig]['outputs'][] = $output;
                 continue;
             }
             error_log('Fann::getInputGroups() unknown type in '.json_encode($norm_params).' for '.$sig);
@@ -736,11 +744,6 @@ class Fann extends Strategy
                         }
                     }
                     $key = $sig;
-                    $value = floatval($sample[$i]->$sig_key);
-                    //if (!$value) {
-                    //    error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
-                    //    exit();
-                    //}
                     if ('ohlc' === $group_name) {
                         $key = 0;
                     }
@@ -750,11 +753,26 @@ class Fann extends Strategy
                     if ('range' === $group_name) {
                         $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
                     }
-                    // inividual
-                    $input[$group_name][$key]['values'][] = $value;
                     if (isset($params['normalize_to'])) {
                         $input[$group_name][$key]['normalize_to'] = $params['normalize_to'];
                     }
+                    // inividual
+                    if (isset($params['outputs'])) {
+                        if (is_array($params['outputs'])) {
+                            foreach ($params['outputs'] as $output_name) {
+                                $sig_key_output = $this->getCandles()->key($key.':::'.$output_name);
+                                $value = floatval($sample[$i]->$sig_key_output);
+                                $input[$group_name][$key]['values'][] = $value;
+                            }
+                            continue;
+                        }
+                    }
+                    $value = floatval($sample[$i]->$sig_key);
+                    if (!$value) {
+                        //error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
+                        //exit();
+                    }
+                    $input[$group_name][$key]['values'][] = $value;
                 }
             }
             $last_ohlc4 = Series::ohlc4($sample[$i]);
