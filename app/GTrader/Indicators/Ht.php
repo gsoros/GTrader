@@ -21,7 +21,7 @@ class Ht extends Trader
     }
 
 
-    protected function init()
+    public function init()
     {
         $mode = $this->getParam('indicator.mode');
         if (!is_array($sel = $this->getParam('modes.'.$mode))) {

@@ -408,6 +408,9 @@ trait HasIndicators
             }
             $indicator->setParam('indicator.'.$key, $val);
         }
+        if (method_exists($indicator, 'init')) {
+            $indicator->init();
+        }
         $this->unsetIndicators($sig);
         $indicator->setParam('display.visible', true);
         $this->addIndicator($indicator);
