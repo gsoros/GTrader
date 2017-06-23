@@ -71,14 +71,16 @@ class Pass extends HasInputs
 
         $mode = $this->getParam('indicator.mode');
         $inc = boolval($this->getParam('indicator.inclusive'));
-        $source = $candles->key($this->getInput('input_source'));
+        $input = $this->getInput('input_source');
+        $source = $candles->key($input);
         $high_ref = $candles->key($this->getInput('input_highRef'));
         $low_ref = $candles->key($this->getInput('input_lowRef'));
 
-        if (in_array($source, ['open', 'high', 'low', 'close'])) {
-            $this->setParam('display.y_axis_pos', 'left');
-        }
-//dd($this->getParams());
+        $this->setParam(
+            'display.y_axis_pos',
+            in_array($input, ['open', 'high', 'low', 'close']) ? 'left' : 'right'
+        );
+        //dd($this->getParams());
         // TODO set normalize params
 
         $signature = $candles->key($this->getSignature());
@@ -101,8 +103,9 @@ class Pass extends HasInputs
                 );
             }
             $candle->$signature = $val;
-
         }
+        //dd($candles[17]);
+        //dd($this->getParams());
         return $this;
     }
 }
