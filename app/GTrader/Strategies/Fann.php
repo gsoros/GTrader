@@ -657,6 +657,7 @@ class Fann extends Strategy
             $norm_type = $norm_to = $indicator = null;
             $output = 0;
             $naked_sig = '';
+            $notm_params = ['type' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
             $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
