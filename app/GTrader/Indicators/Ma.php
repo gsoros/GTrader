@@ -25,7 +25,7 @@ class Ma extends Trader
     public function traderCalc(array $values)
     {
         if (!($values = trader_ma(
-            $values,
+            $values[$this->getInput()],
             $this->getParam('indicator.length', 1),
             $this->getMaType()
         ))) {

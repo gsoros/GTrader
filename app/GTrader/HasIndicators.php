@@ -442,7 +442,7 @@ trait HasIndicators
                 continue;
             }
             foreach ($outputs as $output) {
-                $sources[$sig.'_'.$output] = $ind->getDisplaySignature().' '.$output;
+                $sources[$sig.':::'.$output] = $ind->getDisplaySignature().' '.$output;
             }
         }
         return $sources;

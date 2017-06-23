@@ -27,7 +27,7 @@ class Macd extends Trader
     public function traderCalc(array $values)
     {
         if (!($values = trader_macdext(
-            $values,
+            $values[$this->getInput()],
             $this->getParam('indicator.fastperiod'),
             $this->getParam('indicator.fastmatype'),
             $this->getParam('indicator.slowperiod'),

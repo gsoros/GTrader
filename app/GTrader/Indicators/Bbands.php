@@ -28,7 +28,7 @@ class Bbands extends Trader
     public function traderCalc(array $values)
     {
         if (!($values = trader_bbands(
-            $values,
+            $values[$this->getInput()],
             $this->getParam('indicator.period'),
             $this->getParam('indicator.devup'),
             $this->getParam('indicator.devdown'),
