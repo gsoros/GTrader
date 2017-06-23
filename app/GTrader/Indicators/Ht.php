@@ -37,6 +37,40 @@ class Ht extends Trader
     }
 
 
+    public function getInputs()
+    {
+        $this->init();
+
+        $mode = $this->getParam('indicator.mode');
+        $sources = $this->getParam('modes.'.$mode.'.sources', []);
+        $active_inputs = [];
+        foreach (parent::getInputs() as $input_key => $input_val) {
+            if (in_array($input_key, $sources)) {
+                $active_inputs[$input_key] = $input_val;
+            }
+        }
+        return $active_inputs;
+    }
+
+    public function getDisplaySignature(string $format = 'long')
+    {
+        $this->init();
+
+        $name = parent::getDisplaySignature('short');
+        if ('short' === $format) {
+            return $name;
+        }
+        $inputs = array_keys($this->getInputs());
+        $except = [];
+        foreach ($this->getParam('indicator') as $key => $param) {
+            if ('input_' === substr($key, 0, 6) && !in_array($key, $inputs)) {
+                $except[] = $key;
+            }
+        }
+        return ($param_str = $this->getParamString($except)) ? $name.' ('.$param_str.')' : $name;
+    }
+
+
     public function runDependencies(bool $force_rerun = false)
     {
         return $this;
@@ -46,24 +80,15 @@ class Ht extends Trader
     {
         $this->init();
 
-        $mode = $this->getParam('indicator.mode');
-        $in_a = $this->getParam('indicator.input_a');
-        $in_b = $this->getParam('indicator.input_b');
-
-        if (!is_array($sel = $this->getParam('modes.'.$mode))) {
-            error_log('Ht::traderCalc() mode not found: '.$mode);
-            return [];
-        }
-
-        $func = 'trader_ht_'.$mode;
+        $func = 'trader_ht_'.$this->getParam('indicator.mode');
         if (!function_exists($func)) {
             error_log('Ht::traderCalc() function not found: '.$func);
             return [];
         }
 
-        $args = [$values[$in_a]];
-        if (in_array('b', $sel['sources'])) {
-            $args[] = $values[$in_b];
+        $args = [];
+        foreach ($this->getInputs() as $input) {
+            $args[] = $values[$input];
         }
 
         if (!$values = call_user_func_array($func, $args)) {

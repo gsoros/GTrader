@@ -6,7 +6,7 @@
             foreach ($indicator->getParam('modes', []) as $mode_key => $mode) {
                 if (isset($mode['sources'])) {
                     if (is_array($mode['sources'])) {
-                        if (in_array('b', $mode['sources'])) {
+                        if (in_array('input_b', $mode['sources'])) {
                             echo '"'.$mode_key.'", ';
                         }
                     }

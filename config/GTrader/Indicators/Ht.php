@@ -30,29 +30,29 @@ return [
     ],
     'modes'=> [
         'dcperiod' => [
-            'sources' => ['a'],
+            'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
         ],
         'dcphase' => [
-            'sources' => ['a'],
+            'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
         ],
         'phasor' => [
-            'sources' => ['a', 'b'],
+            'sources' => ['input_a', 'input_b'],
             'display' => ['y_axis_pos' => 'right'],
             'outputs' => ['A', 'B'],
         ],
         'sine' => [
-            'sources' => ['a', 'b'],
+            'sources' => ['input_a', 'input_b'],
             'display' => ['y_axis_pos' => 'right'],
             'outputs' => ['A', 'B'],
         ],
         'trendline' => [
-            'sources' => ['a'],
+            'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'left'],
         ],
         'trendmode' => [
-            'sources' => ['a'],
+            'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
         ],
     ],
