@@ -315,21 +315,19 @@ class Series extends Collection
     {
         $field = $this->key($field);
         if (is_null($fill_value)) {
+            // first valid value
             $fill_value = reset($values);
         }
 
         $key = 0;
         while ($candle = $this->byKey($key)) {
             $fill = $fill_value;
-            if (in_array($fill, ['open', 'high', 'low', 'close'])) {
+            if (in_array($fill, ['open', 'high', 'low', 'close'], true)) {
                 $fill = $candle->$fill;
             }
             $candle->$field = isset($values[$key]) ? $values[$key] : $fill;
-            //error_log($field.': '.$candle->$field);
-            //$last_candle = $candle;
             $key++;
         }
-        //error_log('Series::setValues() last_candle: '.json_encode($last_candle));
         return $this;
     }
 

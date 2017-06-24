@@ -27,6 +27,7 @@ return [
         'Aroon'             => ['allow_multiple' => true],
         'Aroonosc'          => ['allow_multiple' => true],
         'Bop'               => ['allow_multiple' => true],
+        'Cci'               => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',

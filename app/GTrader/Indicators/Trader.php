@@ -33,11 +33,10 @@ abstract class Trader extends HasInputs
         $sig = $this->getSignature();
 
         $fill = $this->getParam('fill_value', null);
-        if ($fill && $this->hasInputs()) {
-            $fill = $this->getInput($fill);
-            if (array_key_exists($fill, $this->getInputs())) {
+        if (is_string($fill) && $this->hasInputs()) {
+            if ($fill = $this->getInput($fill)) {
                 //error_log('Trader::calculate() fill is '.$fill.' C:'.json_encode($candles->first()));
-                $fill = $candles->first()->$fill;
+                $fill = $candles->first()->{$candles->key($fill)};
             }
         }
 
