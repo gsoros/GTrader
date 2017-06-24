@@ -25,6 +25,7 @@ return [
         'Ad'                => ['allow_multiple' => true],
         'Adosc'             => ['allow_multiple' => true],
         'Aroon'             => ['allow_multiple' => true],
+        'Aroonosc'          => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',
