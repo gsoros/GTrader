@@ -1020,7 +1020,9 @@ class Fann extends Strategy
         static $cache = null;
 
         if (!is_null($cache)) {
-            return $cache;
+            // TODO why is the cache showing the value from a different object in ListItem???
+            //error_log('Fann::getNumInput() cached = '.$cache.' for '.$this->debugObjId());
+            //return $cache;
         }
 
         $input_count = count($inputs = $this->getParam('inputs', []));
@@ -1035,7 +1037,7 @@ class Fann extends Strategy
         if ($cache < 1) {
             $cache = 1;
         }
-        //error_log('Fann::getNumInput() = '.$cache);
+        //error_log('Fann::getNumInput() calculated = '.$cache.' for '.$this->debugObjId());
         return $cache;
     }
 
