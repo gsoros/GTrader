@@ -25,7 +25,6 @@ trait Skeleton
 {
     use HasParams, ClassUtils;
 
-
     public function __construct(array $params = [])
     {
         $this->setParams(self::loadConfRecursive(get_class($this)));

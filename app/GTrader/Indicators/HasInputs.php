@@ -49,25 +49,27 @@ abstract class HasInputs extends Indicator
         return true;
     }
 
-    public function inputFrom(string $signature)
+    public function inputFrom($signatures)
     {
         if (!$this->hasInputs()) {
             return false;
         }
-        foreach ($this->getInputs() as $input) {
-            if ($signature === $input) {
-                return true;
-            }
+        if (!is_array($signatures)) {
+            $signatures = [$signatures];
+        }
+        $inputs = $this->getInputs();
+        if (count(array_intersect($inputs, $signatures))) {
+            return true;
         }
         $params = ['display' => ['visible' => false]];
-        foreach ($this->getInputs() as $input) {
+        foreach ($inputs as $input) {
             if (!($input_ind = $this->getOwner()->getOrAddIndicator($input, [], $params))) {
                 continue;
             }
             if (!$input_ind->hasInputs()) {
                 continue;
             }
-            if ($input_ind->inputFrom($signature)) {
+            if ($input_ind->inputFrom($signatures)) {
                 return true;
             }
         }

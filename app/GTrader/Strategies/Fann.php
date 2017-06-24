@@ -21,6 +21,7 @@ if (!extension_loaded('fann')) {
 class Fann extends Strategy
 {
 
+    protected $cache = [];
     protected $_fann = null;                // fann resource
     protected $_data = [];
     protected $_sample_iterator = 0;
@@ -40,6 +41,7 @@ class Fann extends Strategy
     public function __wakeup()
     {
         parent::__wakeup();
+        $this->cache = [];
         if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
             //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
             $this->loadOrCreateFann(FANN_WAKEUP_PREFERRED_SUFFX);
@@ -1017,28 +1019,32 @@ class Fann extends Strategy
 
     public function getNumInput()
     {
-        static $cache = null;
-
-        if (!is_null($cache)) {
-            // TODO why is the cache showing the value from a different object in ListItem???
-            //error_log('Fann::getNumInput() cached = '.$cache.' for '.$this->debugObjId());
-            //return $cache;
+        if (isset($this->cache['num_input'])) {
+            //error_log('Fann::getNumInput() cached: '.$this->cache['num_input'].
+            //    ' oid: '.$this->debugObjId());
+            return $this->cache['num_input'];
         }
 
         $input_count = count($inputs = $this->getParam('inputs', []));
         $input_count_based_on_open = 0;
+        $sigs_based_on_open = [];
         foreach ($inputs as $sig) {
-            if ($this->indicatorHasInput($sig, 'open')) {
+            if (!$this->indicatorHasInput($sig, ['high', 'low', 'close', 'volume'])) {
                 $input_count_based_on_open++;
+                $sigs_based_on_open[] = $sig;
             }
         }
 
-        $cache = ($this->getParam('sample_size') - 1) * $input_count + $input_count_based_on_open;
-        if ($cache < 1) {
-            $cache = 1;
+        $n = ($this->getParam('sample_size') - 1) * $input_count + $input_count_based_on_open;
+        if ($n < 1) {
+            $n = 1;
         }
-        //error_log('Fann::getNumInput() calculated = '.$cache.' for '.$this->debugObjId());
-        return $cache;
+
+        //error_log('Fann::getNumInput() calculated: '.$n.
+        //    ' based_on_open: '.json_encode($sigs_based_on_open).
+        //    ' oid '.$this->debugObjId());
+        $this->cache['num_input'] = $n;
+        return $n;
     }
 
 

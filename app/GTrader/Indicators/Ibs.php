@@ -2,22 +2,26 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicator;
+use GTrader\Indicators\HasInputs;
 
 /** Internal Bar Strength */
-class Ibs extends Indicator
+class Ibs extends HasInputs
 {
+    public function getInputs()
+    {
+        return ['high', 'low', 'close'];
+    }
 
     public function calculate(bool $force_rerun = false)
     {
         if (!($candles = $this->getCandles())) {
             return $this;
         }
-        $signature = $candles->key($this->getSignature());
+        $key = $candles->key($this->getSignature());
         $candles->reset();
         while ($candle = $candles->next()) {
 
-            $candle->$signature =
+            $candle->$key =
                 0 == ($div = $candle->high - $candle->low) ?
                 .5 :
                 ($candle->close - $candle->low) / $div;

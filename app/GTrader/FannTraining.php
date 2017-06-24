@@ -53,6 +53,9 @@ class FannTraining extends Model
     protected $lock;
     protected $strategies = [];
     protected $saved_fann;
+    protected $cache = [];
+    protected $reverts = 0;
+    protected $started;
 
 
     public function run()
@@ -191,19 +194,21 @@ class FannTraining extends Model
 
     public function getMaximizeSig()
     {
-        static $cache;
-
-        if (!is_array($cache)) {
+        if (!isset($this->cache['maximize'])) {
             foreach (['class', 'params'] as $val) {
-                $cache[$val] =
+                $$val =
                     isset($this->options['indicator_'.$val]) ?
                         $this->options['indicator_'.$val] :
                         $this->getParam('indicator.'.$val);
             }
-            $indicator = Indicator::make($cache['class'], $cache['params']);
-            $cache['sig'] = $indicator->getSignature();
+            $indicator = Indicator::make($class, $params);
+            $this->cache['maximize'] = [
+                'class' => $class,
+                'params' => $params,
+                'sig' => $indicator->getSignature(),
+            ];
         }
-        return $cache['sig'];
+        return $this->cache['maximize']['sig'];
     }
 
 
@@ -234,8 +239,6 @@ class FannTraining extends Model
 
     protected function swapIfCrossTraining()
     {
-        static $reverts = 0;
-
         $current_epoch = $this->getProgress('epoch');
 
         if (!isset($this->options['crosstrain'])) {
@@ -262,16 +265,16 @@ class FannTraining extends Model
             error_log('Before: '.$this->getProgress('test_before_swap').
                         ' Now: '.$this->getProgress('test'));
             if ($this->getProgress('test') < $this->getProgress('test_before_swap')) {
-                if ($reverts < 3) {
+                if ($this->reverts < 3) {
                     error_log('Reverting fann');
                     if (is_resource($this->saved_fann)) {
                         $this->getStrategy('train')->setFann($this->saved_fann);
-                        $reverts++;
+                        $this->reverts++;
                     } else {
                         error_log('Saved fann not resource');
                     }
                 } else {
-                    $reverts = 0;
+                    $this->reverts = 0;
                 }
             }
 
@@ -441,10 +444,8 @@ class FannTraining extends Model
 
     protected function shouldRun()
     {
-        static $started;
-
-        if (!$started) {
-            $started = time();
+        if (!$this->started) {
+            $this->started = time();
         }
 
         // check db if we have been stopped or deleted
@@ -459,8 +460,8 @@ class FannTraining extends Model
         // check if the number of active trainings is greater than the number of slots
         if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
             // check if we have spent too much time
-            if ((time() - $started) > $this->getParam('max_time_per_session')) {
-                error_log('Time up: '.(time() - $started).'/'.$this->getParam('max_time_per_session'));
+            if ((time() - $this->started) > $this->getParam('max_time_per_session')) {
+                error_log('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
                 return false;
             }
         }

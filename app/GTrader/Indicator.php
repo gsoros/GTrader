@@ -13,6 +13,7 @@ abstract class Indicator //implements \JsonSerializable
 
     protected $calculated = false;
     protected $refs = [];
+    protected $cache = [];
     protected $sleepingbag = [];
 
 
@@ -153,7 +154,7 @@ abstract class Indicator //implements \JsonSerializable
 
     protected static function decodeSignature(string $signature)
     {
-        static $cache = [];
+        static $cache;
 
         if (isset($cache[$signature])) {
             return $cache[$signature];
@@ -173,7 +174,11 @@ abstract class Indicator //implements \JsonSerializable
             $class = isset($o->class) ? $o->class : '';
             $params = isset($o->params) ? (array)$o->params : [];
             $params = ['indicator' => $params];
-            $cache[$signature] = ['class' => $class, 'params' => $params, 'output' => $output];
+            $cache[$signature] = [
+                'class' => $class,
+                'params' => $params,
+                'output' => $output,
+            ];
         }
         else {
             $cache[$signature] = false;

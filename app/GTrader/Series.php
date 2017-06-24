@@ -13,9 +13,10 @@ class Series extends Collection
 {
     use HasParams, HasIndicators, HasStrategy, ClassUtils;
 
-    private $_loaded;
-    private $_iter = 0;
-    private $_map = [];
+    protected $_loaded;
+    protected $_iter = 0;
+    protected $_map = [];
+    protected $cache = [];
 
     public function __construct(array $params = [])
     {
@@ -235,16 +236,14 @@ class Series extends Collection
 
     public function getEpoch($resolution = null, $symbol = null, $exchange = null)
     {
-        static $cache = [];
-
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param) {
             if (is_null($$param)) {
                 $$param = $this->getParam($param);
             }
         }
 
-        if (isset($cache[$exchange][$symbol][$resolution])) {
-            return $cache[$exchange][$symbol][$resolution];
+        if (isset($this->cache[$exchange][$symbol][$resolution]['epoch'])) {
+            return $this->cache[$exchange][$symbol][$resolution]['epoch'];
         }
 
         $candle = Candle::select('time')
@@ -260,7 +259,7 @@ class Series extends Collection
             ->first();
 
         $epoch = isset($candle->time) ? $candle->time : null;
-        $cache[$exchange][$symbol][$resolution] = $epoch;
+        $this->cache[$exchange][$symbol][$resolution]['epoch'] = $epoch;
 
         return $epoch;
     }
@@ -268,16 +267,14 @@ class Series extends Collection
 
     public function getLastInSeries($resolution = null, $symbol = null, $exchange = null)
     {
-        static $cache = [];
-
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param) {
             if (is_null($$param)) {
                 $$param = $this->getParam($param);
             }
         }
 
-        if (isset($cache[$exchange][$symbol][$resolution])) {
-            return $cache[$exchange][$symbol][$resolution];
+        if (isset($this->cache[$exchange][$symbol][$resolution]['last'])) {
+            return $this->cache[$exchange][$symbol][$resolution]['last'];
         }
 
         $candle = Candle::select('time')
@@ -292,7 +289,7 @@ class Series extends Collection
                         ->orderBy('time', 'desc')->first();
 
         $last = isset($candle->time) ? $candle->time : null;
-        $cache[$exchange][$symbol][$resolution] = $last;
+        $this->cache[$exchange][$symbol][$resolution]['last'] = $last;
 
         return $last;
     }

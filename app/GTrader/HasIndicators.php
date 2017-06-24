@@ -447,9 +447,12 @@ trait HasIndicators
     }
 
 
-    public function indicatorHasInput(string $signature, string $target_sig = 'open')
+    public function indicatorHasInput(string $signature, $target_sigs = ['open'])
     {
-        if ($signature === $target_sig) {
+        if (!is_array($target_sigs)) {
+            $target_sigs = [$target_sigs];
+        }
+        if (in_array($signature, $target_sigs)) {
             return true;
         }
         $params = ['display' => ['visible' => false]];
@@ -462,7 +465,7 @@ trait HasIndicators
         if (!$indicator->hasInputs()) {
             return false;
         }
-        return $indicator->inputFrom($target_sig);
+        return $indicator->inputFrom($target_sigs);
     }
 
 
