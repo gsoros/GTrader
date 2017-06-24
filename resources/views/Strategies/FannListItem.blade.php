@@ -7,5 +7,7 @@
         title="{{ $train }}">
     <span class="glyphicon glyphicon-fire"></span> {{ $train }}
 </button>
-<strong>{{ $strategy->getParam('name') }}</strong>
-<small>inputs: {{ $strategy->getNumInput() }}</samll>
+<span title="ID: {{ $strategy->getParam('id') }}">
+    <strong>{{ $strategy->getParam('name') }}</strong>
+    <small>inputs: {{ $strategy->getNumInput() }}</samll>
+</span>
