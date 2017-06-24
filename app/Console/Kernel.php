@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('candles:fetch')->everyMinute();
         $schedule->command('trainingManager:run')->everyMinute()
             ->appendOutputTo(storage_path('logs/trainingManager.log'));;
-        $schedule->command('bots:run')->everyMinute();
+        $schedule->command('bots:run')->everyFiveMinutes();
     }
 
     /**
