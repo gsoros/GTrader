@@ -745,8 +745,9 @@ class Fann extends Strategy
                     //    error_log('Fann::sample2io() params: '.json_encode($params));
                     //}
                     if ($i == $out_sample_size - 1) {
-                        // for the last input candle, we only care about the fields which are based on "open"
-                        if (!$this->indicatorHasInput($sig, 'open')) {
+                        // for the last input candle, we only include fields which are based on "open",
+                        // i.e. not based on any of: high, low, close or volume
+                        if ($this->indicatorHasInput($sig, ['high', 'low', 'close', 'volume'])) {
                             continue;
                         }
                     }
