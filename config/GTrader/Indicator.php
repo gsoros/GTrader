@@ -29,6 +29,7 @@ return [
         'Bop'               => ['allow_multiple' => true],
         'Cci'               => ['allow_multiple' => true],
         'Cmo'               => ['allow_multiple' => true],
+        'Dmi'               => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',
