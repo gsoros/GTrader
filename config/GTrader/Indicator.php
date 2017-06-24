@@ -22,6 +22,8 @@ return [
         'Sar'               => ['allow_multiple' => true],
         'Ibs'               => ['allow_multiple' => true],
         'Ht'                => ['allow_multiple' => true],
+        'Ad'                => ['allow_multiple' => true],
+        'Adosc'             => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',
