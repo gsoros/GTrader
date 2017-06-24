@@ -9,5 +9,5 @@
 </button>
 <span title="ID: {{ $strategy->getParam('id') }}">
     <strong>{{ $strategy->getParam('name') }}</strong>
-    <small>inputs: {{ $strategy->getNumInput() }}</samll>
+    <small>inputs: {{ $strategy->getNumInput() }}</small>
 </span>
