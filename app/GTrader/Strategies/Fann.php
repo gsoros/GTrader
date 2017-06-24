@@ -154,9 +154,13 @@ class Fann extends Strategy
             ->values();
         foreach ($items as $item) {
             if (!array_key_exists($item->name, $data)) {
-                $data[$item->name] = [];
+                $display = [];
+                if ('train_mser' === $item->name) {
+                    $display = ['y_axis_pos' => 'right'];
+                }
+                $data[$item->name] = ['display' => $display, 'values' => []];
             }
-            $data[$item->name][$item->epoch] = $item->value;
+            $data[$item->name]['values'][$item->epoch] = $item->value;
         }
         ksort($data);
         $plot = new Plot([

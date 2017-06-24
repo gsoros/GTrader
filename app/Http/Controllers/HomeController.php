@@ -67,6 +67,12 @@ class HomeController extends Controller
 
     public function test()
     {
+        $arr = ['a' => ['b' => ['c' => ['v1', ['d' => 'v3']]]]];
+        $list = ['a', 'b', 'c', 1, 'd'];
+        return view('basic')->with([
+            'content' => json_encode(Util::arrEl($arr, $list)),
+        ]);
+
         $count = 100000;
         $baseline = memory_get_usage();
 

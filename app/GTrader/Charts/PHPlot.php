@@ -14,7 +14,6 @@ class PHPlot extends Chart
 
     protected $_image_map;
     protected $last_close;
-    protected $world = [];
 
 
     public function toHTML(string $content = '')
@@ -221,13 +220,13 @@ class PHPlot extends Chart
         if ($ymax <= 0) {
             $ymax = null;
         }
-        $this->world = [
+        $world = [
             'xmin' => $times[0] - $candles->getParam('resolution'),
             'xmax' => $times[count($times) - 1] + $candles->getParam('resolution'),
             'ymin' => intval($ymin),
             'ymax' => intval($ymax),
         ];
-        $this->setWorld();
+        $this->setWorld($world);
         $this->_plot->setTitle($title);
         $colors = 'candles' === $plot_type ?
             ['#b0100010', '#00600010','grey:90', 'grey:90'] :
@@ -331,27 +330,6 @@ class PHPlot extends Chart
     }
 
 
-    protected function setWorld(string $axes='xy')
-    {
-        $xmin = $ymin = $xmax = $ymax = null;
-        if (strstr($axes, 'x')) {
-            $xmin = $this->world['xmin'];
-            $xmax = $this->world['xmax'];
-        }
-        if (strstr($axes, 'y')) {
-            $ymin = $this->world['ymin'];
-            $ymax = $this->world['ymax'];
-        }
-        $this->_plot->setPlotAreaWorld(
-            $xmin,
-            $ymin,
-            $xmax,
-            $ymax
-        );
-        return $this;
-    }
-
-
     protected function plotIndicator($indicator)
     {
         $display = $indicator->getParam('display');
@@ -409,7 +387,7 @@ class PHPlot extends Chart
         if (!$world_set) {
             if (isset($display['y_axis_pos'])) {
                 if ($display['y_axis_pos'] === 'right') {
-                    $this->setWorld('x');
+                    $this->setWorld([], 'x');
                     $world_set = true;
                     $this->_plot->SetYTickPos('plotright');
                     $this->_plot->SetYTickLabelPos('plotright');
