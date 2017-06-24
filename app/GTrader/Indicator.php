@@ -169,11 +169,11 @@ abstract class Indicator //implements \JsonSerializable
             $output = array_pop($chunks);
             $stripped = join('', $chunks);
         }
-        if ($o = json_decode($stripped)) {
+        if (!is_null($o = json_decode($stripped))) {
             $class = isset($o->class) ? $o->class : '';
-            $params = ['indicator' => (array)$o->params];
+            $params = isset($o->params) ? (array)$o->params : [];
+            $params = ['indicator' => $params];
             $cache[$signature] = ['class' => $class, 'params' => $params, 'output' => $output];
-
         }
         else {
             $cache[$signature] = false;
