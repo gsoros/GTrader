@@ -24,6 +24,7 @@ return [
         'Ht'                => ['allow_multiple' => true],
         'Ad'                => ['allow_multiple' => true],
         'Adosc'             => ['allow_multiple' => true],
+        'Aroon'             => ['allow_multiple' => true],
     ],
     'outputs' => [''],
     'normalize_type' => 'ohlc',
