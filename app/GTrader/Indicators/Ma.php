@@ -22,6 +22,18 @@ class Ma extends Trader
         return $this->getParam('indicator.type');
     }
 
+    public function getNormalizeParams()
+    {
+        if ($this->inputFromIndicator()) {
+            $params = ['display' => ['visible' => false]];
+            if ($ind = $this->getOwner()->getOrAddIndicator($this->getInput(), [], $params)) {
+                return $ind->getNormalizeParams();
+            }
+        }
+        return parent::getNormalizeParams();
+    }
+
+
     public function traderCalc(array $values)
     {
         if (!($values = trader_ma(
