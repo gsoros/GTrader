@@ -13,6 +13,7 @@ abstract class Indicator //implements \JsonSerializable
 
     protected $calculated = false;
     protected $refs = [];
+    protected $sleepingbag = [];
 
 
     public function __construct(array $params = [])
@@ -33,7 +34,20 @@ abstract class Indicator //implements \JsonSerializable
         $this->refs = [];
     }
 
+/*
+    public function __sleep()
+    {
+        //error_log('Indicator::__sleep()');
+        $this->sleepingbag = $this->getParam('indicator');
+        return ['sleepingbag', 'owner'];
+    }
 
+    public function __wakep()
+    {
+        //error_log('Indicator::__wakeup()');
+        $this->setParam('indicator', $this->sleepingbag);
+    }
+*/
 /*
     public function jsonSerialize()
     {

@@ -85,9 +85,12 @@ class Pass extends HasInputs
             $sigs[] = $this->getParam('indicator.input_lowRef');
         }
 
+        if (! $owner = $this->getOwner()) {
+            return $this;
+        }
         $params = ['display' => ['visible' => false]];
         foreach ($sigs as $sig) {
-            if ($indicator = $this->getOwner()->getOrAddIndicator($sig, [], $params)) {
+            if ($indicator = $owner->getOrAddIndicator($sig, [], $params)) {
                 $indicator->checkAndRun();
             }
         }

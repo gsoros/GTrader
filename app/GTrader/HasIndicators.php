@@ -45,7 +45,7 @@ trait HasIndicators
             return $existing;
         }
         $class = $indicator->getShortClass();
-        if (!$indicator->getParam('available.'.$class.'.allow_multiple', false) &&
+        if (!\Config::get('GTrader.Indicators.available.'.$class.'.allow_multiple', false) &&
             $owner->hasIndicatorClass($class)) {
             $existing = $owner->getFirstIndicatorByClass($class);
             $existing->setParams($indicator->getParams());
@@ -290,9 +290,7 @@ trait HasIndicators
         if (!is_object($owner = $this->getIndicatorOwner())) {
             return $available;
         }
-        $indicator = Indicator::make();
-        $config = $indicator->getParam('available');
-        foreach ($config as $class => $params) {
+        foreach (\Config::get('GTrader.Indicators.available', []) as $class => $params) {
             $exists = $owner->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple'])) {
                 $indicator = Indicator::make($class);

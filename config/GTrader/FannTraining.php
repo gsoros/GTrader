@@ -36,7 +36,7 @@ return [
             'name' => 'Average Balance',
             'class' => 'Avg',
             'params' => [
-                'indicator' => ['base' => 'Balance_mode_fixed_capital_100'],
+                'indicator' => ['base' => '{"class":"Balance","params":{"mode":"fixed","capital":100}}'],
             ],
         ],
     ],

@@ -13,6 +13,7 @@ class Balance extends Indicator
     {
         parent::__construct($params);
         $this->allowed_owners = ['GTrader\\Series'];
+        //error_log($this->getSignature());
     }
 
     public function createDependencies()
