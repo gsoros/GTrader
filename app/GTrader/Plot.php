@@ -63,7 +63,6 @@ class Plot
         $this->_plot->SetDataType('data-data');
 
         $out = ['left' => [], 'right' => []];
-        $xmin = $xmax = $ymin = $ymax = 0;
         reset($data);
         while (list($label, $item) = each($data)) {
             if (!is_array($item)) {
@@ -80,46 +79,28 @@ class Plot
                 $dir = $ypos;
             }
 
-            if (($xmax_tmp = max(array_keys($values))) > $xmax) {
-                $xmax = $xmax_tmp;
-            }
-            $xmin_tmp = min(array_keys($values));
-            if (!$xmin) {
-                $xmin = $xmin_tmp;
-            } else {
-                $xmin = min($xmin, $xmin_tmp);
-            }
-
-            $ymin_tmp = min($values);
-            if (!$ymin) {
-                $ymin = $ymin_tmp;
-            } else {
-                $ymin = min($ymin_tmp, $ymin);
-            }
-            $ymax = max($ymax, max($values));
+            $out[$dir]['dim'] = [
+                'xmin' => min(min(array_keys($values)), Util::arrEl($out, [$dir, 'dim', 'xmin'])),
+                'xmax' => max(max(array_keys($values)), Util::arrEl($out, [$dir, 'dim', 'xmax'])),
+                'ymin' => min(min($values), Util::arrEl($out, [$dir, 'dim', 'ymin'])),
+                'ymax' => max(max($values), Util::arrEl($out, [$dir, 'dim', 'ymax'])),
+            ];
 
             $out[$dir][$label] = [];
             reset($values);
             while (list($xvalue, $yvalue) = each($values)) {
-                $out[$dir][$label][] = ['', $xvalue, $yvalue];
+                $out[$dir]['values'][$label][] = ['', $xvalue, $yvalue];
             }
         }
 
-        if ($ymin <= 0) {
-            $ymin = null;
-        }
-        if ($ymax <= 0) {
-            $ymax = null;
-        }
-        $this->setWorld([
-            'xmin' => $xmin,
-            'xmax' => $xmax,
-            'ymin' => $ymin,
-            'ymax' => $ymax,
-        ]);
+
 
         foreach (['left', 'right'] as $dir) {
-            foreach ($out[$dir] as $label => $values) {
+            $this->setWorld($out[$dir]['dim']);
+            //error_log($dir.' world: '.json_encode($out[$dir]['dim']));
+
+            foreach ($out[$dir]['values'] as $label => $values) {
+                //error_log($dir.' label: '.$label);
                 if (!count($values)) {
                     continue;
                 }
@@ -131,13 +112,13 @@ class Plot
                 $this->_plot->SetTickLabelColor($color);
 
                 if ('right' === $dir) {
-                    $this->setWorld([], 'x');
+                    //$this->setWorld($out[$dir]['dim'], 'x');
                     $this->_plot->SetYTickPos('plotright');
                     $this->_plot->SetYTickLabelPos('plotright');
-                    $this->_plot->TuneYAutoRange(0);
+                    //$this->_plot->TuneYAutoRange(0);
                 }
 
-                $this->_plot->TuneYAutoRange(0);
+                //$this->_plot->TuneYAutoRange(0);
                 $this->_plot->SetLegendPixels(35, self::nextLegendY());
                 $this->_plot->SetLegend([$label]);
                 $this->_plot->DrawGraph();
@@ -166,11 +147,13 @@ class Plot
         return $ret;
     }
 
-    protected function setWorld(array $new_world = [], string $set_axes='xy')
+    protected function setWorld(array $new_world = [], string $set_axes = 'xy')
     {
         static $world = [];
 
         $world = array_replace($world, $new_world);
+
+        //error_log('setWorld() axes: '.$set_axes.' world: '.json_encode($world));
 
         $xmin = $ymin = $xmax = $ymax = null;
         if (strstr($set_axes, 'x')) {
