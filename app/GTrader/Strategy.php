@@ -212,8 +212,8 @@ class Strategy
     {
         $sig_ind = $this->getSignalsIndicator();
         $sig_ind->checkAndRun($force_rerun);
-        $signature = $sig_ind->getSignature();
         $candles = $this->getCandles();
+        $signature = $candles->key($sig_ind->getSignature());
         $candles->reset();
         $signals = [];
         while ($candle = $candles->next()) {

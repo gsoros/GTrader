@@ -134,7 +134,7 @@ class Bot extends Model
 
         // Check for a signal
         $signals = $strategy->getSignals();
-        error_log('bot:run() signals: '.json_encode($signals));
+        //error_log('bot:run() signals: '.json_encode($signals));
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
         $last_signal = array_pop($signals);
