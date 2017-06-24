@@ -144,6 +144,7 @@ abstract class Chart extends Plot
         // save strategy
         if ($strategy = $this->getStrategy()) {
             if ($strategy_id = $strategy->getParam('id')) {
+                // TODO why?
                 $strategy->save();
                 $this->setParam('strategy_id', $strategy_id);
             }

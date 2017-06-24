@@ -8,3 +8,4 @@
     <span class="glyphicon glyphicon-fire"></span> {{ $train }}
 </button>
 <strong>{{ $strategy->getParam('name') }}</strong>
+<small>inputs: {{ $strategy->getNumInput() }}</samll>
