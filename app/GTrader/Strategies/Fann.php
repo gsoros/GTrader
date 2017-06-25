@@ -1031,7 +1031,7 @@ class Fann extends Strategy
         if ($n < 1) {
             $n = 1;
         }
-
+        //error_log('Fann::getNumInput() based on open: '.json_encode($sigs_based_on_open));
         $this->cache('num_input', $n);
         return $n;
     }

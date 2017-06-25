@@ -40,6 +40,11 @@ class Strategy
     }
 
 
+    public function __wakeup()
+    {
+        $this->cleanCache();
+    }
+
     public function __clone()
     {
         foreach ($this->getIndicators() as $indicator) {
@@ -76,6 +81,7 @@ class Strategy
                 'name' => $this->getParam('name'),
                 'strategy' => serialize($this)
             ]);
+        $this->cleanCache();
         return $this;
     }
 
