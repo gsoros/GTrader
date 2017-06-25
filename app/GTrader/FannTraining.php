@@ -187,7 +187,7 @@ class FannTraining extends Model
 
     public function getMaximizeSig()
     {
-        if (!$this->cached('maximize')) {
+        if (!$sig = $this->cached('maximize.sig')) {
             foreach (['class', 'params'] as $val) {
                 $$val =
                     isset($this->options['indicator_'.$val]) ?
@@ -195,13 +195,14 @@ class FannTraining extends Model
                         $this->getParam('indicator.'.$val);
             }
             $indicator = Indicator::make($class, $params);
+            $sig = $indicator->getSignature();
             $this->cache('maximize', [
                 'class' => $class,
                 'params' => $params,
-                'sig' => $indicator->getSignature(),
+                'sig' => $sig,
             ]);
         }
-        return $this->cached('maximize.sig');
+        return $sig;
     }
 
 
