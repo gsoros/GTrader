@@ -277,6 +277,10 @@ class FannTraining extends Model
             $this->getStrategy('train')->setCandles($test_candles);
             $this->getStrategy('test')->setCandles($train_candles);
 
+            // Remove cached training data
+            $this->getStrategy('train')->cleanCache();
+            $this->getStrategy('test')->cleanCache();
+
             $test = $this->test('test');
 
             // Set test baseline

@@ -895,7 +895,6 @@ class Fann extends Strategy
 
     public function test(bool $force_rerun = false)
     {
-        error_log('Fann::test('.($force_rerun ? 'true' : 'false').')');
         if (! ($test_data = $this->cached('test_data')) || $force_rerun) {
             $this->candlesToData('test');
             $this->_callback_type = 'test';
@@ -1033,9 +1032,6 @@ class Fann extends Strategy
             $n = 1;
         }
 
-        //error_log('Fann::getNumInput() calculated: '.$n.
-        //    ' based_on_open: '.json_encode($sigs_based_on_open).
-        //    ' oid '.$this->debugObjId());
         $this->cache('num_input', $n);
         return $n;
     }
