@@ -136,11 +136,15 @@ abstract class HasInputs extends Indicator
             //error_log('HasInputs::runDependencies() could not getOrAdd input indicators for '.get_class($this));
             return $this;
         }
-        $this->setParam('display.y_axis_pos', 'right');
+        $count_left = 0;
         foreach ($inds as $ind) {
+            if ('left' === $ind->getParam('display.y_axis_pos')) {
+                $count_left++;
+            }
             $ind->addRef($this->getSignature());
             $ind->checkAndRun($force_rerun);
         }
+        $this->setParam('display.y_axis_pos', ($count_left === count($inds)) ? 'left' : 'right');
         return $this;
     }
 

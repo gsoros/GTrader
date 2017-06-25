@@ -26,4 +26,5 @@ return [
     'Cci'               => ['allow_multiple' => true],
     'Cmo'               => ['allow_multiple' => true],
     'Dmi'               => ['allow_multiple' => true],
+    'Tsf'               => ['allow_multiple' => true],
 ];

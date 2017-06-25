@@ -28,7 +28,9 @@ class Profitability extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $strategy = $this->getOwner()->getStrategy();
+        if (!$strategy = $this->getOwner()->getStrategy()) {
+            return $this;
+        }
         $candles = $this->getCandles();
 
         if (!($signal_ind = $strategy->getSignalsIndicator())) {
