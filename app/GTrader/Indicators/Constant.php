@@ -29,12 +29,12 @@ class Constant extends Indicator
             return $this;
         }
 
-        $signature = $candles->key($this->getSignature());
+        $key = $candles->key($this->getSignature());
         $value = $this->getParam('indicator.value');
 
         $candles->reset();
         while ($candle = $candles->next()) {
-            $candle->$signature = $value;
+            $candle->$key = $value;
         }
         return $this;
     }

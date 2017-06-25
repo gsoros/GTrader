@@ -53,9 +53,6 @@ class Series extends Collection
         if (in_array($signature, $this->_map)) {
             return $signature;
         }
-        if ('Constant' === Indicator::getClassFromSignature($signature)) {
-            return $signature;
-        }
         $this->_map[$signature] = Util::uniqidReal();
         return $this->_map[$signature];
     }
