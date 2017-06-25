@@ -2,8 +2,6 @@
 
 namespace GTrader;
 
-use GTrader\Series;
-
 trait HasCandles
 {
     protected $candles;

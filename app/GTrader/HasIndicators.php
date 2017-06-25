@@ -173,7 +173,7 @@ trait HasIndicators
         if (0 < $indicator->refCount()) {
             error_log('unsetIndicator() warning: refcount is non-zero');
         }
-        error_log('unsetting '.$sig);
+        //error_log('unsetIndicator() '.$indicator->debugObjId());
         unset($this->getIndicatorOwner()->indicators[$sig]);
         return $this;
     }
@@ -483,7 +483,7 @@ trait HasIndicators
         foreach ($this->getIndicators() as $ind) {
             //error_log('purgeIndicators() checking '.$ind->getSignature().' refs: '.$ind->refCount());
             if (!$ind->refCount() && !$ind->getParam('display.visible')) {
-                error_log('purgeIndicators() removing '.$ind->getSignature());
+                error_log('purgeIndicators() removing '.$ind->debugObjId());
                 $this->getIndicatorOwner()->unsetIndicator($ind);
             }
         }

@@ -3,7 +3,6 @@
 Namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
-use GTrader\UserExchangeConfig;
 
 
 abstract class Exchange

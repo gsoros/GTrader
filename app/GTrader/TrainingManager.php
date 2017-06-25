@@ -2,7 +2,6 @@
 
 namespace GTrader;
 
-use GTrader\Lock;
 use GTrader\FannTraining as Training;
 
 class TrainingManager

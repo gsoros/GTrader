@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use GTrader\Page;
 use GTrader\Exchange;
@@ -67,10 +68,26 @@ class HomeController extends Controller
 
     public function test()
     {
-        $arr = ['a' => ['b' => ['c' => ['v1', ['d' => 'v3']]]]];
+        $arr = [
+            'a' => [
+                'b' => [
+                    'c' => [
+                        'v1',
+                        ['d' => 'i1'],
+                        ['1' => 's1'],
+                    ]
+                ]
+            ]
+        ];
+
         $list = ['a', 'b', 'c', 1, 'd'];
+        //$res = Util::arrEl($arr, $list);
+
+        $key = 'a.b.c.1';
+        $res = Arr::get($arr, $key);
+
         return view('basic')->with([
-            'content' => json_encode(Util::arrEl($arr, $list)),
+            'content' => json_encode($res),
         ]);
 
         $count = 100000;

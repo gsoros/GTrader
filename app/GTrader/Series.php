@@ -3,20 +3,15 @@
 namespace GTrader;
 
 use Illuminate\Database\Eloquent\Collection;
-use GTrader\Chart;
-use GTrader\Exchange;
-use GTrader\Candle;
-use GTrader\Indicator;
-use GTrader\Util;
+
 
 class Series extends Collection
 {
-    use HasParams, HasIndicators, HasStrategy, ClassUtils;
+    use HasParams, HasIndicators, HasStrategy, HasCache, ClassUtils;
 
     protected $_loaded;
     protected $_iter = 0;
     protected $_map = [];
-    protected $cache = [];
 
     public function __construct(array $params = [])
     {
@@ -242,8 +237,10 @@ class Series extends Collection
             }
         }
 
-        if (isset($this->cache[$exchange][$symbol][$resolution]['epoch'])) {
-            return $this->cache[$exchange][$symbol][$resolution]['epoch'];
+        $cache_key = $exchange.'-'.$symbol.'-'.$resolution.'.epoch';
+
+        if ($cached = $this->cached($cache_key)) {
+            return $cached;
         }
 
         $candle = Candle::select('time')
@@ -259,7 +256,7 @@ class Series extends Collection
             ->first();
 
         $epoch = isset($candle->time) ? $candle->time : null;
-        $this->cache[$exchange][$symbol][$resolution]['epoch'] = $epoch;
+        $this->cache($cache_key, $epoch);
 
         return $epoch;
     }
@@ -273,8 +270,10 @@ class Series extends Collection
             }
         }
 
-        if (isset($this->cache[$exchange][$symbol][$resolution]['last'])) {
-            return $this->cache[$exchange][$symbol][$resolution]['last'];
+        $cache_key = $exchange.'-'.$symbol.'-'.$resolution.'.last';
+
+        if ($cached = $this->cached($cache_key)) {
+            return $cached;
         }
 
         $candle = Candle::select('time')
@@ -289,7 +288,7 @@ class Series extends Collection
                         ->orderBy('time', 'desc')->first();
 
         $last = isset($candle->time) ? $candle->time : null;
-        $this->cache[$exchange][$symbol][$resolution]['last'] = $last;
+        $this->cache($cache_key, $last);
 
         return $last;
     }

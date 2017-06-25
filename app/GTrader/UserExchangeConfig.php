@@ -3,7 +3,6 @@
 namespace GTrader;
 
 use Illuminate\Database\Eloquent\Model;
-use GTrader\Exchange;
 
 class UserExchangeConfig extends Model
 {

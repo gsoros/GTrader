@@ -6,10 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use GTrader\Exchange;
-use GTrader\Series;
-use GTrader\Lock;
-use GTrader\UserExchangeConfig;
 
 /**
 *

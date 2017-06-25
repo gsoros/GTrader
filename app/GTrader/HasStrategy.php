@@ -2,8 +2,6 @@
 
 namespace GTrader;
 
-use GTrader\Strategy;
-
 trait HasStrategy
 {
     protected $strategy;

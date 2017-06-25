@@ -9,8 +9,7 @@ class Constant extends Indicator
     public function getNormalizeParams()
     {
         return array_replace_recursive(
-            parent::getNormalizeParams(),
-            [
+            parent::getNormalizeParams(), [
                 'type' => 'individual',
                 'to' => $this->getParam('indicator.value'),
             ]
@@ -26,6 +25,17 @@ class Constant extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
+        if (!($candles = $this->getCandles())) {
+            return $this;
+        }
+
+        $signature = $candles->key($this->getSignature());
+        $value = $this->getParam('indicator.value');
+
+        $candles->reset();
+        while ($candle = $candles->next()) {
+            $candle->$signature = $value;
+        }
         return $this;
     }
 }

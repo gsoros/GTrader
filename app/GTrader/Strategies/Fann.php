@@ -20,8 +20,6 @@ if (!extension_loaded('fann')) {
 
 class Fann extends Strategy
 {
-
-    protected $cache = [];
     protected $_fann = null;                // fann resource
     protected $_data = [];
     protected $_sample_iterator = 0;
@@ -41,7 +39,6 @@ class Fann extends Strategy
     public function __wakeup()
     {
         parent::__wakeup();
-        $this->cache = [];
         if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
             //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
             $this->loadOrCreateFann(FANN_WAKEUP_PREFERRED_SUFFX);
@@ -896,38 +893,40 @@ class Fann extends Strategy
     }
 
 
-    public function test()
+    public function test(bool $force_rerun = false)
     {
-        $this->candlesToData('test');
-        $this->_callback_type = 'test';
-        $this->_callback_iterator = 0;
-        $test_data = fann_create_train_from_callback(
-            count($this->_data['test']),
-            $this->getNumInput(),
-            $this->getParam('num_output'),
-            [$this, 'createCallback']
-        );
-
+        error_log('Fann::test('.($force_rerun ? 'true' : 'false').')');
+        if (! ($test_data = $this->cached('test_data')) || $force_rerun) {
+            $this->candlesToData('test');
+            $this->_callback_type = 'test';
+            $this->_callback_iterator = 0;
+            $test_data = fann_create_train_from_callback(
+                count($this->_data['test']),
+                $this->getNumInput(),
+                $this->getParam('num_output'),
+                [$this, 'createCallback']
+            );
+            $this->cache('test_data', $test_data);
+        }
         $mse = fann_test_data($this->getFann(), $test_data);
-        //$bit_fail = fann_get_bit_fail($this->getFann());
-        //echo '<br />MSE: '.$mse.' Bit fail: '.$bit_fail.'<br />';
         return $mse;
     }
 
 
-    public function train($max_epochs = 5000)
+    public function train(int $max_epochs = 5000, bool $force_rerun = false)
     {
-
-        $t = time();
-        $this->candlesToData('train'); //echo " DEBUG stop that train\n"; return false;
-        $this->_callback_type = 'train';
-        $this->_callback_iterator = 0;
-        $training_data = fann_create_train_from_callback(
-            count($this->_data['train']),
-            $this->getNumInput(),
-            $this->getParam('num_output'),
-            [$this, 'createCallback']
-        );
+        if (! ($training_data = $this->cached('training_data')) || $force_rerun) {
+            $this->candlesToData('train');
+            $this->_callback_type = 'train';
+            $this->_callback_iterator = 0;
+            $training_data = fann_create_train_from_callback(
+                count($this->_data['train']),
+                $this->getNumInput(),
+                $this->getParam('num_output'),
+                [$this, 'createCallback']
+            );
+            $this->cache('training_data', $training_data);
+        }
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
 
         $desired_error = 0.0000001;
@@ -968,12 +967,7 @@ class Fann extends Strategy
 
         $this->_bias = null;
 
-        if ($res) {
-            //echo 'done in '.(time()-$t).'s. Connections: '.count(fann_get_connection_array($this->getFann())).
-            //      ', MSE: '.fann_get_MSE($this->getFann()).'<br />';
-            return true;
-        }
-        return false;
+        return $res ? true : false;
     }
 
 
@@ -1020,10 +1014,8 @@ class Fann extends Strategy
 
     public function getNumInput()
     {
-        if (isset($this->cache['num_input'])) {
-            //error_log('Fann::getNumInput() cached: '.$this->cache['num_input'].
-            //    ' oid: '.$this->debugObjId());
-            return $this->cache['num_input'];
+        if ($cached = $this->cached('num_input')) {
+            return $cached;
         }
 
         $input_count = count($inputs = $this->getParam('inputs', []));
@@ -1044,7 +1036,7 @@ class Fann extends Strategy
         //error_log('Fann::getNumInput() calculated: '.$n.
         //    ' based_on_open: '.json_encode($sigs_based_on_open).
         //    ' oid '.$this->debugObjId());
-        $this->cache['num_input'] = $n;
+        $this->cache('num_input', $n);
         return $n;
     }
 

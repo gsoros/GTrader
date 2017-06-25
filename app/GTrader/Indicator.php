@@ -2,7 +2,6 @@
 
 namespace GTrader;
 
-use GTrader\Chart;
 
 abstract class Indicator //implements \JsonSerializable
 {
@@ -13,7 +12,6 @@ abstract class Indicator //implements \JsonSerializable
 
     protected $calculated = false;
     protected $refs = [];
-    protected $cache = [];
     protected $sleepingbag = [];
 
 
@@ -71,9 +69,11 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
-    public function addRef(string $signature) {
-
+    public function addRef(string $signature)
+    {
+        //error_log($this->debugObjId().' addRef('.$signature.')');
         $this->refs[$signature] = true;
+        return $this;
     }
 
     public function refCount() {
@@ -154,9 +154,10 @@ abstract class Indicator //implements \JsonSerializable
 
     protected static function decodeSignature(string $signature)
     {
-        static $cache;
+        static $cache = [];
 
         if (isset($cache[$signature])) {
+            //error_log('Indicator::decodeSignature() cache hit for '.$signature);
             return $cache[$signature];
         }
 
@@ -172,8 +173,7 @@ abstract class Indicator //implements \JsonSerializable
         }
         if (!is_null($o = json_decode($stripped))) {
             $class = isset($o->class) ? $o->class : '';
-            $params = isset($o->params) ? (array)$o->params : [];
-            $params = ['indicator' => $params];
+            $params = isset($o->params) ? ['indicator' => (array)$o->params] : [];
             $cache[$signature] = [
                 'class' => $class,
                 'params' => $params,
@@ -189,6 +189,9 @@ abstract class Indicator //implements \JsonSerializable
 
     public static function getClassFromSignature(string $signature)
     {
+        if (in_array($signature, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
+            return $signature;
+        }
         return ($decoded = self::decodeSignature($signature)) ? $decoded['class'] : $signature;
     }
 

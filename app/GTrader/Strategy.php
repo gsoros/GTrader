@@ -4,12 +4,10 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use GTrader\Series;
-use GTrader\Page;
 
 class Strategy
 {
-    use Skeleton, HasCandles, HasIndicators
+    use Skeleton, HasCandles, HasIndicators, HasCache
     {
         HasCandles::setCandles as private __hasCandlesSetCandles;
         HasIndicators::getSourcesAvailable as public __HasIndicatorsGetSourcesAvailable;

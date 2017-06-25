@@ -3,9 +3,6 @@
 namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
-use GTrader\Exchange;
-use GTrader\Candle;
-use GTrader\Lock;
 
 class Aggregator
 {

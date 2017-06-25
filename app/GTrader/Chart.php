@@ -5,11 +5,6 @@ namespace GTrader;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use GTrader\Exchange;
-use GTrader\Strategy;
-use GTrader\Indicator;
-use GTrader\Page;
-use GTrader\Plot;
 
 abstract class Chart extends Plot
 {

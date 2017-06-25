@@ -3,7 +3,7 @@
 namespace GTrader;
 
 use PHPlot_truecolor;
-use GTrader\Util;
+use Illuminate\Support\Arr;
 
 class Plot
 {
@@ -75,15 +75,15 @@ class Plot
                 continue;
             }
             $dir = 'left';
-            if ($ypos = Util::arrEl($item, ['display', 'y_axis_pos'])) {
+            if ($ypos = Arr::get($item, 'display.y_axis_pos')) {
                 $dir = $ypos;
             }
 
             $out[$dir]['dim'] = [
-                'xmin' => min(min(array_keys($values)), Util::arrEl($out, [$dir, 'dim', 'xmin'])),
-                'xmax' => max(max(array_keys($values)), Util::arrEl($out, [$dir, 'dim', 'xmax'])),
-                'ymin' => min(min($values), Util::arrEl($out, [$dir, 'dim', 'ymin'])),
-                'ymax' => max(max($values), Util::arrEl($out, [$dir, 'dim', 'ymax'])),
+                'xmin' => min(min(array_keys($values)), Arr::get($out, $dir.'.dim.xmin')),
+                'xmax' => max(max(array_keys($values)), Arr::get($out, $dir.'.dim.xmax')),
+                'ymin' => min(min($values), Arr::get($out, $dir.'.dim.ymin')),
+                'ymax' => max(max($values), Arr::get($out, $dir.'.dim.ymax')),
             ];
 
             $out[$dir][$label] = [];
@@ -157,12 +157,12 @@ class Plot
 
         $xmin = $ymin = $xmax = $ymax = null;
         if (strstr($set_axes, 'x')) {
-            $xmin = Util::arrEl($world, ['xmin']);
-            $xmax = Util::arrEl($world, ['xmax']);
+            $xmin = Arr::get($world, 'xmin');
+            $xmax = Arr::get($world, 'xmax');
         }
         if (strstr($set_axes, 'y')) {
-            $ymin = Util::arrEl($world, ['ymin']);
-            $ymax = Util::arrEl($world, ['ymax']);
+            $ymin = Arr::get($world, 'ymin');
+            $ymax = Arr::get($world, 'ymax');
         }
         $this->_plot->setPlotAreaWorld(
             $xmin,

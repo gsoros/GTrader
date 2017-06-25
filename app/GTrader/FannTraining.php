@@ -5,17 +5,11 @@ namespace GTrader;
 //use GTrader\Strategies\Fann as FannStrategy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use GTrader\Lock;
-use GTrader\Exchange;
-use GTrader\Series;
-use GTrader\Strategy;
 use GTrader\Strategies\Fann as FannStrategy;
-use GTrader\TrainingManager;
-use GTrader\Util;
 
 class FannTraining extends Model
 {
-    use Skeleton;
+    use Skeleton, HasCache;
 
 
     /**
@@ -53,7 +47,6 @@ class FannTraining extends Model
     protected $lock;
     protected $strategies = [];
     protected $saved_fann;
-    protected $cache = [];
     protected $reverts = 0;
     protected $started;
 
@@ -194,7 +187,7 @@ class FannTraining extends Model
 
     public function getMaximizeSig()
     {
-        if (!isset($this->cache['maximize'])) {
+        if (!$this->cached('maximize')) {
             foreach (['class', 'params'] as $val) {
                 $$val =
                     isset($this->options['indicator_'.$val]) ?
@@ -202,13 +195,13 @@ class FannTraining extends Model
                         $this->getParam('indicator.'.$val);
             }
             $indicator = Indicator::make($class, $params);
-            $this->cache['maximize'] = [
+            $this->cache('maximize', [
                 'class' => $class,
                 'params' => $params,
                 'sig' => $indicator->getSignature(),
-            ];
+            ]);
         }
-        return $this->cache['maximize']['sig'];
+        return $this->cached('maximize.sig');
     }
 
 
@@ -446,6 +439,7 @@ class FannTraining extends Model
     {
         if (!$this->started) {
             $this->started = time();
+            error_log('Training start: '.date('Y-m-d H:i:s'));
         }
 
         // check db if we have been stopped or deleted
