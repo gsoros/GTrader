@@ -32,8 +32,6 @@ class Balance extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        //$this->runDependencies();
-
         $candles = $this->getCandles();
 
         $mode = $this->getParam('indicator.mode');

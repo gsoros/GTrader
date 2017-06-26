@@ -49,7 +49,7 @@ return [
         ],
         'trendline' => [
             'sources' => ['input_a'],
-            'display' => ['y_axis_pos' => 'left'],
+            'display' => ['y_axis_pos' => 'input_a'],
         ],
         'trendmode' => [
             'sources' => ['input_a'],

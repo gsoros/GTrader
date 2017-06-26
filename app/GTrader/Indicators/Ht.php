@@ -8,29 +8,49 @@ use GTrader\Series;
 /** Hilbert Transform */
 class Ht extends Trader
 {
+    protected $init_done;
+
     public function __construct()
     {
         parent::__construct();
+        $this->init_done = false;
         $this->init();
     }
 
     public function __wakeup()
     {
         parent::__wakeup();
+        $this->init_done = false;
         $this->init();
     }
 
 
     public function init()
     {
+        if ($this->init_done) {
+            return $this;
+        }
+        $this->init_done = true;
+
         $mode = $this->getParam('indicator.mode');
         if (!is_array($sel = $this->getParam('modes.'.$mode))) {
             error_log('Ht::init() mode not found: '.$mode);
             return $this;
         }
-        if (isset($sel['display']['y_axis_pos'])) {
-            $this->setParam('display.y_axis_pos', $sel['display']['y_axis_pos']);
+
+        if ($ypos = $sel['display']['y_axis_pos']) {error_log($ypos);
+            if (in_array($ypos, array_keys($this->getInputs()))) {
+                if ($input = $this->getInput($ypos)) {
+                    if ($this->inputFrom(['open', 'close', 'high', 'low'])) {
+                        $ypos = 'left';
+                    } else if ($this->inputFrom(['volume'])) {
+                        $ypos = 'right';
+                    }
+                }
+            }
+            $this->setParam('display.y_axis_pos', $ypos);
         }
+
         $this->setParam('outputs', isset($sel['outputs']) ? $sel['outputs'] : ['']);
 
         return $this;

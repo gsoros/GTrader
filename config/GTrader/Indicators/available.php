@@ -1,6 +1,7 @@
 <?php
 return [
     'Constant'          => ['allow_multiple' => true],
+    'Operator'          => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],
     'Balance'           => ['allow_multiple' => false],
     'Ma'                => ['allow_multiple' => true],
