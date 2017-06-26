@@ -183,6 +183,7 @@ abstract class Indicator //implements \JsonSerializable
         else {
             $cache[$signature] = false;
         }
+        //error_log('Indicator::decodeSignature() uncached: '.json_encode($cache[$signature]));
         return $cache[$signature];
     }
 
@@ -340,9 +341,9 @@ abstract class Indicator //implements \JsonSerializable
     public function getNormalizeParams()
     {
         return [
-            'type' => $this->getParam('normalize_type', 'individual'),
-            'to' => $this->getParam('normalize_to', null),
-            'range' => $this->getParam('range', ['min' => null, 'max' => null]),
+            'mode' => $this->getParam('normalize.mode', 'individual'),
+            'to' => $this->getParam('normalize.to', null),
+            'range' => $this->getParam('normalize.range', ['min' => null, 'max' => null]),
         ];
     }
 

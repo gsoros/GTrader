@@ -16,9 +16,11 @@ return [
         'top_level' => false,
     ],
     'fill_value' => 0,
-    'normalize_type' => 'range',
-    'range' =>  [
-        'min' => -1,
-        'max' => 1,
+    'normalize' => [
+        'mode' => 'range',
+        'range' =>  [
+            'min' => -1,
+            'max' => 1,
+        ],
     ],
 ];

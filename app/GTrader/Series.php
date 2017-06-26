@@ -15,6 +15,7 @@ class Series extends Collection
 
     public function __construct(array $params = [])
     {
+        $this->setParams(self::loadConfRecursive(get_class($this)));
         foreach (['exchange', 'symbol', 'resolution'] as $param) {
             if (isset($params[$param])) {
                 $this->setParam($param, $params[$param]);
@@ -42,7 +43,7 @@ class Series extends Collection
     }
 
 
-    public function key(string $signature = null)
+    public function key(string $signature = null, string $prefix = 'key_')
     {
         if (in_array($signature, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
             return $signature;
@@ -53,7 +54,7 @@ class Series extends Collection
         if (in_array($signature, $this->_map)) {
             return $signature;
         }
-        $this->_map[$signature] = Util::uniqidReal();
+        $this->_map[$signature] = $prefix.Util::uniqidReal();
         return $this->_map[$signature];
     }
 
@@ -82,6 +83,7 @@ class Series extends Collection
     public function next($advance_iterator = true)
     {
         $this->_load();
+        //error_log('Series::next() '.$this->_iter);
         $ret = isset($this->items[$this->_iter]) ? $this->items[$this->_iter] : null;
         if ($advance_iterator) {
             $this->_iter++;
@@ -109,17 +111,14 @@ class Series extends Collection
         //return $this->items[$this->size()-1];
     //}
 
-    public function set($candle = null)
+    public function set(Candle $candle = null)
     {
-        if (!is_object($candle)) {
-            throw new \Exception('set needs candle object');
-        }
         $this->_load();
         if (isset($this->items[$this->_iter-1])) {
             $this->items[$this->_iter-1] = $candle;
-            return true;
+            return $this;
         }
-        return false;
+        return null;
     }
 
 
@@ -132,10 +131,15 @@ class Series extends Collection
     }
 
 
-    public function size()
+    public function size(bool $return_display_size = false)
     {
         $this->_load();
-        return count($this->items);
+        $count = count($this->items);
+        if ($return_display_size &&
+            $key = $this->getFirstKeyForDisplay()) {
+            return $count - $key;
+        }
+        return $count;
     }
 
 
@@ -143,46 +147,86 @@ class Series extends Collection
     {
         $this->_load();
         $this->items[] = $candle;
+        return $this;
     }
 
 
-    public function reset()
+    public function reset(bool $reset_to_display_start = false)
     {
         $this->_load();
-        $this->_iter = 0;
+        $key = 0;
+        if ($reset_to_display_start &&
+            $first = $this->getFirstKeyForDisplay()) {
+            $key = $first;
+        }
+        $this->_iter = $key;
         return $this;
     }
 
 
     public function clean()
     {
-        $this->items = array();
+        $this->items = [];
         $this->_loaded = false;
         $this->reset();
+        $this->cleanCache();
+        return $this;
     }
 
+    protected function getStartEndLimit(bool $apply_padding = true)
+    {
+        $cache_key = 'start_end_limit'.($apply_padding ? '_padded' : '');
+        if ($sel = $this->cached($cache_key)) {
+            return $sel;
+        }
 
-    private function _load()
+        $padding = intval($this->getParam('left_padding'));
+
+        // Start
+        $start = (0 < $start = intval($this->getParam('start'))) ? $start : 0;
+        if ($apply_padding && $start) {
+            $start -= $padding * intval($this->getParam('resolution'));
+        }
+
+        // End
+        $end = (0 < $end = intval($this->getParam('end'))) ? $end : 0;
+
+        //Limit
+        $limit = (0 < $limit = intval($this->getParam('limit'))) ? $limit : 0;
+        if ($apply_padding && $limit) {
+            $limit += $padding;
+        }
+
+        $sel = [
+            $start,
+            $end,
+            $limit,
+        ];
+        $this->cache($cache_key, $sel);
+
+        return $sel;
+    }
+
+    protected function _load()
     {
         if ($this->_loaded) {
-            return false;
+            return $this;
         }
         $this->_loaded = true;
 
-        $start = $this->getParam('start');
-        if ($start < 0) {
-            $start = 0;
-        }
-        $end = $this->getParam('end');
-        $limit = $this->getParam('limit');
-        $no_limit = $limit < 1 ? true : false;
-
         if (count($this->items)) {
-            return;
+            return $this;
         }
+
+        $this->cleanCache();
+
+        $resolution = intval($this->getParam('resolution'));
+
+        list ($start, $end, $limit) = $this->getStartEndLimit(true);
+
 
         $candles = Candle::select('time', 'open', 'high', 'low', 'close', 'volume')
-            ->where('resolution', intval($this->getParam('resolution')))
+            ->where('resolution', $resolution)
             ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
             ->where('exchanges.name', $this->getParam('exchange'))
             ->join('symbols', function ($join) {
@@ -197,7 +241,7 @@ class Series extends Collection
                     return $query->where('time', '<=', $end);
             })
             ->orderBy('time', 'desc')
-            ->when(!$no_limit, function ($query) use ($limit) {
+            ->when(0 < $limit, function ($query) use ($limit) {
                     return $query->limit($limit);
             })
             ->get()
@@ -206,7 +250,7 @@ class Series extends Collection
 
         //if ($candles->isEmpty()) throw new \Exception('Empty result');
         if (!count($candles->items)) {
-            return $this;
+            return $this->reset();
         }
 
         $this->items = $candles->items;
@@ -216,13 +260,19 @@ class Series extends Collection
     }
 
 
+    protected function getFirstKeyForDisplay()
+    {
+        return intval($this->getParam('left_padding'));
+    }
+
+
     public function save()
     {
         $this->reset();
         while ($candle = $this->next()) {
             $candle->save();
         }
-        return true;
+        return $this;
     }
 
 
@@ -337,19 +387,6 @@ class Series extends Collection
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     /** Midrate */
     public static function ohlc4(Candle $candle)
     {
@@ -361,8 +398,8 @@ class Series extends Collection
 
 
 
-    // Series::crossover($prev_candle, $candle, 'rsi_4_close', 50)
-    // Series::crossunder($prev_candle, $candle, 'close', 'bb_low_58_2_close')
+    // Series::crossover($prev_candle, $candle, $key, 50)
+    // Series::crossunder($prev_candle, $candle, 'close', $key)
     public static function crossover($prev_candle, $candle, $fish, $sea, $direction = 'over')
     {
 
@@ -414,9 +451,9 @@ class Series extends Collection
 
     public static function normalize($in, $in_min, $in_max, $out_min = -1, $out_max = 1)
     {
-        if ($in_max - $in_min == 0) {
+        if (0 == $in_max - $in_min) {
             //error_log('Series::normalize() division by zero: '.$in.' '.$in_min.' '.$in_max.' '.$out_min.' '.$out_max);
-            return $out_min + $out_max;
+            return ($out_min + $out_max) / 2;
         }
         return ($out_max - $out_min) / ($in_max - $in_min) * ($in - $in_max) + $out_max;
     }

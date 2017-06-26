@@ -23,9 +23,11 @@ return [
     ],
     'outputs' => ['Up', 'Down'],
     'fill_value' => 50,
-    'normalize_type' => 'range',
-    'range' =>  [
-        'min' => 0,
-        'max' => 100,
+    'normalize' => [
+        'mode' => 'range',
+        'range' =>  [
+            'min' => 0,
+            'max' => 100,
+        ],
     ],
 ];

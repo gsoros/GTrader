@@ -37,24 +37,6 @@ trait Skeleton
     }
 
 
-    protected static function loadConfRecursive(string $class)
-    {
-        $parent_conf = [];
-        if ($parent = get_parent_class($class)) {
-            $parent_conf = self::loadConfRecursive($parent);
-            foreach (['children_ns', 'default_child'] as $no_inherit) {
-                if (isset($parent_conf[$no_inherit])) {
-                    unset($parent_conf[$no_inherit]);
-                }
-            }
-        }
-        if (is_array($conf = self::getClassConf($class))) {
-            return array_replace_recursive($parent_conf, $conf);
-        }
-        return $parent_conf;
-    }
-
-
     public static function make(string $class = null, array $params = [])
     {
         $called = get_called_class();

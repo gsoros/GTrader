@@ -6,25 +6,6 @@ use GTrader\Indicators\HasInputs;
 
 class Operator extends HasInputs
 {
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init();
-    }
-
-    public function __wakeup()
-    {
-        parent::__wakeup();
-        $this->init();
-    }
-
-
-    public function init()
-    {
-        return $this;
-    }
-
     public function getDisplaySignature(string $format = 'long')
     {
         $op = $this->getParam('indicator.operation');

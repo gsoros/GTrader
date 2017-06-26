@@ -17,10 +17,10 @@ class Pass extends HasInputs
         $norm = parent::getNormalizeParams();
         $input = $this->getParam('indicator.input_'.$source, 'open');
         if (in_array($input, ['open', 'high', 'low', 'close'])) {
-            return array_replace_recursive($norm, ['type' => 'ohlc']);
+            return array_replace_recursive($norm, ['mode' => 'ohlc']);
         }
         if (!$indicator = $this->getInputIndicator($input)) {
-            return array_replace_recursive($norm, ['type' => 'individual']);
+            return array_replace_recursive($norm, ['mode' => 'individual']);
         }
         //error_log('Pass::getInputNormParams() return norm from ind: '.json_encode($indicator->getNormalizeParams()));
         return $indicator->getNormalizeParams();
@@ -43,9 +43,9 @@ class Pass extends HasInputs
         if ($high === $low) {
             return $high;
         }
-        if ('range' === $high['type'] && 'range' === $low['type']) {
+        if ('range' === $high['mode'] && 'range' === $low['mode']) {
             return array_replace_recursive($norm, [
-                'type' => 'range',
+                'mode' => 'range',
                 'range' => [
                     'min' => min($high['range']['min'], $low['range']['min']),
                     'max' => max($high['range']['max'], $low['range']['max'])

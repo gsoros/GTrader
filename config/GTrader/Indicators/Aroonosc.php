@@ -22,9 +22,11 @@ return [
         'top_level' => false,
     ],
     'fill_value' => 0,
-    'normalize_type' => 'range',
-    'range' =>  [
-        'min' => -100,
-        'max' => 100,
+    'normalize' => [
+        'mode' => 'range',
+        'range' =>  [
+            'min' => -100,
+            'max' => 100,
+        ],
     ],
 ];

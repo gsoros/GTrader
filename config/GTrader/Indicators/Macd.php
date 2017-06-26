@@ -50,8 +50,10 @@ return [
         ],
     ],
     'outputs' => ['Fast', 'Slow', 'Signal'],
-    'normalize_type' => 'individual',
-    'normalize_to' => 0,
+    'normalize' => [
+        'mode' => 'individual',
+        'to' => 0,
+    ],
     'display' => [
         'name' => 'MACD',
         'description' => 'Moving Average Convergence/Divergence',

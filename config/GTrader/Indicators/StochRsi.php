@@ -40,10 +40,12 @@ return [
         ],
     ],
     'outputs' => ['K', 'D'],
-    'normalize_type' => 'range',
-    'range' => [
-        'min' => 0,
-        'max' => 100,
+    'normalize' => [
+        'mode' => 'range',
+        'range' => [
+            'min' => 0,
+            'max' => 100,
+        ],
     ],
     'display' => [
         'name' => 'StochRSI',

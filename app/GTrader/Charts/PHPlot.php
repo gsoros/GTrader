@@ -177,16 +177,17 @@ class PHPlot extends Chart
         }
         $candles->setParam('limit', $limit);
         $candles->setParam('end', $end);
+        $candles->cleanCache();
     }
 
 
     protected function plotCandles()
     {
         $candles = $this->getCandles();
-        if (!$candles->size()) {
+        if (!$candles->size(true)) {
             return $this;
         }
-        $candles->reset(); // loads
+        $candles->reset(true);
         $title = in_array('title', $this->getParam('disabled', [])) ? '' :
             "\n".str_replace('_', '', $candles->getParam('exchange')).' '.
             strtoupper(str_replace('_', '', $candles->getParam('symbol'))).' '.
@@ -194,11 +195,11 @@ class PHPlot extends Chart
             date('Y-m-d H:i', $candles->next()->time).' - '.
             date('Y-m-d H:i', $candles->last()->time);
         // Candles need at least 4 pixels width
-        $plot_type = $candles->size() < $this->getParam('width', 1024) / 4 ? 'candles' : 'line';
+        $plot_type = $candles->size(true) < $this->getParam('width', 1024) / 4 ? 'candles' : 'line';
         $price = $times = [];
         $ymin = 0;
         $ymax = 0;
-        $candles->reset();
+        $candles->reset(true);
         while ($c = $candles->next()) {
             $price[] = ('candles' === $plot_type) ?
                 ['', $c->time, $c->open, $c->high, $c->low, $c->close]:
@@ -214,6 +215,7 @@ class PHPlot extends Chart
             }
             $ymax = max($ymax, max($c->open, $c->high, $c->low, $c->close));
         }
+        //error_log('plotCandles() got '.count($price));
         if ($ymin <= 0) {
             $ymin = null;
         }
@@ -350,7 +352,7 @@ class PHPlot extends Chart
             }
             $sig = $candles->key($sig);
             $index = 0;
-            $candles->reset();
+            $candles->reset(true);
             while ($candle = $candles->next()) {
                 $index++;
                 $value = $candle->$sig;
@@ -415,7 +417,7 @@ class PHPlot extends Chart
         $candles = $this->getCandles();
         $sig = $candles->key($indicator->getSignature());
 
-        $candles->reset();
+        $candles->reset(true);
         $data = $signals = [];
         //dd($this);
         while ($candle = $candles->next()) {

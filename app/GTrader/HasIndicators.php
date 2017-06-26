@@ -25,7 +25,6 @@ trait HasIndicators
         if (!is_object($indicator)) {
             $ind_str = $indicator;
             if ($indicator) {
-                //error_log('addIndicator make() '.$indicator.' '.json_encode($params));
                 if (!($indicator = Indicator::make($indicator, $params))) {
                     error_log('addIndicator() could not make('.$ind_str.')');
                     return false;
@@ -54,7 +53,6 @@ trait HasIndicators
         $indicator->setParams($params_if_new);
         $owner->indicators[$sig] = $indicator;
         $indicator->createDependencies();
-
         return $indicator;
     }
 
@@ -66,7 +64,9 @@ trait HasIndicators
     {
         $class = Indicator::getClassFromSignature($signature);
         $sig_params = Indicator::getParamsFromSignature($signature);
-        return $this->addIndicator($class, array_replace_recursive($sig_params, $params), $params_if_new);
+        $i = $this->addIndicator($class, array_replace_recursive($sig_params, $params), $params_if_new);
+
+        return $i;
     }
 
 
@@ -407,7 +407,7 @@ trait HasIndicators
             $indicator->setParam('indicator.'.$key, $val);
         }
         if (method_exists($indicator, 'init')) {
-            $indicator->init();
+            $indicator->init(true);
         }
         $this->unsetIndicators($sig);
         $indicator->setParam('display.visible', true);

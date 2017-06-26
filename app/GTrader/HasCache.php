@@ -42,18 +42,24 @@ trait HasCache
 
     protected function logCache(string $action = null, string $key = null, $value = null)
     {
-        return $this;
-        error_log('Cache '.(
-            ('get' === $action) ? (
-                is_null($value) ? 'miss' : 'hit'
-                ) : $action
-                    ).': '.$this->debugObjId().' '.json_encode($key).' '.(
-                        is_resource($value) ?
-                            get_resource_type($value) : (
-                                (75 < strlen($j = json_encode($value))) ?
-                                    substr($j, 0, 71).' ...' : $j
-                            )
-                    )
+        if (!$actions = $this->getParam('cache.log')) {
+            return $this;
+        }
+
+        $action = 'get' === $action ? (is_null($value) ? 'miss' : 'hit') : $action;
+
+        if (!in_array($action, $actions = array_map('trim', explode(',', $actions))) &&
+            !in_array('all', $actions)) {
+            return $this;
+        }
+
+        error_log('Cache '.$action.': '.$this->debugObjId().' '.json_encode($key).' '.(
+            is_resource($value) ?
+                get_resource_type($value) : (
+                    (75 < strlen($j = json_encode($value))) ?
+                        substr($j, 0, 71).' ...' : $j
+                )
+            )
         );
         return $this;
     }

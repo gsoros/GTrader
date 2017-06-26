@@ -32,5 +32,7 @@ return [
         'y_axis_pos' => 'right',
         'top_level' => false,
     ],
-    'normalize_type' => 'individual',
+    'normalize' => [
+        'mode' => 'individual',
+    ],
 ];

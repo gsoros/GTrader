@@ -25,5 +25,7 @@ return [
         'top_level' => false,
     ],
     'fill_value' => 'input_source',
-    'normalize_type' => 'ohlc',
+    'normalize' => [
+        'mode' => 'ohlc',
+    ],
 ];

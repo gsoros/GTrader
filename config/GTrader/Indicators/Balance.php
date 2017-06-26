@@ -27,5 +27,7 @@ return [
         'description' => 'Balance',
         'y_axis_pos' => 'right',
     ],
-    'normalize_type' => 'individual',
+    'normalize' => [
+        'mode' => 'individual',
+    ],
 ];

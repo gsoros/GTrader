@@ -10,7 +10,7 @@ class Constant extends Indicator
     {
         return array_replace_recursive(
             parent::getNormalizeParams(), [
-                'type' => 'individual',
+                'mode' => 'individual',
                 'to' => $this->getParam('indicator.value'),
             ]
         );

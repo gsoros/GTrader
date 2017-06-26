@@ -11,9 +11,11 @@ return [
         'y_axis_pos' => 'right',
         'top_level' => false,
     ],
-    'normalize_type' => 'range',
-    'range' => [
-        'min' => 0,
-        'max' => 1,
+    'normalize' => [
+        'mode' => 'range',
+        'range' => [
+            'min' => 0,
+            'max' => 1,
+        ],
     ],
 ];

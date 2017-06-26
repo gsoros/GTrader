@@ -27,7 +27,6 @@ class Fann extends Strategy
     protected $_callback_iterator = 0;
     protected $_bias = null;
 
-
     public function __construct(array $params = [])
     {
         //error_log('Fann::__construct()');
@@ -188,7 +187,7 @@ class Fann extends Strategy
         if ($this->getParam('inputs', []) !== $inputs) {
             $topology_changed = true;
             $this->setParam('inputs', $inputs);
-            //error_log('Fann::handleSaveRequest() new inputs: '.json_encode($inputs));
+            error_log('Fann::handleSaveRequest() new inputs: '.json_encode($this->getParam('inputs')));
         }
 
 
@@ -575,9 +574,9 @@ class Fann extends Strategy
             }
             return $output[0];
         } catch (\Exception $e) {
-            error_log('fann_run error: '.$e->getMessage()."\n".
+            error_log('fann_run error: '.$e->getMessage().
                         ' Input: '.serialize($input));
-            return null;
+            exit;
         }
     }
 
@@ -646,10 +645,11 @@ class Fann extends Strategy
 
     public function getInputGroups(bool $force_rerun = false)
     {
-        static $groups = null;
-
-        if (!is_null($groups) && !$force_rerun) {
-            return $groups;
+        //$this->setParam('cache.log', 'put, miss');
+        if (!$force_rerun) {
+            if (($groups = $this->cached('input_groups'))) {
+                return $groups;
+            }
         }
 
         $inputs = $this->getParam('inputs', []);
@@ -657,41 +657,45 @@ class Fann extends Strategy
 
         reset($inputs);
         foreach ($inputs as $sig) {
-            $norm_type = $norm_to = $indicator = null;
+            $norm_mode = $norm_to = $indicator = null;
             $output = '';
             $naked_sig = $sig;
-            $norm_params = ['type' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
+            $norm_params = ['mode' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
             $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
-                $norm_type = 'ohlc';
+                $norm_mode = 'ohlc';
             }
             elseif ('volume' === $sig) {
-                $norm_type = 'individual';
+                $norm_mode = 'individual';
             }
             elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig, [], $params)) {
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
                 continue;
             }
             if (!is_null($indicator)) {
+                if ($sig !== $indicator->getSignature()) {
+                    error_log('Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature());
+                    exit;
+                }
                 $indicator->addRef($this->getShortClass());
                 if (!($norm_params = $indicator->getNormalizeParams())) {
                     error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
                     continue;
                 }
-                $norm_type = $norm_params['type'];
+                $norm_mode = $norm_params['mode'];
                 $output = Indicator::getOutputFromSignature($sig);
                 // sig str without output
                 $naked_sig = $indicator->getSignature();
             }
-            if ('individual' === $norm_type) {
+            if ('individual' === $norm_mode) {
                 $norm_to = $norm_params['to'];
             }
-            else if ('ohlc' === $norm_type) {
+            else if ('ohlc' === $norm_mode) {
                 $groups['ohlc'][$sig] = true;
                 continue;
             }
-            else if ('range' === $norm_type) {
+            else if ('range' === $norm_mode) {
                 if (is_null($min = $norm_params['range']['min']) ||
                     is_null($max = $norm_params['range']['max'])) {
                     error_log('Fann::getInputGroups() min or max range not set for '.$sig);
@@ -700,16 +704,17 @@ class Fann extends Strategy
                 $groups['range'][$sig] = ['min' => $min, 'max' => $max];
                 continue;
             }
-            if ('individual' === $norm_type) {
+            if ('individual' === $norm_mode) {
                 if (!is_null($norm_to) && !isset($groups['individual'][$naked_sig]['normalize_to'])) {
                     $groups['individual'][$naked_sig]['normalize_to'] = $norm_to;
                 }
                 $groups['individual'][$naked_sig]['outputs'][] = $output;
                 continue;
             }
-            error_log('Fann::getInputGroups() unknown type in '.json_encode($norm_params).' for '.$sig);
+            error_log('Fann::getInputGroups() unknown mode in '.json_encode($norm_params).' for '.$sig);
         }
         //echo 'getInputGroups() groups: '; print_r($groups); exit;
+        $this->cache('input_groups', $groups);
         return $groups;
     }
 
@@ -717,6 +722,9 @@ class Fann extends Strategy
     public function sample2io(array $sample, bool $input_only = false) {
 
         $groups = $this->getInputGroups();
+        //error_log('Fann::sample2io() inputs: '.json_encode($this->getParam('inputs'))); exit;
+
+        $num_input = $this->getNumInput();
 
         $input = [];
         $in_sample_size = $out_sample_size = $this->getParam('sample_size');
@@ -745,6 +753,7 @@ class Fann extends Strategy
                         // for the last input candle, we only include fields which are based on "open",
                         // i.e. not based on any of: high, low, close or volume
                         if ($this->indicatorHasInput($sig, ['high', 'low', 'close', 'volume'])) {
+                            //error_log('Fann::sample2io() last candle excludes '.$sig);
                             continue;
                         }
                     }
@@ -817,10 +826,11 @@ class Fann extends Strategy
                     $max = max($params['values']);
                 }
                 if (isset($params['normalize_to'])) {
-                    if ($min < $params['normalize_to'] && $max < $params['normalize_to']) {
-                        $max = $params['normalize_to'];
-                    } elseif ($min > $params['normalize_to'] && $max > $params['normalize_to']) {
-                        $min = $params['normalize_to'];
+                    $to = $params['normalize_to'];
+                    if ($min < $to && $max < $to) {
+                        $max = $to;
+                    } elseif ($min > $to && $max > $to) {
+                        $min = $to;
                     }
                 }
                 reset($params['values']);
@@ -857,6 +867,7 @@ class Fann extends Strategy
         $sample_size = $this->getParam('sample_size');
 
         $groups = $this->getInputGroups();
+        //error_log('candlesToData() groups:'.json_encode($groups));
 
         $this->resetSample();
         while ($sample = $this->nextSample()) {
@@ -918,12 +929,17 @@ class Fann extends Strategy
             $this->candlesToData('train');
             $this->_callback_type = 'train';
             $this->_callback_iterator = 0;
-            $training_data = fann_create_train_from_callback(
-                count($this->_data['train']),
-                $this->getNumInput(),
-                $this->getParam('num_output'),
-                [$this, 'createCallback']
-            );
+            try {
+                $training_data = fann_create_train_from_callback(
+                    count($this->_data['train']),
+                    $this->getNumInput(),
+                    $this->getParam('num_output'),
+                    [$this, 'createCallback']
+                );
+            } catch (\Exception $e) {
+                error_log('Fann::train() Exception: '.$e->getMessage());
+                exit;
+            }
             $this->cache('training_data', $training_data);
         }
         //fann_save_train($training_data, BASE_PATH.'/fann/train.dat');
@@ -978,9 +994,14 @@ class Fann extends Strategy
         }
 
         $this->_callback_iterator++;
-        return is_array($this->_data[$this->_callback_type][$this->_callback_iterator-1]) ?
+        $ret = is_array($this->_data[$this->_callback_type][$this->_callback_iterator-1]) ?
             $this->_data[$this->_callback_type][$this->_callback_iterator-1] :
             false;
+        if (!$ret) {
+            error_log('Fann::createCallback() nodata for '.$this->_callback_type.' '.
+                ($this->_callback_iterator-1));
+        }
+        return $ret;
     }
 
 

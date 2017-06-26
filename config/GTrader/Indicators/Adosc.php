@@ -32,6 +32,8 @@ return [
         'top_level' => false,
     ],
     'fill_value' => 0,
-    'normalize_type' => 'individual',
-    'normalize_to' => 0,
+    'normalize' => [
+        'mode' => 'individual',
+        'normalize_to' => 0,
+    ],
 ];

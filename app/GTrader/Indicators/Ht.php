@@ -10,9 +10,9 @@ class Ht extends Trader
 {
     protected $init_done;
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
-        parent::__construct();
+        parent::__construct($params);
         $this->init_done = false;
         $this->init();
     }
@@ -25,9 +25,9 @@ class Ht extends Trader
     }
 
 
-    public function init()
+    public function init(bool $force = false)
     {
-        if ($this->init_done) {
+        if ($this->init_done && !$force) {
             return $this;
         }
         $this->init_done = true;
@@ -38,7 +38,7 @@ class Ht extends Trader
             return $this;
         }
 
-        if ($ypos = $sel['display']['y_axis_pos']) {error_log($ypos);
+        if ($ypos = $sel['display']['y_axis_pos']) {
             if (in_array($ypos, array_keys($this->getInputs()))) {
                 if ($input = $this->getInput($ypos)) {
                     if ($this->inputFrom(['open', 'close', 'high', 'low'])) {

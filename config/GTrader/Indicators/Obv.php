@@ -11,5 +11,7 @@ return [
         'top_level' => false,
     ],
     'fill_value' => null,
-    'normalize_type' => 'individual',
+    'normalize' => [
+        'mode' => 'individual',
+    ],
 ];
