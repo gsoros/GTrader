@@ -50,6 +50,7 @@ return [
         'trendline' => [
             'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'input_a'],
+            'normalize' => 'input_a',
         ],
         'trendmode' => [
             'sources' => ['input_a'],

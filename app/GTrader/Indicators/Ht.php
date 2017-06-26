@@ -2,7 +2,7 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
+use Illuminate\Support\Arr;
 use GTrader\Series;
 
 /** Hilbert Transform */
@@ -38,10 +38,10 @@ class Ht extends Trader
             return $this;
         }
 
-        if ($ypos = $sel['display']['y_axis_pos']) {
+        if ($ypos = Arr::get($sel, 'display.y_axis_pos')) {
             if (in_array($ypos, array_keys($this->getInputs()))) {
                 if ($input = $this->getInput($ypos)) {
-                    if ($this->inputFrom(['open', 'close', 'high', 'low'])) {
+                    if ($this->inputFrom(['open', 'high', 'low', 'close'])) {
                         $ypos = 'left';
                     } else if ($this->inputFrom(['volume'])) {
                         $ypos = 'right';
@@ -49,6 +49,23 @@ class Ht extends Trader
                 }
             }
             $this->setParam('display.y_axis_pos', $ypos);
+        }
+        if ($norm = Arr::get($sel, 'normalize')) {
+            if (is_string($norm)) {
+                if (in_array($norm, array_keys($this->getInputs()))) {
+                    $sig = $this->getInput($norm);
+                    if (in_array($sig, ['open', 'high', 'low', 'close'])) {
+                        $this->setParam('normalize', ['mode' => 'ohlc']);
+                    } else if ($owner = $this->getOwner()) {
+                        $params = ['display' => ['visible' => false]];
+                        if ($ind = $owner->getOrAddIndicator($sig, [], $params)) {
+                            $this->setParam('normalize', $ind->getParam('normalize'));
+                        }
+                    }
+                }
+            } elseif (is_array($norm)) {
+                $this->setParam('normalize', $norm);
+            }
         }
 
         $this->setParam('outputs', isset($sel['outputs']) ? $sel['outputs'] : ['']);
