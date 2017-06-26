@@ -372,4 +372,18 @@ abstract class Indicator //implements \JsonSerializable
         }
         return $this;
     }
+
+
+    public static function signatureSame(string $sig_a, string $sig_b)
+    {
+        if (Indicator::getClassFromSignature($sig_a)
+            !== Indicator::getClassFromSignature($sig_b)) {
+            return false;
+        }
+        if (Indicator::getParamsFromSignature($sig_a)
+            !== Indicator::getParamsFromSignature($sig_b)) {
+            return false;
+        }
+        return true;
+    }
 }

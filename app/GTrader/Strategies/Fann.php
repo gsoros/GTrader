@@ -674,7 +674,7 @@ class Fann extends Strategy
                 continue;
             }
             if (!is_null($indicator)) {
-                if ($sig !== $indicator->getSignature()) {
+                if (! Indicator::signatureSame($sig, $indicator->getSignature())) {
                     error_log('Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature());
                     exit;
                 }
