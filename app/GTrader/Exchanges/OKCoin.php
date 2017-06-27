@@ -6,7 +6,7 @@ use GTrader\Exchange;
 use GTrader\Candle;
 use GTrader\Trade;
 
-class OKEX extends Exchange
+class OKCoin extends Exchange
 {
 
     public function saveFilledOrders(string $symbol, int $bot_id = null)
@@ -89,12 +89,6 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
-        if (!($contract_value = $symbol_arr['contract_value'])) {
-            throw new \Exception('Contract value not found');
-        }
 
         $leverage       = $this->getUserOption('leverage');
         $market_orders  = $this->getUserOption('market_orders');
@@ -110,9 +104,7 @@ class OKEX extends Exchange
         $position_size = $userinfo->info->$currency->rights *
                             $this->getUserOption('position_size') / 100;
         //if ($position_size > $userinfo->info->$currency->balance) return null;
-        $position_contracts = floor($position_size * $price /
-                                    $contract_value *
-                                    $leverage);
+        $position_contracts = floor($position_size * $price / $leverage);
         if ($position_contracts > $this->getUserOption('max_contracts')) {
             $position_contracts = $this->getUserOption('max_contracts');
         }
@@ -120,10 +112,8 @@ class OKEX extends Exchange
         $short_contracts_open = $long_contracts_open = 0;
         if (is_array($positions->holding)) {
             foreach ($positions->holding as $open_position) {
-                if ($open_position->contract_type == $contract_type) {
-                    $short_contracts_open += $open_position->sell_amount;
-                    $long_contracts_open += $open_position->buy_amount;
-                }
+                $short_contracts_open += $open_position->sell_amount;
+                $long_contracts_open += $open_position->buy_amount;
             }
         }
         //echo "\nBalance OK. Trade contracts: ".$position_contracts.' '.
@@ -134,8 +124,7 @@ class OKEX extends Exchange
             // close all short positions
             if (is_array($positions->holding)) {
                 foreach ($positions->holding as $position) {
-                    if ($position->contract_type == $contract_type
-                        && $position->sell_amount) {
+                    if ($position->sell_amount) {
                         $this->trade(
                             'close_short',
                             $price,
@@ -165,8 +154,7 @@ class OKEX extends Exchange
             // close all long positions
             if (is_array($positions->holding)) {
                 foreach ($positions->holding as $position) {
-                    if ($position->contract_type == $contract_type
-                        && $position->buy_amount) {
+                    if ($position->buy_amount) {
                         $this->trade(
                             'close_long',
                             $price,
@@ -214,13 +202,10 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
 
-        $reply = \OKCoin::getFutureTicker([
+        $reply = \OKCoin::getTicker([
             'symbol' => $remote_symbol,
-            'contract_type' => $contract_type]);
+        ]);
 
         return get_object_vars($reply->ticker);
     }
@@ -247,17 +232,13 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
 
         $type = $this->resolution2name($resolution);
         $since = $since.'000';
 
-        $kline = \OKCoin::getFutureKline([
+        $kline = \OKCoin::getKline([
             'symbol' => $remote_symbol,
             'type' => $type,
-            'contract_type' => $contract_type,
             'since' => $since,
             'size' => $size]);
 
@@ -292,9 +273,9 @@ class OKEX extends Exchange
     }
 
 
-    private function getUserInfo()
+    protected function getUserInfo()
     {
-        return \OKCoin::postFutureUserinfo4fix(
+        return \OKCoin::postUserinfo4fix(
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret')
         );
@@ -302,7 +283,7 @@ class OKEX extends Exchange
 
 
 
-    private function trade(
+    protected function trade(
         string $action,
         float $price,
         int $num_contracts,
@@ -325,9 +306,6 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
         if (!($user_id = $this->getParam('user_id'))) {
             throw new \Exception('need user id');
         }
@@ -337,7 +315,7 @@ class OKEX extends Exchange
             return $this;
         }
 
-        $reply = \OKCoin::postFutureTrade(
+        $reply = \OKCoin::postTrade(
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -345,7 +323,6 @@ class OKEX extends Exchange
                 'type'          => $order_type,
                 'price'         => round($price, 2),
                 'amount'        => intval($num_contracts),
-                'contract_type' => $contract_type,
                 'lever_rate'    => $leverage,
                 // Match best counter party price (BBO)?
                 // 0: No 1: Yes   If yes, the 'price' field is ignored
@@ -378,7 +355,6 @@ class OKEX extends Exchange
         $trade->fee_currency = substr($symbol, 0, 3);
         $trade->status = 'submitted';
         $trade->leverage = $leverage;
-        $trade->contract = $contract_type;
         $trade->save();
 
         return $this;
@@ -386,7 +362,7 @@ class OKEX extends Exchange
     }
 
 
-    private function cancelOrder(string $symbol, int $remote_order_id)
+    protected function cancelOrder(string $symbol, int $remote_order_id)
     {
         if (!($symbol_arr = $this->getParam('symbols.'.$symbol))) {
             throw new \Exception('Symbol config not found for '.$symbol);
@@ -394,21 +370,17 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
 
         if ('production' !== \Config::get('app.env')) {
             echo "\nNot in production, not executing cancelOrder(".serialize(func_get_args()).")\n";
             return $this;
         }
 
-        $reply = \OKCoin::postFutureCancel(
+        $reply = \OKCoin::postCancel(
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
                 'symbol' => $remote_symbol,
-                'contract_type' => $contract_type,
                 'order_id' => $remote_order_id
             ]
         );
@@ -425,7 +397,7 @@ class OKEX extends Exchange
     }
 
 
-    private function getOrderHistory(
+    protected function getOrderHistory(
         string $symbol,
         string $status,
         int $current_page = 1,
@@ -443,17 +415,13 @@ class OKEX extends Exchange
         if (!($remote_symbol = $symbol_arr['remote_name'])) {
             throw new \Exception('Remote name not found');
         }
-        if (!($contract_type = $symbol_arr['contract_type'])) {
-            throw new \Exception('Contract type not found');
-        }
 
-        return \OKCoin::postFutureOrderInfo(
+        return \OKCoin::postOrderInfo(
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
                 'status' => $statuscode, //query by order status 1: unfilled  2: filled
                 'symbol' => $remote_symbol,
-                'contract_type' => $contract_type,
                 'current_page' => $current_page,
                 'page_length' => $page_length,
                 'order_id'  => -1,  // -1: return the orders of the specified status,
@@ -463,7 +431,7 @@ class OKEX extends Exchange
     }
 
 
-    private function getPositions(string $symbol)
+    protected function getPositions(string $symbol)
     {
         if (!($symbol_arr = $this->getParam('symbols.'.$symbol))) {
             throw new \Exception('Symbol config not found for '.$symbol);
@@ -472,7 +440,7 @@ class OKEX extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        return \OKCoin::postFuturePosition4fix(
+        return \OKCoin::postPosition4fix(
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -480,12 +448,12 @@ class OKEX extends Exchange
                 'type' => 1
             ]
         );
-        // type -- by default, futures positions with leverage rate 10 are returned.
-        // If type = 1, all futures positions are returned
+        // type -- by default, positions with leverage rate 10 are returned.
+        // If type = 1, all positions are returned
     }
 
 
-    private function resolution2name($resolution)
+    protected function resolution2name($resolution)
     {
         $resolution_names = $this->getParam('resolution_names');
         if (!array_key_exists($resolution, $resolution_names)) {

@@ -17,8 +17,12 @@ $(function() {
             url += '&command=' + command;
         if (undefined !== args)
             url += '&args=' + args;
-        console.log('requestPlot ' + url);
-        $.ajax({url: url,
+        console.log('requestPlot() Url: ' + url);
+        if (typeof this.lastRequest !== 'undefined') {
+            //console.log('requestPlot() Aborting previous request');
+            this.lastRequest.abort();
+        }
+        this.lastRequest = $.ajax({url: url,
             success: function(response) {
                 container.html(response);
             }

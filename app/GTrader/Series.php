@@ -207,6 +207,7 @@ class Series extends Collection
         return $sel;
     }
 
+
     protected function _load()
     {
         if ($this->_loaded) {
@@ -223,7 +224,6 @@ class Series extends Collection
         $resolution = intval($this->getParam('resolution'));
 
         list ($start, $end, $limit) = $this->getStartEndLimit(true);
-
 
         $candles = Candle::select('time', 'open', 'high', 'low', 'close', 'volume')
             ->where('resolution', $resolution)
@@ -249,8 +249,13 @@ class Series extends Collection
             ->values();
 
         //if ($candles->isEmpty()) throw new \Exception('Empty result');
-        if (!count($candles->items)) {
+        if (! $count = count($candles->items)) {
             return $this->reset();
+        }
+
+        if ($count < intval($this->getParam('left_padding'))) {
+            $this->setParam('left_padding', 0);
+            $this->cleanCache();
         }
 
         $this->items = $candles->items;

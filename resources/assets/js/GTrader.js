@@ -31,7 +31,17 @@ $(function() {
                 }
             }
             console.log('GTRader.request() Url: ' + url);
-            $.ajax({
+            if (typeof this.lastRequest !== 'undefined') {
+                //console.log('GTRader.request() Aborting previous request');
+                this.lastRequest.abort();
+                if (typeof this.lastTarget !== 'undefined') {
+                    if (this.lastTarget != target) {
+                        window.setLoading(this.lastTarget, false);
+                    }
+                }
+            }
+            this.lastTarget = target;
+            this.lastRequest = $.ajax({
                 url: url,
                 type: type,
                 data: data,
@@ -45,6 +55,9 @@ $(function() {
                     }
                 },
                 error: function(response) {
+                    if (0 == response.status && 'abort' === response.statusText) {
+                        return;
+                    }
                     window.setLoading(target, false);
                     var top = $('#' + target).height() / 2 - 10;
                     var left = $('#' + target).width() / 2 - 70;

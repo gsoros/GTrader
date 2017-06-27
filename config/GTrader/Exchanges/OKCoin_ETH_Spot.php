@@ -1,9 +1,15 @@
 <?php
 
+/*
+    Note: remove extreme values e.g.:
+        update candles set high = greatest(open, close) where high > 1000 and
+        exchange_id = (select id from exchanges where name = 'OKCoin_ETH_Spot');
+*/
+
 return [
-    'long_name'         => 'OKEX BTC Futures',
-    'short_name'        => 'OKXBF',
-    'local_name'        => 'OKEX_BTC_Futures',  // class name, also used in the local database
+    'long_name'         => 'OKCoin ETH Spot',
+    'short_name'        => 'OKCES',
+    'local_name'        => 'OKCoin_ETH_Spot',   // class name, also used in the local database
     'user_options'      => [                    // user-configurable options
         'api_key' => '',                        // API key
         'api_secret' => '',                     // API secret
@@ -13,12 +19,11 @@ return [
         'market_orders' => 0,                   // 1: use market orders, 0: use limit orders
     ],
     'symbols' => [
-        'btc_usd_3m' => [                                       // used in the local database, same as symbolname.local_name
-            'long_name' => 'Bitcoin - US Dollar Quarterly',
-            'short_name' => 'BTCUSD3M',                         // used for displaying in lists
-            'local_name' => 'btc_usd_3m',                       // used in the local database, same as the key
-            'remote_name' => 'btc_usd',                         // used when querying the remote data
-            'contract_value' => 100,                            // value of 1 contract
+        'eth_usd' => [                                          // used in the local database, same as symbolname.local_name
+            'long_name' => 'Ethereum - US Dollar',
+            'short_name' => 'ETHUSD',                           // used for displaying in lists
+            'local_name' => 'eth_usd',                          // used in the local database, same as the key
+            'remote_name' => 'eth_usd',                         // used when querying the remote data
             'resolutions'=> [
                 60     => '1 minute',
                 180     => '3 minutes',
@@ -34,7 +39,6 @@ return [
                 259200  => '3 days',
                 604800  => '1 week'
             ],
-            'contract_type' => 'quarter',                       // used when querying the remote data
         ],
     ],
 ];
