@@ -4,6 +4,7 @@ $(function() {
     */
     window.GTrader = {
 
+        lastRequest: [],
         request: function(request, method, params, type, target) {
 
             if (!type) type = 'GET';
@@ -31,17 +32,11 @@ $(function() {
                 }
             }
             console.log('GTRader.request() Url: ' + url);
-            if (typeof this.lastRequest !== 'undefined') {
+            if (typeof this.lastRequest[target] !== 'undefined') {
                 //console.log('GTRader.request() Aborting previous request');
-                this.lastRequest.abort();
-                if (typeof this.lastTarget !== 'undefined') {
-                    if (this.lastTarget != target) {
-                        window.setLoading(this.lastTarget, false);
-                    }
-                }
+                this.lastRequest[target].abort();
             }
-            this.lastTarget = target;
-            this.lastRequest = $.ajax({
+            this.lastRequest[target] = $.ajax({
                 url: url,
                 type: type,
                 data: data,
