@@ -137,7 +137,7 @@ class Series extends Collection
         $count = count($this->items);
         if ($return_display_size &&
             $key = $this->getFirstKeyForDisplay()) {
-            return $count - $key;
+            return (0 <= $count = $count - $key) ? $count : 0;
         }
         return $count;
     }
@@ -253,10 +253,12 @@ class Series extends Collection
             return $this->reset();
         }
 
+/*
         if ($count < intval($this->getParam('left_padding'))) {
             $this->setParam('left_padding', 0);
             $this->cleanCache();
         }
+*/
 
         $this->items = $candles->items;
         //$this->setParam('start', $this->next()->time);
@@ -267,7 +269,14 @@ class Series extends Collection
 
     public function getFirstKeyForDisplay()
     {
-        return intval($this->getParam('left_padding'));
+        if (!$limit = intval($this->getParam('limit'))) {
+            return 0;
+        }
+        $total = $this->count();
+        $padding = intval($this->getParam('left_padding'));
+        $key = 0 < $total - $padding ? $total - $limit : 0;
+        //error_log('total: '.$total.' padding: '.$padding.' limit: '.$limit.' key: '.$key);
+        return $key;
     }
 
 
