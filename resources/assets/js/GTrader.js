@@ -49,7 +49,7 @@ $(function() {
                 success: function(response) {
                     $('#' + target).html(response);
                     console.log('GTraderRequest: ' + request + '.' + method);
-                    if (-1 == ['list', 'form', 'train', 'trainStart', 'trainStop'].indexOf(method)) {
+                    if (-1 == ['image', 'list', 'form', 'train', 'trainStart', 'trainStop'].indexOf(method)) {
                         window.GTrader.updateAllStrategySelectors();
                         window.mainchart.refresh();
                     }

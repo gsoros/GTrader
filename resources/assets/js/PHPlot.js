@@ -10,14 +10,16 @@ $(function() {
         var plot = window[name];
         var width = container.width();
         console.log('requestPlot: ' + name + ' width: ' + width);
-        var url = '/plot.image?name=' + name +
-                    '&width=' + width +
-                    '&height=' + container.height();
+        var params = {
+            name: name,
+            width: width,
+            height: container.height()
+        }
         if (undefined !== command)
-            url += '&command=' + command;
+            params.command = command;
         if (undefined !== args)
-            url += '&args=' + args;
-        console.log('requestPlot() Url: ' + url);
+            params.args = args;
+        /*
         if (typeof this.lastRequest !== 'undefined') {
             //console.log('requestPlot() Aborting previous request');
             this.lastRequest.abort();
@@ -27,6 +29,8 @@ $(function() {
                 container.html(response);
             }
         });
+        */
+        this.request('plot', 'image', params, 'GET', name);
     };
 
 
