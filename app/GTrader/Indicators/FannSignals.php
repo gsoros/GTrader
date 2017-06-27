@@ -70,7 +70,7 @@ class FannSignals extends Indicator
         $resolution = $candles->getParam('resolution');
         $num_input = $strategy->getNumInput();
 
-        $candles->reset();
+        $candles->reset(true);
         while ($candle = $candles->next()) {
             if ($force_rerun && isset($candle->$signature)) {
                 unset($candle->$signature);
