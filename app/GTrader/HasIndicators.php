@@ -40,7 +40,7 @@ trait HasIndicators
         $indicator->setOwner($owner);
         if ($owner->hasIndicator($sig = $indicator->getSignature())) {
             $existing = $owner->getIndicator($sig);
-            $existing->setParam('indicator', $indicator->getParam('indicator'));
+            $existing->setParams($indicator->getParams());
             return $existing;
         }
         $class = $indicator->getShortClass();
