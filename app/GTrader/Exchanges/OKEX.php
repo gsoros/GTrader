@@ -6,7 +6,7 @@ use GTrader\Exchange;
 use GTrader\Candle;
 use GTrader\Trade;
 
-class OKCoin_Futures extends Exchange
+class OKEX extends Exchange
 {
 
     public function saveFilledOrders(string $symbol, int $bot_id = null)

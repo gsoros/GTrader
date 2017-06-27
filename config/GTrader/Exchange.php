@@ -3,8 +3,11 @@
 return [
 
     'children_ns'           => 'Exchanges',
-    'default_child'         => env('EXCHANGE_DEFAULT', 'OKCoin_Futures'),
-    'available_exchanges'   => ['OKCoin_Futures', 'Dummy'],                 // list of installed exchange classes
+    'default_child'         => env('EXCHANGE_DEFAULT', 'OKEX_BTC_Futures'),
+    'available_exchanges'   => [                                            // list of installed exchange classes
+        'OKEX_BTC_Futures',
+        'Dummy'
+    ],
 
     'user_options'          => [],                                          // User-configurable options, to be overridden in children
 
