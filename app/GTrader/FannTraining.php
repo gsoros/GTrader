@@ -71,7 +71,6 @@ class FannTraining extends Model
             $this->swapIfCrossTraining()
                 ->resetIfNoImprovement()
                 ->increaseEpoch()
-                ->train()
                 ->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''))
                 ->saveHistory('train_mser', $this->getProgress('train_mser'))
                 ->copyFann('train', 'test')
@@ -106,7 +105,8 @@ class FannTraining extends Model
             $this->setProgress('signals', $this->getStrategy('test')->getNumSignals(true))
                 ->saveProgress()
                 ->increaseJump()
-                ->logMemoryUsage();
+                ->logMemoryUsage()
+                ->train();
         }
         $this->setProgress('state', 'queued')
             ->saveProgress()
