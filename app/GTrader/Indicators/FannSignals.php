@@ -70,17 +70,26 @@ class FannSignals extends Indicator
         $resolution = $candles->getParam('resolution');
         $num_input = $strategy->getNumInput();
 
-        $candles->reset(true);
+        $first_display_time = $candles->byKey($candles->getFirstKeyForDisplay())->time;
+
+        $candles->reset();
         while ($candle = $candles->next()) {
             if ($force_rerun && isset($candle->$signature)) {
                 unset($candle->$signature);
             }
 
             $candles_seen++;
-            if ($candles_seen < $num_input) {
-                // skip trading while inside the first sample
+
+            // do not emit signals if they won't be shown
+            if ($candle->time < $first_display_time) {
                 continue;
             }
+
+            // skip trading while inside the first sample
+            if ($candles_seen < $num_input) {
+                continue;
+            }
+
             if (isset($candle->$indicator_sig)) {
                 // skip trade if last trade was recent
                 if ($last['time'] >= $candle->time - $min_distance * $resolution) {

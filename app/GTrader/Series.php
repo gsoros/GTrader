@@ -260,7 +260,7 @@ class Series extends Collection
     }
 
 
-    protected function getFirstKeyForDisplay()
+    public function getFirstKeyForDisplay()
     {
         return intval($this->getParam('left_padding'));
     }
