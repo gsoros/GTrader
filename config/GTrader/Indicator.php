@@ -2,11 +2,14 @@
 
 return [
     'children_ns' => 'Indicators',
-    'outputs' => [''],
-    'normalize_type' => 'ohlc',
     'default_child' => 'Ma',
+    'outputs' => [''],
+    'normalize' => [
+        'type' => 'ohlc',
+    ],
     'display' => [
-        'name'              => 'Unnamed Indicator',
-        'visible'           => true,
+        'mode' => 'line',
+        'name' => 'Unnamed Indicator',
+        'visible' => true,
     ],
 ];

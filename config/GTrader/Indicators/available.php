@@ -1,5 +1,6 @@
 <?php
 return [
+    'Ohlc'              => ['allow_multiple' => true],
     'Constant'          => ['allow_multiple' => true],
     'Operator'          => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],

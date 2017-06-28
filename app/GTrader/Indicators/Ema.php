@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Ma;
-
 /** Exponential Moving Average */
 class Ema extends Ma
 {

@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
-
 class Aroon extends Trader
 {
 

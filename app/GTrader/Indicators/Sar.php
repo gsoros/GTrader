@@ -2,7 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
 use GTrader\Series;
 
 /** Parabolic Stop And Reverse */
@@ -99,15 +98,15 @@ class Sar extends Trader
         return [$new_values];
     }
 
-    public function extract(Series $candles)
+    public function extract(Series $candles, string $index_type = 'sequential')
     {
         $values = [
-            'high' => $candles->extract('high'),
-            'low' => $candles->extract('low'),
+            'high' => $candles->extract('high', $index_type),
+            'low' => $candles->extract('low', $index_type),
         ];
 
         if ($this->getLookBack()) {
-            $values['open'] = $candles->extract('open');
+            $values['open'] = $candles->extract('open', $index_type);
         }
 
         return $values;

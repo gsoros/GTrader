@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
-
 /** Moving Average */
 class Ma extends Trader
 {

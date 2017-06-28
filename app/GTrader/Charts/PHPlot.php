@@ -3,6 +3,7 @@
 namespace GTrader\Charts;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\Page;
@@ -12,71 +13,351 @@ use GTrader\Util;
 class PHPlot extends Chart
 {
 
-    protected $_image_map;
+    protected $data = [];
     protected $last_close;
+    protected $image_map;
 
 
     public function toHTML(string $content = '')
     {
-        $content = view(
-            'Charts/PHPlot',
-            [
-                'name' => $this->getParam('name'),
-                'disabled' => $this->getParam('disabled', [])
-            ]
-        );
+        $content = view('Charts/PHPlot', [
+            'name' => $this->getParam('name'),
+            'disabled' => $this->getParam('disabled', [])
+        ]);
 
-        $content = parent::toHTML($content);
-
-        return $content;
+        return parent::toHTML($content);
     }
 
 
     public function getImage()
     {
-        $width = $this->getParam('width');
-        $height = $this->getParam('height');
-        //error_log('PHPlot::toJSON() W: '.$width.' H:'.$height);
-        if ($width > 0 && $height > 0) {
-            $image_map_disabled = in_array('map', $this->getParam('disabled', []));
-            $this->initPlot($width, $height);
-            $this->_plot->SetPrintImage(false);
-            $this->_plot->SetFailureImage(false);
-            $map_name = 'map-'.$this->getParam('name');
-            if (!$image_map_disabled) {
-                $this->_image_map = '<map name="'.$map_name.'">';
-            }
-            $this->plotCandles();
-            if (!$image_map_disabled) {
-                $this->_image_map .= '</map>';
-            }
-            foreach ($this->getIndicatorsVisibleSorted() as $ind) {
-                $ind->checkAndRun();
-                if ($ind->getParam('display.name') === 'Signals') {
-                    $this->plotSignals($ind);
-                } else {
-                    $this->plotIndicator($ind);
-                }
-            }
-            $refresh = null;
-            if ($this->getParam('autorefresh') &&
-                ($refresh = $this->getParam('refresh'))) {
-                $refresh = "<script>window.waitForFinalEvent(function () {window.".
-                            $this->getParam('name').".refresh()}, ".
-                            ($refresh * 1000).", 'refresh".
-                            $this->getParam('name')."');";
-                if ($this->last_close) {
-                    $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
-                                    \Config::get('app.name', 'GTrader')."';";
-                }
-                $refresh .= '</script>';
-            }
-            $map_str = $image_map_disabled ? '' : ' usemap="#'.$map_name.'"';
-            //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
-            return $this->_image_map.'<img class="img-responsive" src="'.
-                    $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
+        // Init
+        $candles = $this->getCandles();
+        if (!$this->initPlot()) {
+            error_log('PHPlot::getImage() could not init plot');
+            return '';
         }
-        return '';
+
+        if (!$this->createDataArray()) {
+            error_log('PHPlot::getImage() could not create data array');
+            return '';
+        }
+
+        $this->setTitle()
+            ->setColors()
+            ->setPlotElements();
+
+        $t = Arr::get($this->data, 'times', [0]);
+
+        // Plot items on left Y-axis
+        $this->setWorld([
+            'xmin' => $t[0] - $candles->getParam('resolution'),
+            'xmax' => $t[count($t)-1] + $candles->getParam('resolution'),
+            'ymin' => Arr::get($this->data, 'left.min', 0),
+            'ymax' => Arr::get($this->data, 'left.max', 0),
+        ]);
+        foreach (Arr::get($this->data, 'left.items', []) as $item) {
+            $this->plot($item);
+        }
+
+        // Plot items on right Y-axis
+        $this->setYAxis('right');
+        foreach (Arr::get($this->data, 'right.items', []) as $item) {
+            $this->setWorld([
+                'ymin' => Arr::get($item, 'min', 0),
+                'ymax' => Arr::get($item, 'max', 0),
+            ]);
+            $this->plot($item);
+        }
+
+        // Refresh
+        $refresh = $this->getRefreshString();
+
+        // Map
+        list ($map, $map_str) = $this->getImageMapStrings();
+
+        error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
+        return $map.'<img class="img-responsive" src="'.
+                $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
+    }
+
+
+    public function plot(array $item)
+    {
+
+        // add an empty string and the timestamp to the beginning of each data array
+        $t = Arr::get($this->data, 'times', []);
+        array_walk($item['values'], function (&$v, $k) use ($t) {
+            if (!$time = Arr::get($t, $k, 0)) {
+                error_log('plot() time not found for index '.$k);
+            }
+            array_unshift($v, '', $time);
+        });
+        //dd($item);
+//if ('Signals' == $item['label']) dd($item);
+        $this->setMode($item);
+
+        $this->_plot->SetDataType('data-data');
+
+
+//if ('Signals' == $item['label']) dump($item['label'], $item['values']);
+        $this->_plot->SetDataValues($item['values']);
+//dump('2222');
+
+
+
+
+
+        $this->_plot->drawGraph();
+        //dump($item);
+        return $this;
+    }
+
+
+
+    protected function setYAxis(string $dir = 'left')
+    {
+        $this->_plot->SetYTickPos('plot'.$dir);
+        $this->_plot->SetYTickLabelPos('plot'.$dir);
+    }
+
+
+    protected function setMode(array &$item = [])
+    {
+        $num_outputs = count(reset($item['values'])) - 2;
+
+        // clear any settings from signals ind
+        $this->_plot->SetYDataLabelPos('none');
+        $this->_plot->SetLineStyles(['solid']);
+        $this->_plot->RemoveCallback('data_color');
+
+        // Candlesticks need at least 4 pixels, switch them for a line if there are too many
+        if ('candlestick' === $item['mode']) {
+            $num_outputs = 2;
+            $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
+            if (4 > $this->getParam('width', 1) / $num_candles) {
+                $num_outputs = 1;
+                $item['mode'] = 'line';
+                $item['values'] = array_map(function ($v) {
+                    return [$v[0], $v[1], $v[2]];
+                }, $item['values']);
+            }
+        }
+
+        $this->_plot->setPlotType($this->map($item['mode']));
+
+        $this->_plot->SetLineWidths(2);
+        $highlight_colors = ['yellow', 'red', 'blue'];
+        $highlight_color_count = count($highlight_colors);
+        $this->_plot->setPointShapes('none');
+        $this->_plot->SetLegendPixels(35, self::nextLegendY());
+        $colors = ['pink:100', 'cyan:100', 'blue:90'];
+        $last_color = 'red';
+        $label = array_merge([$item['label']], array_fill(0, $num_outputs - 1, ''));
+
+        switch ($item['mode']) {
+
+            case 'candlestick': // candles
+                $this->_plot->SetLineWidths(1);
+                $colors = ['#b0100010', '#00600010','grey:90', 'grey:90'];
+                break;
+
+                case 'linepoints': // signals
+
+                $colors = ['#00ff0050', '#ff000010'];
+                $signals = $values = [];
+                foreach ($item['values'] as $k => $v) {
+                    if (isset($v[2]['signal'])) {
+                        $signals[] = $v[2]['signal'];
+                        $values[] = ['', $v[1], round($v[2]['price'], 2)];
+                    }
+                }
+                $item['values'] = $values;
+                $this->_plot->SetCallback(
+                    'data_color',
+                    function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
+                        //dump('R: '.$row.' C: '.$col.' E:'.$extra);
+                        $s = isset($signals[$row]) ? $signals[$row] : null;;
+                        if ('long' === $s) {
+                            return (0 === $extra) ? 1 : 0;
+                        } elseif ('short' === $s) {
+                            return (0 === $extra) ? 0 : 1;
+                        }
+                        error_log('Unmatched signal');
+                    }
+                );
+                //dd($item);
+                $this->_plot->SetPointShapes('target');
+                $this->_plot->SetLineStyles(['dashed']);
+                $this->_plot->SetPointSizes(floor($this->getParam('width', 1024) / 100));
+                $this->_plot->SetYDataLabelPos('plotin');
+                $this->_plot->SetYTickLabelPos('none');
+
+                break;
+
+            default: // lines
+                //error_log('SetMode() Default lines for '.json_encode($label));
+                for ($i = 0; $i <= $num_outputs; $i++) {
+                    $colors[] = $last_color = self::nextColor();
+                }
+                $this->_plot->SetTickLabelColor($last_color);
+        }
+        $this->_plot->SetLegend($label);
+        self::nextLegendY($num_outputs);
+        $this->_plot->setDataColors($colors);
+        return $this;
+    }
+
+
+    protected function createDataArray()
+    {
+        $candles = $this->getCandles();
+        if (!$candles->size(true)) {
+            error_log('PHPlot::createDataArray() no candles');
+            return $this;
+        }
+
+        if (!count($times = $candles->extract(
+            'time',
+            'sequential',
+            true,
+            $this->getParam('width')
+        ))) {
+            error_log('PHPlot::createDataArray() could not extract times');
+            return false;
+        }
+
+        $this->data = [
+            'times' => $times,
+            'left' => [
+                'items' => []
+            ],
+            'right' => [
+                'items' => []
+            ]
+        ];
+
+        foreach ($this->getIndicatorsVisibleSorted() as $ind) {
+
+            $ind->checkAndRun();
+
+            $dir = in_array(
+                $dir = $ind->getParam('display.y_axis_pos', 'left'),
+                ['left', 'right']
+            ) ? $dir : 'left';
+
+            $sig = $ind->getSignature();
+            $item = [
+                'label' => 380 < $this->getParam('width') ?
+                    $ind->getDisplaySignature() :
+                    $ind->getParam('display.name'),
+                'mode' => $ind->getParam('display.mode'),
+                'values' => $ind->getOutputArray(
+                    'sequential',
+                    true,
+                    $this->getParam('width')
+                ),
+            ];
+
+            // find min and max
+            $values_min = $ind->min($item['values']);
+            $values_min = is_null($values_min) ? null : $this->min(Arr::get($item, 'min'), $values_min);
+            $values_max = $ind->max($item['values']);
+            $values_max = is_null($values_max) ? null : $this->max(Arr::get($item, 'max'), $values_max);
+
+            // Left Y-axis needs to know 'global' min and max
+            if ('left' === $dir) {
+                $this->data['left']['min'] = $this->min(Arr::get($this->data, 'left.min'), $values_min);
+                $this->data['left']['max'] = $this->max(Arr::get($this->data, 'left.max'), $values_max);
+            }
+
+            // Right Y-axis items need individual min and max
+            else {
+                $item['min'] = $values_min;
+                $item['max'] = $values_max;
+            }
+
+            // used later to set the page title
+            if ('Ohlc' === $ind->getShortClass()) {// && 'Close' === $output) {
+                //$this->last_close = $item['values'][end($item['values'])][0];
+            }
+
+            $this->data[$dir]['items'][] = $item;
+        }
+        //dd($this->data);
+        return $this;
+    }
+
+
+    protected function getRefreshString()
+    {
+        $refresh = null;
+        if ($this->getParam('autorefresh') &&
+            ($refresh = $this->getParam('refresh'))) {
+            $refresh = "<script>window.waitForFinalEvent(function () {window.".
+                $this->getParam('name').".refresh()}, ".
+                ($refresh * 1000).", 'refresh".
+                $this->getParam('name')."');";
+            if ($this->last_close) {
+                $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
+                                \Config::get('app.name', 'GTrader')."';";
+            }
+            $refresh .= '</script>';
+        }
+        return $refresh;
+    }
+
+
+    protected function getImageMapStrings()
+    {
+        $map = $map_str = '';
+        if (!in_array('map', $this->getParam('disabled', []))) {
+            $map_name = 'map-'.$this->getParam('name');
+            $map = '<map name="'.$map_name.'">'.$this->image_map.'</map>';
+            $map_str = ' usemap="#'.$map_name.'"';
+        }
+        return [$map, $map_str];
+    }
+
+
+    protected function setTitle()
+    {
+        $candles = $this->getCandles();
+        $candles->reset();
+        $title = in_array('title', $this->getParam('disabled', [])) ? '' :
+            "\n".str_replace('_', '', $candles->getParam('exchange')).' '.
+            strtoupper(str_replace('_', '', $candles->getParam('symbol'))).' '.
+            $candles->getParam('resolution').' '.
+            date('Y-m-d H:i', $candles->next()->time).' - '.
+            date('Y-m-d H:i', $candles->last()->time);
+        $this->_plot->setTitle($title);
+        return $this;
+    }
+
+
+    protected function setPlotElements()
+    {
+        $this->_plot->SetXTickLabelPos('plotdown');
+        $this->_plot->SetDrawXGrid(true);
+        $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
+        $this->_plot->SetMarginsPixels(30, 30, 15);
+        $this->_plot->SetLegendStyle('left', 'left');
+        //$this->_plot->SetLegendUseShapes(true);
+        $this->_plot->SetLegendColorboxBorders('none');
+        return $this;
+    }
+
+
+    protected function setColors()
+    {
+        $this->_plot->SetBackgroundColor('black');
+        $this->_plot->SetLegendBgColor('DimGrey:120');
+        $this->_plot->SetGridColor('DarkGreen:100');
+        $this->_plot->SetLightGridColor('DimGrey:120');
+        $this->_plot->setTitleColor('DimGrey:80');
+        $this->_plot->SetTickColor('DarkGreen');
+        $this->_plot->SetTextColor('grey');
+        return $this;
     }
 
 
@@ -178,27 +459,61 @@ class PHPlot extends Chart
         $candles->setParam('limit', $limit);
         $candles->setParam('end', $end);
         $candles->cleanCache();
+        return $this;
     }
 
 
-    protected function plotCandles()
+    protected function min($a, $b)
+    {
+        return is_null($a) ? $b : (is_null($b) ? $a : min($a, $b));
+    }
+
+
+    protected function max($a, $b)
+    {
+        return is_null($a) ? $b : (is_null($b) ? $a : max($a, $b));
+    }
+
+    protected function map($key)
+    {
+        return $this->getParam('map.'.$key, $key);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********************************/
+
+
+
+
+    protected function plotCandles(Indicator $indicator)
     {
         $candles = $this->getCandles();
         if (!$candles->size(true)) {
             return $this;
         }
         $candles->reset(true);
-        $title = in_array('title', $this->getParam('disabled', [])) ? '' :
-            "\n".str_replace('_', '', $candles->getParam('exchange')).' '.
-            strtoupper(str_replace('_', '', $candles->getParam('symbol'))).' '.
-            $candles->getParam('resolution').' '.
-            date('Y-m-d H:i', $candles->next()->time).' - '.
-            date('Y-m-d H:i', $candles->last()->time);
+
         // Candles need at least 4 pixels width
         $plot_type = $candles->size(true) < $this->getParam('width', 1024) / 4 ? 'candles' : 'line';
         $price = $times = [];
         $ymin = 0;
         $ymax = 0;
+
+        $key_open = $candles->key($indicator->getInput('input_open'));
+
         $candles->reset(true);
         while ($c = $candles->next()) {
             $price[] = ('candles' === $plot_type) ?
@@ -229,13 +544,8 @@ class PHPlot extends Chart
             'ymax' => intval($ymax),
         ];
         $this->setWorld($world);
-        $this->_plot->setTitle($title);
-        $colors = 'candles' === $plot_type ?
-            ['#b0100010', '#00600010','grey:90', 'grey:90'] :
-            ['DarkGreen'];
-        $highlight_colors = ['yellow', 'red', 'blue'];
-        $highlight_color_count = count($highlight_colors);
-        $this->_plot->SetDataColors(array_merge($colors, $highlight_colors));
+
+
         $this->_plot->SetDataType('data-data');
         $this->_plot->SetDataValues($price);
         $this->_plot->setPlotType('candles' === $plot_type ? 'candlesticks2' : 'linepoints');
@@ -466,4 +776,5 @@ class PHPlot extends Chart
         $this->_plot->RemoveCallback('data_color');
         return $this;
     }
+
 }

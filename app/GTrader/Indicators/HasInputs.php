@@ -2,8 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Series;
 use GTrader\Indicator;
-
 
 abstract class HasInputs extends Indicator
 {
@@ -146,6 +146,16 @@ abstract class HasInputs extends Indicator
         }
         $this->setParam('display.y_axis_pos', ($count_left === count($inds)) ? 'left' : 'right');
         return $this;
+    }
+
+
+    public function extract(Series $candles, string $index_type = 'sequential')
+    {
+        $out = [];
+        foreach ($this->getInputs() as $input) {
+            $out[$input] = $candles->extract($input, $index_type);
+        }
+        return $out;
     }
 
 }

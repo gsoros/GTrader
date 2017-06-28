@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasInputs;
-
 class Operator extends HasInputs
 {
     public function getDisplaySignature(string $format = 'long')

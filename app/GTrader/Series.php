@@ -43,19 +43,32 @@ class Series extends Collection
     }
 
 
-    public function key(string $signature = null, string $prefix = 'key_')
+    public function key(string $sig = null, string $prefix = 'key_')
     {
-        if (in_array($signature, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
-            return $signature;
+        if (in_array($sig, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
+            return $sig;
         }
-        if (isset($this->_map[$signature])) {
-            return $this->_map[$signature];
+        if (isset($this->_map[$sig])) {
+            return $this->_map[$sig];
         }
-        if (in_array($signature, $this->_map)) {
-            return $signature;
+        if (in_array($sig, $this->_map)) {
+            return $sig;
         }
-        $this->_map[$signature] = $prefix.Util::uniqidReal();
-        return $this->_map[$signature];
+        $key = null;
+        if ($class = Indicator::getClassFromSignature($sig)) {
+            if ($output = Indicator::getOutputFromSignature($sig)) {
+                if ($i = $this->getOrAddIndicator($sig)) {
+                    if (method_exists($i, 'key')) {
+                        $key = $i->key($output);
+                    }
+                }
+            }
+        }
+        if (!$key) {
+            $key = $prefix.Util::uniqidReal();
+        }
+        $this->_map[$sig] = $key;
+        return $key;
     }
 
 
@@ -355,13 +368,36 @@ class Series extends Collection
     }
 
 
-    public function extract(string $field)
+    public function extract(
+        string $field,
+        string $index_type = 'sequential',
+        bool $respect_padding = false,
+        int $density_cutoff = null)
     {
-        $field = $this->key($field);
-        $this->reset();
+        if (! $key = $this->key($field)) {
+            error_log('Series::extract() got no key for '.$field);
+            return [];
+        }
+        $nth = 1;
+        if (1 < $density_cutoff) {
+            $total = $this->count($respect_padding);
+            $nth = 1 < ($nth = floor($total / $density_cutoff)) ? $nth : 1;
+            //error_log('Series::extract() total: '.$total.' density: '.$density_cutoff.' nth: '.$nth);
+        }
+        $this->reset($respect_padding);
         $ret = [];
+        $curr = 1;
         while ($candle = $this->next()) {
-            $ret[] = isset($candle[$field]) ? $candle[$field] : null;
+            if ($curr < $nth) {
+                $curr++;
+                continue;
+            }
+            $curr = 1;
+            if ('time' === $index_type) {
+                $ret[intval($candle->time)] = isset($candle->$key) ? $candle->$key : null;
+                continue;
+            }
+            $ret[] = isset($candle->$key) ? $candle->$key : null;
         }
         return $ret;
     }
@@ -370,20 +406,20 @@ class Series extends Collection
 
     public function setValues(string $field, array $values, $fill_value = null)
     {
-        $field = $this->key($field);
+        $key = $this->key($field);
         if (is_null($fill_value)) {
             // first valid value
             $fill_value = reset($values);
         }
 
-        $key = 0;
-        while ($candle = $this->byKey($key)) {
+        $i = 0;
+        while ($candle = $this->byKey($i)) {
             $fill = $fill_value;
             if (in_array($fill, ['open', 'high', 'low', 'close'], true)) {
                 $fill = $candle->$fill;
             }
-            $candle->$field = isset($values[$key]) ? $values[$key] : $fill;
-            $key++;
+            $candle->$key = isset($values[$i]) ? $values[$i] : $fill;
+            $i++;
         }
         return $this;
     }

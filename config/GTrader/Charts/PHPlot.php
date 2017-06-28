@@ -1,7 +1,8 @@
 <?php
 
 return [
-    //'width'     => 800,
-    //'height'    => 600,
-
+    'map' => [
+        'candlestick' => 'candlesticks2',
+        'line' => 'lines',
+    ],
 ];

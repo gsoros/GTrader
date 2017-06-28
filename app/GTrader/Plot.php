@@ -19,12 +19,6 @@ class Plot
 
     public function getImage()
     {
-        $width = $this->getParam('width');
-        $height = $this->getParam('height');
-        if ($width <= 1 || $height <= 1) {
-            error_log('Plot::getImage(): Missing width or height.');
-            return '';
-        }
         $data = $this->getParam('data');
         if (!is_array($data)) {
             error_log('Plot::getImage(): data is not an array.');
@@ -35,18 +29,25 @@ class Plot
             return '';
         }
 
-        $this->initPlot($width, $height);
-        $this->_plot->SetPrintImage(false);
-        $this->_plot->SetFailureImage(false);
+        $this->initPlot();
+
         $this->plot($data);
         return '<img class="img-responsive" src="'.
                 $this->_plot->EncodeImage().'">';
     }
 
 
-    protected function initPlot($width, $height)
+    protected function initPlot()
     {
+        $width = intval($this->getParam('width'));
+        $height = intval($this->getParam('height'));
+        if ($width <= 1 || $height <= 1) {
+            error_log('Plot::initPlot(): Missing width or height.');
+            return null;
+        }
         $this->_plot = new PHPlot_truecolor($width, $height);
+        $this->_plot->SetPrintImage(false);
+        $this->_plot->SetFailureImage(false);
         return $this;
     }
 
@@ -75,13 +76,23 @@ class Plot
                 continue;
             }
             $dir = 'left';
+            $other_dir = 'right';
             if ($ypos = Arr::get($item, 'display.y_axis_pos')) {
+                $other_dir = $ypos == $other_dir ? $dir : $other_dir;
                 $dir = $ypos;
             }
 
             $out[$dir]['dim'] = [
-                'xmin' => min(min(array_keys($values)), Arr::get($out, $dir.'.dim.xmin')),
-                'xmax' => max(max(array_keys($values)), Arr::get($out, $dir.'.dim.xmax')),
+                'xmin' => min(
+                    min(array_keys($values)),
+                    Arr::get($out, $dir.'.dim.xmin'),
+                    Arr::get($out, $other_dir.'.dim.xmin')
+                ),
+                'xmax' => max(
+                    max(array_keys($values)),
+                    Arr::get($out, $dir.'.dim.xmax'),
+                    Arr::get($out, $other_dir.'.dim.xmax')
+                ),
                 'ymin' => min(min($values), Arr::get($out, $dir.'.dim.ymin')),
                 'ymax' => max(max($values), Arr::get($out, $dir.'.dim.ymax')),
             ];
@@ -93,11 +104,9 @@ class Plot
             }
         }
 
-
-
         foreach (['left', 'right'] as $dir) {
             $this->setWorld($out[$dir]['dim']);
-            //error_log($dir.' world: '.json_encode($out[$dir]['dim']));
+            //dd($out[$dir]['dim']);
 
             foreach ($out[$dir]['values'] as $label => $values) {
                 //error_log($dir.' label: '.$label);
@@ -141,19 +150,23 @@ class Plot
 
     public static function nextLegendY(int $step = 1)
     {
-        static $y = 25;
+        static $y = 20;
         $ret = $y;
-        $y += 25 * $step;
+        $y += 20 * $step;
         return $ret;
     }
 
-    protected function setWorld(array $new_world = [], string $set_axes = 'xy')
+    protected function setWorld(array $new_world = [], $set_axes = 'xy')
     {
         static $world = [];
 
         $world = array_replace($world, $new_world);
 
         //error_log('setWorld() axes: '.$set_axes.' world: '.json_encode($world));
+
+        if ('none' == $set_axes || !$set_axes) {
+            return $this;
+        }
 
         $xmin = $ymin = $xmax = $ymax = null;
         if (strstr($set_axes, 'x')) {
@@ -163,6 +176,13 @@ class Plot
         if (strstr($set_axes, 'y')) {
             $ymin = Arr::get($world, 'ymin');
             $ymax = Arr::get($world, 'ymax');
+        }
+        if ($xmin >= $xmax) {
+            $xmax = $xmin + 1;
+        }
+        if ($ymin >= $ymax) {
+            error_log('setWorld() axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
+            $ymax = $ymin + 1;
         }
         $this->_plot->setPlotAreaWorld(
             $xmin,

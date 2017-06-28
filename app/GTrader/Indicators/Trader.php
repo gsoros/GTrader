@@ -2,7 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasInputs;
 use GTrader\Series;
 
 if (!extension_loaded('trader')) {
@@ -57,15 +56,6 @@ abstract class Trader extends HasInputs
         }
 
         return $this;
-    }
-
-    public function extract(Series $candles)
-    {
-        $out = [];
-        foreach ($this->getInputs() as $input) {
-            $out[$input] = $candles->extract($input);
-        }
-        return $out;
     }
 
     abstract function traderCalc(array $values);

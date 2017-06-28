@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
-
 /** Bollinger Bands */
 class Bbands extends Trader
 {

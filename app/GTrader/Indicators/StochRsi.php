@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
-
 /** Stochastic Relative Stregnth Index */
 class StochRsi extends Trader
 {
@@ -25,7 +23,7 @@ class StochRsi extends Trader
     public function traderCalc(array $values)
     {
         if (!($values = trader_stochrsi(
-            $values,
+            $values[$this->getInput()],
             $this->getParam('indicator.period'),
             $this->getParam('indicator.fastk'),
             $this->getParam('indicator.fastd'),
@@ -34,7 +32,7 @@ class StochRsi extends Trader
             error_log('trader_stochrsi returned false');
             return [];
         }
-        //error_log('StochRsi: '.json_encode($values[0]));
+
         return $values;
     }
 }

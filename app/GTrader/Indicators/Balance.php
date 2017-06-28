@@ -29,7 +29,6 @@ class Balance extends Indicator
         return $this;
     }
 
-
     public function calculate(bool $force_rerun = false)
     {
         $candles = $this->getCandles();

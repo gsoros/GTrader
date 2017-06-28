@@ -32,6 +32,17 @@ class FannSignals extends Indicator
     }
 
 
+    public function min(array $values)
+    {
+        return null;
+    }
+
+    public function max(array $values)
+    {
+        return null;
+    }
+
+
     public function calculate(bool $force_rerun = false)
     {
         $candles = $this->getCandles();

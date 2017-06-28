@@ -2,7 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
 use GTrader\Series;
 
 /** On Balance Volume */
@@ -22,11 +21,11 @@ class Obv extends Trader
         return [$values];
     }
 
-    public function extract(Series $candles)
+    public function extract(Series $candles, string $index_type = 'sequential')
     {
         return [
-            'input' => $candles->extract($candles->key($this->getInput())),
-            'volume' => $candles->extract('volume'),
+            'input' => $candles->extract($candles->key($this->getInput()), $index_type),
+            'volume' => $candles->extract('volume', $index_type),
         ];
     }
 }

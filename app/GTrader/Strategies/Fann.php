@@ -79,6 +79,7 @@ class Fann extends Strategy
             'height' => 200,
             'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
+        $training_chart->addIndicator('Ohlc');
         $training_chart->saveToSession();
         return $training_chart;
     }
@@ -111,8 +112,9 @@ class Fann extends Strategy
             'disabled' => ['title', 'strategy', 'map', 'settings'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
-            'visible_indicators' => ['Balance', 'Profitability'],
+            'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
         ]);
+        $progress_chart->addIndicator('Ohlc');
 
         $sig = $training->getMaximizeSig();
         if (!$progress_chart->hasIndicator($sig)) {

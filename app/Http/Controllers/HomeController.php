@@ -38,8 +38,10 @@ class HomeController extends Controller
             Auth::id(),
             'mainchart',
             null,
-            [   'autorefresh' => true,
-                'disabled' => ['map']]
+            [
+                'autorefresh' => true,
+                //'disabled' => ['map'],
+            ]
         );
 
         Page::add('scripts_top', '<script src="/js/GTrader.js"></script>');

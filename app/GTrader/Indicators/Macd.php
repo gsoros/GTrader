@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
-
 /** Stochastic Relative Stregnth Index */
 class Macd extends Trader
 {

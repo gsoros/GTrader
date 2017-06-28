@@ -293,7 +293,10 @@ trait HasIndicators
         foreach (\Config::get('GTrader.Indicators.available', []) as $class => $params) {
             $exists = $owner->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple'])) {
-                $indicator = Indicator::make($class);
+                if (!$indicator = Indicator::make($class)) {
+                    error_log('getIndicatorsAvailable() could not make '.$class);
+                    continue;
+                }
                 if ($indicator->canBeOwnedBy($owner)) {
                     $available[$class] = $indicator->getParam('display.name');
                 }

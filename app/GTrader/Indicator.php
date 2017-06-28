@@ -2,6 +2,8 @@
 
 namespace GTrader;
 
+use Illuminate\Support\Arr;
+use GTrader\Series;
 
 abstract class Indicator //implements \JsonSerializable
 {
@@ -385,5 +387,78 @@ abstract class Indicator //implements \JsonSerializable
             return false;
         }
         return true;
+    }
+
+    public function getOutputArray(
+        string $index_type = 'sequential',
+        bool $respect_padding = false,
+        int $density_cutoff = null)
+    {
+        if (!$candles = $this->getCandles()) {
+            error_log('Indicator::getOutputArray() could not get candles');
+            return [];
+        }
+        $sig = $this->getSignature();
+        $r = null;
+        foreach ($this->getParam('outputs', ['']) as $output) {
+            $arr = $candles->extract(
+                $output ? $sig.':::'.$output : $sig,
+                $index_type,
+                $respect_padding,
+                $density_cutoff
+            );
+            if (!$output || is_null($r)) {
+                $r = array_map(function ($v) {
+                    return [$v];
+                }, $arr);
+                if (!$output) {
+                    return $r;
+                }
+                continue;
+            }
+            array_walk($r, function (&$v1, $k) use ($arr) {
+                $v2 = Arr::get($arr, $k);
+                if (is_array($v1)) {
+                    $v1[] = $v2;
+                    return $v1;
+                }
+                return [$v1, $v2];
+            }, $r);
+        }
+        //error_log('returning '.$sig.' '.substr(json_encode($r), 0, 200));
+        return $r;
+    }
+
+
+    public function min(array $values)
+    {
+        $min = null;
+        array_walk($values, function ($v) use (&$min) {
+            if (is_null($min)) {
+                $min = min($v);
+                return;
+            }
+            if (is_null($v)) {
+                return;
+            }
+            $min = min($min, min($v));
+        });
+        return $min;
+    }
+
+    public function max(array $values)
+    {
+        $max = null;
+        array_walk($values, function ($v) use (&$max) {
+            if (is_null($max)) {
+                $max = max($v);
+                return;
+            }
+            if (is_null($v)) {
+                return;
+            }
+            $max = max($max, max($v));
+        });
+        return $max;
     }
 }

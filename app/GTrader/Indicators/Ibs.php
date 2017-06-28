@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasInputs;
-
 /** Internal Bar Strength */
 class Ibs extends HasInputs
 {

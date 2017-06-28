@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\HasInputs;
-
 class Pass extends HasInputs
 {
 

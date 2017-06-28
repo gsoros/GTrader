@@ -2,7 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicators\Trader;
 use GTrader\Series;
 
 /** Stochastic Oscillator */
@@ -51,12 +50,12 @@ class Stoch extends Trader
         return $values;
     }
 
-    public function extract(Series $candles)
+    public function extract(Series $candles, string $index_type = 'sequential')
     {
         return [
-            'high' => $candles->extract('high'),
-            'low' => $candles->extract('low'),
-            'close' => $candles->extract('close'),
+            'high' => $candles->extract('high', $index_type),
+            'low' => $candles->extract('low', $index_type),
+            'close' => $candles->extract('close', $index_type),
         ];
     }
 }

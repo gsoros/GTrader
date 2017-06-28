@@ -36,8 +36,8 @@ abstract class Chart extends Plot
         }
 
         $name = isset($params['name']) ?
-                    $params['name'] :
-                    uniqid($this->getShortClass());
+            $params['name'] :
+            uniqid($this->getShortClass());
         $this->setParam('name', $name);
         $this->indicators[] = 'this array should not be used';
         $this->__skeletonConstruct($params);
