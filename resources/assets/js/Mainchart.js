@@ -6,8 +6,11 @@ $(function() {
     window.mainchart.setChartSize = function() {
         console.log('setChartSize');
         $('#mainchart').width($(window).width()-2).height($(window).height() - 100);
+        this.refresh();
     };
-    window.mainchart.setChartSize();
+    waitForFinalEvent(function() {
+        window.mainchart.setChartSize();
+    }, 500, 'setChartSize');
 
 });
 

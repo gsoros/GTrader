@@ -4,6 +4,7 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 
 abstract class Chart extends Plot
@@ -96,6 +97,11 @@ abstract class Chart extends Plot
         if (!($chart = self::loadFromSession($name))) {
             if (!($chart = self::loadFromDB($user_id, $name))) {
                 $chart = Chart::make($make_class);
+                if (is_array($inds = Arr::get($params, 'indicators_if_new', []))) {
+                    foreach ($inds as $sig) {
+                        $chart->getOrAddIndicator($sig);
+                    }
+                }
             }
         }
 

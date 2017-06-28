@@ -147,24 +147,23 @@ class PHPlot extends Chart
         $this->_plot->setPlotType($this->map($item['mode']));
 
         $this->_plot->SetLineWidths(2);
+        $colors = [];
         $highlight_colors = ['yellow', 'red', 'blue'];
         $highlight_color_count = count($highlight_colors);
         $this->_plot->setPointShapes('none');
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
-        $colors = ['pink:100', 'cyan:100', 'blue:90'];
-        $last_color = 'red';
         $label = array_merge([$item['label']], array_fill(0, $num_outputs - 1, ''));
 
         switch ($item['mode']) {
 
             case 'candlestick': // candles
-                $this->_plot->SetLineWidths(1);
                 $colors = ['#b0100010', '#00600010','grey:90', 'grey:90'];
+                $this->_plot->SetLineWidths(1);
                 break;
 
-                case 'linepoints': // signals
-
-                $colors = ['#00ff0050', '#ff000010'];
+            case 'linepoints': // signals
+                $colors = ['#ff000010', '#00ff0050'];
+                $label = array_merge($label, ['']);
                 $signals = $values = [];
                 foreach ($item['values'] as $k => $v) {
                     if (isset($v[2]['signal'])) {
@@ -179,9 +178,9 @@ class PHPlot extends Chart
                         //dump('R: '.$row.' C: '.$col.' E:'.$extra);
                         $s = isset($signals[$row]) ? $signals[$row] : null;;
                         if ('long' === $s) {
-                            return (0 === $extra) ? 1 : 0;
-                        } elseif ('short' === $s) {
                             return (0 === $extra) ? 0 : 1;
+                        } elseif ('short' === $s) {
+                            return (0 === $extra) ? 1 : 0;
                         }
                         error_log('Unmatched signal');
                     }
@@ -189,14 +188,18 @@ class PHPlot extends Chart
                 //dd($item);
                 $this->_plot->SetPointShapes('target');
                 $this->_plot->SetLineStyles(['dashed']);
-                $this->_plot->SetPointSizes(floor($this->getParam('width', 1024) / 100));
+                $pointsize = floor($this->getParam('width', 1024) / 100);
+                if (10 > $pointsize) {
+                    $pointsize = 10;
+                }
+                $this->_plot->SetPointSizes($pointsize);
                 $this->_plot->SetYDataLabelPos('plotin');
                 $this->_plot->SetYTickLabelPos('none');
 
                 break;
 
             default: // lines
-                //error_log('SetMode() Default lines for '.json_encode($label));
+                //dump('default:');
                 for ($i = 0; $i <= $num_outputs; $i++) {
                     $colors[] = $last_color = self::nextColor();
                 }
@@ -204,7 +207,7 @@ class PHPlot extends Chart
         }
         $this->_plot->SetLegend($label);
         self::nextLegendY($num_outputs);
-        $this->_plot->setDataColors($colors);
+        $this->_plot->setDataColors($colors); //dump($label, $colors);
         return $this;
     }
 
@@ -324,12 +327,14 @@ class PHPlot extends Chart
     {
         $candles = $this->getCandles();
         $candles->reset();
+        $first = ($c = $candles->next()) ? $c->time : null;
+        $last = ($c = $candles->last()) ? $c->time : null;
         $title = in_array('title', $this->getParam('disabled', [])) ? '' :
             "\n".str_replace('_', '', $candles->getParam('exchange')).' '.
             strtoupper(str_replace('_', '', $candles->getParam('symbol'))).' '.
             $candles->getParam('resolution').' '.
-            date('Y-m-d H:i', $candles->next()->time).' - '.
-            date('Y-m-d H:i', $candles->last()->time);
+            date('Y-m-d H:i', $first).' - '.
+            date('Y-m-d H:i', $last);
         $this->_plot->setTitle($title);
         return $this;
     }
@@ -340,6 +345,7 @@ class PHPlot extends Chart
         $this->_plot->SetXTickLabelPos('plotdown');
         $this->_plot->SetDrawXGrid(true);
         $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
+        $this->_plot->SetYLabelType('data', 0); // precision
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetLegendStyle('left', 'left');
         //$this->_plot->SetLegendUseShapes(true);
