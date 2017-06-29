@@ -18,13 +18,15 @@
                         $inputs = $strategy->getParam('inputs', []);
                     @endphp
                     @foreach (['open', 'high', 'low', 'close', 'volume'] as $field)
-                        <input type="checkbox"
-                            name="inputs[]"
-                            value="{{ $field }}"
-                            @if (false !== array_search($field, $inputs))
-                                checked
-                            @endif
-                            > {{ ucfirst($field) }} &nbsp;
+                        <label>
+                            <input type="checkbox"
+                                name="inputs[]"
+                                value="{{ $field }}"
+                                @if (false !== array_search($field, $inputs))
+                                    checked
+                                @endif
+                                > {{ ucfirst($field) }}
+                        </label> &nbsp;
                     @endforeach
                 </div>
             </div>

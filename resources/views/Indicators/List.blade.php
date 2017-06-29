@@ -42,11 +42,11 @@
             @endphp
             <div id="form_{{ $uid }}" class="col-sm-12 editable trans">
                 <span title="{{ $indicator->getParam('display.description') }}">
-                    @if ($display_outputs)
-                        @if (1 === $num_outputs)
-                            @php
-                            $checkbox = array_shift($output_checkboxes);
-                            @endphp
+                    @if ($display_outputs &&  (1 === $num_outputs))
+                        @php
+                        $checkbox = array_shift($output_checkboxes);
+                        @endphp
+                        <label>
                             <input type="checkbox"
                                 name="inputs[]"
                                 value="{{ $checkbox['value'] }}"
@@ -54,9 +54,11 @@
                                     checked
                                 @endif
                             >
-                        @endif
-                    @endif
+                            {{ $indicator->getDisplaySignature($format) }}
+                        </label>
+                    @else
                     {{ $indicator->getDisplaySignature($format) }}
+                    @endif
                 </span>
                 <div class="form-group editbuttons">
                     @if ($num_params)
@@ -93,10 +95,10 @@
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
                 </div>
-                @if ($display_outputs)
-                    @if (1 < $num_outputs)
-                        <div>
-                            @foreach ($output_checkboxes as $checkbox)
+                @if ($display_outputs && (1 < $num_outputs))
+                    <div>
+                        @foreach ($output_checkboxes as $checkbox)
+                            <label>
                                 <input type="checkbox"
                                     name="inputs[]"
                                     value="{{ $checkbox['value'] }}"
@@ -104,10 +106,10 @@
                                         checked
                                     @endif
                                     >
-                                    {{ $checkbox['label'] }} &nbsp;
-                            @endforeach
-                        </div>
-                    @endif
+                                    {{ $checkbox['label'] }}
+                            </label> &nbsp;
+                        @endforeach
+                    </div>
                 @endif
             </div>
         @endforeach

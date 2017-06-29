@@ -92,8 +92,10 @@ class Ohlc extends HasInputs
         if (is_null($prev_candle)) {
             return $candle;
         }
-        if (!$prev_candle['open'] || !$prev_candle['high'] ||
-              !$prev_candle['low'] || !$prev_candle['close']) {
+        if (!isset($prev_candle['open']) ||
+            !isset($prev_candle['high']) ||
+            !isset($prev_candle['low']) ||
+            !isset($prev_candle['close'])) {
             return $candle;
         }
         return [
@@ -102,6 +104,5 @@ class Ohlc extends HasInputs
             'low' => min($candle['low'], $candle['open'], $candle['close']),
             'close' => ($candle['open'] + $candle['high'] + $candle['low'] + $candle['close']) / 4
         ];
-        return $candle;
     }
 }
