@@ -61,8 +61,13 @@ abstract class HasInputs extends Indicator
         if (count(array_intersect($inputs, $signatures))) {
             return true;
         }
+        if (!$owner = $this->getOwner()) {
+            error_log('HasInputs::InputFrom('.json_encode($signatures).') could not get owner of '.
+                $this->getShortClass());
+            return false;
+        }
         foreach ($inputs as $input) {
-            if (!($input_ind = $this->getOwner()->getOrAddIndicator($input))) {
+            if (!($input_ind = $owner->getOrAddIndicator($input))) {
                 continue;
             }
             if (!$input_ind->hasInputs()) {
@@ -102,7 +107,7 @@ abstract class HasInputs extends Indicator
             }
             $inds[] = $indicator;
         }
-        return count($inds) ? $inds : false;
+        return count($inds) ? $inds : null;
     }
 
 
@@ -140,6 +145,7 @@ abstract class HasInputs extends Indicator
                 $count_left++;
             }
             $ind->addRef($this);
+            //dump('runDependencies() '.$this->getShortClass().' running '.$ind->getShortClass());
             $ind->checkAndRun($force_rerun);
         }
         $this->setParam('display.y_axis_pos', ($count_left === count($inds)) ? 'left' : 'right');
@@ -153,6 +159,7 @@ abstract class HasInputs extends Indicator
         foreach ($this->getInputs() as $input) {
             $out[$input] = $candles->extract($input, $index_type);
         }
+        //dd($out);
         return $out;
     }
 

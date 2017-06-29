@@ -541,7 +541,8 @@ class PHPlot extends Chart
         //$this->_plot->SetLegendUseShapes(true);
         $this->_plot->SetLegendColorboxBorders('none');
 
-        $start = ($first = $this->getCandles()->first()) ? $first->time : 0;
+        $this->getCandles()->reset(true);
+        $start = ($first = $this->getCandles()->next()) ? $first->time : 0;
         $end = ($last = $this->getCandles()->last()) ? $last->time : 0;
         $longtime = 3600*24 < ($end - $start);
         $this->_plot->SetNumXTicks($xticks = floor($this->getParam('width', 200) / ($longtime ? 70 : 40)));

@@ -14,7 +14,7 @@ class Ht extends Trader
     {
         parent::__construct($params);
         $this->init_done = false;
-        $this->init();
+        //$this->init();
     }
 
     public function __wakeup()
@@ -107,13 +107,11 @@ class Ht extends Trader
     }
 
 
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
+
 
     public function traderCalc(array $values)
     {
+        //dd($values);
         $this->init();
 
         $func = 'trader_ht_'.$this->getParam('indicator.mode');
@@ -131,7 +129,7 @@ class Ht extends Trader
             error_log('Ht::traderCalc() '.$func.' returned false');
             return [];
         }
-        //dd($values);
+        //dd($args);
         //dd($this->getParams());
         return 1 < count($this->getParam('outputs', [])) ? $values : [$values];
     }

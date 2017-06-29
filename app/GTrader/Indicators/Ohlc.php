@@ -26,13 +26,14 @@ class Ohlc extends HasInputs
     public function getDisplaySignature(string $format = 'long')
     {
         $mode = $this->getParam('indicator.mode');
-        $mode = $this->getParam('adjustable.mode.options.'.$mode, 'Candlestick');
+        $mode = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
+        $mode = $mode === 'Candlesticks' ? 'OHLC' : $mode;
         if ('short' === $format) {
             return $mode;
         }
         $param_str = $this->getParamString(['mode']);
         foreach ($this->getInputs() as $k => $v) {
-            if (substr($k, 6) !== $v) {
+            if (substr($k, 6) !== $v) { // not default?
                 return $mode.' ('.$param_str.')' ;
             }
         }
