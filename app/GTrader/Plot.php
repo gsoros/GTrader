@@ -171,11 +171,9 @@ class Plot
     public static function nextLegendY(int $step = 1)
     {
         static $y = 0;
+
         $ret = $y;
-        $y += 35 * $step;
-        if (1 < $step) {
-            $y -= 15;
-        }
+        $y += (1 < $step ? 25 : 35) * $step;
         return $ret;
     }
 

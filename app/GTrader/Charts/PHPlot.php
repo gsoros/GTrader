@@ -63,12 +63,13 @@ class PHPlot extends Chart
             'ymax' => Arr::get($this->data, 'left.max', 0),
         ]);
         foreach (Arr::get($this->data, 'left.items', []) as $item) {
+            $this->setYAxis('left');
             $this->plot($item);
         }
 
         // Plot items on right Y-axis
-        $this->setYAxis('right');
         foreach (Arr::get($this->data, 'right.items', []) as $item) {
+            $this->setYAxis('right');
             $this->setWorld([
                 'xmin' => $this->getParam('xmin'),
                 'xmax' => $this->getParam('xmax'),
@@ -103,6 +104,7 @@ class PHPlot extends Chart
         });
 
         $this->setMode($item);
+        $this->setHighlight($item);
 
         if (!count($item['values'])) {
             error_log('PHPlot::plot() no data values for '.$item['label']);
@@ -120,8 +122,22 @@ class PHPlot extends Chart
 
     protected function setYAxis(string $dir = 'left')
     {
-        $this->_plot->SetYTickPos('plot'.$dir);
-        $this->_plot->SetYTickLabelPos('plot'.$dir);
+        static $left_labels_shown = false;
+        if ('left' === $dir) {
+            if ($left_labels_shown) {
+                $dir = 'none';
+                $this->_plot->SetDrawYGrid(false);
+                $this->_plot->SetDrawXDataLabels(false);
+            }
+            $left_labels_shown = true;
+        }
+
+        if (in_array($dir, ['left', 'right'])) {
+            $dir = 'plot'.$dir;
+        }
+        $this->_plot->SetYTickPos('none');
+        $this->_plot->SetYTickLabelPos($dir);
+        return $this;
     }
 
 
@@ -134,10 +150,8 @@ class PHPlot extends Chart
         // Line, linepoints and candlesticks use 'data-data'
         $this->_plot->SetDataType('data-data');
 
-        // clear any settings from signals or vol
-        $this->_plot->SetYDataLabelPos('none');
-        $this->_plot->SetLineStyles(['solid']);
-        $this->_plot->RemoveCallback('data_color');
+        // clear settings from prev items
+        $this->setPlotElements();
 
         // Set bar and candlesticks to line if it's too dense
         if (in_array($item['mode'], ['candlestick', 'bars'])) {
@@ -157,8 +171,6 @@ class PHPlot extends Chart
 
         $this->_plot->SetLineWidths(2);
         $this->colors = [];
-        $highlight_colors = ['yellow', 'red', 'blue'];
-        $highlight_color_count = count($highlight_colors);
         $this->_plot->setPointShapes('none');
         $this->label = array_merge(
             [$item['label']],
@@ -260,6 +272,11 @@ class PHPlot extends Chart
     {
         //dump($item);
         $this->colors = ['#ff0000f2', '#00ff00f2'];
+        $this->_plot->SetTickLabelColor($this->colors[1]);
+
+        $this->_plot->SetXTickLabelPos('none');
+
+
         $this->_plot->SetDataType('text-data');
 
         // Controls the amount of extra space within each group of bars.
@@ -321,14 +338,55 @@ class PHPlot extends Chart
     protected function mode_line(array &$item)
     {
         //dump('default:', $item);
-        for ($i = 0; $i <= $item['num_outputs']; $i++) {
+        for ($i = 0; $i < $item['num_outputs']; $i++) {
             $this->colors[] = $last_color = self::nextColor();
         }
         $this->_plot->SetTickLabelColor($last_color);
+
         return $this;
     }
 
 
+    protected function setHighlight(array $item)
+    {
+        $highlight = $this->getParam('highlight', []);
+        if (!count($highlight)) {
+            return $this;
+        }
+        $times = Arr::get($this->data, 'times', [0]);
+
+        $highlight_colors = ['yellow', 'red', 'blue', 'orange', 'pink'];
+        $highlight_color_count = count($highlight_colors);
+
+        $this->_plot->SetCallback(
+            'data_color',
+            function (
+                $img,
+                $junk,
+                $row,
+                $col,
+                $extra = 0) use (
+                $highlight,
+                $item,
+                $times,
+                $highlight_color_count
+            ) {
+                $return = ('candlestick' === $item['mode']) ? 1 : 0;
+                $high_index = 0;
+                foreach ($highlight as $high_range) {
+                    if (($times[$row] >= $high_range['start']) && ($times[$row] <= $high_range['end'])) {
+                        $return = (('candlestick' === $item['mode']) ? 4 : 1) + $high_index;
+                        $high_index ++;
+                    }
+                    $high_index ++;
+                    if ($high_index > $highlight_color_count) {
+                        $high_index = 0;
+                    }
+                }
+                return $return;
+            }
+        );
+    }
 
 
 
@@ -352,12 +410,10 @@ class PHPlot extends Chart
 
         $this->data = [
             'times' => $times,
-            'left' => [
+            'left' => $items = [
                 'items' => []
             ],
-            'right' => [
-                'items' => []
-            ]
+            'right' => $items,
         ];
 
         foreach ($this->getIndicatorsVisibleSorted() as $ind) {
@@ -371,6 +427,7 @@ class PHPlot extends Chart
 
             $sig = $ind->getSignature();
             $item = [
+                'class' => $ind->getShortClass(),
                 'label' => 380 < $this->getParam('width') ?
                     $ind->getDisplaySignature() :
                     $ind->getDisplaySignature('short'),
@@ -401,8 +458,8 @@ class PHPlot extends Chart
             }
 
             // used later to set the page title
-            if ('Ohlc' === $ind->getShortClass()) {// && 'Close' === $output) {
-                //$this->last_close = $item['values'][end($item['values'])][0];
+            if ('Ohlc' === $item['class']) {
+                $this->last_close = $item['values'][count($item['values'])-1][0];
             }
 
             $this->data[$dir]['items'][] = $item;
@@ -462,8 +519,23 @@ class PHPlot extends Chart
 
     protected function setPlotElements()
     {
-        $this->_plot->SetXTickLabelPos('plotdown');
-        $this->_plot->SetDrawXGrid(true);
+        $this->_plot->RemoveCallback('data_color');
+
+        $this->_plot->SetPlotBorderType('none');    // plot area border
+
+        $this->_plot->SetDrawXAxis(false);          // X axis line
+        $this->_plot->SetDrawXGrid(true);           // X grid lines
+        $this->_plot->SetXTickPos('none');          // X tick marks
+        $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
+        $this->_plot->SetXDataLabelPos('none');     // X data labels
+
+        $this->_plot->SetDrawYAxis(false);          // Y axis line
+        $this->_plot->SetDrawYGrid(true);           // Y grid lines
+
+        $this->_plot->SetYDataLabelPos('none');
+        $this->_plot->SetLineStyles(['solid']);
+        $this->_plot->SetTickLabelColor('#999999');
+
         $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
         $this->_plot->SetYLabelType('data', 0); // precision
         $this->_plot->SetMarginsPixels(30, 30, 15);
@@ -479,10 +551,10 @@ class PHPlot extends Chart
         $this->_plot->SetBackgroundColor('black');
         $this->_plot->SetLegendBgColor('DimGrey:120');
         $this->_plot->SetGridColor('DarkGreen:100');
-        $this->_plot->SetLightGridColor('DimGrey:120');
+        $this->_plot->SetLightGridColor('DimGrey:110');
         $this->_plot->setTitleColor('DimGrey:80');
         $this->_plot->SetTickColor('DarkGreen');
-        $this->_plot->SetTextColor('grey');
+        $this->_plot->SetTextColor('#999999');
         return $this;
     }
 

@@ -515,7 +515,7 @@ trait HasIndicators
         foreach ($this->getIndicators() as $ind) {
             //error_log('purgeIndicators() checking '.$ind->getSignature().' refs: '.$ind->refCount());
             if (!$ind->refCount() && !$ind->getParam('display.visible')) {
-                error_log('purgeIndicators() removing '.$ind->debugObjId());
+                //error_log('purgeIndicators() removing '.$ind->debugObjId());
                 $this->getIndicatorOwner()->unsetIndicator($ind);
             }
         }

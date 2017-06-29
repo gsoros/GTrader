@@ -7,6 +7,7 @@ use GTrader\Indicator;
 /* Winners vs. losers */
 class Profitability extends Indicator
 {
+    use HasStrategy;
 
     public function __construct(array $params = [])
     {
@@ -17,10 +18,9 @@ class Profitability extends Indicator
 
     public function createDependencies()
     {
-        $owner = $this->getOwner();
-        if (is_object($owner)) {
-            /* just calling the owner's method will create the dependency */
-            $owner->getStrategy()->getSignalsIndicator();
+        if ($s = $this->getStrategy()) {
+            $i = $s->getSignalsIndicator();
+            $i->addRef($this);
         }
         return $this;
     }
@@ -28,7 +28,7 @@ class Profitability extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        if (!$strategy = $this->getOwner()->getStrategy()) {
+        if (!$strategy = $this->getStrategy()) {
             return $this;
         }
         $candles = $this->getCandles();
