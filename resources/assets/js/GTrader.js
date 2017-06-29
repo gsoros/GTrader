@@ -42,7 +42,10 @@ $(function() {
                 data: data,
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                 success: function(response) {
-                    $('#' + target).html(response);
+                    var t = $('#' + target);
+                    t.css('visibility', 'hidden');
+                    t.html(response);
+                    t.css('visibility', 'visible');
                     console.log('GTraderRequest: ' + request + '.' + method);
                     if (-1 == ['image', 'list', 'form', 'train', 'trainStart', 'trainStop'].indexOf(method)) {
                         window.GTrader.updateAllStrategySelectors();
