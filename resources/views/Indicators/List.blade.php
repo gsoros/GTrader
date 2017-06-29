@@ -56,7 +56,7 @@
                             >
                         @endif
                     @endif
-                    {{ $indicator->getDisplaySignature() }}
+                    {{ $indicator->getDisplaySignature($format) }}
                 </span>
                 <div class="form-group editbuttons">
                     @if ($num_params)
