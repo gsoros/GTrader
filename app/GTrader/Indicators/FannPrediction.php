@@ -7,6 +7,7 @@ use GTrader\Series;
 
 class FannPrediction extends Indicator
 {
+    use HasStrategy;
 
     public function __construct(array $params = [])
     {
@@ -20,7 +21,7 @@ class FannPrediction extends Indicator
 
         $key = $candles->key($this->getSignature());
 
-        if (!$strategy = $this->getOwner()->getStrategy()) {
+        if (!$strategy = $this->getStrategy()) {
             error_log('FannPrediction::calculate() no strategy');
             return $this;
         }

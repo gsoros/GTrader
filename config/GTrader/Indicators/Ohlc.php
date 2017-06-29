@@ -29,7 +29,7 @@ return [
             'name' => 'Mode',
             'type' => 'select',
             'options' => [
-                'candlestick' => 'Candlestick',
+                'candlestick' => 'Candlesticks',
                 'ha' => 'Heikin Ashi',
             ],
         ],

@@ -7,6 +7,8 @@ use GTrader\Series;
 
 class FannSignals extends Indicator
 {
+    use HasStrategy;
+
     public function __construct(array $params = [])
     {
         parent::__construct($params);
@@ -16,17 +18,14 @@ class FannSignals extends Indicator
 
     public function createDependencies()
     {
-        $strategy = $this->getOwner()->getStrategy();
-        if (!$strategy) {
+        if (!$strategy = $this->getStrategy()) {
             return $this;
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
             return $this;
         }
-        if (is_object($strategy)) {
-            if ($ind = $strategy->getPredictionIndicator()) {
-                $ind->addRef($this);
-            }
+        if ($ind = $strategy->getPredictionIndicator()) {
+            $ind->addRef($this);
         }
         return $this;
     }

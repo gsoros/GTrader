@@ -139,11 +139,11 @@ class PHPlot extends Chart
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->RemoveCallback('data_color');
 
-        // Candlesticks and bars need at least 4 pixels, switch them for a line if there are too many
+        // Set bar and candlesticks to line if it's too dense
         if (in_array($item['mode'], ['candlestick', 'bars'])) {
             $item['num_outputs'] = 2;
             $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
-            if (4 > $this->getParam('width', 1) / $num_candles) {
+            if (2 > $this->getParam('width', 1) / $num_candles) {
                 //$item['num_outputs'] = 1;
                 $item['mode'] = 'line';
                 // remove all but the first 3 data elements
@@ -259,9 +259,31 @@ class PHPlot extends Chart
     protected function mode_bars(array &$item)
     {
         //dump($item);
-        $this->colors = ['#ff0000d0', '#00ff00d0'];
+        $this->colors = ['#ff0000f2', '#00ff00f2'];
         $this->_plot->SetDataType('text-data');
-        $this->_plot->group_frac_width = 0.5;
+
+        // Controls the amount of extra space within each group of bars.
+        // Default is 0.5, meaning 1/2 of the width of one bar is left as a
+        // gap, within the space allocated to the group (see group_frac_width).
+        // Increasing this makes each group of bars shrink together. Decreasing
+        // this makes the group of bars expand within the allocated space.
+        $this->_plot->bar_extra_space = 0;
+
+        //Controls the amount of available space used by each bar group. Default is
+        // 0.7, meaning the group of bars fills 70% of the available space (but that
+        // includes the empty space due to bar_extra_space). Increasing this makes the
+        // group of bars wider.
+        $this->_plot->group_frac_width = 1;
+
+        // Controls the width of each bar. Default is 1.0. Decreasing this makes individual
+        // bars narrower, leaving gaps between the bars in a group. This must be greater
+        // than 0. If it is greater than 1, the bars will overlap.
+        $this->_plot->bar_width_adjust = 1;
+
+        // If bar_extra_space=0, group_frac_width=1, and bar_width_adjust=1 then
+        // all the bars touch (within each group, and adjacent groups).
+
+
         // convert ['', time, value...] to [time, value]
         $item['values'] = array_map(function ($v) {
             return [$v[1], $v[2]];
@@ -351,7 +373,7 @@ class PHPlot extends Chart
             $item = [
                 'label' => 380 < $this->getParam('width') ?
                     $ind->getDisplaySignature() :
-                    $ind->getParam('display.name'),
+                    $ind->getDisplaySignature('short'),
                 'mode' => $ind->getParam('display.mode'),
                 'values' => $ind->getOutputArray(
                     'sequential',

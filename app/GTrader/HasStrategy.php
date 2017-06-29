@@ -4,21 +4,33 @@ namespace GTrader;
 
 trait HasStrategy
 {
-    protected $strategy;
+    public $strategy;
 
+    public function getStrategyOwner()
+    {
+        return $this;
+    }
 
     public function getStrategy()
     {
-        return $this->strategy;
+        if (!$owner = $this->getStrategyOwner()) {
+            error_log($this->getShortClass().'::getStrategy() could not get owner');
+            return null;
+        }
+        return $owner->strategy;
     }
 
-    public function setStrategy(Strategy &$strategy)
+    public function setStrategy(Strategy $strategy)
     {
-        if (is_callable([$this, 'getCandles']) && !$this->isClass('GTrader\\Series')) {
-            $candles = $this->getCandles();
+        if (!$owner = $this->getStrategyOwner()) {
+            error_log($this->getShortClass().'::setStrategy() could not get owner');
+            return null;
+        }
+        if (is_callable([$owner, 'getCandles']) && !$owner->isClass('GTrader\\Series')) {
+            $candles = $owner->getCandles();
             $strategy->setCandles($candles);
         }
-        $this->strategy = $strategy;
+        $owner->strategy = $strategy;
         return $this;
     }
 }

@@ -212,7 +212,7 @@ abstract class Chart extends Plot
         return $this;
     }
 
-    public function viewIndicatorsList()
+    public function viewIndicatorsList(string $format = 'long')
     {
         return view(
             'Indicators/List', [
@@ -220,6 +220,7 @@ abstract class Chart extends Plot
                 'indicators' => $this->getIndicatorsVisibleSorted(),
                 'available' => $this->getIndicatorsAvailable(),
                 'name' => $this->getParam('name'),
+                'format' => $format,
             ]
         );
     }

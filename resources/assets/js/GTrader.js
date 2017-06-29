@@ -84,7 +84,10 @@ $(function() {
             */
             $('#settings_' + name).on('click', function() {
                 // Request settings form from backend
-                window.GTrader.request('settings', 'form', {name: name}, 'GET', 'settings_content');
+                window.GTrader.request('settings', 'form', {
+                    name: name,
+                    width: $(window).width()
+                }, 'GET', 'settings_content');
             });
         }, // registerChart
 

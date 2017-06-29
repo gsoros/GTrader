@@ -30,7 +30,13 @@ class Ohlc extends HasInputs
         if ('short' === $format) {
             return $mode;
         }
-        return ($param_str = $this->getParamString(['mode'])) ? $mode.' ('.$param_str.')' : $mode;
+        $param_str = $this->getParamString(['mode']);
+        foreach ($this->getInputs() as $k => $v) {
+            if (substr($k, 6) !== $v) {
+                return $mode.' ('.$param_str.')' ;
+            }
+        }
+        return $mode;
     }
 
     public function runDependencies(bool $force_rerun = false)

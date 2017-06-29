@@ -8,6 +8,7 @@ use GTrader\UserExchangeConfig;
 
 class Balance extends Indicator
 {
+    use HasStrategy;
 
     public function __construct(array $params = [])
     {
@@ -18,12 +19,9 @@ class Balance extends Indicator
 
     public function createDependencies()
     {
-        if (is_object($owner = $this->getOwner())) {
-            if ((is_object($strategy = $owner->getStrategy()))) {
-                /* just calling the owner's method will create the dependency */
-                if ($ind = $owner->getStrategy()->getSignalsIndicator()) {
-                    $ind->addRef($this);
-                }
+        if ($strategy = $this->getStrategy()) {
+            if ($ind = $strategy->getSignalsIndicator()) {
+                $ind->addRef($this);
             }
         }
         return $this;
