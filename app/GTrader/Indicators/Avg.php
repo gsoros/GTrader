@@ -16,7 +16,7 @@ class Avg extends HasInputs
 
         $input = $candles->key($this->getInput());
 
-        $signature = $candles->key($this->getSignature());
+        $key = $candles->key($this->getSignature());
 
         $total = 0;
         $count = 0;
@@ -25,13 +25,13 @@ class Avg extends HasInputs
         while ($candle = $candles->next()) {
 
             if (!isset($candle->$input)) {
-                error_log('Avg::calculate() '.$signature.' candle->'.$input.' is not set');
+                error_log('Avg::calculate() '.$key.' candle->'.$input.' is not set');
                 break;
             }
             $total += $candle->$input;
             $count ++;
 
-            $candle->$signature = $total / $count;
+            $candle->$key = $total / $count;
 
         }
         return $this;

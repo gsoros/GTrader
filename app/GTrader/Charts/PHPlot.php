@@ -84,7 +84,7 @@ class PHPlot extends Chart
         // Map
         list ($map, $map_str) = $this->getImageMapStrings();
 
-        error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
+        //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
         return $map.'<img class="img-responsive" src="'.
                 $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
     }
@@ -105,6 +105,7 @@ class PHPlot extends Chart
         $this->setMode($item);
 
         if (!count($item['values'])) {
+            error_log('PHPlot::plot() no data values for '.$item['label']);
             return $this;
         }
 
@@ -191,6 +192,26 @@ class PHPlot extends Chart
         //dump('candles:', $item);
         $this->colors = ['#b0100010', '#00600010', 'grey:90', 'grey:90'];
         $this->_plot->SetLineWidths(1);
+
+        /*
+        PHPlot calculates a value to use for one half the width of the candlestick bodies, or
+        for the OHLC open/close tick mark lengths, as follows:
+
+        half_width = max(ohlc_min_width, min(ohlc_max_width, ohlc_frac_width * avail_area))
+        Where avail_area = plot_area_width / number_data_points
+        */
+
+        // This is one half the maximum width of the candlestick body, or the maximum length of an
+        // OHLC tick mark. The default is 8 pixels.
+        $this->_plot->ohlc_max_width = 30;
+        // This is one half the minimum width of the candlestick body, or the minimum length of an
+        // OHLC tick mark. The default is 2 pixels.
+        $this->_plot->ohlc_min_width = 1;
+        // This is the fractional amount of the available space (plot width area divided by number
+        // of points) to use for half the width of the candlestick bodies or OHLC tick marks. The
+        // default is 0.3. This needs to be less than 0.5 or there will be overlap between adjacent candlesticks.
+        $this->_plot->ohlc_frac_width = .3;
+
         return $this;
     }
 
@@ -245,6 +266,7 @@ class PHPlot extends Chart
         $item['values'] = array_map(function ($v) {
             return [$v[1], $v[2]];
         }, $item['values']);
+        //dump($item);
         $this->setWorld([
             'xmin' => -0.5,
             'xmax' => count($item['values'])+0.5,

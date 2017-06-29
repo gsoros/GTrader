@@ -162,14 +162,15 @@ class Fann extends Strategy
             ->reverse()
             ->values();
         foreach ($items as $item) {
-            if (!array_key_exists($item->name, $data)) {
+            $name = ucfirst(str_replace('_', ' ', $item->name));
+            if (!array_key_exists($name, $data)) {
                 $display = [];
                 if ('train_mser' === $item->name) {
                     $display = ['y_axis_pos' => 'right'];
                 }
-                $data[$item->name] = ['display' => $display, 'values' => []];
+                $data[$name] = ['display' => $display, 'values' => []];
             }
-            $data[$item->name]['values'][$item->epoch] = $item->value;
+            $data[$name]['values'][$item->epoch] = $item->value;
         }
         ksort($data);
         $plot = new Plot([

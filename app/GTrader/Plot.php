@@ -105,8 +105,20 @@ class Plot
         }
 
         foreach (['left', 'right'] as $dir) {
+            if (!is_array($out[$dir])) {
+                continue;
+            }
+            if (!count($out[$dir])) {
+                continue;
+            }
+            if (!is_array($out[$dir]['values'])) {
+                continue;
+            }
+            if (!count($out[$dir]['values'])) {
+                continue;
+            }
             $this->setWorld($out[$dir]['dim']);
-            //dd($out[$dir]['dim']);
+            //dd($out);
 
             foreach ($out[$dir]['values'] as $label => $values) {
                 //error_log($dir.' label: '.$label);

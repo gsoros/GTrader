@@ -56,30 +56,7 @@ class Candle extends Model
         return json_encode($this->attributes);
     }
 
-    /*
-    * Perform a heikin ashi calculation
-    * @param candle Candle
-    * @param prev_candle Candle
-    * @return Candle
-    * retains any additional attributes in $candle */
-    public static function heikinashi(Candle $candle, Candle $prev_candle = null)
-    {
-        //dump($candle); dump($prev_candle); exit();
-        if (!is_object($prev_candle)) {
-            return $candle;
-        }
-        if (!$prev_candle->open || !$prev_candle->high ||
-              !$prev_candle->low || !$prev_candle->close) {
-            return $candle;
-        }
-        $candle->attributes = array_merge($candle->attributes, array(
-            'open' => ($prev_candle->open + $prev_candle->close) / 2,
-            'high' => max($candle->open, $candle->high, $candle->close),
-            'low' => min($candle->low, $candle->open, $candle->close),
-            'close' => ($candle->open + $candle->high + $candle->low + $candle->close) / 4
-            ));
-        return $candle;
-    }
+
 
 
     public function max()
