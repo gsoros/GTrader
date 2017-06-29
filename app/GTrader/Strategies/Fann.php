@@ -73,15 +73,17 @@ class Fann extends Strategy
             'symbol' => $symbol,
             'resolution' => $resolution,
         ]);
-        $training_chart = Chart::make(null, [
+        $chart = Chart::make(null, [
             'candles' => $candles,
             'name' => 'trainingChart',
             'height' => 200,
             'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
-        $training_chart->addIndicator('Ohlc');
-        $training_chart->saveToSession();
-        return $training_chart;
+        $ind = $chart->addIndicator('Ohlc');
+        $ind->setParam('display.visible', true);
+        $ind->addRef($chart);
+        $chart->saveToSession();
+        return $chart;
     }
 
 
@@ -104,7 +106,7 @@ class Fann extends Strategy
             }
         }
 
-        $progress_chart = Chart::make(null, [
+        $chart = Chart::make(null, [
             'candles' => $candles,
             'strategy' => $this,
             'name' => 'trainingProgressChart',
@@ -114,29 +116,36 @@ class Fann extends Strategy
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
         ]);
-        $progress_chart->addIndicator('Ohlc');
+        $ind = $chart->addIndicator('Ohlc');
+        $ind->setParam('display.visible', true);
+        $ind->addRef($chart);
 
         $sig = $training->getMaximizeSig();
-        if (!$progress_chart->hasIndicator($sig)) {
-            $progress_chart->addIndicatorBySignature($sig);
+        if (!$chart->hasIndicator($sig)) {
+            $ind = $chart->addIndicatorBySignature($sig);
+            $ind->setParam('display.visible', true);
+            $ind->addRef($chart);
             $this->save();
         }
 
-        if (!$progress_chart->hasIndicatorClass('Balance')) {
-            $progress_chart->addIndicator('Balance');
+        if (!$chart->hasIndicatorClass('Balance')) {
+            $ind = $chart->addIndicator('Balance');
+            $ind->setParam('display.visible', true);
+            $ind->addRef($chart);
             $this->save();
         }
-        $balance_ind = $progress_chart->getFirstIndicatorByClass('Balance');
-        $balance_ind->setParam('display.visible', true);
+        $ind = $chart->getFirstIndicatorByClass('Balance');
+        $ind->setParam('display.visible', true);
 
-        if (!$progress_chart->hasIndicatorClass('Profitability')) {
-            $progress_chart->addIndicator('Profitability');
+        if (!$chart->hasIndicatorClass('Profitability')) {
+            $ind = $chart->addIndicator('Profitability');
+            $ind->addRef($chart);
             $this->save();
         }
 
-        $progress_chart->saveToSession();
+        $chart->saveToSession();
 
-        return $progress_chart;
+        return $chart;
     }
 
 
