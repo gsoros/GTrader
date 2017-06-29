@@ -162,6 +162,12 @@ class Series extends Collection
         return $this;
     }
 
+    public function first(bool $reset_to_display_start = false)
+    {
+        $i = $reset_to_display_start ?
+            $this->getFirstKeyForDisplay() : 0;
+        return isset($this->items[$i]) ? $this->items[$i] : null;
+    }
 
     public function reset(bool $reset_to_display_start = false)
     {

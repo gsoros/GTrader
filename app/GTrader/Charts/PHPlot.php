@@ -257,8 +257,8 @@ class PHPlot extends Chart
         $this->_plot->SetPointShapes('target');
         $this->_plot->SetLineStyles(['dashed']);
         $pointsize = floor($this->getParam('width', 1024) / 100);
-        if (10 > $pointsize) {
-            $pointsize = 10;
+        if (5 > $pointsize) {
+            $pointsize = 5;
         }
         $this->_plot->SetPointSizes($pointsize);
         $this->_plot->SetYDataLabelPos('plotin');
@@ -535,12 +535,18 @@ class PHPlot extends Chart
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->SetTickLabelColor('#999999');
 
-        $this->_plot->SetXLabelType('time', '%m-%d %H:%M');
         $this->_plot->SetYLabelType('data', 0); // precision
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetLegendStyle('left', 'left');
         //$this->_plot->SetLegendUseShapes(true);
         $this->_plot->SetLegendColorboxBorders('none');
+
+        $start = ($first = $this->getCandles()->first()) ? $first->time : 0;
+        $end = ($last = $this->getCandles()->last()) ? $last->time : 0;
+        $longtime = 3600*24 < ($end - $start);
+        $this->_plot->SetNumXTicks($xticks = floor($this->getParam('width', 200) / ($longtime ? 70 : 40)));
+        $this->_plot->SetXLabelType('time', $longtime ? '%m-%d %H:%M' : '%H:%M');
+
         return $this;
     }
 
