@@ -1,9 +1,11 @@
 <?php
 return [
     'Ohlc'              => ['allow_multiple' => true],
+    'Vol'               => ['allow_multiple' => true],
     'Constant'          => ['allow_multiple' => true],
     'Operator'          => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],
+    'Roc'               => ['allow_multiple' => true],
     'Balance'           => ['allow_multiple' => false],
     'Ma'                => ['allow_multiple' => true],
     'Ema'               => ['allow_multiple' => true],

@@ -71,10 +71,28 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
-    public function addRef(string $signature)
+    public function addRef($ind_or_sig)
     {
-        //error_log($this->debugObjId().' addRef('.$signature.')');
-        $this->refs[$signature] = true;
+        //dump('addRef '.$this->getShortClass(), $ind_or_sig);
+        $sig = null;
+        if (is_object($ind_or_sig)) {
+            if (method_exists($ind_or_sig, 'getSignature')) {
+                $sig = $ind_or_sig->getSignature();
+            }
+            else if (method_exists($ind_or_sig, 'getShortClass')) {
+                $sig = $ind_or_sig->getShortClass();
+            }
+            else {
+                $sig = get_class($ind_or_sig);
+            }
+        }
+        if (is_null($sig)) {
+            $sig = strval($ind_or_sig);
+        }
+        if (!in_array($sig, $this->refs)) {
+            //dump($this->debugObjId().' addRef('.$sig.')');
+            $this->refs[] = $sig;
+        }
         return $this;
     }
 
@@ -237,7 +255,6 @@ abstract class Indicator //implements \JsonSerializable
         if (is_array($params)) {
             if (count($params)) {
                 $delimiter = '';
-                $params_if_new = ['display' => ['visible' => false]];
                 foreach ($params as $key => $value) {
                     if (strlen($param_str)) {
                         $delimiter = ', ';
@@ -257,11 +274,9 @@ abstract class Indicator //implements \JsonSerializable
                         }
                         if ('source' === $value['type']) {
                             //error_log('getParamString() '.$this->getShortClass().': '.$key.': '.$this->getParam('indicator.'.$key));
-                            if ($indicator = $this->getOwner()
-                                    ->getOrAddIndicator(
-                                        $this->getParam('indicator.'.$key, ''),
-                                        [],
-                                        $params_if_new)) {
+                            if ($indicator = $this->getOwner()->getOrAddIndicator(
+                                $this->getParam('indicator.'.$key, ''))
+                            ) {
                                 $param_str .= $delimiter.$indicator->getDisplaySignature('short');
                                 continue;
                             }
@@ -309,7 +324,7 @@ abstract class Indicator //implements \JsonSerializable
             if (count($depends)) {
                 foreach ($depends as $indicator) {
                     if ($indicator !== $this) {
-                        $indicator->addRef($this->getSignature());
+                        $indicator->addRef($this);
                         $indicator->checkAndRun($force_rerun);
                     }
                 }
@@ -356,8 +371,6 @@ abstract class Indicator //implements \JsonSerializable
 
     public function updateReferences()
     {
-        $sig = $this->getSignature();
-
         if (!$this->hasInputs()) {
             return $this;
         }
@@ -370,7 +383,7 @@ abstract class Indicator //implements \JsonSerializable
                 //error_log('Indicator::updateReferences() coild not getOrAdd '.$input_sig);
                 continue;
             }
-            $ind->addRef($sig);
+            $ind->addRef($this);
         }
         return $this;
     }
@@ -398,6 +411,7 @@ abstract class Indicator //implements \JsonSerializable
             error_log('Indicator::getOutputArray() could not get candles');
             return [];
         }
+        $this->checkAndRun();
         $sig = $this->getSignature();
         $r = null;
         foreach ($this->getParam('outputs', ['']) as $output) {
@@ -425,7 +439,6 @@ abstract class Indicator //implements \JsonSerializable
                 return [$v1, $v2];
             }, $r);
         }
-        //error_log('returning '.$sig.' '.substr(json_encode($r), 0, 200));
         return $r;
     }
 

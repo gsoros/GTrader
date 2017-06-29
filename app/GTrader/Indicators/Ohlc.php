@@ -11,9 +11,9 @@ class Ohlc extends HasInputs
         }, array_keys($inputs = $this->getInputs()));
 
         if (in_array($o = strtolower($output), $stripped)) {
-            return $o;
+            return $inputs['input_'.$o];
         }
-        error_log('Ohlc::key() output: '.$output.' not in '.json_encode($inputs));
+        error_log($this->getShortClass().'::key() output: '.$o.' not in '.json_encode($inputs));
         return null;
     }
 

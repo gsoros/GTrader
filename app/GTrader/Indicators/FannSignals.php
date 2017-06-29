@@ -25,7 +25,7 @@ class FannSignals extends Indicator
         }
         if (is_object($strategy)) {
             if ($ind = $strategy->getPredictionIndicator()) {
-                $ind->addRef($this->getSignature());
+                $ind->addRef($this);
             }
         }
         return $this;
@@ -58,7 +58,7 @@ class FannSignals extends Indicator
         }
 
         $indicator = $strategy->getPredictionIndicator();
-        $indicator->addRef($this->getSignature());
+        $indicator->addRef($this);
         $indicator->checkAndRun($force_rerun);
         $indicator_sig = $candles->key($indicator->getSignature());
 

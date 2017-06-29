@@ -18,10 +18,9 @@ class FannPrediction extends Indicator
     {
         $candles = $this->getCandles();
 
-        $signature = $candles->key($this->getSignature());
+        $key = $candles->key($this->getSignature());
 
-        $strategy = $this->getOwner()->getStrategy();
-        if (!$strategy) {
+        if (!$strategy = $this->getOwner()->getStrategy()) {
             error_log('FannPrediction::calculate() no strategy');
             return $this;
         }
@@ -60,7 +59,7 @@ class FannPrediction extends Indicator
             //error_log('P:'.$val);
             //$price = series::ohlc4($candle);
             $price = $candle->open;
-            $candle->$signature = $price + $price * $val * $strategy->getParam('output_scaling') / 100;
+            $candle->$key = $price + $price * $val * $strategy->getParam('output_scaling') / 100;
             //$candles->set($candle);
         }
         return $this;

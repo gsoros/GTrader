@@ -57,8 +57,7 @@ class Ht extends Trader
                     if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                         $this->setParam('normalize', ['mode' => 'ohlc']);
                     } else if ($owner = $this->getOwner()) {
-                        $params = ['display' => ['visible' => false]];
-                        if ($ind = $owner->getOrAddIndicator($sig, [], $params)) {
+                        if ($ind = $owner->getOrAddIndicator($sig)) {
                             $this->setParam('normalize', $ind->getParam('normalize'));
                         }
                     }

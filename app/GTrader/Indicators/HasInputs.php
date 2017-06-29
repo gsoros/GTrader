@@ -61,9 +61,8 @@ abstract class HasInputs extends Indicator
         if (count(array_intersect($inputs, $signatures))) {
             return true;
         }
-        $params = ['display' => ['visible' => false]];
         foreach ($inputs as $input) {
-            if (!($input_ind = $this->getOwner()->getOrAddIndicator($input, [], $params))) {
+            if (!($input_ind = $this->getOwner()->getOrAddIndicator($input))) {
                 continue;
             }
             if (!$input_ind->hasInputs()) {
@@ -93,11 +92,10 @@ abstract class HasInputs extends Indicator
         if (!($owner = $this->getOwner())) {
             return null;
         }
-        $params = ['display' => ['visible' => false]];
         $inputs = $this->getInputs();
         $inds = [];
         foreach ($inputs as $input) {
-            if (!($indicator = $owner->getOrAddIndicator($input, [], $params))) {
+            if (!($indicator = $owner->getOrAddIndicator($input))) {
                 //error_log(get_class($this).'::getOrAddInputIndicators() could not find indicator '.
                 //    $input.' for '.get_class($owner));
                 return null;
@@ -141,7 +139,7 @@ abstract class HasInputs extends Indicator
             if ('left' === $ind->getParam('display.y_axis_pos')) {
                 $count_left++;
             }
-            $ind->addRef($this->getSignature());
+            $ind->addRef($this);
             $ind->checkAndRun($force_rerun);
         }
         $this->setParam('display.y_axis_pos', ($count_left === count($inds)) ? 'left' : 'right');

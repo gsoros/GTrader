@@ -8,8 +8,7 @@ class Tsf extends Trader
     public function getNormalizeParams()
     {
         if ($this->inputFromIndicator()) {
-            $params = ['display' => ['visible' => false]];
-            if ($ind = $this->getOwner()->getOrAddIndicator($this->getInput(), [], $params)) {
+            if ($ind = $this->getOwner()->getOrAddIndicator($this->getInput())) {
                 return $ind->getNormalizeParams();
             }
         }

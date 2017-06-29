@@ -189,7 +189,7 @@ class Plot
             $xmax = $xmin + 1;
         }
         if ($ymin >= $ymax) {
-            error_log('setWorld() axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
+            //error_log('setWorld() axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
             $ymax = $ymin + 1;
         }
         $this->_plot->setPlotAreaWorld(

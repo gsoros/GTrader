@@ -10,6 +10,6 @@ return [
     'display' => [
         'mode' => 'line',
         'name' => 'Unnamed Indicator',
-        'visible' => true,
+        'visible' => false,
     ],
 ];

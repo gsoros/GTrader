@@ -22,7 +22,7 @@ class Balance extends Indicator
             if ((is_object($strategy = $owner->getStrategy()))) {
                 /* just calling the owner's method will create the dependency */
                 if ($ind = $owner->getStrategy()->getSignalsIndicator()) {
-                    $ind->addRef($this->getSignature());
+                    $ind->addRef($this);
                 }
             }
         }

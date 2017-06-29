@@ -29,7 +29,7 @@ class Operator extends HasInputs
             case 'mult':
                 return $a * $b;
             case 'div':
-                return $a / $b;
+                return $b != 0 ? $a / $b : null;
         }
         return 0;
     }

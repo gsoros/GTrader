@@ -121,14 +121,17 @@ abstract class Chart extends Plot
                 ->first();
 
         if (is_object($query)) {
-            return unserialize($query->chart);
+            $chart = unserialize($query->chart);;
+            return $chart;
         }
     }
 
 
     public static function loadFromSession(string $name = null)
     {
-        return ($chart = session($name)) ? $chart : null;
+        $chart = session($name);
+        //dump($chart);
+        return is_object($chart) ? $chart : null;
     }
 
 
@@ -155,8 +158,8 @@ abstract class Chart extends Plot
         //$this->setParam('height', 0);
 
         $basequery = DB::table('charts')
-                        ->where('user_id', $user_id)
-                        ->where('name', $name);
+            ->where('user_id', $user_id)
+            ->where('name', $name);
         $query = $basequery->select('id')->first();
 
         if (is_object($query)) {
@@ -166,9 +169,11 @@ abstract class Chart extends Plot
             }
         }
 
-        DB::table('charts')->insert([ 'user_id' => $user_id,
-                                        'name'  => $name,
-                                        'chart' => serialize($this)]);
+        DB::table('charts')->insert([
+            'user_id' => $user_id,
+            'name'  => $name,
+            'chart' => serialize($this),
+        ]);
         return $this;
     }
 

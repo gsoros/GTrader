@@ -192,9 +192,9 @@ class Strategy
             }
         }
         //error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
-        $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
+        $indicator = Indicator::make($class);
         $candles->addIndicator($indicator);
-        $indicator->addRef($this->getShortClass());
+        $indicator->addRef($this);
 
         return $indicator;
     }

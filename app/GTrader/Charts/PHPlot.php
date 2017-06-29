@@ -17,6 +17,9 @@ class PHPlot extends Chart
     protected $last_close;
     protected $image_map;
 
+    protected $colors;
+    protected $label;
+
 
     public function toHTML(string $content = '')
     {
@@ -37,6 +40,7 @@ class PHPlot extends Chart
             error_log('PHPlot::getImage() could not init plot');
             return '';
         }
+        $this->setParam('density_cutoff', $this->getParam('width'));
 
         if (!$this->createDataArray()) {
             error_log('PHPlot::getImage() could not create data array');
@@ -50,9 +54,11 @@ class PHPlot extends Chart
         $t = Arr::get($this->data, 'times', [0]);
 
         // Plot items on left Y-axis
+        $this->setParam('xmin', $t[0] - $candles->getParam('resolution'));
+        $this->setParam('xmax', $t[count($t)-1] + $candles->getParam('resolution'));
         $this->setWorld([
-            'xmin' => $t[0] - $candles->getParam('resolution'),
-            'xmax' => $t[count($t)-1] + $candles->getParam('resolution'),
+            'xmin' => $this->getParam('xmin'),
+            'xmax' => $this->getParam('xmax'),
             'ymin' => Arr::get($this->data, 'left.min', 0),
             'ymax' => Arr::get($this->data, 'left.max', 0),
         ]);
@@ -64,6 +70,8 @@ class PHPlot extends Chart
         $this->setYAxis('right');
         foreach (Arr::get($this->data, 'right.items', []) as $item) {
             $this->setWorld([
+                'xmin' => $this->getParam('xmin'),
+                'xmax' => $this->getParam('xmax'),
                 'ymin' => Arr::get($item, 'min', 0),
                 'ymax' => Arr::get($item, 'max', 0),
             ]);
@@ -93,20 +101,10 @@ class PHPlot extends Chart
             }
             array_unshift($v, '', $time);
         });
-        //dd($item);
-//if ('Signals' == $item['label']) dd($item);
+
         $this->setMode($item);
 
-        $this->_plot->SetDataType('data-data');
-
-
-//if ('Signals' == $item['label']) dump($item['label'], $item['values']);
         $this->_plot->SetDataValues($item['values']);
-//dump('2222');
-
-
-
-
 
         $this->_plot->drawGraph();
         //dump($item);
@@ -124,20 +122,24 @@ class PHPlot extends Chart
 
     protected function setMode(array &$item = [])
     {
-        $num_outputs = count(reset($item['values'])) - 2;
+        $item['num_outputs'] = count(reset($item['values'])) - 2;
 
-        // clear any settings from signals ind
+        // Line, linepoints and candlesticks use 'data-data'
+        $this->_plot->SetDataType('data-data');
+
+        // clear any settings from signals or vol
         $this->_plot->SetYDataLabelPos('none');
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->RemoveCallback('data_color');
 
-        // Candlesticks need at least 4 pixels, switch them for a line if there are too many
-        if ('candlestick' === $item['mode']) {
-            $num_outputs = 2;
+        // Candlesticks and bars need at least 4 pixels, switch them for a line if there are too many
+        if (in_array($item['mode'], ['candlestick', 'bars'])) {
+            $item['num_outputs'] = 2;
             $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
             if (4 > $this->getParam('width', 1) / $num_candles) {
-                $num_outputs = 1;
+                $item['num_outputs'] = 1;
                 $item['mode'] = 'line';
+                // remove all but the first 3 data elements
                 $item['values'] = array_map(function ($v) {
                     return [$v[0], $v[1], $v[2]];
                 }, $item['values']);
@@ -147,69 +149,138 @@ class PHPlot extends Chart
         $this->_plot->setPlotType($this->map($item['mode']));
 
         $this->_plot->SetLineWidths(2);
-        $colors = [];
+        $this->colors = [];
         $highlight_colors = ['yellow', 'red', 'blue'];
         $highlight_color_count = count($highlight_colors);
         $this->_plot->setPointShapes('none');
         $this->_plot->SetLegendPixels(35, self::nextLegendY());
-        $label = array_merge([$item['label']], array_fill(0, $num_outputs - 1, ''));
+        $this->label = array_merge(
+            [$item['label']],
+            array_fill(0, $item['num_outputs'] - 1, '')
+        );
 
         switch ($item['mode']) {
-
-            case 'candlestick': // candles
-                $colors = ['#b0100010', '#00600010','grey:90', 'grey:90'];
-                $this->_plot->SetLineWidths(1);
+            case 'candlestick':
+                $this->mode_candlestick($item);
                 break;
-
-            case 'linepoints': // signals
-                $colors = ['#ff000010', '#00ff0050'];
-                $label = array_merge($label, ['']);
-                $signals = $values = [];
-                foreach ($item['values'] as $k => $v) {
-                    if (isset($v[2]['signal'])) {
-                        $signals[] = $v[2]['signal'];
-                        $values[] = ['', $v[1], round($v[2]['price'], 2)];
-                    }
-                }
-                $item['values'] = $values;
-                $this->_plot->SetCallback(
-                    'data_color',
-                    function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
-                        //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                        $s = isset($signals[$row]) ? $signals[$row] : null;;
-                        if ('long' === $s) {
-                            return (0 === $extra) ? 0 : 1;
-                        } elseif ('short' === $s) {
-                            return (0 === $extra) ? 1 : 0;
-                        }
-                        error_log('Unmatched signal');
-                    }
-                );
-                //dd($item);
-                $this->_plot->SetPointShapes('target');
-                $this->_plot->SetLineStyles(['dashed']);
-                $pointsize = floor($this->getParam('width', 1024) / 100);
-                if (10 > $pointsize) {
-                    $pointsize = 10;
-                }
-                $this->_plot->SetPointSizes($pointsize);
-                $this->_plot->SetYDataLabelPos('plotin');
-                $this->_plot->SetYTickLabelPos('none');
-
+            case 'linepoints':
+                $this->mode_linepoints($item);
                 break;
-
-            default: // lines
-                //dump('default:');
-                for ($i = 0; $i <= $num_outputs; $i++) {
-                    $colors[] = $last_color = self::nextColor();
-                }
-                $this->_plot->SetTickLabelColor($last_color);
+            case 'bars':
+                $this->mode_bars($item);
+                break;
+            default:
+                $this->mode_line($item);
         }
-        $this->_plot->SetLegend($label);
-        self::nextLegendY($num_outputs);
-        $this->_plot->setDataColors($colors); //dump($label, $colors);
+
+        $this->_plot->SetLegend($this->label);
+        self::nextLegendY($item['num_outputs']);
+        $this->_plot->setDataColors($this->colors);
         return $this;
     }
+
+
+    // Candles
+    protected function mode_candlestick(array &$item)
+    {
+        //dump('candles:', $item);
+        $this->colors = ['#b0100010', '#00600010', 'grey:90', 'grey:90'];
+        $this->_plot->SetLineWidths(1);
+        return $this;
+    }
+
+    // Signals
+    protected function mode_linepoints(array &$item)
+    {
+        $this->colors = ['#ff000010', '#00ff0050'];
+        $this->label = array_merge($this->label, ['']);
+        $signals = $values = [];
+        foreach ($item['values'] as $k => $v) {
+            if (isset($v[2]['signal'])) {
+                $signals[] = $v[2]['signal'];
+                $values[] = ['', $v[1], round($v[2]['price'], 2)];
+            }
+        }
+        $item['values'] = $values;
+        $this->_plot->SetCallback(
+            'data_color',
+            function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
+                //dump('R: '.$row.' C: '.$col.' E:'.$extra);
+                $s = isset($signals[$row]) ? $signals[$row] : null;;
+                if ('long' === $s) {
+                    return (0 === $extra) ? 0 : 1;
+                } elseif ('short' === $s) {
+                    return (0 === $extra) ? 1 : 0;
+                }
+                error_log('Unmatched signal');
+            }
+        );
+        //dd($item);
+        $this->_plot->SetPointShapes('target');
+        $this->_plot->SetLineStyles(['dashed']);
+        $pointsize = floor($this->getParam('width', 1024) / 100);
+        if (10 > $pointsize) {
+            $pointsize = 10;
+        }
+        $this->_plot->SetPointSizes($pointsize);
+        $this->_plot->SetYDataLabelPos('plotin');
+        $this->_plot->SetYTickLabelPos('none');
+        return $this;
+    }
+
+
+    // Volume
+    protected function mode_bars(array &$item)
+    {
+        //dump($item);
+        $this->colors = ['#ff0000d0', '#00ff00d0'];
+        $this->_plot->SetDataType('text-data');
+        $this->_plot->group_frac_width = 0.5;
+        // convert ['', time, value...] to [time, value]
+        $item['values'] = array_map(function ($v) {
+            return [$v[1], $v[2]];
+        }, $item['values']);
+        $this->setWorld([
+            'xmin' => -0.5,
+            'xmax' => count($item['values'])+0.5,
+            'ymin' => 0,
+            'ymax' => $item['max'] * 2,
+        ]);
+        // get rising/falling data from Roc(close)
+        if ($roc = $this->getOrAddIndicator('Roc',
+            ['indicator' => ['input_source' => 'close']]
+        )) {
+            if ($roc = $roc->getOutputArray('sequential', true,
+                $this->getParam('density_cutoff')
+            )) {
+                $this->_plot->SetCallback(
+                    'data_color',
+                    function ($img, $junk, $row, $col, $extra = 0) use ($roc) {
+                        $rising = isset($roc[$row][0]) ? (0 <= $roc[$row][0]) : 0;
+                        //dump('R: '.$row.' C: '.$col.' E:'.$extra.' R:'.$rising.' R:', $roc[$row]);
+                        return $rising ? 1 : 0;
+                    }
+                );
+            }
+        }
+        $this->_plot->SetShading('none');
+        return $this;
+    }
+
+
+    // Line
+    protected function mode_line(array &$item)
+    {
+        //dump('default:', $item);
+        for ($i = 0; $i <= $item['num_outputs']; $i++) {
+            $this->colors[] = $last_color = self::nextColor();
+        }
+        $this->_plot->SetTickLabelColor($last_color);
+        return $this;
+    }
+
+
+
 
 
     protected function createDataArray()
@@ -224,7 +295,7 @@ class PHPlot extends Chart
             'time',
             'sequential',
             true,
-            $this->getParam('width')
+            $this->getParam('density_cutoff')
         ))) {
             error_log('PHPlot::createDataArray() could not extract times');
             return false;
@@ -258,7 +329,7 @@ class PHPlot extends Chart
                 'values' => $ind->getOutputArray(
                     'sequential',
                     true,
-                    $this->getParam('width')
+                    $this->getParam('density_cutoff')
                 ),
             ];
 

@@ -56,11 +56,10 @@ class Series extends Collection
         }
         $key = null;
         if ($class = Indicator::getClassFromSignature($sig)) {
-            if ($output = Indicator::getOutputFromSignature($sig)) {
-                if ($i = $this->getOrAddIndicator($sig)) {
-                    if (method_exists($i, 'key')) {
-                        $key = $i->key($output);
-                    }
+            $output = Indicator::getOutputFromSignature($sig);
+            if ($i = $this->getOrAddIndicator($sig)) {
+                if (method_exists($i, 'key')) {
+                    $key = $i->key($output);
                 }
             }
         }

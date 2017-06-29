@@ -253,25 +253,31 @@ class Fann extends Strategy
 
     public function listItem()
     {
-        $training = FannTraining::select('status')
-            ->where('strategy_id', $this->getParam('id'))
-            ->where(function ($query) {
-                $query->where('status', 'training')
-                        ->orWhere('status', 'paused');
-            })
-            ->first();
-        $training_status = null;
-        if (is_object($training)) {
-            $training_status = $training->status;
-        }
+        try {
+            $training = FannTraining::select('status')
+                ->where('strategy_id', $this->getParam('id'))
+                ->where(function ($query) {
+                    $query->where('status', 'training')
+                            ->orWhere('status', 'paused');
+                })
+                ->first();
+            $training_status = null;
+            if (is_object($training)) {
+                $training_status = $training->status;
+            }
 
-        return view(
-            'Strategies/FannListItem',
-            [
-                'strategy' => $this,
-                'training_status' => $training_status
-            ]
-        );
+            $html = view(
+                'Strategies/FannListItem',
+                [
+                    'strategy' => $this,
+                    'training_status' => $training_status
+                ]
+            );
+        } catch (\Exception $e) {
+            error_log('Fann::listItem() failed for id '.$this->getParam('id'));
+            $html = '[Failed to display FannListItem]';
+        }
+        return $html;
     }
 
 
@@ -288,17 +294,20 @@ class Fann extends Strategy
             }
         }
         if (is_null($indicator)) {
-            $indicator = Indicator::make($class, ['display' => ['visible' => false]]);
+            $indicator = Indicator::make($class);
             $candles->addIndicator($indicator);
         }
 
         $ema_len = $this->getParam('prediction_ema');
         if ($ema_len > 1) {
             $indicator = Indicator::make(
-                'Ema',
-                ['indicator' => ['source' => $indicator->getSignature(), 'length' => $ema_len],
-                 'display' => ['visible' => false],
-                 'depends' => [$indicator]]
+                'Ema', [
+                    'indicator' => [
+                        'input_source' => $indicator->getSignature(),
+                        'length' => $ema_len,
+                    ],
+                    'depends' => [$indicator],
+                ]
             );
 
             $candles->addIndicator($indicator);
@@ -632,13 +641,12 @@ class Fann extends Strategy
     {
         $inputs = $this->getParam('inputs', []);
         $candles = $this->getCandles();
-        $params = ['display' => ['visible' => false]];
         foreach ($inputs as $sig) {
-            if (! $indicator = $candles->getOrAddIndicator($sig, [], $params)) {
+            if (! $indicator = $candles->getOrAddIndicator($sig)) {
                 //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
                 continue;
             }
-            $indicator->addRef($this->getShortClass());
+            $indicator->addRef($this);
             $indicator->checkAndRun($force_rerun);
         }
         return $this;
@@ -663,7 +671,6 @@ class Fann extends Strategy
             $output = '';
             $naked_sig = $sig;
             $norm_params = ['mode' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
-            $params = ['display' => ['visible' => false]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_mode = 'ohlc';
@@ -671,7 +678,7 @@ class Fann extends Strategy
             elseif ('volume' === $sig) {
                 $norm_mode = 'individual';
             }
-            elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig, [], $params)) {
+            elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig)) {
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
                 continue;
             }
@@ -680,7 +687,7 @@ class Fann extends Strategy
                     error_log('Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature());
                     exit;
                 }
-                $indicator->addRef($this->getShortClass());
+                $indicator->addRef($this);
                 if (!($norm_params = $indicator->getNormalizeParams())) {
                     error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
                     continue;

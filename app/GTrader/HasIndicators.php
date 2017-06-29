@@ -20,6 +20,7 @@ trait HasIndicators
         array $params = [],
         array $params_if_new = [])
     {
+        //dump('addIndicator()', $indicator, $params, $params_if_new);
         $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
@@ -333,6 +334,7 @@ trait HasIndicators
         }
         if ($indicator = $this->addIndicatorBySignature($sig)) {
             $indicator->setParam('display.visible', true);
+            $indicator->addRef($this);
         }
 
         return $this->viewIndicatorsList();
@@ -372,7 +374,6 @@ trait HasIndicators
         }
         $indicator = clone $indicator;
         $jso = json_decode($request->params);
-        $params_if_new = ['display' => ['visible' => false]];
         foreach ($indicator->getParam('adjustable') as $key => $param) {
             $val = null;
             if (isset($jso->$key)) {
@@ -402,7 +403,7 @@ trait HasIndicators
             else if ('source' === $type) {
                 $val = urldecode($val);
                 $indicator->setParam('depends', []);
-                $dependency = $this->getOrAddIndicator($val, [], $params_if_new);
+                $dependency = $this->getOrAddIndicator($val);
                 if (is_object($dependency)) {
                     $indicator->setParam('depends', [$dependency]);
                 }
@@ -458,8 +459,7 @@ trait HasIndicators
         if (in_array($signature, $target_sigs)) {
             return true;
         }
-        $params = ['display' => ['visible' => false]];
-        if (!($indicator = $this->getOrAddIndicator($signature, [], $params))) {
+        if (!($indicator = $this->getOrAddIndicator($signature))) {
             return false;
         }
         if (!method_exists($indicator, 'hasInputs')) {

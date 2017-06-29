@@ -11,7 +11,7 @@ class Cmo extends Trader
             return $this;
         }
         foreach ($inds as $ind) {
-            $ind->addRef($this->getSignature());
+            $ind->addRef($this);
             $ind->checkAndRun($force_rerun);
         }
         return $this;
