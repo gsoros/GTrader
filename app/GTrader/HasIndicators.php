@@ -308,6 +308,20 @@ trait HasIndicators
     }
 
 
+    public function viewIndicatorsList(string $format = 'long')
+    {
+        return view(
+            'Indicators/List', [
+                'owner' => $this,
+                'indicators' => $this->getIndicatorsVisibleSorted(),
+                'available' => $this->getIndicatorsAvailable(),
+                'name' => $this->getParam('name'),
+                'format' => $format,
+            ]
+        );
+    }
+
+
     public function handleIndicatorFormRequest(Request $request)
     {
         $pass_params = [];

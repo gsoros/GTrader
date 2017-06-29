@@ -103,7 +103,7 @@ class Strategy
     }
 
 
-    public function viewIndicatorsList()
+    public function viewIndicatorsList(string $format = 'long')
     {
         return view(
             'Indicators/List', [
@@ -115,6 +115,7 @@ class Strategy
                 'owner_id' => $this->getParam('id'),
                 'display_outputs' => true,
                 'target_element' => 'strategy_indicators_list',
+                'format' => $format,
             ]
         );
     }
