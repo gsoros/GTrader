@@ -124,6 +124,8 @@ class PHPlot extends Chart
     }
 
 
+
+
     protected function setMode(array &$item = [])
     {
         $item['num_outputs'] = count(reset($item['values'])) - 2;
@@ -141,7 +143,7 @@ class PHPlot extends Chart
             $item['num_outputs'] = 2;
             $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
             if (4 > $this->getParam('width', 1) / $num_candles) {
-                $item['num_outputs'] = 1;
+                //$item['num_outputs'] = 1;
                 $item['mode'] = 'line';
                 // remove all but the first 3 data elements
                 $item['values'] = array_map(function ($v) {
@@ -157,7 +159,6 @@ class PHPlot extends Chart
         $highlight_colors = ['yellow', 'red', 'blue'];
         $highlight_color_count = count($highlight_colors);
         $this->_plot->setPointShapes('none');
-        $this->_plot->SetLegendPixels(35, self::nextLegendY());
         $this->label = array_merge(
             [$item['label']],
             array_fill(0, $item['num_outputs'] - 1, '')
@@ -178,7 +179,7 @@ class PHPlot extends Chart
         }
 
         $this->_plot->SetLegend($this->label);
-        self::nextLegendY($item['num_outputs']);
+        $this->_plot->SetLegendPixels(35, self::nextLegendY($item['num_outputs']));
         $this->_plot->setDataColors($this->colors);
         return $this;
     }
