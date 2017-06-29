@@ -111,7 +111,7 @@ class ChartController extends Controller
             return response('No such chart in session.', 403);
         }
         $format = 400 < intval($request->width) ? 'long' : 'short';
-        $form = $chart->viewIndicatorsList($format);
+        $form = $chart->viewIndicatorsList($request);
         $chart->saveToSession();
 
         return response($form, 200);

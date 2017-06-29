@@ -10,7 +10,7 @@ $(function() {
             if (!type) type = 'GET';
             if (!target) target = request + 'Tab';
             window.setLoading(target, true);
-            var url = '/' + request + '.' + method;
+            var url = '/' + request + '.' + method + '?width=' + ($(window).width() - 2);
             var data = null;
             if (type === 'POST') {
                 data = params;
@@ -21,14 +21,14 @@ $(function() {
                         if (Object.keys(params).length) {
                             var i = 0;
                             $.each(params, function(k, v) {
-                                url += (i === 0) ? '?' : '&';
-                                url += k + '=' + encodeURIComponent(v);
+                                //url += (i === 0) ? '?' : '&';
+                                url += '&' + k + '=' + encodeURIComponent(v);
                                 i++;
                             });
                         }
                     }
                     else if (typeof params === 'string')
-                        url += '?' + params;
+                        url += '&' + params;
                 }
             }
             console.log('GTRader.request() Url: ' + url);
@@ -86,7 +86,6 @@ $(function() {
                 // Request settings form from backend
                 window.GTrader.request('settings', 'form', {
                     name: name,
-                    width: $(window).width()
                 }, 'GET', 'settings_content');
             });
         }, // registerChart

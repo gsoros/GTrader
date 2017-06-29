@@ -212,19 +212,6 @@ abstract class Chart extends Plot
         return $this;
     }
 
-    public function viewIndicatorsList(string $format = 'long')
-    {
-        return view(
-            'Indicators/List', [
-                'owner' => $this,
-                'indicators' => $this->getIndicatorsVisibleSorted(),
-                'available' => $this->getIndicatorsAvailable(),
-                'name' => $this->getParam('name'),
-                'format' => $format,
-            ]
-        );
-    }
-
 
     /**
      * Get JSON representation of the chart.

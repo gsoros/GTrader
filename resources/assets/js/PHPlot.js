@@ -8,11 +8,9 @@ $(function() {
         window.setLoading(name, true);
         var container = $('#' + name);
         var plot = window[name];
-        var width = container.width();
-        console.log('requestPlot: ' + name + ' width: ' + width);
+        console.log('requestPlot: ' + name);
         var params = {
             name: name,
-            width: width,
             height: container.height()
         }
         if (undefined !== command)

@@ -308,8 +308,23 @@ trait HasIndicators
     }
 
 
-    public function viewIndicatorsList(string $format = 'long')
+    protected function formatFromRequest(Request $request = null)
     {
+        $format = 'long';
+        if (is_object($request)) {
+            if (isset($request->width)) {
+                if (400 > intval($request->width)) {
+                    $format = 'short';
+                }
+            }
+        }
+        return $format;
+    }
+
+
+    public function viewIndicatorsList(Request $request = null)
+    {
+        $format = $this->formatFromRequest($request);
         return view(
             'Indicators/List', [
                 'owner' => $this,
@@ -344,14 +359,14 @@ trait HasIndicators
     {
         if (!$sig = urldecode($request->signature)) {
             error_log('handleIndicatorNewRequest without signature');
-            return $this->viewIndicatorsList();
+            return $this->viewIndicatorsList($request);
         }
         if ($indicator = $this->addIndicatorBySignature($sig)) {
             $indicator->setParam('display.visible', true);
             $indicator->addRef($this);
         }
 
-        return $this->viewIndicatorsList();
+        return $this->viewIndicatorsList($request);
     }
 
 
@@ -374,7 +389,7 @@ trait HasIndicators
         else {
             $this->unsetIndicators($sig);
         }
-        return $this->viewIndicatorsList();
+        return $this->viewIndicatorsList($request);
     }
 
 
@@ -384,7 +399,7 @@ trait HasIndicators
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
             error_log('handleIndicatorSaveRequest() cannot find indicator '.$sig);
-            return $this->viewIndicatorsList();
+            return $this->viewIndicatorsList($request);
         }
         $indicator = clone $indicator;
         $jso = json_decode($request->params);
@@ -430,7 +445,7 @@ trait HasIndicators
         $this->unsetIndicators($sig);
         $indicator->setParam('display.visible', true);
         $this->addIndicator($indicator);
-        return $this->viewIndicatorsList();
+        return $this->viewIndicatorsList($request);
     }
 
 

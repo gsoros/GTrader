@@ -103,8 +103,9 @@ class Strategy
     }
 
 
-    public function viewIndicatorsList(string $format = 'long')
+    public function viewIndicatorsList(Request $request = null)
     {
+        $format = $this->formatFromRequest($request);
         return view(
             'Indicators/List', [
                 'owner' => $this,
