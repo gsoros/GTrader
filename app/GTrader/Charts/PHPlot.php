@@ -262,7 +262,6 @@ class PHPlot extends Chart
         }
         $this->_plot->SetPointSizes($pointsize);
         $this->_plot->SetYDataLabelPos('plotin');
-        $this->_plot->SetYTickLabelPos('none');
         return $this;
     }
 
