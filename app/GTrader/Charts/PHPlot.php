@@ -279,7 +279,7 @@ class PHPlot extends Chart
     // Signals, Ohlc or Vol
     protected function mode_linepoints(array &$item)
     {
-        if ('Signals' === $item['class']) {
+        if (stristr($item['class'], 'Signals')) {
             $this->colors = ['#ff000010', '#00ff0050'];
             $this->_plot->SetYLabelType('data', 2);         // precision
             $this->label = array_merge($this->label, ['']);
