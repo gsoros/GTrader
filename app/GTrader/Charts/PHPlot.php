@@ -59,9 +59,11 @@ class PHPlot extends Chart
         $this->setWorld([
             'xmin' => $this->getParam('xmin'),
             'xmax' => $this->getParam('xmax'),
-            'ymin' => Arr::get($this->data, 'left.min', 0),
-            'ymax' => Arr::get($this->data, 'left.max', 0),
+            'ymin' => $ymin = Arr::get($this->data, 'left.min', 0),
+            'ymax' => $ymax = Arr::get($this->data, 'left.max', 0),
         ]);
+        $range = $ymax - $ymin;
+        $this->setParam('precision', 3 < $range ? (10 < $range ? 0 : 1) : 2);
         foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
             $this->setYAxis('left');
             $this->setPlotElements('left', $index);
@@ -78,7 +80,7 @@ class PHPlot extends Chart
                 'ymax' => Arr::get($item, 'max', 0),
             ]);
             $this->setPlotElements('right', $index);
-            $this->plot($item, 'right', $index);
+            $this->plot($item);
         }
 
         // Refresh
@@ -137,7 +139,7 @@ class PHPlot extends Chart
         // add an empty string and the timestamp to the beginning of each data array
         $t = Arr::get($this->data, 'times', []);
         array_walk($item['values'], function (&$v, $k) use ($t) {
-            if (!$time = Arr::get($t, $k, 0)) {
+            if (!$time = Arr::get($t, $k)) {
                 error_log('plot() time not found for index '.$k);
             }
             array_unshift($v, '', $time);
@@ -269,6 +271,7 @@ class PHPlot extends Chart
     protected function mode_linepoints(array &$item)
     {
         $this->colors = ['#ff000010', '#00ff0050'];
+        $this->_plot->SetYLabelType('data', 2);         // precision
         $this->label = array_merge($this->label, ['']);
         $signals = $values = [];
         foreach ($item['values'] as $k => $v) {
@@ -312,6 +315,7 @@ class PHPlot extends Chart
         $this->_plot->SetTickLabelColor($this->colors[1]);
 
         $this->_plot->SetXTickLabelPos('none');
+        $this->_plot->SetXAxisPosition(0);
 
 
         $this->_plot->SetDataType('text-data');
@@ -321,7 +325,7 @@ class PHPlot extends Chart
         // gap, within the space allocated to the group (see group_frac_width).
         // Increasing this makes each group of bars shrink together. Decreasing
         // this makes the group of bars expand within the allocated space.
-        $this->_plot->bar_extra_space = 0;
+        $this->_plot->bar_extra_space = .1;
 
         //Controls the amount of available space used by each bar group. Default is
         // 0.7, meaning the group of bars fills 70% of the available space (but that
@@ -337,11 +341,21 @@ class PHPlot extends Chart
         // If bar_extra_space=0, group_frac_width=1, and bar_width_adjust=1 then
         // all the bars touch (within each group, and adjacent groups).
 
+        // 3D look
+        $this->_plot->SetShading('none');
 
         // convert ['', time, value...] to [time, value]
-        $item['values'] = array_map(function ($v) {
+        // check if nonzero value exists
+        $nonzero = false;
+        $item['values'] = array_map(function ($v) use (&$nonzero) {
+            $nonzero = !$nonzero && $v[2];
             return [$v[1], $v[2]];
         }, $item['values']);
+
+        if (!$nonzero) {
+            //$item['max'] = 100;
+            //$item['values'][count($item['values']) - 1][1] = 50;
+        }
         //dump($item);
         $this->setWorld([
             'xmin' => -0.5,
@@ -366,7 +380,6 @@ class PHPlot extends Chart
                 );
             }
         }
-        $this->_plot->SetShading('none');
         return $this;
     }
 
@@ -590,7 +603,7 @@ class PHPlot extends Chart
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->SetTickLabelColor('#555555');
 
-        $this->_plot->SetYLabelType('data', 0); // precision
+        $this->_plot->SetYLabelType('data', $this->getParam('precision', 0)); // precision
         $this->_plot->SetMarginsPixels(30, 30, 15);
         $this->_plot->SetLegendStyle('left', 'left');
         //$this->_plot->SetLegendUseShapes(true);
@@ -636,22 +649,22 @@ class PHPlot extends Chart
         $this->setParam('width', isset($request->width) ? $request->width : 0);
         $this->setParam('height', isset($request->height) ? $request->height : 0);
         $candles = $this->getCandles();
-        foreach (['start', 'end', 'resolution', 'limit', 'exchange', 'symbol'] as $param) {
+        foreach (['start', 'end', 'limit', 'exchange', 'symbol', 'resolution'] as $param) {
             if (isset($request->$param)) {
                 $candles->setParam($param, $request->$param);
             }
         }
         if (isset($request->command)) {
-            $this->handleCommand($request->command, (array)json_decode($request->args));
+            $args = is_null($args = json_decode($request->args, true)) ? [] : $args;
+            $this->handleCommand($request->command, $args);
         }
-        return $this->getImage();
-
+        return $this;
     }
 
 
 
 
-    private function handleCommand(string $command, array $args = [])
+    protected function handleCommand(string $command, array $args = [])
     {
         //error_log('Command: '.$command.' args: '.serialize($args));
         $candles = $this->getCandles();
