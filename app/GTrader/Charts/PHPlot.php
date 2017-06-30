@@ -310,7 +310,7 @@ class PHPlot extends Chart
             $this->_plot->SetYDataLabelPos('plotin');
             return $this;
         }
-        $this->colors = self::nextColor();
+        $this->colors = [self::nextColor()];
         $this->_plot->SetPointShapes('dot');
         $this->_plot->SetPointSizes(5);
         return $this;
