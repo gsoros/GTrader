@@ -33,7 +33,7 @@ class PHPlot extends Chart
 
 
     public function getImage()
-    {
+    {   //dd($this->getIndicators());
         // Init
         $candles = $this->getCandles();
         if (!$this->initPlot()) {

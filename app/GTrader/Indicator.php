@@ -191,9 +191,9 @@ abstract class Indicator //implements \JsonSerializable
             $output = array_pop($chunks);
             $stripped = join('', $chunks);
         }
-        if (!is_null($o = json_decode($stripped))) {
-            $class = isset($o->class) ? $o->class : '';
-            $params = isset($o->params) ? ['indicator' => (array)$o->params] : [];
+        if (!is_null($o = json_decode($stripped, true))) {
+            $class = isset($o['class']) ? $o['class'] : '';
+            $params = isset($o['params']) ? ['indicator' => $o['params']] : [];
             $cache[$signature] = [
                 'class' => $class,
                 'params' => $params,
@@ -389,18 +389,24 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
+
+
     public static function signatureSame(string $sig_a, string $sig_b)
     {
-        if (Indicator::getClassFromSignature($sig_a)
-            !== Indicator::getClassFromSignature($sig_b)) {
+        error_log('comparing '.$sig_a.' to '.$sig_b);
+        if (self::getClassFromSignature($sig_a)
+            !== self::getClassFromSignature($sig_b)) {
             return false;
         }
-        if (Indicator::getParamsFromSignature($sig_a)
-            !== Indicator::getParamsFromSignature($sig_b)) {
+        if (self::getParamsFromSignature($sig_a)
+            !== self::getParamsFromSignature($sig_b)) {
             return false;
         }
+        error_log('same');
         return true;
     }
+
+
 
     public function getOutputArray(
         string $index_type = 'sequential',
