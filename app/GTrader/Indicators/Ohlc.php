@@ -8,7 +8,7 @@ class Ohlc extends HasInputs
 {
     public function key(string $output = '')
     {
-        if ('line' === $this->getParam('indicator.mode')) {
+        if ('linepoints' === $this->getParam('indicator.mode')) {
             return $this->getCandles()->key($this->getInput());
         }
         if ('ha' === $this->getParam('indicator.mode')) {
@@ -28,7 +28,7 @@ class Ohlc extends HasInputs
 
     public function getInput(string $name = null)
     {
-        if ('line' === $this->getParam('indicator.mode')) {
+        if ('linepoints' === $this->getParam('indicator.mode')) {
             return $this->getParam('indicator.input_open');
         }
         return parent::getInput($name);
@@ -36,7 +36,7 @@ class Ohlc extends HasInputs
 
     public function getOutputs()
     {
-        if ('line' === $this->getParam('indicator.mode')) {
+        if ('linepoints' === $this->getParam('indicator.mode')) {
             return [''];
         }
         return parent::getOutputs();
@@ -46,7 +46,7 @@ class Ohlc extends HasInputs
     {
         $mode = $this->getParam('indicator.mode');
         $mode_label = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
-        if ('line' === $mode) {
+        if ('linepoints' === $mode) {
             $except = ['mode', 'input_high', 'input_low', 'input_close'];
             $mode_label = 'Price';
         }
@@ -141,11 +141,16 @@ class Ohlc extends HasInputs
             !isset($in_0['close'])) {
             return $in_1;
         }
+        $open = ($in_0['open'] + $in_0['close']) / 2;
+        $close = ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4;
+        $high = max($in_1['high'], $open, $close);
+        $low = min($in_1['low'], $open, $close);
+
         return [
-            'open' => ($in_0['open'] + $in_0['close']) / 2,
-            'high' => max($in_1['open'], $in_1['high'], $in_1['close']),
-            'low' => min($in_1['low'], $in_1['open'], $in_1['close']),
-            'close' => ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4
+            'open' => $open,
+            'high' => $high,
+            'low' => $low,
+            'close' => $close,
         ];
     }
 }

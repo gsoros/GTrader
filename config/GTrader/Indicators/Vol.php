@@ -4,12 +4,6 @@ return [
     'indicator' => [
         'input_source' => 'volume',
     ],
-    'adjustable' => [
-        'input_source' => [
-            'name' => 'Source',
-            'type' => 'source',
-        ],
-    ],
     'display' => [
         'mode' => 'bars',
         'name' => 'Volume',

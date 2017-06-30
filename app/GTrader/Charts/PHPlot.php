@@ -96,35 +96,38 @@ class PHPlot extends Chart
     }
 
 
-    public function createImageMap(array $item)
+    public function createImageMap(array &$item)
     {
         if ($this->image_map ||
             in_array('map', $this->getParam('disabled', [])) ||
             'Ohlc' !== $item['class']) {
             return $this;
         }
-        if (1000 < count($item['values'])) {
+        if ($this->getParam('width') < count($item['values'])) {
+            $item['label'] .= ' imagemap: too many data points';
             return $this;
         }
         $times = Arr::get($this->data, 'times', [0]);
         $image_map =& $this->image_map;
+        $radius = $this->getParam('width', 100) / count($item['values']);
+        $radius = 5 <= $radius ? floor($radius) : 5;
         $this->_plot->SetCallback(
             'data_points',
             function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use
-                (&$image_map, $times, $item) {
-                //dump($row);
+                (&$image_map, $times, $item, $radius) {
+                //dd($row);
                 $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
                 $title .= ('rect' == $shape) ?
                     "\nO: ".$item['values'][$row][2]
                     ."\nH: ".$item['values'][$row][3]
                     ."\nL: ".$item['values'][$row][4]
                     ."\nC: ".$item['values'][$row][5] :
-                    "\nC: ".$item['values'][$row][2];
+                    "\nO: ".$item['values'][$row][2];
                 $href = "javascript:console.log('".$times[$row]."')";
                 if ('rect' == $shape) {
-                    $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
+                    $coords = sprintf('%d,%d,%d,%d', $x1, $y1, $x2, $y2);
                 } else {
-                    $coords = sprintf("%d,%d,%d", $x1, $y1, 20);
+                    $coords = sprintf('%d,%d,%d', $x1, $y1, $radius);
                     $shape = 'circle';
                 }
                 $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
@@ -198,7 +201,7 @@ class PHPlot extends Chart
             $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
             if (2 > $this->getParam('width', 1) / $num_candles) {
                 $item['num_outputs'] = 1;
-                $item['mode'] = 'line';
+                $item['mode'] = 'linepoints';
                 // remove all but the first 3 data elements
                 $item['values'] = array_map(function ($v) {
                     return [$v[0], $v[1], $v[2]];
@@ -211,26 +214,27 @@ class PHPlot extends Chart
         $this->_plot->SetLineWidths(2);
         $this->colors = [];
         $this->_plot->setPointShapes('none');
-        $this->label = array_merge(
-            [$item['label']],
-            array_fill(0, $item['num_outputs'] - 1, '')
-        );
 
         switch ($item['mode']) {
             case 'candlestick':
-                $this->mode_candlestick($item);
                 $this->createImageMap($item);
+                $this->mode_candlestick($item);
                 break;
             case 'linepoints':
+                $this->createImageMap($item);
                 $this->mode_linepoints($item);
                 break;
             case 'bars':
                 $this->mode_bars($item);
                 break;
-            default:
+            default: // line
                 $this->mode_line($item);
         }
 
+        $this->label = array_merge(
+            [$item['label']],
+            array_fill(0, $item['num_outputs'] - 1, '')
+        );
         $this->_plot->SetLegend($this->label);
         $this->_plot->SetLegendPixels(35, self::nextLegendY($item['num_outputs']));
         $this->_plot->setDataColors($this->colors);
@@ -267,42 +271,48 @@ class PHPlot extends Chart
         return $this;
     }
 
-    // Signals
+    // Signals, Ohlc or Vol
     protected function mode_linepoints(array &$item)
     {
-        $this->colors = ['#ff000010', '#00ff0050'];
-        $this->_plot->SetYLabelType('data', 2);         // precision
-        $this->label = array_merge($this->label, ['']);
-        $signals = $values = [];
-        foreach ($item['values'] as $k => $v) {
-            if (isset($v[2]['signal'])) {
-                $signals[] = $v[2]['signal'];
-                $values[] = ['', $v[1], round($v[2]['price'], 2)];
-            }
-        }
-        $item['values'] = $values;
-        $this->_plot->SetCallback(
-            'data_color',
-            function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
-                //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                $s = isset($signals[$row]) ? $signals[$row] : null;;
-                if ('long' === $s) {
-                    return (0 === $extra) ? 0 : 1;
-                } elseif ('short' === $s) {
-                    return (0 === $extra) ? 1 : 0;
+        if ('Signals' === $item['class']) {
+            $this->colors = ['#ff000010', '#00ff0050'];
+            $this->_plot->SetYLabelType('data', 2);         // precision
+            $this->label = array_merge($this->label, ['']);
+            $signals = $values = [];
+            foreach ($item['values'] as $k => $v) {
+                if (isset($v[2]['signal'])) {
+                    $signals[] = $v[2]['signal'];
+                    $values[] = ['', $v[1], round($v[2]['price'], 2)];
                 }
-                error_log('Unmatched signal');
             }
-        );
-        //dd($item);
-        $this->_plot->SetPointShapes('target');
-        $this->_plot->SetLineStyles(['dashed']);
-        $pointsize = floor($this->getParam('width', 1024) / 100);
-        if (5 > $pointsize) {
-            $pointsize = 5;
+            $item['values'] = $values;
+            $this->_plot->SetCallback(
+                'data_color',
+                function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
+                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
+                    $s = isset($signals[$row]) ? $signals[$row] : null;;
+                    if ('long' === $s) {
+                        return (0 === $extra) ? 0 : 1;
+                    } elseif ('short' === $s) {
+                        return (0 === $extra) ? 1 : 0;
+                    }
+                    error_log('Unmatched signal');
+                }
+            );
+            //dd($item);
+            $this->_plot->SetPointShapes('target');
+            $this->_plot->SetLineStyles(['dashed']);
+            $pointsize = floor($this->getParam('width', 1024) / 100);
+            if (5 > $pointsize) {
+                $pointsize = 5;
+            }
+            $this->_plot->SetPointSizes($pointsize);
+            $this->_plot->SetYDataLabelPos('plotin');
+            return $this;
         }
-        $this->_plot->SetPointSizes($pointsize);
-        $this->_plot->SetYDataLabelPos('plotin');
+        $this->colors = self::nextColor();
+        $this->_plot->SetPointShapes('dot');
+        $this->_plot->SetPointSizes(5);
         return $this;
     }
 
@@ -315,8 +325,6 @@ class PHPlot extends Chart
         $this->_plot->SetTickLabelColor($this->colors[1]);
 
         $this->_plot->SetXTickLabelPos('none');
-        $this->_plot->SetXAxisPosition(0);
-
 
         $this->_plot->SetDataType('text-data');
 
@@ -345,24 +353,18 @@ class PHPlot extends Chart
         $this->_plot->SetShading('none');
 
         // convert ['', time, value...] to [time, value]
-        // check if nonzero value exists
-        $nonzero = false;
-        $item['values'] = array_map(function ($v) use (&$nonzero) {
-            $nonzero = !$nonzero && $v[2];
+        $item['values'] = array_map(function ($v) {
             return [$v[1], $v[2]];
         }, $item['values']);
 
-        if (!$nonzero) {
-            //$item['max'] = 100;
-            //$item['values'][count($item['values']) - 1][1] = 50;
-        }
-        //dump($item);
         $this->setWorld([
             'xmin' => -0.5,
             'xmax' => count($item['values'])+0.5,
             'ymin' => 0,
             'ymax' => $item['max'] * 2,
         ]);
+        $this->_plot->SetXAxisPosition(0);
+
         // get rising/falling data from Roc(close)
         if ($roc = $this->getOrAddIndicator('Roc',
             ['indicator' => ['input_source' => 'close']]
