@@ -18,7 +18,7 @@ class PHPlot extends Chart
     protected $image_map;
 
     protected $colors = [];
-    protected $label;
+    protected $label = [];
     protected $debug = [];
 
 
@@ -106,7 +106,9 @@ class PHPlot extends Chart
             return $this;
         }
         if ($this->getParam('width') < count($item['values'])) {
-            $item['label'] .= ' imagemap: too many data points';
+            if (isset($item['label'][0])) {
+                $item['label'][0] .= ' imagemap: too many data points';
+            }
             return $this;
         }
         $times = Arr::get($this->data, 'times', [0]);
