@@ -62,13 +62,14 @@ class PHPlot extends Chart
             'ymin' => Arr::get($this->data, 'left.min', 0),
             'ymax' => Arr::get($this->data, 'left.max', 0),
         ]);
-        foreach (Arr::get($this->data, 'left.items', []) as $item) {
+        foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
             $this->setYAxis('left');
+            $this->setPlotElements('left', $index);
             $this->plot($item);
         }
 
         // Plot items on right Y-axis
-        foreach (Arr::get($this->data, 'right.items', []) as $item) {
+        foreach (Arr::get($this->data, 'right.items', []) as $index => $item) {
             $this->setYAxis('right');
             $this->setWorld([
                 'xmin' => $this->getParam('xmin'),
@@ -76,7 +77,8 @@ class PHPlot extends Chart
                 'ymin' => Arr::get($item, 'min', 0),
                 'ymax' => Arr::get($item, 'max', 0),
             ]);
-            $this->plot($item);
+            $this->setPlotElements('right', $index);
+            $this->plot($item, 'right', $index);
         }
 
         // Refresh
@@ -87,13 +89,48 @@ class PHPlot extends Chart
 
         //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
         return $map.'<img class="img-responsive" src="'.
-                $this->_plot->EncodeImage().'"'.$map_str.'>'.$refresh;
+                $this->_plot->EncodeImage().'"'.$map_str.'>'.
+                $refresh;
     }
 
 
+    public function createImageMap(array $item)
+    {
+        if ($this->image_map ||
+            in_array('map', $this->getParam('disabled', [])) ||
+            'Ohlc' !== $item['class']) {
+            return $this;
+        }
+        $times = Arr::get($this->data, 'times', [0]);
+        $image_map =& $this->image_map;
+        $this->_plot->SetCallback(
+            'data_points',
+            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use
+                (&$image_map, $times, $item) {
+                //dump($row);
+                $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
+                $title .= ('rect' == $shape) ?
+                    "\nO: ".$item['values'][$row][2]
+                    ."\nH: ".$item['values'][$row][3]
+                    ."\nL: ".$item['values'][$row][4]
+                    ."\nC: ".$item['values'][$row][5] :
+                    "\nC: ".$item['values'][$row][2];
+                $href = "javascript:console.log('".$times[$row]."')";
+                if ('rect' == $shape) {
+                    $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
+                } else {
+                    $coords = sprintf("%d,%d,%d", $x1, $y1, 10);
+                    $shape = 'circle';
+                }
+                $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
+                           .  " title=\"$title\" href=\"$href\">\n";
+            }
+        );
+        return $this;
+    }
+
     public function plot(array $item)
     {
-
         // add an empty string and the timestamp to the beginning of each data array
         $t = Arr::get($this->data, 'times', []);
         array_walk($item['values'], function (&$v, $k) use ($t) {
@@ -150,9 +187,6 @@ class PHPlot extends Chart
         // Line, linepoints and candlesticks use 'data-data'
         $this->_plot->SetDataType('data-data');
 
-        // clear settings from prev items
-        $this->setPlotElements();
-
         // Set bar and candlesticks to line if it's too dense
         if (in_array($item['mode'], ['candlestick', 'bars'])) {
             $item['num_outputs'] = 2;
@@ -180,6 +214,7 @@ class PHPlot extends Chart
         switch ($item['mode']) {
             case 'candlestick':
                 $this->mode_candlestick($item);
+                $this->createImageMap($item);
                 break;
             case 'linepoints':
                 $this->mode_linepoints($item);
@@ -471,18 +506,23 @@ class PHPlot extends Chart
     protected function getRefreshString()
     {
         $refresh = null;
-        if ($this->getParam('autorefresh') &&
-            ($refresh = $this->getParam('refresh'))) {
-            $refresh = "<script>window.waitForFinalEvent(function () {window.".
-                $this->getParam('name').".refresh()}, ".
-                ($refresh * 1000).", 'refresh".
-                $this->getParam('name')."');";
-            if ($this->last_close) {
-                $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
-                                \Config::get('app.name', 'GTrader')."';";
-            }
-            $refresh .= '</script>';
+        if (!$this->getParam('autorefresh') ||
+            !($refresh = $this->getParam('refresh'))) {
+            return null;
         }
+        if ($this->getCandles()->getParam('end')) {
+            return null;
+        }
+        $refresh = "<script>window.waitForFinalEvent(function () {window.".
+            $this->getParam('name').".refresh()}, ".
+            ($refresh * 1000).", 'refresh".
+            $this->getParam('name')."');";
+        if ($this->last_close) {
+            $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
+                \Config::get('app.name', 'GTrader')."';";
+        }
+        $refresh .= '</script>';
+
         return $refresh;
     }
 
@@ -516,24 +556,34 @@ class PHPlot extends Chart
     }
 
 
-    protected function setPlotElements()
+    protected function setPlotElements(string $dir = 'left', int $index = null)
     {
+        if ('left' === $dir) {
+            $first = !boolval($index);
+            $this->_plot->SetDrawXGrid($first);         // X grid lines
+            $this->_plot->SetDrawYGrid($first);         // Y grid lines
+            $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
+        } else {
+            $this->_plot->SetDrawXGrid(false);
+            $this->_plot->SetDrawYGrid(false);
+            $this->_plot->SetXTickLabelPos('none');
+        }
+
+
         $this->_plot->RemoveCallback('data_color');
+        $this->_plot->RemoveCallback('data_points');
 
         $this->_plot->SetPlotBorderType('none');    // plot area border
 
         $this->_plot->SetDrawXAxis(false);          // X axis line
-        $this->_plot->SetDrawXGrid(true);           // X grid lines
         $this->_plot->SetXTickPos('none');          // X tick marks
-        $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
         $this->_plot->SetXDataLabelPos('none');     // X data labels
 
         $this->_plot->SetDrawYAxis(false);          // Y axis line
-        $this->_plot->SetDrawYGrid(true);           // Y grid lines
 
         $this->_plot->SetYDataLabelPos('none');
         $this->_plot->SetLineStyles(['solid']);
-        $this->_plot->SetTickLabelColor('#999999');
+        $this->_plot->SetTickLabelColor('#555555');
 
         $this->_plot->SetYLabelType('data', 0); // precision
         $this->_plot->SetMarginsPixels(30, 30, 15);
@@ -555,7 +605,7 @@ class PHPlot extends Chart
     protected function setColors()
     {
         $this->_plot->SetBackgroundColor('black');
-        $this->_plot->SetLegendBgColor('DimGrey:120');
+        $this->_plot->SetLegendBgColor('black:50');
         $this->_plot->SetGridColor('DarkGreen:100');
         $this->_plot->SetLightGridColor('DimGrey:110');
         $this->_plot->setTitleColor('DimGrey:80');

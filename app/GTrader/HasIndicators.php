@@ -431,11 +431,14 @@ trait HasIndicators
             }
             else if ('source' === $type) {
                 $val = urldecode($val);
+                // TODO is this still needed? /////////////////////////
                 $indicator->setParam('depends', []);
                 $dependency = $this->getOrAddIndicator($val);
                 if (is_object($dependency)) {
                     $indicator->setParam('depends', [$dependency]);
                 }
+                ///////////////////////////////////////////////////////
+
             }
             $indicator->setParam('indicator.'.$key, $val);
         }

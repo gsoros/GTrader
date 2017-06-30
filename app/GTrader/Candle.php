@@ -14,6 +14,21 @@ class Candle extends Model
      */
     public $timestamps = false;
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+
+    protected $casts = [
+        'time' => 'int',
+        'open' => 'float',
+        'close' => 'float',
+        'high' => 'float',
+        'low' => 'float',
+        'volume' => 'int',
+    ];
+
 
     public function save(array $options = [])
     {

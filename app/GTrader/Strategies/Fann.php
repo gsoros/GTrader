@@ -732,7 +732,7 @@ class Fann extends Strategy
             }
             error_log('Fann::getInputGroups() unknown mode in '.json_encode($norm_params).' for '.$sig);
         }
-        //echo 'getInputGroups() groups: '; print_r($groups); exit;
+        //dump($groups);
         $this->cache('input_groups', $groups);
         return $groups;
     }

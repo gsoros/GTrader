@@ -146,7 +146,7 @@ class Ht extends Trader
             error_log('Ht::traderCalc() '.$func.' returned false');
             return [];
         }
-        //dd($values);
+        //dd($args, $values);
         //dd($this->getParams());
         return 1 < count($this->getParam('outputs', [])) ? $values : [$values];
     }

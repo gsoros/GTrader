@@ -30,9 +30,9 @@ class FannPrediction extends Indicator
             return $this;
         }
 
-        $strategy->runInputIndicators($force_rerun);
-
         $sample_size = $strategy->getSampleSize();
+
+        $strategy->runInputIndicators($force_rerun);
 
         $prediction = [];
 

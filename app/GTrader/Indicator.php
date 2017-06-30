@@ -320,11 +320,12 @@ abstract class Indicator //implements \JsonSerializable
         }
         //dump('checkAndRun() '.$this->getShortClass().' '.$this->getParam('display.y_axis_pos'));
 
-        $depends = $this->getParam('depends');
-        if (is_array($depends)) {
+        // TODO is this still used??
+        if (is_array($depends = $this->getParam('depends'))) {
             if (count($depends)) {
                 foreach ($depends as $indicator) {
                     if ($indicator !== $this) {
+                        //dump('checkAndRun() '.$this->getShortClass().' -> '.$indicator->getShortClass());
                         $indicator->addRef($this);
                         $indicator->checkAndRun($force_rerun);
                     }
@@ -394,7 +395,7 @@ abstract class Indicator //implements \JsonSerializable
 
     public static function signatureSame(string $sig_a, string $sig_b)
     {
-        error_log('comparing '.$sig_a.' to '.$sig_b);
+
         if (self::getClassFromSignature($sig_a)
             !== self::getClassFromSignature($sig_b)) {
             return false;
@@ -403,7 +404,7 @@ abstract class Indicator //implements \JsonSerializable
             !== self::getParamsFromSignature($sig_b)) {
             return false;
         }
-        error_log('same');
+
         return true;
     }
 
