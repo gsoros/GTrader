@@ -106,9 +106,7 @@ class PHPlot extends Chart
             return $this;
         }
         if ($this->getParam('width') < count($item['values'])) {
-            if (isset($item['label'][0])) {
-                $item['label'][0] .= ' imagemap: too many data points';
-            }
+            $item['label'] .= ' imagemap: too many data points';
             return $this;
         }
         $times = Arr::get($this->data, 'times', [0]);
