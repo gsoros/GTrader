@@ -19,6 +19,7 @@ class PHPlot extends Chart
 
     protected $colors = [];
     protected $label;
+    protected $debug = [];
 
 
     public function toHTML(string $content = '')
@@ -86,6 +87,7 @@ class PHPlot extends Chart
         // Refresh
         $refresh = $this->getRefreshString();
 
+        //dump($this->debug);
         // Map
         list ($map, $map_str) = $this->getImageMapStrings();
 
@@ -155,6 +157,9 @@ class PHPlot extends Chart
             error_log('PHPlot::plot() no data values for '.$item['label']);
             return $this;
         }
+
+        //dump($item, $this->colors);
+        $this->_plot->setDataColors($this->colors);
 
         $this->_plot->SetDataValues($item['values']);
 
@@ -237,7 +242,7 @@ class PHPlot extends Chart
         );
         $this->_plot->SetLegend($this->label);
         $this->_plot->SetLegendPixels(35, self::nextLegendY($item['num_outputs']));
-        $this->_plot->setDataColors($this->colors);
+
         return $this;
     }
 
@@ -312,7 +317,7 @@ class PHPlot extends Chart
         }
         $this->colors = [self::nextColor()];
         $this->_plot->SetPointShapes('dot');
-        $this->_plot->SetPointSizes(5);
+        $this->_plot->SetPointSizes(1);
         return $this;
     }
 
@@ -401,6 +406,9 @@ class PHPlot extends Chart
 
     protected function setHighlight(array $item)
     {
+        if ('Ohlc' !== $item['class']) {
+            return $this;
+        }
         $highlight = $this->getParam('highlight', []);
         if (!count($highlight)) {
             return $this;
@@ -411,6 +419,7 @@ class PHPlot extends Chart
         $this->colors = array_merge($this->colors, $highlight_colors);
         $highlight_color_count = count($highlight_colors);
 
+        $debug = &$this->debug;
         $this->_plot->SetCallback(
             'data_color',
             function (
@@ -422,7 +431,8 @@ class PHPlot extends Chart
                 $highlight,
                 $item,
                 $times,
-                $highlight_color_count
+                $highlight_color_count,
+                &$debug
             ) {
                 $return = ('candlestick' === $item['mode']) ? 1 : 0;
                 $high_index = 0;
@@ -431,11 +441,11 @@ class PHPlot extends Chart
                         $return = (('candlestick' === $item['mode']) ? 4 : 1) + $high_index;
                         $high_index ++;
                     }
-                    $high_index ++;
-                    if ($high_index > $highlight_color_count) {
+                    if ($high_index++ > $highlight_color_count) {
                         $high_index = 0;
                     }
                 }
+                $debug['highlight'][$row] = $return;
                 return $return;
             }
         );
