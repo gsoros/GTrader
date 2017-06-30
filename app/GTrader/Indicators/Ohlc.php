@@ -132,14 +132,17 @@ class Ohlc extends HasInputs
 
     protected function heikinashi(array $in_1, array $in_0 = null)
     {
-        if (is_null($in_0)) {
-            return $in_1;
-        }
-        if (!isset($in_0['open']) ||
+        if (is_null($in_0) ||
+            !isset($in_0['open']) ||
             !isset($in_0['high']) ||
             !isset($in_0['low']) ||
             !isset($in_0['close'])) {
-            return $in_1;
+            return [
+                'open' => ($in_1['open'] + $in_1['close']) / 2,
+                'high' => $in_1['high'],
+                'low' => $in_1['low'],
+                'close' => ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4,
+            ];
         }
         $open = ($in_0['open'] + $in_0['close']) / 2;
         $close = ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4;

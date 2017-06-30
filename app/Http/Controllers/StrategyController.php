@@ -51,10 +51,12 @@ class StrategyController extends Controller
         }
         $strategy = Strategy::make(
             $request->strategyClass,
-            [   'id' => 'new',
+            [
+                'id' => 'new',
                 'user_id' => $user_id,
                 'name' => $name,
-                'description' => $request->strategyClass.' strategy']
+                'description' => $request->strategyClass.' strategy'
+            ]
         );
         $strategy->save();
         $form = $strategy->toHTML();
@@ -439,5 +441,12 @@ class StrategyController extends Controller
             'training' => $training
         ]);
         return response($html, 200);
+    }
+
+
+    public function sample(Request $request)
+    {
+        dump($request->all());
+        return response('OK', 200);
     }
 }

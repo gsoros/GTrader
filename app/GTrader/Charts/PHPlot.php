@@ -49,8 +49,7 @@ class PHPlot extends Chart
         }
 
         $this->setTitle()
-            ->setColors()
-            ->setPlotElements();
+            ->setColors();
 
         $t = Arr::get($this->data, 'times', [0]);
 
@@ -281,7 +280,7 @@ class PHPlot extends Chart
     {
         if (stristr($item['class'], 'Signals')) {
             $this->colors = ['#ff000010', '#00ff0050'];
-            $this->_plot->SetYLabelType('data', 2);         // precision
+            $this->_plot->SetYDataLabelType('data', 2);         // precision
             $this->label = array_merge($this->label, ['']);
             $signals = $values = [];
             foreach ($item['values'] as $k => $v) {
