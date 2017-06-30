@@ -318,6 +318,7 @@ abstract class Indicator //implements \JsonSerializable
             //error_log($this->getSignature().' has already run');
             return $this;
         }
+        //dump('checkAndRun() '.$this->getShortClass().' '.$this->getParam('display.y_axis_pos'));
 
         $depends = $this->getParam('depends');
         if (is_array($depends)) {
@@ -462,6 +463,7 @@ abstract class Indicator //implements \JsonSerializable
             }
             $min = min($min, min($v));
         });
+        //dump('Min '.$this->getShortClass().': '.$min);
         return $min;
     }
 
@@ -478,6 +480,7 @@ abstract class Indicator //implements \JsonSerializable
             }
             $max = max($max, max($v));
         });
+        //dump('Max '.$this->getShortClass().': '.$max);
         return $max;
     }
 }

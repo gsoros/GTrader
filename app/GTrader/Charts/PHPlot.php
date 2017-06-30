@@ -440,9 +440,9 @@ class PHPlot extends Chart
 
             // find min and max
             $values_min = $ind->min($item['values']);
-            $values_min = is_null($values_min) ? null : $this->min(Arr::get($item, 'min'), $values_min);
+            // WTF? $values_min = is_null($values_min) ? null : $this->min(Arr::get($item, 'min'), $values_min);
             $values_max = $ind->max($item['values']);
-            $values_max = is_null($values_max) ? null : $this->max(Arr::get($item, 'max'), $values_max);
+            // WTF? $values_max = is_null($values_max) ? null : $this->max(Arr::get($item, 'max'), $values_max);
 
             // Left Y-axis needs to know 'global' min and max
             if ('left' === $dir) {

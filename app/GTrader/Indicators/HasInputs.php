@@ -123,6 +123,7 @@ abstract class HasInputs extends Indicator
     }
 
 
+    // TOOD !!! side effects !!! this method should not modify y_axis_pos etc
     public function runDependencies(bool $force_rerun = false)
     {
         $inputs = $this->getInputs();

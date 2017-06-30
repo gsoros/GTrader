@@ -8,20 +8,18 @@ use GTrader\Series;
 /** Hilbert Transform */
 class Ht extends Trader
 {
-    protected $init_done;
+    protected $init_done = false;
 
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->init_done = false;
         //$this->init();
     }
 
     public function __wakeup()
     {
         parent::__wakeup();
-        $this->init_done = false;
-        $this->init();
+        $this->init(true);
     }
 
 
@@ -32,12 +30,14 @@ class Ht extends Trader
         }
         $this->init_done = true;
 
+        // get the selected mode
         $mode = $this->getParam('indicator.mode');
         if (!is_array($sel = $this->getParam('modes.'.$mode))) {
             error_log('Ht::init() mode not found: '.$mode);
             return $this;
         }
 
+        // set y-axis-pos according to the selected mode
         if ($ypos = Arr::get($sel, 'display.y_axis_pos')) {
             if (in_array($ypos, array_keys($this->getInputs()))) {
                 if ($input = $this->getInput($ypos)) {
@@ -50,6 +50,8 @@ class Ht extends Trader
             }
             $this->setParam('display.y_axis_pos', $ypos);
         }
+
+        // set normalize settings according to the selected mode
         if ($norm = Arr::get($sel, 'normalize')) {
             if (is_string($norm)) {
                 if (in_array($norm, array_keys($this->getInputs()))) {
@@ -67,7 +69,7 @@ class Ht extends Trader
             }
         }
 
-        $this->setParam('outputs', isset($sel['outputs']) ? $sel['outputs'] : ['']);
+        $this->setParam('outputs', Arr::get($sel, 'outputs', ['']));
 
         return $this;
     }
@@ -87,6 +89,21 @@ class Ht extends Trader
         }
         return $active_inputs;
     }
+
+
+    public function runDependencies(bool $force_rerun = false)
+    {
+        if (! $inds = $this->getOrAddInputIndicators()) {
+            //error_log('HT::runDependencies() could not getOrAdd input indicators for '.get_class($this));
+            return $this;
+        }
+        foreach ($inds as $ind) {
+            $ind->addRef($this);
+            $ind->checkAndRun($force_rerun);
+        }
+        return $this;
+    }
+
 
     public function getDisplaySignature(string $format = 'long')
     {
@@ -129,7 +146,7 @@ class Ht extends Trader
             error_log('Ht::traderCalc() '.$func.' returned false');
             return [];
         }
-        //dd($args);
+        //dd($values);
         //dd($this->getParams());
         return 1 < count($this->getParam('outputs', [])) ? $values : [$values];
     }
