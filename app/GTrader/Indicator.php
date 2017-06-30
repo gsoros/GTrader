@@ -409,6 +409,11 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
+    public function getOutputs()
+    {
+        return $this->getParam('outputs', ['']);
+    }
+
 
     public function getOutputArray(
         string $index_type = 'sequential',
@@ -422,7 +427,7 @@ abstract class Indicator //implements \JsonSerializable
         $this->checkAndRun();
         $sig = $this->getSignature();
         $r = null;
-        foreach ($this->getParam('outputs', ['']) as $output) {
+        foreach ($this->getOutputs() as $output) {
             $arr = $candles->extract(
                 $output ? $sig.':::'.$output : $sig,
                 $index_type,

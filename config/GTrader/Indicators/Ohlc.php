@@ -31,6 +31,7 @@ return [
             'options' => [
                 'candlestick' => 'Candlesticks',
                 'ha' => 'Heikin Ashi',
+                'line' => 'Line',
             ],
         ],
     ],

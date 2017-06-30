@@ -101,6 +101,9 @@ class PHPlot extends Chart
             'Ohlc' !== $item['class']) {
             return $this;
         }
+        if (1000 < count($item['values'])) {
+            return $this;
+        }
         $times = Arr::get($this->data, 'times', [0]);
         $image_map =& $this->image_map;
         $this->_plot->SetCallback(
@@ -119,7 +122,7 @@ class PHPlot extends Chart
                 if ('rect' == $shape) {
                     $coords = sprintf("%d,%d,%d,%d", $x1, 1000, $x2, 0);
                 } else {
-                    $coords = sprintf("%d,%d,%d", $x1, $y1, 10);
+                    $coords = sprintf("%d,%d,%d", $x1, $y1, 20);
                     $shape = 'circle';
                 }
                 $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
@@ -192,7 +195,7 @@ class PHPlot extends Chart
             $item['num_outputs'] = 2;
             $num_candles = ($n = $this->getCandles()->size(true)) ? $n : 10;
             if (2 > $this->getParam('width', 1) / $num_candles) {
-                //$item['num_outputs'] = 1;
+                $item['num_outputs'] = 1;
                 $item['mode'] = 'line';
                 // remove all but the first 3 data elements
                 $item['values'] = array_map(function ($v) {
@@ -390,6 +393,7 @@ class PHPlot extends Chart
         $times = Arr::get($this->data, 'times', [0]);
 
         $highlight_colors = ['yellow', 'red', 'blue', 'orange', 'pink'];
+        $this->colors = array_merge($this->colors, $highlight_colors);
         $highlight_color_count = count($highlight_colors);
 
         $this->_plot->SetCallback(
@@ -407,8 +411,8 @@ class PHPlot extends Chart
             ) {
                 $return = ('candlestick' === $item['mode']) ? 1 : 0;
                 $high_index = 0;
-                foreach ($highlight as $high_range) {
-                    if (($times[$row] >= $high_range['start']) && ($times[$row] <= $high_range['end'])) {
+                foreach ($highlight as $range) {
+                    if (($times[$row] >= $range['start']) && ($times[$row] <= $range['end'])) {
                         $return = (('candlestick' === $item['mode']) ? 4 : 1) + $high_index;
                         $high_index ++;
                     }
@@ -529,12 +533,13 @@ class PHPlot extends Chart
 
     protected function getImageMapStrings()
     {
-        $map = $map_str = '';
-        if (!in_array('map', $this->getParam('disabled', []))) {
-            $map_name = 'map-'.$this->getParam('name');
-            $map = '<map name="'.$map_name.'">'.$this->image_map.'</map>';
-            $map_str = ' usemap="#'.$map_name.'"';
+        if (in_array('map', $this->getParam('disabled', [])) ||
+            !$this->image_map) {
+            return ['', ''];
         }
+        $map_name = 'map-'.$this->getParam('name');
+        $map = '<map name="'.$map_name.'">'.$this->image_map.'</map>';
+        $map_str = ' usemap="#'.$map_name.'"';
         return [$map, $map_str];
     }
 

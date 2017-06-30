@@ -80,7 +80,7 @@ trait HasIndicators
                 //error_log('getIndicator() bingo');
                 return $indicator;
             }
-            if (1 < count($outputs = $indicator->getParam('outputs', []))) {
+            if (1 < count($outputs = $indicator->getOutputs())) {
                 foreach ($outputs as $output) {
                     if ($existing_sig.':::'.$output === $signature) {
                         return $indicator;
@@ -470,8 +470,7 @@ trait HasIndicators
             if ($except_signature === ($sig = $ind->getSignature())) {
                 continue;
             }
-            $outputs = $ind->getParam('outputs');
-            if (1 >= count($outputs)) {
+            if (1 >= count($outputs = $ind->getOutputs())) {
                 $sources[$sig] = $ind->getDisplaySignature();
                 continue;
             }

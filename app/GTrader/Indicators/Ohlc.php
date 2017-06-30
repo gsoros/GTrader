@@ -8,6 +8,9 @@ class Ohlc extends HasInputs
 {
     public function key(string $output = '')
     {
+        if ('line' === $this->getParam('indicator.mode')) {
+            return $this->getCandles()->key($this->getInput());
+        }
         if ('ha' === $this->getParam('indicator.mode')) {
             return null;
         }
@@ -23,21 +26,47 @@ class Ohlc extends HasInputs
     }
 
 
+    public function getInput(string $name = null)
+    {
+        if ('line' === $this->getParam('indicator.mode')) {
+            return $this->getParam('indicator.input_open');
+        }
+        return parent::getInput($name);
+    }
+
+    public function getOutputs()
+    {
+        if ('line' === $this->getParam('indicator.mode')) {
+            return [''];
+        }
+        return parent::getOutputs();
+    }
+
     public function getDisplaySignature(string $format = 'long')
     {
         $mode = $this->getParam('indicator.mode');
-        $mode = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
-        $mode = $mode === 'Candlesticks' ? 'OHLC' : $mode;
-        if ('short' === $format) {
-            return $mode;
+        $mode_label = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
+        if ('line' === $mode) {
+            $except = ['mode', 'input_high', 'input_low', 'input_close'];
+            $mode_label = 'Price';
         }
-        $param_str = $this->getParamString(['mode']);
+        else if ('candlestick' === $mode) {
+            $except = ['mode'];
+            $mode_label = 'OHLC';
+        }
+        else if ('ha' === $mode) {
+            $except = ['mode'];
+        }
+        if ('short' === $format) {
+            return $mode_label;
+        }
+        $param_str = $this->getParamString($except);
         foreach ($this->getInputs() as $k => $v) {
             if (substr($k, 6) !== $v) { // not default?
-                return $mode.' ('.$param_str.')' ;
+                return $mode_label.' ('.$param_str.')' ;
             }
         }
-        return $mode;
+        return $mode_label;
     }
 
     public function runDependencies(bool $force_rerun = false)
@@ -47,26 +76,39 @@ class Ohlc extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        if ('ha' !== $this->getParam('indicator.mode')) {
+        if ('ha' !== $mode = $this->getParam('indicator.mode', 'candlestick')) {
+            $this->setParam('display.mode', $mode);
             return false;
         }
+        $this->setParam('display.mode', 'candlestick');
         $sig = $this->getSignature();
         $candles = $this->getCandles();
 
-        $key_open = $candles->key($sig.':::Open');
-        $key_high = $candles->key($sig.':::High');
-        $key_low = $candles->key($sig.':::Low');
-        $key_close = $candles->key($sig.':::Close');
+        $in_key_open = $candles->key($this->getInput('input_open'));
+        $in_key_high = $candles->key($this->getInput('input_high'));
+        $in_key_low = $candles->key($this->getInput('input_low'));
+        $in_key_close = $candles->key($this->getInput('input_close'));
+
+        $out_key_open = $candles->key($this->getSignature().':::Open');
+        $out_key_high = $candles->key($this->getSignature().':::High');
+        $out_key_low = $candles->key($this->getSignature().':::Low');
+        $out_key_close = $candles->key($this->getSignature().':::Close');
 
         reset($candles);
 
         $prev_c = null;
         foreach($candles as $c) {
-            $new_c = $this->heikinashi($this->candle2arr($c), $this->candle2arr($prev_c));
-            $c->$key_open = $new_c['open'];
-            $c->$key_high = $new_c['high'];
-            $c->$key_low = $new_c['low'];
-            $c->$key_close = $new_c['close'];
+
+            $new_c = $this->heikinashi(
+                $this->candle2arr($c, $in_key_open, $in_key_high, $in_key_low, $in_key_close),
+                $this->candle2arr($prev_c, $in_key_open, $in_key_high, $in_key_low, $in_key_close)
+            );
+
+            $c->$out_key_open = $new_c['open'];
+            $c->$out_key_high = $new_c['high'];
+            $c->$out_key_low = $new_c['low'];
+            $c->$out_key_close = $new_c['close'];
+
             $prev_c = $c;
         }
 
@@ -75,35 +117,35 @@ class Ohlc extends HasInputs
 
 
 
-    protected function candle2arr(Candle $c = null)
+    protected function candle2arr(Candle $c = null, $key_open, $key_high, $key_low, $key_close)
     {
         if (is_null($c)) {
             return null;
         }
         return [
-            'open' => $c->open,
-            'high' => $c->high,
-            'low' => $c->low,
-            'close' => $c->close
+            'open' => $c->$key_open,
+            'high' => $c->$key_high,
+            'low' => $c->$key_low,
+            'close' => $c->$key_close,
         ];
     }
 
-    protected function heikinashi(array $candle, array $prev_candle = null)
+    protected function heikinashi(array $in_1, array $in_0 = null)
     {
-        if (is_null($prev_candle)) {
-            return $candle;
+        if (is_null($in_0)) {
+            return $in_1;
         }
-        if (!isset($prev_candle['open']) ||
-            !isset($prev_candle['high']) ||
-            !isset($prev_candle['low']) ||
-            !isset($prev_candle['close'])) {
-            return $candle;
+        if (!isset($in_0['open']) ||
+            !isset($in_0['high']) ||
+            !isset($in_0['low']) ||
+            !isset($in_0['close'])) {
+            return $in_1;
         }
         return [
-            'open' => ($prev_candle['open'] + $prev_candle['close']) / 2,
-            'high' => max($candle['open'], $candle['high'], $candle['close']),
-            'low' => min($candle['low'], $candle['open'], $candle['close']),
-            'close' => ($candle['open'] + $candle['high'] + $candle['low'] + $candle['close']) / 4
+            'open' => ($in_0['open'] + $in_0['close']) / 2,
+            'high' => max($in_1['open'], $in_1['high'], $in_1['close']),
+            'low' => min($in_1['low'], $in_1['open'], $in_1['close']),
+            'close' => ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4
         ];
     }
 }

@@ -148,7 +148,7 @@ class Ht extends Trader
         }
         //dd($args, $values);
         //dd($this->getParams());
-        return 1 < count($this->getParam('outputs', [])) ? $values : [$values];
+        return 1 < count($this->getOutputs()) ? $values : [$values];
     }
 
 

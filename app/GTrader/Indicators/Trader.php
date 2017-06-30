@@ -39,7 +39,7 @@ abstract class Trader extends HasInputs
             }
         }
 
-        foreach ($this->getParam('outputs', []) as $output_index => $output_name) {
+        foreach ($this->getOutputs() as $output_index => $output_name) {
             $name = $sig;
             if (strlen($output_name)) {
                 $name .= ':::'.$output_name;

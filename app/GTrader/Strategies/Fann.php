@@ -79,7 +79,7 @@ class Fann extends Strategy
             'height' => 200,
             'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
-        $ind = $chart->addIndicator('Ohlc');
+        $ind = $chart->addIndicator('Ohlc', ['indicator' => ['mode' => 'line']]);
         $ind->setParam('display.visible', true);
         $ind->addRef($chart);
         $chart->saveToSession();
@@ -116,7 +116,7 @@ class Fann extends Strategy
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
         ]);
-        $ind = $chart->addIndicator('Ohlc');
+        $ind = $chart->addIndicator('Ohlc', ['indicator' => ['mode' => 'line']]);
         $ind->setParam('display.visible', true);
         $ind->addRef($chart);
 
