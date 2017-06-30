@@ -17,7 +17,7 @@ class PHPlot extends Chart
     protected $last_close;
     protected $image_map;
 
-    protected $colors;
+    protected $colors = [];
     protected $label;
 
 
