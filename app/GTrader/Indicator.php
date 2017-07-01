@@ -409,6 +409,31 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
+    public function outputDependsOn(array $sigs = [], string $output = null)
+    {
+        if (!method_exists($this, 'getInputs')) {
+            return false;
+        }
+        if (count(array_intersect($inputs = $this->getInputs(), $sigs))) {
+            return true;
+        }
+        if (!$owner = $this->getOwner()) {
+            return false;
+        }
+        foreach ($inputs as $input) {
+            $o = self::getOutputFromSignature($input);
+            if ($i = $owner->getOrAddIndicator($input)) {
+                if ($i->outputDependsOn($sigs, $o)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
     public function getOutputs()
     {
         return $this->getParam('outputs', ['']);

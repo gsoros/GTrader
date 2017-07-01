@@ -482,7 +482,7 @@ trait HasIndicators
     }
 
 
-    public function indicatorHasInput(string $signature, $target_sigs = ['open'])
+    public function indicatorOutputDependsOn(string $signature, $target_sigs = ['open'])
     {
         if (!is_array($target_sigs)) {
             $target_sigs = [$target_sigs];
@@ -493,13 +493,8 @@ trait HasIndicators
         if (!($indicator = $this->getOrAddIndicator($signature))) {
             return false;
         }
-        if (!method_exists($indicator, 'hasInputs')) {
-            return false;
-        }
-        if (!$indicator->hasInputs()) {
-            return false;
-        }
-        return $indicator->inputFrom($target_sigs);
+        $o = Indicator::getOutputFromSignature($signature);
+        return $indicator->outputDependsOn($target_sigs, $o);
     }
 
 

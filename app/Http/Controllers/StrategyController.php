@@ -472,9 +472,11 @@ class StrategyController extends Controller
         $strategy->resetSampleTo($t);
 
         if (!$sample = $strategy->nextSample($sample_size)) {
-            error_log('Failed to get the sample at '.$t);
+            error_log('Failed to get the sample at '.$t.' + '.$sample_size);
             return response('Could not load the sample.', 403);
         }
+
+        dump($strategy->getIndicators());
 
         $input = $strategy->sample2io($sample, true);
 

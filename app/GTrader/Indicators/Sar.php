@@ -53,6 +53,7 @@ class Sar extends Trader
 
     }
 
+    // Simulate real-time usage considering only the open price of the latest input
     protected function simulatedSar($values)
     {
         if (!($lookback = $this->getLookBack())) {
@@ -66,11 +67,15 @@ class Sar extends Trader
         $ocml = $open_count - $lookback;
 
         for ($i = 0; $i < $ocml; $i++) {
+
             $high = array_slice($values['high'], $i, $lookback);
             array_push($high, $values['open'][$i + $lookback]);
+
             $low = array_slice($values['low'], $i, $lookback);
             array_push($low, $values['open'][$i + $lookback]);
+
             $sar = $this->trader_sarext($high, $low);
+
             if (count($new_values)) {
                 array_push($new_values, array_pop($sar));
                 continue;

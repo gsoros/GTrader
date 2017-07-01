@@ -625,9 +625,10 @@ class Fann extends Strategy
     public function resetSampleTo($time)
     {
         $k = 0;
+        $this->_sample_iterator = 0;
         while ($c = $this->getCandles()->byKey($k)) {
-            $this->_sample_iterator = $k;
             if ($time <= $c->time) {
+                $this->_sample_iterator = $k;
                 return $this;
             }
             $k++;
@@ -784,7 +785,7 @@ class Fann extends Strategy
                     if ($i == $out_sample_size - 1) {
                         // for the last input candle, we only include fields which are based on "open",
                         // i.e. not based on any of: high, low, close or volume
-                        if ($this->indicatorHasInput($sig, ['high', 'low', 'close', 'volume'])) {
+                        if ($this->indicatorOutputDependsOn($sig, ['high', 'low', 'close', 'volume'])) {
                             //error_log('Fann::sample2io() last candle excludes '.$sig);
                             continue;
                         }
@@ -1074,7 +1075,7 @@ class Fann extends Strategy
         $input_count_based_on_open = 0;
         $sigs_based_on_open = [];
         foreach ($inputs as $sig) {
-            if (!$this->indicatorHasInput($sig, ['high', 'low', 'close', 'volume'])) {
+            if (!$this->indicatorOutputDependsOn($sig, ['high', 'low', 'close', 'volume'])) {
                 $input_count_based_on_open++;
                 $sigs_based_on_open[] = $sig;
             }

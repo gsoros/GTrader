@@ -32,20 +32,24 @@ return [
         'dcperiod' => [
             'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
+            'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'dcphase' => [
             'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
+            'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'phasor' => [
             'sources' => ['input_a', 'input_b'],
             'display' => ['y_axis_pos' => 'right'],
             'outputs' => ['A', 'B'],
+            'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'sine' => [
             'sources' => ['input_a', 'input_b'],
             'display' => ['y_axis_pos' => 'right'],
             'outputs' => ['A', 'B'],
+            'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'trendline' => [
             'sources' => ['input_a'],
@@ -55,6 +59,13 @@ return [
         'trendmode' => [
             'sources' => ['input_a'],
             'display' => ['y_axis_pos' => 'right'],
+            'normalize' => [
+                'mode' => 'range',
+                'range' => [
+                    'min' => 0,
+                    'max' => 1,
+                ],
+            ],
         ],
     ],
     'display' => [

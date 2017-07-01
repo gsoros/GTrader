@@ -5,7 +5,7 @@ return [
     'default_child' => 'Ma',
     'outputs' => [''],
     'normalize' => [
-        'type' => 'ohlc',
+        'mode' => 'ohlc',
     ],
     'display' => [
         'mode' => 'line',

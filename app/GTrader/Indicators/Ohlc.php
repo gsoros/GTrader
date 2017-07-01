@@ -6,6 +6,7 @@ use GTrader\Candle;
 
 class Ohlc extends HasInputs
 {
+
     public function key(string $output = '')
     {
         $mode = $this->getParam('indicator.mode');
@@ -20,6 +21,8 @@ class Ohlc extends HasInputs
         return null;
     }
 
+
+
     public function getInput(string $name = null)
     {
         if ('linepoints' === $this->getParam('indicator.mode')) {
@@ -28,6 +31,18 @@ class Ohlc extends HasInputs
         return parent::getInput($name);
     }
 
+
+
+    public function getInputs()
+    {
+        if ('linepoints' === $this->getParam('indicator.mode')) {
+            return [$this->getInput()];
+        }
+        return parent::getInputs();
+    }
+
+
+
     public function getOutputs()
     {
         if ('linepoints' === $this->getParam('indicator.mode')) {
@@ -35,6 +50,22 @@ class Ohlc extends HasInputs
         }
         return parent::getOutputs();
     }
+
+
+    public function outputDependsOn(array $sigs = [], string $output = null)
+    {
+        // Our outputs depend 1:1 on the matching input
+        $o = ($o = strtolower($output)) ? $o : 'open';
+        $i = $this->getInput('input_'.$o);
+        if (in_array($i, $sigs)) {
+            return true;
+        }
+        if (!$owner = $this->getOwner()) {
+            return false;
+        }
+        return $owner->indicatorOutputDependsOn($i, $sigs);
+    }
+
 
     public function getDisplaySignature(string $format = 'long')
     {
@@ -49,10 +80,13 @@ class Ohlc extends HasInputs
     }
 
 
+
     public function runDependencies(bool $force_rerun = false)
     {
         return $this;
     }
+
+
 
     public function calculate(bool $force_rerun = false)
     {
@@ -109,6 +143,7 @@ class Ohlc extends HasInputs
             'close' => $c->$key_close,
         ];
     }
+
 
     protected function heikinashi(array $in_1, array $in_0 = null)
     {
