@@ -300,7 +300,7 @@ class PHPlot extends Chart
                     } elseif ('short' === $s) {
                         return (0 === $extra) ? 1 : 0;
                     }
-                    error_log('Unmatched signal');
+                    error_log('data_color callback: unknown signal '.$s);
                 }
             );
             //dd($item);

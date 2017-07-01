@@ -9,22 +9,6 @@ return [
         'mode' => 'candlestick',
     ],
     'adjustable' => [
-        'input_open' => [
-            'name' => 'Open Source',
-            'type' => 'source',
-        ],
-        'input_high' => [
-            'name' => 'High Source',
-            'type' => 'source',
-        ],
-        'input_low' => [
-            'name' => 'Low Source',
-            'type' => 'source',
-        ],
-        'input_close' => [
-            'name' => 'Close Source',
-            'type' => 'source',
-        ],
         'mode' => [
             'name' => 'Mode',
             'type' => 'select',
@@ -41,5 +25,8 @@ return [
         'name' => 'OHLC',
         'description' => 'Open, High, Low, Close',
         'y_axis_pos' => 'left',
+    ],
+    'normalize' => [
+        'mode' => 'ohlc',
     ],
 ];

@@ -619,7 +619,20 @@ class Fann extends Strategy
     public function resetSample()
     {
         $this->_sample_iterator = 0;
-        return true;
+        return $this;
+    }
+
+    public function resetSampleTo($time)
+    {
+        $k = 0;
+        while ($c = $this->getCandles()->byKey($k)) {
+            $this->_sample_iterator = $k;
+            if ($time <= $c->time) {
+                return $this;
+            }
+            $k++;
+        }
+        return $this;
     }
 
 
@@ -789,7 +802,7 @@ class Fann extends Strategy
                     if (isset($params['normalize_to'])) {
                         $input[$group_name][$key]['normalize_to'] = $params['normalize_to'];
                     }
-                    // inividual
+                    // individual
                     if (isset($params['outputs'])) {
                         if (is_array($params['outputs'])) {
                             $outputs_added = 0;

@@ -67,6 +67,7 @@ class Series extends Collection
             $key = $prefix.Util::uniqidReal();
         }
         $this->_map[$sig] = $key;
+        //dump($sig.' --> '.$key);
         return $key;
     }
 
@@ -175,12 +176,33 @@ class Series extends Collection
     }
 
 
+    public function resetTo(int $time)
+    {
+        $k = 0;
+        while ($c = $this->byKey($k)) {
+            if ($time <= $c->time) {
+                $this->_iter = $k;
+                return $this;
+            }
+            $k++;
+        }
+        return $this;
+    }
+
+
+    public function firstAfter(int $time)
+    {
+        $this->resetTo($time);
+        return $this->next();
+    }
+
     public function clean()
     {
         $this->items = [];
         $this->_loaded = false;
         $this->reset();
         $this->cleanCache();
+        //dump('cleaned', $this);
         return $this;
     }
 

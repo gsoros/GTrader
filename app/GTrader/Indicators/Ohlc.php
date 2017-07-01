@@ -8,23 +8,17 @@ class Ohlc extends HasInputs
 {
     public function key(string $output = '')
     {
-        if ('linepoints' === $this->getParam('indicator.mode')) {
-            return $this->getCandles()->key($this->getInput());
+        $mode = $this->getParam('indicator.mode');
+        if ('linepoints' === $mode) {
+            return $this->getParam('indicator.input_open', 'open');
         }
-        if ('ha' === $this->getParam('indicator.mode')) {
-            return null;
+        if ('candlestick' === $mode) {
+            if ($o = strtolower($output)) {
+                return $this->getParam('indicator.input_'.$o, $o);
+            }
         }
-        $stripped = array_map(function ($v) {
-            return substr($v, 6); // "input_"
-        }, array_keys($inputs = $this->getInputs()));
-
-        if (in_array($o = strtolower($output), $stripped)) {
-            return $inputs['input_'.$o];
-        }
-        error_log($this->getShortClass().'::key() output: '.$o.' not in '.json_encode($inputs));
         return null;
     }
-
 
     public function getInput(string $name = null)
     {
@@ -45,29 +39,15 @@ class Ohlc extends HasInputs
     public function getDisplaySignature(string $format = 'long')
     {
         $mode = $this->getParam('indicator.mode');
-        $mode_label = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
         if ('linepoints' === $mode) {
-            $except = ['mode', 'input_high', 'input_low', 'input_close'];
-            $mode_label = 'Price';
+            return 'Open';
         }
         else if ('candlestick' === $mode) {
-            $except = ['mode'];
-            $mode_label = 'OHLC';
+            return 'OHLC';
         }
-        else if ('ha' === $mode) {
-            $except = ['mode'];
-        }
-        if ('short' === $format) {
-            return $mode_label;
-        }
-        $param_str = $this->getParamString($except);
-        foreach ($this->getInputs() as $k => $v) {
-            if (substr($k, 6) !== $v) { // not default?
-                return $mode_label.' ('.$param_str.')' ;
-            }
-        }
-        return $mode_label;
+        return $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');;
     }
+
 
     public function runDependencies(bool $force_rerun = false)
     {

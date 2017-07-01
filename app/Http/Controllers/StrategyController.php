@@ -10,6 +10,7 @@ use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Exchange;
 use GTrader\FannTraining;
+use GTrader\Chart;
 use GTrader\Plot;
 
 class StrategyController extends Controller
@@ -446,7 +447,38 @@ class StrategyController extends Controller
 
     public function sample(Request $request)
     {
-        dump($request->all());
+        if (! $chart = Chart::loadFromSession($request->chart)) {
+            error_log('sample: no chart in session');
+            return response('Chart not found.', 403);
+        }
+        if (!($strategy = $chart->getStrategy())) {
+            error_log('Failed to get strategy ');
+            return response('Strategy not found.', 403);
+        }
+        if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
+            error_log('sample() not a fann strategy');
+            return response('Wrong strategy type.', 403);
+        }
+        if (!($candles = $chart->getCandles())) {
+            error_log('Failed to get the series ');
+            return response('Could not get the series.', 403);
+        }
+
+        $strategy->runInputIndicators();
+
+        $sample_size = $strategy->getParam('sample_size');
+        $t = $request->t - $candles->getParam('resolution') * $sample_size;
+
+        $strategy->resetSampleTo($t);
+
+        if (!$sample = $strategy->nextSample($sample_size)) {
+            error_log('Failed to get the sample at '.$t);
+            return response('Could not load the sample.', 403);
+        }
+
+        $input = $strategy->sample2io($sample, true);
+
+        dump($request->all(), $input);
         return response('OK', 200);
     }
 }

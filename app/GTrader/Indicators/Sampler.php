@@ -15,6 +15,11 @@ class Sampler extends Indicator
         //error_log($this->getSignature());
     }
 
+    public function getStrategyOwner()
+    {
+        return $this->getOwner();
+    }
+
     public function calculate(bool $force_rerun = false)
     {
         return $this;
