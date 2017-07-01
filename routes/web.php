@@ -53,6 +53,7 @@ Route::get('/strategy.trainProgress',   'StrategyController@trainProgress');
 Route::get('/strategy.trainHistory',    'StrategyController@trainHistory');
 Route::get('/strategy.trainPause',      'StrategyController@trainPause');
 Route::get('/strategy.trainResume',     'StrategyController@trainResume');
+Route::get('/strategy.sample',          'StrategyController@sample');
 
 Route::get('/bot.list',                 'BotController@list');
 Route::get('/bot.new',                  'BotController@create');
