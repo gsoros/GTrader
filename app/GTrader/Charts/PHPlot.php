@@ -91,7 +91,8 @@ class PHPlot extends Chart
         list ($map, $map_str) = $this->getImageMapStrings();
 
         //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
-        return $map.'<img class="img-responsive" src="'.
+        //return $map.'<img class="img-responsive" src="'.
+        return $map.'<img src="'.
                 $this->_plot->EncodeImage().'"'.$map_str.'>'.
                 $refresh;
     }
