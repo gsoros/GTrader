@@ -12,7 +12,7 @@
     </div>
 </div>
 <div class="row bdr-rad">
-    <div class="col-sm-12" id="trainHistory" title="Training History">
+    <div class="col-sm-12 npl npr" id="trainHistory" title="Training History">
     </div>
 </div>
 <div class="row bdr-rad">
