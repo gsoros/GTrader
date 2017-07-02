@@ -10,7 +10,7 @@ $(function() {
             if (!type) type = 'GET';
             if (!target) target = request + 'Tab';
             window.setLoading(target, true);
-            var url = '/' + request + '.' + method + '?width=' + ($(window).width() - 2);
+            var url = '/' + request + '.' + method + '?width=' + ($('#' + target).width());
             var data = null;
             if (type === 'POST') {
                 data = params;
