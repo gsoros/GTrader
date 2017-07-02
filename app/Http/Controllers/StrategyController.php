@@ -464,10 +464,26 @@ class StrategyController extends Controller
             return response('Could not get the series.', 403);
         }
 
-        $strategy->runInputIndicators();
 
+        $resolution = $candles->getParam('resolution');
         $sample_size = $strategy->getParam('sample_size');
-        $t = $request->t - $candles->getParam('resolution') * $sample_size;
+        $target_distance = $strategy->getParam('target_distance');
+        $t = $request->t - $resolution * $sample_size;
+
+        $limit = $sample_size + $target_distance + 200;
+        $candles = new Series([
+            'exchange' => $candles->getParam('exchange'),
+            'symbol' => $candles->getParam('symbol'),
+            'resolution' => $resolution,
+            'limit' => $limit,
+            'end' => $request->t + $target_distance * $resolution,
+        ]);
+        $strategy->setCandles($candles);
+        $candles->setStrategy($strategy);
+//dd($candles);
+        $strategy->runInputIndicators();
+//dd($candles);
+        $t = $request->t - $resolution * $sample_size;
 
         $strategy->resetSampleTo($t);
 
@@ -476,11 +492,21 @@ class StrategyController extends Controller
             return response('Could not load the sample.', 403);
         }
 
-        dump($strategy->getIndicators());
+ini_set('xdebug.var_display_max_depth', 20);
+ini_set('xdebug.var_display_max_children', 512);
+ini_set('xdebug.var_display_max_data', 4096);
+
+        $is = $candles->getIndicators();
+        $ks = array_keys($is);
+        //$first = $is[array_pop($ks)];
+        //dump($first->getCandles()->last());
 
         $input = $strategy->sample2io($sample, true);
+        dump($input);
 
-        dump($request->all(), $input);
+        $input = $strategy->normalizeInput($input);
+        dump($input);
+
         return response('OK', 200);
     }
 }

@@ -87,6 +87,7 @@ class Ht extends Trader
                 $active_inputs[$input_key] = $input_val;
             }
         }
+        //dump('HT::getInputs() '.$this->debugObjId(), $active_inputs);
         return $active_inputs;
     }
 

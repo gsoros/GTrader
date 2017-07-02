@@ -50,7 +50,6 @@ class ChartController extends Controller
         }
 
         set_time_limit(480);
-
         $chart->handleImageRequest($request);
         $chart->purgeIndicators();
         $chart->saveToSession();
@@ -128,8 +127,7 @@ class ChartController extends Controller
             }
         }
 
-        $chart->deleteFromSession();
-        $chart->delete();
+        $chart->deleteFromSession()->delete();
         return response('OK', 200);
     }
 

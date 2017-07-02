@@ -3,7 +3,7 @@
 return [
     'children_ns' => 'Indicators',
     'default_child' => 'Ma',
-    'outputs' => [''],
+    'outputs' => ['default'],
     'normalize' => [
         'mode' => 'ohlc',
     ],

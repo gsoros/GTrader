@@ -29,7 +29,6 @@ abstract class Trader extends HasInputs
 
         $values = $this->traderCalc($this->extract($candles));
 
-        $sig = $this->getSignature();
 
         $fill = $this->getParam('fill_value', null);
         if (is_string($fill) && $this->hasInputs()) {
@@ -40,16 +39,12 @@ abstract class Trader extends HasInputs
         }
 
         foreach ($this->getOutputs() as $output_index => $output_name) {
-            $name = $sig;
-            if (strlen($output_name)) {
-                $name .= ':::'.$output_name;
-            }
             if (!isset($values[$output_index])) {
                 continue;
             }
             //error_log(json_encode($values[$output_index]));
             $candles->setValues(
-                $name,
+                $this->getSignature($output_name),
                 $values[$output_index],
                 $fill
             );

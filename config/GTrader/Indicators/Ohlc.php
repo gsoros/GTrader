@@ -19,7 +19,7 @@ return [
             ],
         ],
     ],
-    'outputs' => ['Open', 'High', 'Low', 'Close'],
+    'outputs' => ['open', 'high', 'low', 'close'],
     'display' => [
         'mode' => 'candlestick',
         'name' => 'OHLC',

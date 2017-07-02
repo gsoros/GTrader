@@ -40,6 +40,7 @@ class Series extends Collection
 
     public function __wakeup()
     {
+        //dd('wakeup', $this);
     }
 
 
@@ -178,14 +179,17 @@ class Series extends Collection
 
     public function resetTo(int $time)
     {
+        $this->_load();
         $k = 0;
         while ($c = $this->byKey($k)) {
             if ($time <= $c->time) {
                 $this->_iter = $k;
+                //dump('reset to '.$time.' = '.$k, $this);
                 return $this;
             }
             $k++;
         }
+        //dump('warning, could not reset to '.$time, $this);
         return $this;
     }
 

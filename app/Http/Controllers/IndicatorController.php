@@ -78,6 +78,7 @@ class IndicatorController extends Controller
             return response('Could not load owner.', 403);
         }
         $form = $owner->handleIndicatorSaveRequest($request);
+
         $this->saveOwner($owner);
 
         return response($form, 200);

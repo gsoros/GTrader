@@ -23,10 +23,9 @@ class Vol extends HasInputs
     public function runDependencies(bool $force_rerun = false)
     {
         // ROC is used to display the colors
-        if ($roc = $this->getOwner()->getOrAddIndicator(
-            'Roc',
-            ['indicator' => ['input_source' => 'close']]
-        )) {
+        if ($roc = $this->getOwner()->getOrAddIndicator('Roc', [
+            'indicator' => ['input_source' => 'close'],
+            ])) {
             $roc->addRef($this);
         }
         return $this;

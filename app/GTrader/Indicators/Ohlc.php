@@ -9,12 +9,15 @@ class Ohlc extends HasInputs
 
     public function key(string $output = '')
     {
+        if (!$output) {
+            dd('Ohlc::key() no output', debug_backtrace());
+        }
         $mode = $this->getParam('indicator.mode');
         if ('linepoints' === $mode) {
             return $this->getParam('indicator.input_open', 'open');
         }
         if ('candlestick' === $mode) {
-            if ($o = strtolower($output)) {
+            if ($o = $output) {
                 return $this->getParam('indicator.input_'.$o, $o);
             }
         }
@@ -42,19 +45,9 @@ class Ohlc extends HasInputs
     }
 
 
-
-    public function getOutputs()
-    {
-        if ('linepoints' === $this->getParam('indicator.mode')) {
-            return [''];
-        }
-        return parent::getOutputs();
-    }
-
-
     public function outputDependsOn(array $sigs = [], string $output = null)
     {
-        // Our outputs depend 1:1 on the matching input
+        // Pretend that our outputs depend 1:1 on the matching input
         $o = ($o = strtolower($output)) ? $o : 'open';
         $i = $this->getInput('input_'.$o);
         if (in_array($i, $sigs)) {
@@ -103,10 +96,10 @@ class Ohlc extends HasInputs
         $in_key_low = $candles->key($this->getInput('input_low'));
         $in_key_close = $candles->key($this->getInput('input_close'));
 
-        $out_key_open = $candles->key($this->getSignature().':::Open');
-        $out_key_high = $candles->key($this->getSignature().':::High');
-        $out_key_low = $candles->key($this->getSignature().':::Low');
-        $out_key_close = $candles->key($this->getSignature().':::Close');
+        $out_key_open = $candles->key($this->getSignature('open'));
+        $out_key_high = $candles->key($this->getSignature('high'));
+        $out_key_low = $candles->key($this->getSignature('low'));
+        $out_key_close = $candles->key($this->getSignature('close'));
 
         reset($candles);
 

@@ -22,19 +22,14 @@
 
                 if ($display_outputs) {
                     $inputs = $owner->getParam('inputs', []);
-                    $outputs = $indicator->getParam('outputs', ['']);
+                    $outputs = $indicator->getOutputs();
                     $num_outputs = count($outputs);
                     $output_checkboxes = [];
-                    foreach ($outputs as $key => $value) {
-                        $cbname = $sig;
-                        $cblabel = $indicator->getParam('display.name');
-                        if (strlen($value)) {
-                            $cbname .= ':::'.$value;
-                            $cblabel = $value;
-                        }
+                    foreach ($outputs as $output) {
+                        $cbname = $indicator->getSignature($output);
                         $output_checkboxes[] = [
                             'value' => $cbname,
-                            'label' => $cblabel,
+                            'label' => ucwords($output),
                             'checked' => false !== array_search($cbname, $inputs),
                         ];
                     }

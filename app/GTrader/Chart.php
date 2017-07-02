@@ -99,7 +99,11 @@ abstract class Chart extends Plot
                 $chart = Chart::make($make_class);
                 if (is_array($inds = Arr::get($params, 'indicators_if_new', []))) {
                     foreach ($inds as $sig) {
-                        $chart->getOrAddIndicator($sig);
+                        if ($i = $chart->getOrAddIndicator($sig, [
+                            'display' => ['visible' => true],
+                        ])) {
+                            $i->addRef($name);
+                        }
                     }
                 }
             }
@@ -130,7 +134,7 @@ abstract class Chart extends Plot
     public static function loadFromSession(string $name = null)
     {
         $chart = session($name);
-        //dump($chart);
+        //dump('chart::loadFromSession()', $chart);
         return is_object($chart) ? $chart : null;
     }
 
@@ -184,6 +188,7 @@ abstract class Chart extends Plot
             error_log('Chart::saveToSession() called but we have no name.');
             return this;
         }
+        //dump('chart::saveToSession()', $this);
         session([$name => $this]);
         return $this;
     }
@@ -209,6 +214,7 @@ abstract class Chart extends Plot
             return this;
         }
         session([$name => null]);
+
         return $this;
     }
 

@@ -38,15 +38,16 @@ abstract class Indicator //implements \JsonSerializable
 /*
     public function __sleep()
     {
-        //error_log('Indicator::__sleep()');
-        $this->sleepingbag = $this->getParam('indicator');
-        return ['sleepingbag', 'owner'];
+        dump('Indicator::__sleep()', $this);
+        //$this->sleepingbag = $this->getParam('indicator');
+        //return ['sleepingbag', 'owner', 'refs'];
+        return [];
     }
 
     public function __wakep()
     {
-        //error_log('Indicator::__wakeup()');
-        $this->setParam('indicator', $this->sleepingbag);
+        dump('Indicator::__wakeup()', $this);
+        //$this->setParam('indicator', $this->sleepingbag);
     }
 */
 /*
@@ -67,13 +68,13 @@ abstract class Indicator //implements \JsonSerializable
     public function __wakeup()
     {
         $this->calculated = false;
-        $this->refs = [];
+        //$this->refs = [];
     }
 
 
     public function addRef($ind_or_sig)
     {
-        //dump('addRef '.$this->getShortClass(), $ind_or_sig);
+        //dump('addRef '.$this->debugObjId(), $ind_or_sig);
         $sig = null;
         if (is_object($ind_or_sig)) {
             if (method_exists($ind_or_sig, 'getSignature')) {
@@ -103,108 +104,83 @@ abstract class Indicator //implements \JsonSerializable
 
 
 
-    protected function getSignatureObject()
-    {
-        //error_log('getSignatureObject() '.$this->debugObjId());
-        $params = $this->getParam('indicator');
-
-        $o = new \StdClass();
-
-        if (!is_array($params)) {
-            //error_log('getSignatureObject() not array in '.$this->debugObjId().' params: '.serialize($params));
-            $params = (array)$params;
-        }
-        if (!count($params)) {
-            //error_log('getSignatureObject() no params in '.$this->debugObjId());
-            return $o;
-        }
-        foreach ($params as $key => $value) {
-            $type = $this->getParam('adjustable.'.$key.'.type');
-            /*
-            if (is_object($value)) {
-                echo 'Error: got object as value: ';
-                var_dump($value);
-                print_r(debug_backtrace());
-                exit;
-            }
-            */
-            if ('bool' === $type) {
-                $value = intval($value);
-            }
-            else if ('source' === $type) {
-                if (! $owner = $this->getOwner()) {
-                    error_log('getSignatureObject() owner not found for '.$this->debugObjId());
-                }
-                else if (! $ind = $owner->getOrAddIndicator($value)) {
-                    //error_log('getSignatureObject() could not getOrAddIndicator '.json_encode($value));
-                }
-                if (is_object($ind)) {
-                    if ($ind->debugObjId() === $this->debugObjId()) {
-                        error_log('getSignatureObject() trying to recreate myself');
-                    }
-                    else {
-                        $value = [
-                            'class' => $ind->getShortClass(),
-                            'params' => $ind->getSignatureObject(),
-                        ];
-                    }
-                }
-            }
-            $o->$key = $value;
-        }
-        return $o;
-    }
-
-    public function getSignature()
+    public function getSignature(string $output = null)
     {
         if (! $class = $this->getShortClass()) {
             error_log('getSignature() class not found for '.$this->debugObjId());
             return null;
         }
-        $o = [
+        if ($output) {
+            if (!in_array($output, $this->getOutputs())) {
+                error_log('Indicator::getSignature() invalid output '.$output.' for '.$this->getShortClass());
+            }
+        } else {
+            $output = $this->getOutputs()[0];
+            //error_log('Indicator::getSignature() null output requested for '.$this->getShortClass());
+        }
+
+
+        $params = $this->getParam('indicator', []);
+        if (!is_array($params)) {
+            //error_log('getSignatureObject() not array in '.$this->debugObjId().' params: '.serialize($params));
+            $params = (array)$params;
+        }
+        $out_params = [];
+        foreach ($params as $key => $value) {
+            $type = $this->getParam('adjustable.'.$key.'.type');
+            if ('bool' === $type) {
+                $value = intval($value);
+            }
+            if ('string' === $type) {
+                $value = strval($value);
+            }
+            else if ('source' === $type) {
+                if (!in_array($value, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
+                    if (!is_array($value)) {
+                        $value = self::decodeSignature($value);
+                    }
+                }
+            }
+            $out_params[$key] = $value;
+        }
+        $a = [
             'class' => $class,
-            'params' => $this->getSignatureObject(),
+            'params' => $out_params,
+            'output' => $output,
         ];
-        $sig = json_encode($o);
+        $sig = json_encode($a);
 
         //error_log('getSignature() '.$sig);
 
         return $sig;
     }
 
-    protected static function decodeSignature(string $signature)
+    public static function decodeSignature(string $sig)
     {
         static $cache = [];
 
-        if (isset($cache[$signature])) {
-            //error_log('Indicator::decodeSignature() cache hit for '.$signature);
-            return $cache[$signature];
+        if (isset($cache[$sig])) {
+            //error_log('Indicator::decodeSignature() cache hit for '.$sig);
+            return $cache[$sig];
         }
-
-        $delimiter = ':::';
-        $stripped = $signature;
-        $output = '';
-        $class = '';
-        $params = [];
-        if (false !== strrpos($signature, $delimiter)) {
-            $chunks = explode($delimiter, $signature);
-            $output = array_pop($chunks);
-            $stripped = join('', $chunks);
+        if (\Config::get('GTrader.Indicators.available.'.$sig)) {
+            $cache[$sig] = false;
+            return false;
         }
-        if (!is_null($o = json_decode($stripped, true))) {
-            $class = isset($o['class']) ? $o['class'] : '';
-            $params = isset($o['params']) ? ['indicator' => $o['params']] : [];
-            $cache[$signature] = [
-                'class' => $class,
-                'params' => $params,
-                'output' => $output,
-            ];
+        //dump('decodeSignature() '.$sig);
+        if (is_null($a = json_decode($sig, true)) || json_last_error()) {
+            $cache[$sig] = false;
+            error_log('Indicator::decodeSignature() could not decode sig: '.$sig
+                .' en: '.json_last_error().' em: '.json_last_error_msg());
+            return false;
         }
-        else {
-            $cache[$signature] = false;
-        }
-        //error_log('Indicator::decodeSignature() uncached: '.json_encode($cache[$signature]));
-        return $cache[$signature];
+        $cache[$sig] = [
+            'class' => Arr::get($a, 'class', ''),
+            'params' => Arr::get($a, 'params', []),
+            'output' => Arr::get($a, 'output', ''),
+        ];
+        //error_log('Indicator::decodeSignature() uncached: '.json_encode($cache[$sig]));
+        return $cache[$sig];
     }
 
 
@@ -396,12 +372,14 @@ abstract class Indicator //implements \JsonSerializable
     public static function signatureSame(string $sig_a, string $sig_b)
     {
 
-        if (self::getClassFromSignature($sig_a)
-            !== self::getClassFromSignature($sig_b)) {
+        if (($ca = self::getClassFromSignature($sig_a))
+            !== ($cb = self::getClassFromSignature($sig_b))) {
+            //error_log('signatureSame() '.$ca.' != '.$cb);
             return false;
         }
-        if (self::getParamsFromSignature($sig_a)
-            !== self::getParamsFromSignature($sig_b)) {
+        if (($pa = self::getParamsFromSignature($sig_a))
+            !== ($pb = self::getParamsFromSignature($sig_b))) {
+            //error_log('signatureSame() '.json_encode($pa).' != '.json_encode($pb));
             return false;
         }
 
@@ -436,7 +414,7 @@ abstract class Indicator //implements \JsonSerializable
 
     public function getOutputs()
     {
-        return $this->getParam('outputs', ['']);
+        return $this->getParam('outputs', ['default']);
     }
 
 
@@ -450,11 +428,10 @@ abstract class Indicator //implements \JsonSerializable
             return [];
         }
         $this->checkAndRun();
-        $sig = $this->getSignature();
         $r = null;
         foreach ($this->getOutputs() as $output) {
             $arr = $candles->extract(
-                $output ? $sig.':::'.$output : $sig,
+                $this->getSignature($output),
                 $index_type,
                 $respect_padding,
                 $density_cutoff

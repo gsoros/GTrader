@@ -53,7 +53,7 @@ class Operator extends HasInputs
                 floatval($candle->$key_a),
                 floatval($candle->$key_b)
             );
-            //dd($candle);
+            //dd($candle->$key_out);
         }
 
         return $this;

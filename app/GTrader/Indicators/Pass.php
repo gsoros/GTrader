@@ -88,6 +88,7 @@ class Pass extends HasInputs
         }
         foreach ($sigs as $sig) {
             if ($indicator = $owner->getOrAddIndicator($sig)) {
+                $indicator->addRef($this);
                 $indicator->checkAndRun();
             }
         }
@@ -135,16 +136,26 @@ class Pass extends HasInputs
 
         $candles->reset();
         while ($candle = $candles->next()) {
-            $val = floatval($candle->$source);
+            if (is_null($val = $candle->$source)) {
+                continue;
+            }
+            $val = floatval($val);
             if ('high' === $mode) {
                 //error_log('IS: '.$input.' V: '.$val.' HR: '.$candle->$high_ref); //continue;
-                $val = $this->pass($mode, $val, $candle->$high_ref, $inc);
+                if (!is_null($candle->$high_ref)) {
+                    $val = $this->pass($mode, $val, $candle->$high_ref, $inc);
+                }
             }
             else if ('low' === $mode) {
                 //error_log('IS: '.$input.' V: '.$val.' LR: '.$candle->$low_ref); continue;
-                $val = $this->pass($mode, $val, $candle->$low_ref, $inc);
+                if (!is_null($candle->$low_ref)) {
+                    $val = $this->pass($mode, $val, $candle->$low_ref, $inc);
+                }
             }
             else if ('band' === $mode) {
+                if (is_null($candle->$high_ref) || is_null($candle->$low_ref)) {
+                    continue;
+                }
                 $val = $this->pass(
                     'high',
                     $this->pass('low', $val, $candle->$high_ref, $inc),

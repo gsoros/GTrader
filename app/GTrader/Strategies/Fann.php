@@ -195,6 +195,7 @@ class Fann extends Strategy
                 error_log('Fann::handleSaveRequest() input not a string: '.json_encode($input));
                 $inputs[$k] = strval($input);
             }
+            $inputs[$k] = stripslashes($input);
         }
         if ($this->getParam('inputs', []) !== $inputs) {
             $topology_changed = true;
@@ -622,17 +623,19 @@ class Fann extends Strategy
         return $this;
     }
 
-    public function resetSampleTo($time)
+    public function resetSampleTo(int $time)
     {
         $k = 0;
         $this->_sample_iterator = 0;
         while ($c = $this->getCandles()->byKey($k)) {
             if ($time <= $c->time) {
                 $this->_sample_iterator = $k;
+                //dump('reset sample to '.$time.' key: '.$k, $this);
                 return $this;
             }
             $k++;
         }
+        //dump('warning, could not reset sample to '.$time, $this);
         return $this;
     }
 
@@ -666,11 +669,13 @@ class Fann extends Strategy
         $inputs = $this->getParam('inputs', []);
         $candles = $this->getCandles();
         foreach ($inputs as $sig) {
+            //dump('Fann::runInputIndicators() sig: '.$sig);
             if (! $indicator = $candles->getOrAddIndicator($sig)) {
                 //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
                 continue;
             }
             $indicator->addRef($this);
+            //dump('Fann::runInputIndicators() ind:', $indicator);
             $indicator->checkAndRun($force_rerun);
         }
         return $this;
@@ -708,8 +713,9 @@ class Fann extends Strategy
             }
             if (!is_null($indicator)) {
                 if (! Indicator::signatureSame($sig, $indicator->getSignature())) {
-                    error_log('Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature());
-                    exit;
+                    $m = 'Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature();
+                    error_log($m);
+                    dd($m);
                 }
                 $indicator->addRef($this);
                 if (!($norm_params = $indicator->getNormalizeParams())) {
@@ -811,7 +817,8 @@ class Fann extends Strategy
                                 $sig_key_output = $sig_key;
                                 if ($output_name) {
                                     $outputs_added++;
-                                    $sig_key_output = $this->getCandles()->key($key.':::'.$output_name);
+                                    $ind = $this->getCandles()->getOrAddIndicator($sig);
+                                    $sig_key_output = $this->getCandles()->key($ind->getSignature($output_name));
                                     $value = floatval($sample[$i]->$sig_key_output);
                                     $input[$group_name][$key]['values'][] = $value;
                                 }

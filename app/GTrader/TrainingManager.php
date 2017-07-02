@@ -96,6 +96,9 @@ class TrainingManager
             $strategy = Strategy::load($training->strategy_id);
             $prefix = $strategy->getParam('training_log_prefix', 'fanntraining_');
             $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
+            if (touch($log_file)) {
+                chmod($log_file, 0640);
+            }
             $command = $command.' >> '.$log_file.' 2>&1 &';
             error_log('command: '.$command);
             exec($command);

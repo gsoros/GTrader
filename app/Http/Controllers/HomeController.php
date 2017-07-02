@@ -41,7 +41,6 @@ class HomeController extends Controller
                 'Ohlc',
             ],
         ]);
-
         Page::add('scripts_top', '<script src="/js/GTrader.js"></script>');
         Page::add('scripts_bottom', '<script src="/js/Mainchart.js"></script>');
         $chart->addPageElements();
