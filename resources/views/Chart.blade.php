@@ -1,4 +1,4 @@
-<div id="{{ $name }}" class="GTraderChart"
+<div id="{{ $name }}" class="GTraderChart npr npl"
 @if ($height)
     style="height: {{ $height }}px"
 @endif
@@ -81,14 +81,3 @@
 
     </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-

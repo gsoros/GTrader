@@ -2,7 +2,7 @@
     $chart = $strategy->getTrainingProgressChart($training);
 @endphp
 <div class="row bdr-rad">
-    <div class="col-sm-12">
+    <div class="col-sm-12 npl npr">
         <h4>Training Progress for
             <span title="Strategy ID: {{ $strategy->getParam('id') }} Training ID: {{ $training->id }}">
                 {{ $strategy->getParam('name') }}
