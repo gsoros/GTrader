@@ -32,6 +32,9 @@
     $initial_refresh = in_array('initial_refresh', $disabled) ? 'false' : 'true';
 @endphp
 <script>
+    @if (!in_array('panZoom', $disabled))
+
+    @endif
     if (window.GTrader)
         window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
     else {
@@ -40,4 +43,3 @@
         });
     }
 </script>
-

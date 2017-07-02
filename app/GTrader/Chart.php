@@ -99,10 +99,9 @@ abstract class Chart extends Plot
                 $chart = Chart::make($make_class);
                 if (is_array($inds = Arr::get($params, 'indicators_if_new', []))) {
                     foreach ($inds as $sig) {
-                        if ($i = $chart->getOrAddIndicator($sig, [
-                            'display' => ['visible' => true],
-                        ])) {
-                            $i->addRef($name);
+                        if ($i = $chart->getOrAddIndicator($sig)) {
+                            $i->setParam('display.visible', true);
+                            $i->addRef('root');
                         }
                     }
                 }

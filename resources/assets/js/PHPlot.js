@@ -40,6 +40,17 @@ $(function() {
                 window.GTrader.requestPlot(split[1], split[0]);
             });
         });
+
+        $('#' + name).panzoom({
+            disableYAxis: true
+        })
+        .on('panzoomend', function(e, panzoom, matrix, changed) {
+            if (changed) {
+                console.log('panzoom x: ', matrix);
+                panzoom.reset();
+            }
+        });
+
     };
 
 

@@ -51,10 +51,13 @@ class ChartController extends Controller
 
         set_time_limit(480);
         $chart->handleImageRequest($request);
+        $image = $chart->getImage();
+
         $chart->purgeIndicators();
         $chart->saveToSession();
         //$chart->save();
-        return response($chart->getImage(), 200);
+
+        return response($image, 200);
     }
 
 

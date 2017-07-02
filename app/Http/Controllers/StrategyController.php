@@ -496,10 +496,7 @@ ini_set('xdebug.var_display_max_depth', 20);
 ini_set('xdebug.var_display_max_children', 512);
 ini_set('xdebug.var_display_max_data', 4096);
 
-        $is = $candles->getIndicators();
-        $ks = array_keys($is);
-        //$first = $is[array_pop($ks)];
-        //dump($first->getCandles()->last());
+        dump($candles->getIndicators());
 
         $input = $strategy->sample2io($sample, true);
         dump($input);
