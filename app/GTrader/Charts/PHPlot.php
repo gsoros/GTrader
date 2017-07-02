@@ -49,7 +49,8 @@ class PHPlot extends Chart
         }
 
         $this->setTitle()
-            ->setColors();
+            ->setColors()
+            ->initPlotElements();
 
         $t = Arr::get($this->data, 'times', [0]);
 
@@ -621,6 +622,13 @@ class PHPlot extends Chart
         //$this->_plot->SetLegendUseShapes(true);
         $this->_plot->SetLegendColorboxBorders('none');
 
+        return $this;
+    }
+
+
+
+    protected function initPlotElements()
+    {
         $this->getCandles()->reset(true);
         $start = ($first = $this->getCandles()->next()) ? $first->time : 0;
         $end = ($last = $this->getCandles()->last()) ? $last->time : 0;
@@ -630,6 +638,7 @@ class PHPlot extends Chart
 
         return $this;
     }
+
 
 
     protected function setColors()
@@ -643,6 +652,8 @@ class PHPlot extends Chart
         $this->_plot->SetTextColor('#999999');
         return $this;
     }
+
+
 
 
     public function addPageElements()

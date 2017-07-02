@@ -9,8 +9,12 @@ $(function() {
 
             if (!type) type = 'GET';
             if (!target) target = request + 'Tab';
+            var width = $('#' + target).width();
+            if (100 > width) {
+                width = $(window).width();
+            }
             window.setLoading(target, true);
-            var url = '/' + request + '.' + method + '?width=' + ($('#' + target).width());
+            var url = '/' + request + '.' + method + '?width=' + width;
             var data = null;
             if (type === 'POST') {
                 data = params;

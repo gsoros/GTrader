@@ -304,7 +304,7 @@ trait HasIndicators
         $format = 'long';
         if (is_object($request)) {
             if (isset($request->width)) {
-                if (400 > intval($request->width)) {
+                if (500 > intval($request->width)) {
                     $format = 'short';
                 }
             }
