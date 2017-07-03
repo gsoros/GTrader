@@ -61,8 +61,10 @@ class Plot
         $this->_plot->SetLightGridColor('DimGrey:120');
         $this->_plot->setTitleColor('DimGrey:80');
         $this->_plot->SetTickColor('DarkGreen');
-        $this->_plot->SetTextColor('grey');
+        $this->_plot->SetTextColor('#999999');
         $this->_plot->SetDataType('data-data');
+        $this->_plot->SetLegendStyle('left', 'left');
+        $this->_plot->SetLegendColorboxBorders('none');
 
         $out = ['left' => [], 'right' => []];
         reset($data);
