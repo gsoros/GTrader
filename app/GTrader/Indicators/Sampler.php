@@ -25,4 +25,7 @@ class Sampler extends Indicator
         return $this;
     }
 
+    public function callback()
+    {
+    }
 }

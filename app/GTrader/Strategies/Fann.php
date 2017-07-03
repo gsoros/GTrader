@@ -178,7 +178,57 @@ class Fann extends Strategy
             'name' => 'History',
             'width' => $width,
             'height' => $height,
-            'data' => $data
+            'data' => $data,
+        ]);
+        return $plot->toHTML();
+    }
+
+
+    public function getSamplePlot(int $width, int $height, int $time)
+    {
+        $data = [];
+        $candles = $this->getCandles();
+        $this->runInputIndicators();
+        $sample_size = $this->getParam('sample_size');
+        $target_distance = $this->getParam('target_distance');
+        $resolution = $candles->getParam('resolution');
+        $t = $time - $sample_size * $resolution;
+        $this->resetSampleTo($t);
+        if (!$sample = $this->nextSample($sample_size)) {
+            error_log('Failed to get the sample at '.$t.' + '.$sample_size);
+            return false;
+        }
+        $input = $this->sample2io($sample, true);
+        //dump($input);
+        $input = $this->normalizeInput($input, true);
+        //dump($input);
+        $p = $this->getPredictionIndicator();
+        $p->checkAndRun();
+        $last = $candles->firstAfter($time);
+        $prediction = $last->{$candles->key($p->getSignature())};
+        $realtime = $time + $target_distance * $resolution;
+        //dump(date('Y-m-d H:i', $last->time).' O: '.$last->open.' Pred for '.date('Y-m-d H:i', $realtime).': '.$prediction);
+        if ($reality = $candles->firstAfter($realtime)) {
+            //dump('Reality: '.date('Y-m-d H:i', $reality->time).' O: '.$reality->open);
+        }
+        foreach ($input as $sig => $values) {
+            $label = $sig;
+            $display = ['stroke' => 4];
+            if ($i = $candles->getOrAddIndicator($sig)) {
+                $o = Indicator::getOutputFromSignature($sig);
+                $label = $i->getDisplaySignature('short').' ==> '.$o;
+            }
+            //if () {
+                //$display = ['y_axis_pos' => 'right'];
+            //}
+            $data[$label] = ['display' => $display, 'values' => $values];
+        }
+        ksort($data);
+        $plot = new Plot([
+            'name' => 'Sample',
+            'width' => $width,
+            'height' => $height,
+            'data' => $data,
         ]);
         return $plot->toHTML();
     }

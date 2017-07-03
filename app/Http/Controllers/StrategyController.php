@@ -449,19 +449,19 @@ class StrategyController extends Controller
     {
         if (! $chart = Chart::loadFromSession($request->chart)) {
             error_log('sample: no chart in session');
-            return response('Chart not found.', 403);
+            return response('Chart not found.', 200);
         }
         if (!($strategy = $chart->getStrategy())) {
             error_log('Failed to get strategy ');
-            return response('Strategy not found.', 403);
+            return response('Select a FANN strategy first.', 200);
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
             error_log('sample() not a fann strategy');
-            return response('Wrong strategy type.', 403);
+            return response('Select a FANN strategy first.', 200);
         }
         if (!($candles = $chart->getCandles())) {
             error_log('Failed to get the series ');
-            return response('Could not get the series.', 403);
+            return response('Could not get the series.', 200);
         }
 
 
@@ -480,31 +480,9 @@ class StrategyController extends Controller
         ]);
         $strategy->setCandles($candles);
         $candles->setStrategy($strategy);
-//dd($candles);
-        $strategy->runInputIndicators();
-//dd($candles);
-        $t = $request->t - $resolution * $sample_size;
 
-        $strategy->resetSampleTo($t);
+        $html = $strategy->getSamplePlot(abs(floor($request->width / 2) - 100), 400, $request->t);
 
-        if (!$sample = $strategy->nextSample($sample_size)) {
-            error_log('Failed to get the sample at '.$t.' + '.$sample_size);
-            return response('Could not load the sample.', 403);
-        }
-
-ini_set('xdebug.var_display_max_depth', 20);
-ini_set('xdebug.var_display_max_children', 512);
-ini_set('xdebug.var_display_max_data', 4096);
-
-        //dd($candles->getIndicators());
-        dump($strategy->getInputGroups());
-
-        $input = $strategy->sample2io($sample, true);
-        dump($input);
-
-        $input = $strategy->normalizeInput($input, true);
-        dump($input);
-
-        return response('OK', 200);
+        return response($html, 200);
     }
 }

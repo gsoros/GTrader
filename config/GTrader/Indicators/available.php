@@ -12,6 +12,7 @@ return [
     'FannPrediction'    => ['allow_multiple' => false],
     'FannSignals'       => ['allow_multiple' => false],
     'Profitability'     => ['allow_multiple' => false],
+    'Sampler'           => ['allow_multiple' => false],
     'Avg'               => ['allow_multiple' => true],
     'Rsi'               => ['allow_multiple' => true],
     'Stoch'             => ['allow_multiple' => true],

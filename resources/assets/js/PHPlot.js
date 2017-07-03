@@ -50,6 +50,9 @@ $(function() {
                 panzoom.reset(false);
             }
         });
+        $('#' + name + ' a').on('mousedown touchstart', function(e) {
+            e.stopImmediatePropagation();
+        });
 
     };
 
@@ -66,6 +69,18 @@ $(function() {
                 window.GTrader.requestPlot(name, command, args);
         };
         //console.log(window[name].refresh);
+    };
+
+    window.GTrader.viewSample = function (name, time) {
+        window.GTrader.request(
+            'strategy',
+            'sample', {
+                chart: name,
+                t: time
+            },
+            'GET',
+            'settings_content'
+        );
     };
 
     window.GTrader.registerPHPlot = function (name, initialRefresh = true) {

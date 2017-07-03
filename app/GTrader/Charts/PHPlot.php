@@ -48,7 +48,7 @@ class PHPlot extends Chart
             error_log('PHPlot::getImage() could not create data array');
             return '';
         }
-
+        //dd($this->data);
         $this->setTitle()
             ->setColors()
             ->initPlotElements();
@@ -104,6 +104,7 @@ class PHPlot extends Chart
     {
         if ($this->image_map ||
             in_array('map', $this->getParam('disabled', [])) ||
+            !$this->getParam('image_map_active') ||
             'Ohlc' !== $item['class']) {
             return $this;
         }
@@ -127,15 +128,17 @@ class PHPlot extends Chart
                     ."\nL: ".$item['values'][$row][4]
                     ."\nC: ".$item['values'][$row][5] :
                     "\nO: ".$item['values'][$row][2];
-                $href = "javascript:console.log('".$times[$row]."')";
                 if ('rect' == $shape) {
                     $coords = sprintf('%d,%d,%d,%d', $x1, $y1, $x2, $y2);
                 } else {
                     $coords = sprintf('%d,%d,%d', $x1, $y1, $radius);
                     $shape = 'circle';
                 }
-                $image_map .= "<area shape=\"$shape\" coords=\"$coords\""
-                           .  " title=\"$title\" href=\"$href\">\n";
+                $href = '#';
+                $on_click = 'onClick="window.GTrader.viewSample(\''.$this->getParam('name').'\''.
+                    ', '.$times[$row].')"';
+                $image_map .= '<area shape="'.$shape.'" coords="'.$coords.'" title="'.
+                    $title.'" data-toggle="modal" data-target=".bs-modal-lg" '.$on_click.' href="'.$href.'">';
             }
         );
         return $this;
@@ -219,7 +222,9 @@ class PHPlot extends Chart
             }
         }
 
-        $this->_plot->setPlotType($this->map($item['mode']));
+        if ($set_mode = $this->map($item['mode'])) {
+            $this->_plot->setPlotType($set_mode);
+        }
 
         $this->_plot->SetLineWidths(2);
         $this->colors = [];
@@ -237,10 +242,16 @@ class PHPlot extends Chart
             case 'bars':
                 $this->mode_bars($item);
                 break;
+            case 'imagemap':
+                $this->mode_imagemap($item);
+                break;
             default: // line
                 $this->mode_line($item);
         }
 
+        if (0 >= $item['num_outputs']) {
+            return $this;
+        }
         $this->label = array_merge(
             [$item['label']],
             array_fill(0, $item['num_outputs'] - 1, '')
@@ -409,6 +420,13 @@ class PHPlot extends Chart
     }
 
 
+    protected function mode_imagemap($item)
+    {
+        $this->setParam('image_map_active', true);
+    }
+
+
+
     protected function setHighlight(array $item)
     {
         if ('Ohlc' !== $item['class']) {
@@ -493,18 +511,24 @@ class PHPlot extends Chart
                 ['left', 'right']
             ) ? $dir : 'left';
 
+            $mode = $ind->getParam('display.mode');
+            $values = [];
+            if ('imagemap' !== $mode) {
+                $values = $ind->getOutputArray(
+                    'sequential',
+                    true,
+                    $this->getParam('density_cutoff')
+                );
+            }
+
             $sig = $ind->getSignature();
             $item = [
                 'class' => $ind->getShortClass(),
                 'label' => 380 < $this->getParam('width') ?
                     $ind->getDisplaySignature() :
                     $ind->getDisplaySignature('short'),
-                'mode' => $ind->getParam('display.mode'),
-                'values' => $ind->getOutputArray(
-                    'sequential',
-                    true,
-                    $this->getParam('density_cutoff')
-                ),
+                'mode' => $mode,
+                'values' => $values,
             ];
 
             // find min and max

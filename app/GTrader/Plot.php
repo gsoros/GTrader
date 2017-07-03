@@ -94,11 +94,11 @@ class Plot
                     Arr::get($out, $dir.'.dim.xmax'),
                     Arr::get($out, $other_dir.'.dim.xmax')
                 ),
-                'ymin' => min(min($values), Arr::get($out, $dir.'.dim.ymin')),
-                'ymax' => max(max($values), Arr::get($out, $dir.'.dim.ymax')),
+                'ymin' => ($min = Arr::get($out, $dir.'.dim.ymin')) ? min(min($values), $min) : min($values),
+                'ymax' => ($max = Arr::get($out, $dir.'.dim.ymax')) ? max(max($values), $max) : max($values),
             ];
 
-            $out[$dir][$label] = [];
+            $out[$dir]['values'][$label] = [];
             reset($values);
             while (list($xvalue, $yvalue) = each($values)) {
                 $out[$dir]['values'][$label][] = ['', $xvalue, $yvalue];
@@ -119,7 +119,7 @@ class Plot
                 continue;
             }
             $this->setWorld($out[$dir]['dim']);
-            //dd($out);
+            //dump($out);
 
             foreach ($out[$dir]['values'] as $label => $values) {
                 //error_log($dir.' label: '.$label);
@@ -128,7 +128,7 @@ class Plot
                 }
                 $color = self::nextColor();
                 $this->_plot->SetDataValues($values);
-                $this->_plot->SetLineWidths(2);
+                $this->_plot->SetLineWidths(Arr::get($data, $label.'.display.stroke', 2));
                 $this->_plot->setPlotType('lines');
                 $this->_plot->SetDataColors([$color]);
                 $this->_plot->SetTickLabelColor($color);
