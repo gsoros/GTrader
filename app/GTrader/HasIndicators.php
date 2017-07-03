@@ -219,14 +219,10 @@ trait HasIndicators
                         function (Indicator $ind1, Indicator $ind2) use ($sort_key, $sort_val) {
                             $val1 = $ind1->getParam($sort_key);
                             $val2 = $ind2->getParam($sort_key);
-                            //error_log("Comparing $val1 and $val2 to $sort_val");
                             if ($val1 === $sort_val) {
-                                if ($val2 === $sort_val) {
-                                    return 0;
-                                } else {
-                                    return -1;
-                                }
-                            } elseif ($val2 === $sort_val) {
+                                return ($val2 === $sort_val) ? 0 : -1;
+                            }
+                            if ($val2 === $sort_val) {
                                 return 1;
                             }
                             return 0;
@@ -235,16 +231,16 @@ trait HasIndicators
                 } else {
                     usort(
                         $indicators,
-                        function (Indicator $ind1, Indicator $ind2) use ($sort_key) {
-                            return strcmp(
-                                $ind1->getParam($sort_key),
-                                $ind2->getParam($sort_key)
-                            );
+                        function (Indicator $ind1, Indicator $ind2) use ($sort_val) {
+                            $val1 = floatval($ind1->getParam($sort_val));
+                            $val2 = floatval($ind2->getParam($sort_val));
+                            return $val1 === $val2 ? 0 : ($val1 > $val2 ? 1 : -1);
                         }
                     );
                 }
             }
         }
+        //dump($filters, $sort, $indicators);
         return $indicators;
     }
 

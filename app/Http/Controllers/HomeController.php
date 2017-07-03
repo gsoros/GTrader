@@ -39,6 +39,7 @@ class HomeController extends Controller
             //'disabled' => ['map'],
             'indicators_if_new' => [
                 'Ohlc',
+                'Vol',
             ],
         ]);
         Page::add('scripts_top', '<script src="/js/GTrader.js"></script>');

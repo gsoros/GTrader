@@ -25,6 +25,7 @@ return [
         'name' => 'OHLC',
         'description' => 'Open, High, Low, Close',
         'y_axis_pos' => 'left',
+        'index' => -1,
     ],
     'normalize' => [
         'mode' => 'ohlc',

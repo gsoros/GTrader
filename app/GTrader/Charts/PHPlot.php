@@ -195,6 +195,10 @@ class PHPlot extends Chart
             //$this->_plot->SetDrawYAxis(true);
             //$this->_plot->SetYAxisPosition(200);
             $this->_plot->SetYTickLabelPos('plotright');
+            $ohlc = 'Ohlc' === $item['class'];
+            $this->_plot->SetDrawXGrid($ohlc);          // X grid lines
+            $this->_plot->SetDrawYGrid($ohlc);          // Y grid lines
+            $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
             return $this;
         }
 
@@ -626,10 +630,7 @@ class PHPlot extends Chart
         }
 
         if ('left' === $dir) {
-            $first = !boolval($index);
-            $this->_plot->SetDrawXGrid($first);         // X grid lines
-            $this->_plot->SetDrawYGrid($first);         // Y grid lines
-            $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
+
         } else {
             $this->_plot->SetDrawXGrid(false);
             $this->_plot->SetDrawYGrid(false);

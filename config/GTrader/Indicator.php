@@ -11,5 +11,6 @@ return [
         'mode' => 'line',
         'name' => 'Unnamed Indicator',
         'visible' => false,
+        'index' => 0,
     ],
 ];

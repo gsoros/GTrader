@@ -284,10 +284,13 @@ abstract class Chart extends Plot
 
     public function getIndicatorsVisibleSorted()
     {
-        $indicators = $this->getIndicatorsFilteredSorted(
-            ['display.visible' => true],
-            ['display.y_axis_pos' => 'left', 'display.name']
-        );
+        $indicators = $this->getIndicatorsFilteredSorted([
+            'display.visible' => true,
+        ], [
+            //'display.y_axis_pos' => 'left',
+            'display.index',
+            'display.name',
+        ]);
 
         if (is_array($visible = $this->getParam('visible_indicators'))) {
             foreach ($indicators as $key => $indicator) {

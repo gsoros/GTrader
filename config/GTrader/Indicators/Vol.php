@@ -9,6 +9,7 @@ return [
         'name' => 'Volume',
         'description' => 'Displays the trading volume',
         'y_axis_pos' => 'right',
+        'index' => -2,
     ],
     'normalize' => [
         'mode' => 'individual',
