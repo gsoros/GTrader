@@ -5,6 +5,19 @@ namespace GTrader;
 class Util
 {
 
+
+    public static function ksortR(&$array, $sort_flags = SORT_REGULAR)
+    {
+        if (!is_array($array)) {
+            return false;
+        }
+        ksort($array, $sort_flags);
+        foreach ($array as &$arr) {
+            self::ksortR($arr, $sort_flags);
+        }
+        return true;
+    }
+
     public static function uniqidReal(int $length = 13)
     {
         if (function_exists('random_bytes')) {

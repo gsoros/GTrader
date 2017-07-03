@@ -46,8 +46,8 @@ $(function() {
         })
         .on('panzoomend', function(e, panzoom, matrix, changed) {
             if (changed) {
-                console.log('panzoom x: ', matrix);
-                panzoom.reset();
+                console.log('panzoomend matrix: ', matrix);
+                panzoom.reset(false);
             }
         });
 

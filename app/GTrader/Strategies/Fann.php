@@ -5,6 +5,7 @@ namespace GTrader\Strategies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use GTrader\Strategy;
 use GTrader\Series;
 use GTrader\Indicator;
@@ -696,9 +697,7 @@ class Fann extends Strategy
 
         reset($inputs);
         foreach ($inputs as $sig) {
-            $norm_mode = $norm_to = $indicator = null;
-            $output = '';
-            $naked_sig = $sig;
+            $norm_mode = $indicator = null;
             $norm_params = ['mode' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
@@ -706,6 +705,7 @@ class Fann extends Strategy
             }
             elseif ('volume' === $sig) {
                 $norm_mode = 'individual';
+                $norm_params['to'] = 0;
             }
             elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig)) {
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
@@ -723,12 +723,10 @@ class Fann extends Strategy
                     continue;
                 }
                 $norm_mode = $norm_params['mode'];
-                $output = Indicator::getOutputFromSignature($sig);
-                // sig str without output
-                $naked_sig = $indicator->getSignature();
             }
             if ('individual' === $norm_mode) {
-                $norm_to = $norm_params['to'];
+                $groups['individual'][$sig]['normalize_to'] = $norm_params['to'];
+                continue;
             }
             else if ('ohlc' === $norm_mode) {
                 $groups['ohlc'][$sig] = true;
@@ -743,15 +741,9 @@ class Fann extends Strategy
                 $groups['range'][$sig] = ['min' => $min, 'max' => $max];
                 continue;
             }
-            if ('individual' === $norm_mode) {
-                if (!is_null($norm_to) && !isset($groups['individual'][$naked_sig]['normalize_to'])) {
-                    $groups['individual'][$naked_sig]['normalize_to'] = $norm_to;
-                }
-                $groups['individual'][$naked_sig]['outputs'][] = $output;
-                continue;
-            }
             error_log('Fann::getInputGroups() unknown mode in '.json_encode($norm_params).' for '.$sig);
         }
+        Util::ksortR($groups);
         //dump($groups);
         $this->cache('input_groups', $groups);
         return $groups;
@@ -777,17 +769,15 @@ class Fann extends Strategy
         }
 
         //$dumptime = strtotime('2017-06-11 10:00:00');
-
         for ($i = 0; $i < $out_sample_size; $i++) {
             reset($groups);
             foreach ($groups as $group_name => $group) {
                 //error_log('sample2io() group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
-                    $sig_key = $this->getCandles()->key($sig);
-                    //if ($dumptime == $sample[$i]->time) {
-                    //    error_log('Fann::sample2io() params: '.json_encode($params));
-                    //}
+
+                    $value = floatval($sample[$i]->{$this->getCandles()->key($sig)});
+
                     if ($i == $out_sample_size - 1) {
                         // for the last input candle, we only include fields which are based on "open",
                         // i.e. not based on any of: high, low, close or volume
@@ -796,48 +786,32 @@ class Fann extends Strategy
                             continue;
                         }
                     }
-                    $key = $sig;
-                    if ('ohlc' === $group_name) {
-                        $key = 0;
+                    if (!isset($input[$group_name][$sig])) {
+                        $input[$group_name][$sig] = ['values' => []];
                     }
-                    if (!isset($input[$group_name][$key])) {
-                        $input[$group_name][$key] = ['values' => []];
+                    if ('ohlc' === $group_name) {
+                        $input['ohlc']['_dim']['min'] = ($min = Arr::get($input, 'ohlc._dim.min')) ?
+                            min($value, $min) : $value;
+                        $input['ohlc']['_dim']['max'] = ($max = Arr::get($input, 'ohlc._dim.max')) ?
+                            max($value, $max) : $value;
                     }
                     if ('range' === $group_name) {
-                        $input[$group_name][$key] = array_merge($input[$group_name][$key], $params);
+                        $input[$group_name][$sig] = array_merge($input[$group_name][$sig], $params);
                     }
                     if (isset($params['normalize_to'])) {
-                        $input[$group_name][$key]['normalize_to'] = $params['normalize_to'];
+                        $input[$group_name][$sig]['normalize_to'] = $params['normalize_to'];
                     }
-                    // individual
-                    if (isset($params['outputs'])) {
-                        if (is_array($params['outputs'])) {
-                            $outputs_added = 0;
-                            foreach ($params['outputs'] as $output_name) {
-                                $sig_key_output = $sig_key;
-                                if ($output_name) {
-                                    $outputs_added++;
-                                    $ind = $this->getCandles()->getOrAddIndicator($sig);
-                                    $sig_key_output = $this->getCandles()->key($ind->getSignature($output_name));
-                                    $value = floatval($sample[$i]->$sig_key_output);
-                                    $input[$group_name][$key]['values'][] = $value;
-                                }
-                            }
-                            if ($outputs_added) {
-                                continue;
-                            }
-                        }
-                    }
-                    $value = floatval($sample[$i]->$sig_key);
                     if (!$value) {
                         //error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
                         //exit();
                     }
-                    $input[$group_name][$key]['values'][] = $value;
+                    $input[$group_name][$sig]['values'][] = $value;
                 }
             }
             $last_ohlc4 = Series::ohlc4($sample[$i]);
         }
+
+        Util::ksortR($input);
 
         if ($input_only) {
             return $input;
@@ -846,13 +820,19 @@ class Fann extends Strategy
     }
 
 
-    public function normalizeInput(array $input)
+    public function normalizeInput(array $input, bool $assoc = false)
     {
+        $ohlc_min = Arr::get($input, 'ohlc._dim.min', 0);
+        $ohlc_max = Arr::get($input, 'ohlc._dim.max', 0);
         // Normalize input to -1, 1
+        $norm_input = [];
         reset($input);
         foreach ($input as $group_name => $group) {
             reset($group);
             foreach ($group as $sig => $params) {
+                if ('_dim' === $sig) {
+                    continue;
+                }
                 $min = $max = null;
                 if ('range' === $group_name) {
                     $min = isset($params['min']) ? $params['min'] : null;
@@ -860,6 +840,10 @@ class Fann extends Strategy
                     if (is_null($min) || is_null($max)) {
                         error_log('Fann::normalizeInput() warning: min or max range is null for '.$group_name.': '.$sig);
                     }
+                }
+                if ('ohlc' === $group_name) {
+                    $min = $ohlc_min;
+                    $max = $ohlc_max;
                 }
                 if (is_null($min) || is_null($max)) {
                     $min = min($params['values']);
@@ -875,18 +859,13 @@ class Fann extends Strategy
                 }
                 reset($params['values']);
                 foreach ($params['values'] as $k => $v) {
-                    $input[$group_name][$sig]['values'][$k] = Series::normalize($v, $min, $max);
+                    $value = Series::normalize($v, $min, $max);
+                    if ($assoc) {
+                        $norm_input[$sig][] = $value;
+                        continue;
+                    }
+                    $norm_input[] = $value;
                 }
-            }
-        }
-
-        // collapse normalized input groups
-        $norm_input = [];
-        reset($input);
-        foreach ($input as $group_name => $group) {
-            reset($group);
-            foreach ($group as $sig => $params) {
-                $norm_input = array_merge($norm_input, $input[$group_name][$sig]['values']);
             }
         }
 

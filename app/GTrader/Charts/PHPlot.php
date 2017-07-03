@@ -37,6 +37,7 @@ class PHPlot extends Chart
     {   //dd($this->getIndicators());
         // Init
         $candles = $this->getCandles();
+        //$this->setParam('width', $this->getParam('width') + 200);
         if (!$this->initPlot()) {
             error_log('PHPlot::getImage() could not init plot');
             return '';
@@ -66,13 +67,14 @@ class PHPlot extends Chart
         $range = $ymax - $ymin;
         $this->setParam('precision', 3 < $range ? (10 < $range ? 0 : 1) : 2);
         foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
-            $this->setYAxis('left');
             $this->setPlotElements('left', $index);
+            $this->setYAxis('left');
             $this->plot($item);
         }
 
         // Plot items on right Y-axis
         foreach (Arr::get($this->data, 'right.items', []) as $index => $item) {
+            $this->setPlotElements('right', $index);
             $this->setYAxis('right');
             $this->setWorld([
                 'xmin' => $this->getParam('xmin'),
@@ -80,7 +82,6 @@ class PHPlot extends Chart
                 'ymin' => Arr::get($item, 'min', 0),
                 'ymax' => Arr::get($item, 'max', 0),
             ]);
-            $this->setPlotElements('right', $index);
             $this->plot($item);
         }
 
@@ -93,7 +94,7 @@ class PHPlot extends Chart
 
         //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
         //return $map.'<img class="img-responsive" src="'.
-        return $map.'<img src="'.
+        return $map.'<img class="PHPlot-img" src="'.
                 $this->_plot->EncodeImage().'"'.$map_str.'>'.
                 $refresh;
     }
@@ -174,20 +175,23 @@ class PHPlot extends Chart
     protected function setYAxis(string $dir = 'left')
     {
         static $left_labels_shown = false;
+
         if ('left' === $dir) {
             if ($left_labels_shown) {
-                $dir = 'none';
                 $this->_plot->SetDrawYGrid(false);
                 $this->_plot->SetDrawXDataLabels(false);
+                $this->_plot->SetDrawYAxis(false);
+                $this->_plot->SetYTickLabelPos('none');
+                return $this;
             }
             $left_labels_shown = true;
+            //$this->_plot->SetDrawYAxis(true);
+            //$this->_plot->SetYAxisPosition(200);
+            $this->_plot->SetYTickLabelPos('plotright');
+            return $this;
         }
 
-        if (in_array($dir, ['left', 'right'])) {
-            $dir = 'plot'.$dir;
-        }
-        $this->_plot->SetYTickPos('none');
-        $this->_plot->SetYTickLabelPos($dir);
+        $this->_plot->SetYTickLabelPos('plotright');
         return $this;
     }
 
@@ -242,7 +246,7 @@ class PHPlot extends Chart
             array_fill(0, $item['num_outputs'] - 1, '')
         );
         $this->_plot->SetLegend($this->label);
-        $this->_plot->SetLegendPixels(35, self::nextLegendY($item['num_outputs']));
+        $this->_plot->SetLegendPixels(5, self::nextLegendY($item['num_outputs']));
 
         return $this;
     }
@@ -612,7 +616,9 @@ class PHPlot extends Chart
 
         $this->_plot->SetDrawYAxis(false);          // Y axis line
 
+        $this->_plot->SetYTickLabelPos('none');
         $this->_plot->SetYDataLabelPos('none');
+
         $this->_plot->SetLineStyles(['solid']);
         $this->_plot->SetTickLabelColor('#555555');
 
@@ -635,6 +641,7 @@ class PHPlot extends Chart
         $longtime = 3600*24 < ($end - $start);
         $this->_plot->SetNumXTicks($xticks = floor($this->getParam('width', 200) / ($longtime ? 70 : 40)));
         $this->_plot->SetXLabelType('time', $longtime ? '%m-%d %H:%M' : '%H:%M');
+        $this->_plot->SetYTickPos('none');
 
         return $this;
     }

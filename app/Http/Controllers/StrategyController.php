@@ -496,12 +496,13 @@ ini_set('xdebug.var_display_max_depth', 20);
 ini_set('xdebug.var_display_max_children', 512);
 ini_set('xdebug.var_display_max_data', 4096);
 
-        dump($candles->getIndicators());
+        //dd($candles->getIndicators());
+        dump($strategy->getInputGroups());
 
         $input = $strategy->sample2io($sample, true);
         dump($input);
 
-        $input = $strategy->normalizeInput($input);
+        $input = $strategy->normalizeInput($input, true);
         dump($input);
 
         return response('OK', 200);

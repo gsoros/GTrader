@@ -3,6 +3,7 @@
     style="height: {{ $height }}px"
 @endif
 ></div>
+
 <script>
     window.{{ $name }} = {!! $JSON !!};
     if (window.GTrader)
