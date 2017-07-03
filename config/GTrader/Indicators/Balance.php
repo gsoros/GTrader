@@ -25,7 +25,7 @@ return [
     'display' => [
         'name' => 'Balance',
         'description' => 'Balance',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
     ],
     'normalize' => [
         'mode' => 'individual',

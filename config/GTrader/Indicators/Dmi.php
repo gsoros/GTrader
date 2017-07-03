@@ -25,7 +25,7 @@ return [
     'display' => [
         'name' => 'DMI',
         'description' => 'Directional Movement Index by J. Welles Wilder',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'outputs' => ['DX', 'Plus', 'Minus'],

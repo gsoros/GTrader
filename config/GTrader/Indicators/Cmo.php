@@ -21,7 +21,7 @@ return [
     'display' => [
         'name' => 'CMO',
         'description' => 'Chande Momentum Oscillator',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => null,

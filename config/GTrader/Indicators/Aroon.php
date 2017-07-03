@@ -18,7 +18,7 @@ return [
     'display' => [
         'name' => 'Aroon',
         'description' => 'Aroon Indicator by Tushar Chande',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'outputs' => ['Up', 'Down'],

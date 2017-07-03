@@ -23,8 +23,8 @@ abstract class Indicator //implements \JsonSerializable
 
         $this->allowed_owners = ['GTrader\\Series', 'GTrader\\Strategy'];
 
-        if (!$this->getParam('display.y_axis_pos')) {
-            $this->setParam('display.y_axis_pos', 'left');
+        if (!$this->getParam('display.y-axis')) {
+            $this->setParam('display.y-axis', 'left');
         }
     }
 
@@ -294,7 +294,7 @@ abstract class Indicator //implements \JsonSerializable
             //error_log($this->getSignature().' has already run');
             return $this;
         }
-        //dump('checkAndRun() '.$this->getShortClass().' '.$this->getParam('display.y_axis_pos'));
+        //dump('checkAndRun() '.$this->getShortClass().' '.$this->getParam('display.y-axis'));
 
         // TODO is this still used??
         if (is_array($depends = $this->getParam('depends'))) {

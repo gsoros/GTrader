@@ -21,7 +21,7 @@ return [
     'display' => [
         'name' => 'RSI',
         'description' => 'Relative Strength Index',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 50,

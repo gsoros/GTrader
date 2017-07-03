@@ -43,7 +43,7 @@ return [
     'display' => [
         'name' => 'BBands',
         'description' => 'Bollinger Bands',
-        'y_axis_pos' => 'left',
+        'y-axis' => 'left',
         'top_level' => false,
     ],
     'fill_value' => null,

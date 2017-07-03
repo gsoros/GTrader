@@ -80,7 +80,7 @@ class Plot
             }
             $dir = 'left';
             $other_dir = 'right';
-            if ($ypos = Arr::get($item, 'display.y_axis_pos')) {
+            if ($ypos = Arr::get($item, 'display.y-axis')) {
                 $other_dir = $ypos == $other_dir ? $dir : $other_dir;
                 $dir = $ypos;
             }

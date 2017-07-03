@@ -7,7 +7,7 @@ return [
     'display' => [
         'name' => 'OBV',
         'description' => 'On Balance Volume',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => null,

@@ -13,7 +13,7 @@ return [
     'display' => [
         'name' => 'Average',
         'description' => 'Average',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
 

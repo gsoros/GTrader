@@ -24,8 +24,8 @@ return [
         'mode' => 'candlestick',
         'name' => 'OHLC',
         'description' => 'Open, High, Low, Close',
-        'y_axis_pos' => 'left',
-        'index' => -1,
+        'y-axis' => 'left',
+        'z-index' => -1, // below indicators
     ],
     'normalize' => [
         'mode' => 'ohlc',

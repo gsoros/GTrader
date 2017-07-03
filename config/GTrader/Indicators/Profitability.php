@@ -6,6 +6,6 @@ return [
     ],
     'display' => [
         'name' => 'Winners vs. losers',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
     ],
 ];

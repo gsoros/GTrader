@@ -40,7 +40,7 @@ return [
     'display' => [
         'name' => 'Pass',
         'description' => 'High/Low/Band Pass',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
 

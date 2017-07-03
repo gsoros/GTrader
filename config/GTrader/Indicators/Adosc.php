@@ -28,7 +28,7 @@ return [
     'display' => [
         'name' => 'A/D Oscillator',
         'description' => 'Chaikin Accumulation/Distribution Oscillator',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

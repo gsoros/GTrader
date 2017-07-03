@@ -57,7 +57,7 @@ return [
     'display' => [
         'name' => 'MACD',
         'description' => 'Moving Average Convergence/Divergence',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => null, // fills with fist valid value

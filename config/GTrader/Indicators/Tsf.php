@@ -21,7 +21,7 @@ return [
     'display' => [
         'name' => 'TSF',
         'description' => 'Time Series Forecast',
-        'y_axis_pos' => 'left',
+        'y-axis' => 'left',
         'top_level' => false,
     ],
     'fill_value' => 'input_source',

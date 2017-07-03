@@ -19,7 +19,7 @@ return [
     'display' => [
         'name' => 'CCI',
         'description' => 'Commodity Channel Index by Donald Lambert',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

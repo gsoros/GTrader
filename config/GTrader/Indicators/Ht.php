@@ -31,34 +31,34 @@ return [
     'modes'=> [
         'dcperiod' => [
             'sources' => ['input_a'],
-            'display' => ['y_axis_pos' => 'right'],
+            'display' => ['y-axis' => 'right'],
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'dcphase' => [
             'sources' => ['input_a'],
-            'display' => ['y_axis_pos' => 'right'],
+            'display' => ['y-axis' => 'right'],
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'phasor' => [
             'sources' => ['input_a', 'input_b'],
-            'display' => ['y_axis_pos' => 'right'],
+            'display' => ['y-axis' => 'right'],
             'outputs' => ['A', 'B'],
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'sine' => [
             'sources' => ['input_a', 'input_b'],
-            'display' => ['y_axis_pos' => 'right'],
+            'display' => ['y-axis' => 'right'],
             'outputs' => ['A', 'B'],
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'trendline' => [
             'sources' => ['input_a'],
-            'display' => ['y_axis_pos' => 'input_a'],
+            'display' => ['y-axis' => 'input_a'],
             'normalize' => 'input_a',
         ],
         'trendmode' => [
             'sources' => ['input_a'],
-            'display' => ['y_axis_pos' => 'right'],
+            'display' => ['y-axis' => 'right'],
             'normalize' => [
                 'mode' => 'range',
                 'range' => [
@@ -71,7 +71,7 @@ return [
     'display' => [
         'name' => 'HT',
         'description' => 'Hilbert Transform',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
 

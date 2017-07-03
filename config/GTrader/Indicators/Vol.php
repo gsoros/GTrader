@@ -8,8 +8,8 @@ return [
         'mode' => 'bars',
         'name' => 'Volume',
         'description' => 'Displays the trading volume',
-        'y_axis_pos' => 'right',
-        'index' => -2,
+        'y-axis' => 'right',
+        'z-index' => -2, // below ohlc
     ],
     'normalize' => [
         'mode' => 'individual',

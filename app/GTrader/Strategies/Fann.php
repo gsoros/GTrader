@@ -167,7 +167,7 @@ class Fann extends Strategy
             if (!array_key_exists($name, $data)) {
                 $display = [];
                 if ('train_mser' === $item->name) {
-                    $display = ['y_axis_pos' => 'right'];
+                    $display = ['y-axis' => 'right'];
                 }
                 $data[$name] = ['display' => $display, 'values' => []];
             }
@@ -219,7 +219,7 @@ class Fann extends Strategy
                 $label = $i->getDisplaySignature('short').' ==> '.$o;
             }
             //if () {
-                //$display = ['y_axis_pos' => 'right'];
+                //$display = ['y-axis' => 'right'];
             //}
             $data[$label] = ['display' => $display, 'values' => $values];
         }

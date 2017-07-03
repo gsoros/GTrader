@@ -89,7 +89,7 @@ return [
     'display' => [
         'name' => 'SAR',
         'description' => 'Parabolic Stop And Reverse',
-        'y_axis_pos' => 'left',
+        'y-axis' => 'left',
         'top_level' => false,
     ],
     'normalize' => [

@@ -193,7 +193,7 @@ trait HasIndicators
      * Get indicators, filtered, sorted
      *
      * @param  array    $filters    e.g. ['display.visible' => true]
-     * @param  array    $sort       e.g. ['display.y_axis_pos' => 'left', 'display.name']
+     * @param  array    $sort       e.g. ['display.y-axis' => 'left', 'display.name']
      * @return array
      */
     public function getIndicatorsFilteredSorted(array $filters = [], array $sort = [])

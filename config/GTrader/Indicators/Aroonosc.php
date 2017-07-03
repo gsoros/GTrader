@@ -18,7 +18,7 @@ return [
     'display' => [
         'name' => 'Aroon Oscillator',
         'description' => 'Aroon Oscillator by Tushar Chande',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

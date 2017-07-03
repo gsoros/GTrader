@@ -13,7 +13,7 @@ return [
     'display' => [
         'name' => 'ROC',
         'description' => 'Rate Of Change',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

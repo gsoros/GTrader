@@ -12,7 +12,7 @@ return [
     'display' => [
         'name' => 'BOP',
         'description' => 'Balance Of Power',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

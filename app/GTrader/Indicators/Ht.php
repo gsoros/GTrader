@@ -38,7 +38,7 @@ class Ht extends Trader
         }
 
         // set y-axis-pos according to the selected mode
-        if ($ypos = Arr::get($sel, 'display.y_axis_pos')) {
+        if ($ypos = Arr::get($sel, 'display.y-axis')) {
             if (in_array($ypos, array_keys($this->getInputs()))) {
                 if ($input = $this->getInput($ypos)) {
                     if ($this->inputFrom(['open', 'high', 'low', 'close'])) {
@@ -48,7 +48,7 @@ class Ht extends Trader
                     }
                 }
             }
-            $this->setParam('display.y_axis_pos', $ypos);
+            $this->setParam('display.y-axis', $ypos);
         }
 
         // set normalize settings according to the selected mode

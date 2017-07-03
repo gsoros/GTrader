@@ -8,7 +8,7 @@ return [
     'display' => [
         'name' => 'IBS',
         'description' => 'Internal Bar Stregth',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'normalize' => [

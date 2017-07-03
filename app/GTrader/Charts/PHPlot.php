@@ -515,7 +515,7 @@ class PHPlot extends Chart
             $ind->checkAndRun();
 
             $dir = in_array(
-                $dir = $ind->getParam('display.y_axis_pos', 'left'),
+                $dir = $ind->getParam('display.y-axis', 'left'),
                 ['left', 'right']
             ) ? $dir : 'left';
 

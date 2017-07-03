@@ -12,7 +12,7 @@ return [
     'display' => [
         'name' => 'A/D Line',
         'description' => 'Chaikin Accumulation/Distribution Line',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'fill_value' => 0,

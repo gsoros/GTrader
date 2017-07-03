@@ -127,7 +127,7 @@ class Pass extends HasInputs
         $low_ref = $candles->key($this->getInput('input_lowRef'));
 
         $this->setParam(
-            'display.y_axis_pos',
+            'display.y-axis',
             in_array($input, ['open', 'high', 'low', 'close']) ? 'left' : 'right'
         );
         //dd($this->getParams());

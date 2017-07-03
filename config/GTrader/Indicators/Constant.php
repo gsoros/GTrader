@@ -19,7 +19,7 @@ return [
     'display' => [
         'name' => 'Constant',
         'description' => 'Constant',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
 

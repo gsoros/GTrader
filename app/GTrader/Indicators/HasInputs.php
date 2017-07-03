@@ -123,17 +123,17 @@ abstract class HasInputs extends Indicator
     }
 
 
-    // TOOD !!! side effects !!! this method should not modify y_axis_pos etc
+    // TOOD !!! side effects !!! this method should not modify y-axis etc
     public function runDependencies(bool $force_rerun = false)
     {
         $inputs = $this->getInputs();
         //error_log('HasInputs::runDependencies() inputs: '.json_encode($inputs));
         if (in_array('volume', $inputs)) {
-            $this->setParam('display.y_axis_pos', 'right');
+            $this->setParam('display.y-axis', 'right');
         }
         else if (!$this->inputFromIndicator() &&
             count(array_intersect(['open', 'high', 'low', 'close'], $inputs))) {
-            $this->setParam('display.y_axis_pos', 'left');
+            $this->setParam('display.y-axis', 'left');
             return true;
         }
         if (! $inds = $this->getOrAddInputIndicators()) {
@@ -142,14 +142,14 @@ abstract class HasInputs extends Indicator
         }
         $count_left = 0;
         foreach ($inds as $ind) {
-            if ('left' === $ind->getParam('display.y_axis_pos')) {
+            if ('left' === $ind->getParam('display.y-axis')) {
                 $count_left++;
             }
             $ind->addRef($this);
             //dump('runDependencies() '.$this->getShortClass().' running '.$ind->getShortClass());
             $ind->checkAndRun($force_rerun);
         }
-        $this->setParam('display.y_axis_pos', ($count_left === count($inds)) ? 'left' : 'right');
+        $this->setParam('display.y-axis', ($count_left === count($inds)) ? 'left' : 'right');
         return $this;
     }
 

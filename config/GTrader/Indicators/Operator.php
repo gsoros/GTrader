@@ -29,7 +29,7 @@ return [
     'display' => [
         'name' => 'Operator',
         'description' => 'Simple Mathematical Operations',
-        'y_axis_pos' => 'right',
+        'y-axis' => 'right',
         'top_level' => false,
     ],
     'normalize' => [

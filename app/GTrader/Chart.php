@@ -287,8 +287,8 @@ abstract class Chart extends Plot
         $indicators = $this->getIndicatorsFilteredSorted([
             'display.visible' => true,
         ], [
-            //'display.y_axis_pos' => 'left',
-            'display.index',
+            //'display.y-axis' => 'left',
+            'display.z-index',
             'display.name',
         ]);
 
