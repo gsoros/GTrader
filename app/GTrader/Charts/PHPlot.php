@@ -67,15 +67,15 @@ class PHPlot extends Chart
         $range = $ymax - $ymin;
         $this->setParam('precision', 3 < $range ? (10 < $range ? 0 : 1) : 2);
         foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
-            $this->setPlotElements('left', $index);
-            $this->setYAxis('left');
+            $this->setPlotElements('left', $index, $item);
+            $this->setYAxis('left', $item);
             $this->plot($item);
         }
 
         // Plot items on right Y-axis
         foreach (Arr::get($this->data, 'right.items', []) as $index => $item) {
-            $this->setPlotElements('right', $index);
-            $this->setYAxis('right');
+            $this->setPlotElements('right', $index, $item);
+            $this->setYAxis('right', $item);
             $this->setWorld([
                 'xmin' => $this->getParam('xmin'),
                 'xmax' => $this->getParam('xmax'),
@@ -175,9 +175,13 @@ class PHPlot extends Chart
 
 
 
-    protected function setYAxis(string $dir = 'left')
+    protected function setYAxis(string $dir = 'left', array $item)
     {
         static $left_labels_shown = false;
+
+        if (0 >= count(Arr::get($item, 'values', []))) {
+            return $this;
+        }
 
         if ('left' === $dir) {
             if ($left_labels_shown) {
@@ -615,8 +619,12 @@ class PHPlot extends Chart
     }
 
 
-    protected function setPlotElements(string $dir = 'left', int $index = null)
+    protected function setPlotElements(string $dir = 'left', int $index = null, array $item)
     {
+        if (0 >= count(Arr::get($item, 'values', []))) {
+            return $this;
+        }
+
         if ('left' === $dir) {
             $first = !boolval($index);
             $this->_plot->SetDrawXGrid($first);         // X grid lines
