@@ -30,28 +30,6 @@ class Util
         return substr(bin2hex($bytes), 0, $length);
     }
 
-    public static function arrEl(array $arr, array $list)
-    {
-        //error_log('Util::arrEl() arr: '.json_encode($arr).' list: '.json_encode($list));
-        if (!is_array($arr) ||
-            !is_array($list)) {
-            return null;
-        }
-        if (is_null($el = array_shift($list))) {
-            return null;
-        }
-        if (!isset($arr[$el])) {
-            return null;
-        }
-        if (count($list)) {
-            if (! is_array($arr[$el])) {
-                return null;
-            }
-            return self::arrEl($arr[$el], $list);
-        }
-        //error_log('Util::arrEl() found '.$el.': '.$arr[$el]);
-        return $arr[$el];
-    }
 
     public static function db_escape($string)
     {

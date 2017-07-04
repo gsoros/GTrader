@@ -38,18 +38,25 @@ abstract class Indicator //implements \JsonSerializable
 /*
     public function __sleep()
     {
-        dump('Indicator::__sleep()', $this);
-        //$this->sleepingbag = $this->getParam('indicator');
-        //return ['sleepingbag', 'owner', 'refs'];
-        return [];
+        //dump('Indicator::__sleep()', $this);
+        $this->sleepingbag = $this->getParam('indicator');
+        return ['sleepingbag', 'owner', 'refs'];
+        //return [];
     }
 
-    public function __wakep()
+    public function __wakeup()
     {
-        dump('Indicator::__wakeup()', $this);
-        //$this->setParam('indicator', $this->sleepingbag);
+        //dump('Indicator::__wakeup()', $this);
+
+        self::loadConfRecursive(get_class($this));
+        $this->setParam('indicator', $this->sleepingbag);
+        $this->calculated = false;
     }
 */
+    public function __wakeup()
+    {
+        $this->calculated = false;
+    }
 /*
     public function jsonSerialize()
     {
@@ -64,12 +71,6 @@ abstract class Indicator //implements \JsonSerializable
 
     abstract public function calculate(bool $force_rerun = false);
 
-
-    public function __wakeup()
-    {
-        $this->calculated = false;
-        //$this->refs = [];
-    }
 
 
     public function addRef($ind_or_sig)

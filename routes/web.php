@@ -21,9 +21,11 @@ if (\Config::get('app.env') === 'local') {
     Route::get('/phpinfo', function() {
         ob_start();
         phpinfo();
-        $phpinfo = ob_get_contents();
+        //dump(gd_info());
+        //echo 'GDFONTPATH='.getenv('GDFONTPATH');
+        $info = ob_get_contents();
         ob_end_clean();
-        return $phpinfo;
+        return $info;
     });
 }
 

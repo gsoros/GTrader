@@ -46,7 +46,7 @@ class FannSignals extends Indicator
     {
         $candles = $this->getCandles();
 
-        $signature = $candles->key($this->getSignature());
+        $key = $candles->key($this->getSignature());
 
         $strategy = $this->getOwner()->getStrategy();
         if (!$strategy) {
@@ -59,7 +59,7 @@ class FannSignals extends Indicator
         $indicator = $strategy->getPredictionIndicator();
         $indicator->addRef($this);
         $indicator->checkAndRun($force_rerun);
-        $indicator_sig = $candles->key($indicator->getSignature());
+        $indicator_key = $candles->key($indicator->getSignature());
 
         $last = ['time' => 0, 'signal' => ''];
         $candles_seen = 0;
@@ -84,8 +84,8 @@ class FannSignals extends Indicator
 
         $candles->reset();
         while ($candle = $candles->next()) {
-            if ($force_rerun && isset($candle->$signature)) {
-                unset($candle->$signature);
+            if ($force_rerun && isset($candle->$key)) {
+                unset($candle->$key);
             }
 
             $candles_seen++;
@@ -100,19 +100,19 @@ class FannSignals extends Indicator
                 continue;
             }
 
-            if (isset($candle->$indicator_sig)) {
+            if (isset($candle->$indicator_key)) {
                 // skip trade if last trade was recent
                 if ($last['time'] >= $candle->time - $min_distance * $resolution) {
                     continue;
                 }
 
-                if ($candle->$indicator_sig >
+                if ($candle->$indicator_key >
                     $candle->open + $candle->open / $long_threshold &&
                     ($last['signal'] != 'long' || $spitfire)) {
                     $price = 'ohlc4' === $long_source ?
                         Series::ohlc4($candle) :
                         $candle->$long_source;
-                    $candle->$signature = [
+                    $candle->$key = [
                         'signal' => 'long',
                         'price' => $price,
                     ];
@@ -123,13 +123,13 @@ class FannSignals extends Indicator
                     continue;
                 }
 
-                if ($candle->$indicator_sig <
+                if ($candle->$indicator_key <
                     $candle->open - $candle->open / $short_threshold &&
                     ($last['signal'] != 'short' || $spitfire)) {
                     $price = 'ohlc4' === $short_source ?
                         Series::ohlc4($candle) :
                         $candle->$short_source;
-                    $candle->$signature = [
+                    $candle->$key = [
                         'signal' => 'short',
                         'price' => $price,
                     ];

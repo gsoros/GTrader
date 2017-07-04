@@ -13,6 +13,7 @@ return [
     'FannSignals'       => ['allow_multiple' => false],
     'Profitability'     => ['allow_multiple' => false],
     'Sampler'           => ['allow_multiple' => false],
+    'Patterns'          => ['allow_multiple' => true],
     'Avg'               => ['allow_multiple' => true],
     'Rsi'               => ['allow_multiple' => true],
     'Stoch'             => ['allow_multiple' => true],

@@ -52,7 +52,7 @@ trait HasIndicators
             return $existing;
         }
         $indicator->setParams($params_if_new);
-        $owner->indicators[$sig] = $indicator;
+        $owner->indicators[] = $indicator;
         $indicator->createDependencies();
         return $indicator;
     }
@@ -74,8 +74,8 @@ trait HasIndicators
 
     public function getIndicator(string $sig)
     {
-        foreach ($this->getIndicators() as $existing_sig => $existing_ind) {
-            if (Indicator::signatureSame($sig, $existing_sig)) {
+        foreach ($this->getIndicators() as $existing_ind) {
+            if (Indicator::signatureSame($sig, $existing_ind->getSignature())) {
                 return $existing_ind;
             }
         }
@@ -158,24 +158,30 @@ trait HasIndicators
     public function unsetIndicator(Indicator $indicator)
     {
         $sig = $indicator->getSignature();
-        if (!isset($this->getIndicatorOwner()->indicators[$sig])) {
+        $target = null;
+        foreach ($this->getIndicatorOwner()->indicators as $key => $existing) {
+            if ($sig === $existing->getSignature()) {
+                $target = $existing;
+                break;
+            }
+        }
+        if (is_null($target)) {
             error_log('unsetIndicator() but not set: '.$sig);
             return $this;
         }
-        if (0 < $indicator->refCount()) {
-            error_log('unsetIndicator() warning: refcount is non-zero');
+        if (0 < $target->refCount()) {
+            error_log('unsetIndicator() warning: refcount is non-zero for '.$sig);
         }
-        //error_log('unsetIndicator() '.$indicator->debugObjId());
-        unset($this->getIndicatorOwner()->indicators[$sig]);
+        //error_log('unsetIndicator() '.$target->debugObjId());
+        unset($this->getIndicatorOwner()->indicators[$key]);
         return $this;
     }
 
 
-    public function unsetIndicators(string $signature)
+    public function unsetIndicators(string $sig)
     {
-        foreach ($this->getIndicators() as $existing_sig => $existing_ind) {
-            //error_log($existing_sig.' vs '.$signature);
-            if ($existing_sig === $signature) {
+        foreach ($this->getIndicators() as $key => $existing_ind) {
+            if ($sig === $existing_ind->getSignature()) {
                 $this->unsetIndicator($existing_ind);
             }
         }
@@ -416,6 +422,18 @@ trait HasIndicators
                     }
                 }
             }
+            else if ('list' === $type) {
+                $items = [];
+                if (isset($param['items'])) {
+                    if (is_array($param['items'])) {
+                        $items = $param['items'];
+                    }
+                }
+                if (!is_array($val)) {
+                    $val = [$val];
+                }
+                $val = array_intersect(array_keys($items), $val);
+            }
             else if ('source' === $type) {
                 $val = stripslashes(urldecode($val));
                 // TODO is this still needed? /////////////////////////
@@ -432,6 +450,7 @@ trait HasIndicators
         if (method_exists($indicator, 'init')) {
             $indicator->init(true);
         }
+        //dump($indicator);
         $this->unsetIndicators($sig);
         $indicator->setParam('display.visible', true);
         $this->addIndicator($indicator);

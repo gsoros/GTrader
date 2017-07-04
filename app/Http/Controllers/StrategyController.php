@@ -76,6 +76,7 @@ class StrategyController extends Controller
             error_log('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Failed to load strategy.', 403);
         }
+        //dd($strategy);
         $form = $strategy->toHTML();
         return response($form, 200);
     }

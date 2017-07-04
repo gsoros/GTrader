@@ -15,7 +15,7 @@ abstract class HasInputs extends Indicator
             return $inputs;
         }
         //error_log('HasInputs::getInputs() params: '.json_encode($this->getParam('indicator')));
-        foreach ($this->getParam('indicator') as $k => $v) {
+        foreach ($this->getParam('indicator', []) as $k => $v) {
             if ('input_' === substr($k, 0, 6)) {
                 if (!is_string($v)) {
                     $v = json_encode($v);

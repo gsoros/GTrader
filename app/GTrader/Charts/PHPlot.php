@@ -64,6 +64,7 @@ class PHPlot extends Chart
             'ymin' => $ymin = Arr::get($this->data, 'left.min', 0),
             'ymax' => $ymax = Arr::get($this->data, 'left.max', 0),
         ]);
+        //dd($ymax, $ymin);
         $range = $ymax - $ymin;
         $this->setParam('precision', 3 < $range ? (10 < $range ? 0 : 1) : 2);
         foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
@@ -146,20 +147,37 @@ class PHPlot extends Chart
 
     public function plot(array $item)
     {
+        if (!is_array($item['values'])) {
+            return $this;
+        }
+        if (!count($item['values'])) {
+            return $this;
+        }
         // add an empty string and the timestamp to the beginning of each data array
+        // and check if there are any non-empty values
         $t = Arr::get($this->data, 'times', []);
-        array_walk($item['values'], function (&$v, $k) use ($t) {
+        $empty = true;
+        array_walk($item['values'], function (&$v, $k) use ($t, &$empty) {
             if (!$time = Arr::get($t, $k)) {
                 error_log('plot() time not found for index '.$k);
             }
+            if ($empty) {
+                array_walk($v, function ($v, $k) use (&$empty){
+                    $empty = $empty ? empty($v) : false;
+                });
+            }
             array_unshift($v, '', $time);
         });
-
+        if ($empty) {
+            return $this;
+        }
         $this->setMode($item);
         $this->setHighlight($item);
 
+        if (!is_array($item['values'])) {
+            return $this;
+        }
         if (!count($item['values'])) {
-            error_log('PHPlot::plot() no data values for '.$item['label']);
             return $this;
         }
 
@@ -167,9 +185,9 @@ class PHPlot extends Chart
         $this->_plot->setDataColors($this->colors);
 
         $this->_plot->SetDataValues($item['values']);
-
+        //dump('start '.$item['label']);
         $this->_plot->drawGraph();
-        //dump($item);
+        //dump('end '.$item['label']);
         return $this;
     }
 
@@ -231,7 +249,9 @@ class PHPlot extends Chart
         }
 
         if ($set_mode = $this->map($item['mode'])) {
-            $this->_plot->setPlotType($set_mode);
+            if (in_array($set_mode, $this->getParam('plot_types'))) {
+                $this->_plot->setPlotType($set_mode);
+            }
         }
 
         $this->_plot->SetLineWidths(2);
@@ -252,6 +272,9 @@ class PHPlot extends Chart
                 break;
             case 'imagemap':
                 $this->mode_imagemap($item);
+                break;
+            case 'annotation':
+                $this->mode_annotation($item);
                 break;
             default: // line
                 $this->mode_line($item);
@@ -346,10 +369,62 @@ class PHPlot extends Chart
     }
 
 
+    protected function mode_annotation(array &$item)
+    {
+        $this->colors = ['#ff0000a3', '#00ff00b3'];
+        $this->_plot->setPlotType('points');
+        $this->_plot->setPointSizes(0);
+        $this->_plot->SetPointShapes('dot');
+
+        $contents = [];
+
+        $t = Arr::get($this->data, 'times', []);
+
+        //$item['values'] = [];
+
+        foreach ($item['values'] as $key => $val) {
+            $dot = null;
+            if (isset($val[2]['price']) && isset($val[2]['contents'])) {
+                $dot = $val[2]['price'];
+                $contents[$t[$key]] = $val[2];
+            }
+            $item['values'][$key][2] = $dot;
+        }
+        $font_size = floor($this->getParam('width') / count($item['values']) / 2.5);
+        $font_size = 5 > $font_size ? 5 : $font_size;
+        $this->_plot->SetCallback('draw_all', function ($img, $plot)
+            use ($contents, $font_size){
+
+            $red = imagecolorallocatealpha($img, 200, 0, 0, 66);
+            $green = imagecolorallocatealpha($img, 0, 180, 0, 85);
+            foreach ($contents as $index => $content) {
+                list($x, $y) = $plot->GetDeviceXY($index, $content['price']);
+                $val = array_sum($content['contents']);
+                $text = join(', ', array_keys($content['contents'])).' '.$val;
+                $color = 0 > $val ? $red : $green;
+                //$plot->DrawText('', 90, $x, $y, $color, $text, 'center', 'bottom');
+
+                $fontPath = storage_path('fonts/Vera.ttf');
+                $rotation = 270; // counter-clockwise rotation
+                $textCoords = imagettfbbox($font_size, $rotation, $fontPath, $text);
+                error_log(json_encode($textCoords));
+                $y = 0 > $val ? $y - $textCoords[3] - 10 : $y + 10;
+                imagettftext($img, $font_size, $rotation, $x-3, $y, $color, $fontPath, $text);
+
+
+
+
+            }
+        }, $this->_plot);
+
+        return $this;
+    }
+
+
     // Volume
     protected function mode_bars(array &$item)
     {
-        //dump($item);
+        //dump($item['values']);
         $this->colors = ['#ff0000f2', '#00ff00f2'];
         $this->_plot->SetTickLabelColor($this->colors[1]);
 
@@ -539,22 +614,21 @@ class PHPlot extends Chart
                 'values' => $values,
             ];
 
-            // find min and max
-            $values_min = $ind->min($item['values']);
-            // WTF? $values_min = is_null($values_min) ? null : $this->min(Arr::get($item, 'min'), $values_min);
-            $values_max = $ind->max($item['values']);
-            // WTF? $values_max = is_null($values_max) ? null : $this->max(Arr::get($item, 'max'), $values_max);
+            if ('annotation' !== $mode) {
+                // find min and max
+                $values_min = $ind->min($item['values']);
+                $values_max = $ind->max($item['values']);
 
-            // Left Y-axis needs to know 'global' min and max
-            if ('left' === $dir) {
-                $this->data['left']['min'] = $this->min(Arr::get($this->data, 'left.min'), $values_min);
-                $this->data['left']['max'] = $this->max(Arr::get($this->data, 'left.max'), $values_max);
-            }
-
-            // Right Y-axis items need individual min and max
-            else {
-                $item['min'] = $values_min;
-                $item['max'] = $values_max;
+                // Left Y-axis needs to know 'global' min and max
+                if ('left' === $dir) {
+                    $this->data['left']['min'] = $this->min(Arr::get($this->data, 'left.min'), $values_min);
+                    $this->data['left']['max'] = $this->max(Arr::get($this->data, 'left.max'), $values_max);
+                }
+                // Right Y-axis items need individual min and max
+                else {
+                    $item['min'] = $values_min;
+                    $item['max'] = $values_max;
+                }
             }
 
             // used later to set the page title
@@ -638,6 +712,7 @@ class PHPlot extends Chart
         }
 
 
+        $this->_plot->RemoveCallback('draw_all');
         $this->_plot->RemoveCallback('data_color');
         $this->_plot->RemoveCallback('data_points');
 

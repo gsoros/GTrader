@@ -16,6 +16,7 @@ abstract class Trader extends HasInputs
     {
         trader_set_unstable_period(TRADER_FUNC_UNST_ALL, 0);
         parent::__construct($params);
+        $this->unsetParam('MA_TYPES');
     }
 
     public function calculate(bool $force_rerun = false)

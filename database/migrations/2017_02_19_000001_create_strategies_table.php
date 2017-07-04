@@ -17,8 +17,9 @@ class CreateStrategiesTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
             $table->string('name')->index();
-            $table->binary('strategy')->nullable();
+            //$table->binary('strategy')->nullable();
         });
+        DB::statement('ALTER TABLE strategies ADD strategy LONGBLOB NULL DEFAULT NULL');
     }
 
     /**

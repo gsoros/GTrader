@@ -68,6 +68,38 @@ class HomeController extends Controller
 
     public function test()
     {
+
+        $functions = get_defined_functions();
+        $functions_list = [];
+        foreach ($functions['internal'] as $func) {
+            if (!strstr($func, 'trader_')) {
+                continue;
+            }
+            $f = new \ReflectionFunction($func);
+            $args = [];
+            foreach ($f->getParameters() as $param) {
+                $tmparg = '';
+                if ($param->isOptional()) {
+                    $tmparg .= '[';
+                }
+                if ($param->isPassedByReference()) {
+                    $tmparg .= '&';
+                }
+                $tmparg .= '$'.$param->getName();
+                if ($param->isDefaultValueAvailable()) {
+                    $tmparg .= ' = '.$param->getDefaultValue();
+                }
+                if ($param->isOptional()) {
+                    $tmparg .= ']';
+                }
+                $args[] = $tmparg;
+            }
+            $functions_list[] = $func.' ('.implode(', ', $args).')';
+        }
+        dd($functions_list);
+
+
+
         $arr = [
             'a' => [
                 'b' => [
@@ -81,7 +113,6 @@ class HomeController extends Controller
         ];
 
         $list = ['a', 'b', 'c', 1, 'd'];
-        //$res = Util::arrEl($arr, $list);
 
         $key = 'a.b.c.1';
         $res = Arr::get($arr, $key);

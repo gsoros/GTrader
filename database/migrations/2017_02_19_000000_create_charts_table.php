@@ -17,8 +17,9 @@ class CreateChartsTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
             $table->string('name')->index();
-            $table->binary('chart')->nullable();
+            //$table->binary('chart')->nullable();
         });
+        DB::statement('ALTER TABLE charts ADD chart LONGBLOB');
     }
 
     /**

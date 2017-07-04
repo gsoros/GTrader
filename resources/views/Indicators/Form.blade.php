@@ -79,6 +79,22 @@
                     @endif
                 </select>
 
+                @elseif ('list' === $param['type'])
+                <select multiple="mnultiple"  size="20"
+                        class="btn-primary btn btn-mini form-control form-control-sm"
+                        id="{{ $key }}_{{ $uid }}"
+                        title="{{ $param['description'] or '' }}">
+                    @if (is_array($param['items']))
+                        @foreach ($param['items'] as $opt_k => $opt_v)
+                            <option
+                            @if (in_array($opt_k, $indicator->getParam('indicator.'.$key, [])))
+                                selected
+                            @endif
+                            value="{{ $opt_k }}">{{ $opt_v }}</option>
+                        @endforeach
+                    @endif
+                </select>
+
                 @elseif (in_array($param['type'], ['int', 'float']))
                     @php
                         $opts = $title = '';

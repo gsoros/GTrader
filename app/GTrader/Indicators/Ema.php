@@ -8,8 +8,8 @@ class Ema extends Ma
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->unSetParam('indicator.type')
-            ->unSetParam('adjustable.type');
+        $this->unsetParam('indicator.type')
+            ->unsetParam('adjustable.type');
     }
 
     public function getMaType()
