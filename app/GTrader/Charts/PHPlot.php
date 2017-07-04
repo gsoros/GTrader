@@ -150,13 +150,10 @@ class PHPlot extends Chart
         if (!is_array($item['values'])) {
             return $this;
         }
-        if (!count($item['values'])) {
-            return $this;
-        }
         // add an empty string and the timestamp to the beginning of each data array
         // and check if there are any non-empty values
         $t = Arr::get($this->data, 'times', []);
-        $empty = true;
+        $empty = 'imagemap' !== $item['mode'];
         array_walk($item['values'], function (&$v, $k) use ($t, &$empty) {
             if (!$time = Arr::get($t, $k)) {
                 error_log('plot() time not found for index '.$k);

@@ -64,7 +64,7 @@ return [
         'gapsidesidewhite' => 'Gapside Side White',
         'gravestonedoji' => 'Gravestone Doji',
         'hammer' => 'Hammer',
-        'hangingman' => 'Hangingman',
+        'hangingman' => 'Hanging Man',
         'harami' => 'Harami',
         'haramicross' => 'Harami Cross',
         'highwave' => 'Highwave',
