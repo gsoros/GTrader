@@ -407,7 +407,6 @@ class PHPlot extends Chart
                 $fontPath = storage_path('fonts/Vera.ttf');
                 $rotation = 270; // counter-clockwise rotation
                 $textCoords = imagettfbbox($font_size, $rotation, $fontPath, $text);
-                error_log(json_encode($textCoords));
                 $y = 0 > $val ? $y - $textCoords[3] - 10 : $y + 10;
                 imagettftext($img, $font_size, $rotation, $x-3, $y, $color, $fontPath, $text);
 
