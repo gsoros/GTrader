@@ -6,6 +6,8 @@ return [
         'input_high' => 'high',
         'input_low' => 'low',
         'input_close' => 'close',
+        'show_line' => false,
+        'show_annotation' => true,
         'use_functions' => [], // items are added in the constructor
     ],
     'adjustable' => [
@@ -24,6 +26,14 @@ return [
         'input_close' => [
             'name' => 'Close Source',
             'type' => 'source',
+        ],
+        'show_line' => [
+            'name' => 'Display Sum Line',
+            'type' => 'bool',
+        ],
+        'show_annotation' => [
+            'name' => 'Display Annotation',
+            'type' => 'bool',
         ],
         'use_functions' => [
             'name' => 'Search for',

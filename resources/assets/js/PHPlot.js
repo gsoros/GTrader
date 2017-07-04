@@ -40,20 +40,6 @@ $(function() {
                 window.GTrader.requestPlot(split[1], split[0]);
             });
         });
-
-        $('#' + name).panzoom({
-            disableYAxis: true
-        })
-        .on('panzoomend', function(e, panzoom, matrix, changed) {
-            if (changed) {
-                console.log('panzoomend matrix: ', matrix);
-                panzoom.reset(false);
-            }
-        });
-        $('#' + name + ' a').on('mousedown touchstart', function(e) {
-            e.stopImmediatePropagation();
-        });
-
     };
 
 
@@ -81,6 +67,7 @@ $(function() {
             'GET',
             'settings_content'
         );
+        return false;
     };
 
     window.GTrader.registerPHPlot = function (name, initialRefresh = true) {

@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** CDL_* family of patterns from TA-Lib */
 class Patterns extends Trader
 {
-    protected $annotation = [];
 
     public function __construct(array $params = [])
     {
@@ -42,16 +41,6 @@ class Patterns extends Trader
         $this->setParam('adjustable.use_functions.items', $functions);
     }
 
-    public function __sleep()
-    {
-        $this->annotation = [];
-        return array_keys(get_object_vars($this));
-    }
-
-    public function getAnnotation()
-    {
-        return $this->annotation;
-    }
 
     public function getDisplaySignature(string $format = 'long')
     {
@@ -66,6 +55,31 @@ class Patterns extends Trader
     public function runDependencies(bool $force_rerun = false)
     {
         return $this;
+    }
+
+    public function getOutputArray(
+        string $index_type = 'sequential',
+        bool $respect_padding = false,
+        int $density_cutoff = null)
+    {
+        if ('annotation' === $this->getParam('display.mode')) {
+            if (!$this->getParam('indicator.show_annotation')) {
+                return [];
+            }
+            return $this->getCandles()->extract(
+                $this->getSignature().':::annotation',
+                $index_type,
+                $respect_padding,
+                $density_cutoff
+            );
+        }
+        if ('line' === $this->getParam('display.mode')) {
+            if (!$this->getParam('indicator.show_line')) {
+                return [];
+            }
+            return parent::getOutputArray($index_type, $respect_padding, $density_cutoff);
+        }
+        return [];
     }
 
     public function traderCalc(array $values)
@@ -93,8 +107,9 @@ class Patterns extends Trader
                 $close,
             ]);
 
+            $func_label = $this->getParam('map.'.$func, $func);
             array_walk($open, function ($v, $k)
-                use (&$annotation, &$line, $func, $output) {
+                use (&$annotation, &$line, $func, $output, $func_label) {
                 if (!isset($line[$k])) {
                     $line[$k] = 0;
                 }
@@ -105,14 +120,19 @@ class Patterns extends Trader
                     if ($output[$k]) {
                         $value = $output[$k] / 100;
                         $line[$k] += $value;
-                        $annotation[$k]['price'] = $v;
-                        $annotation[$k]['contents'][$this->getParam('map.'.$func, $func)] = $value;
+                        $annotation[$k][0]['price'] = $v;
+                        $annotation[$k][0]['contents'][$func_label] = $value;
                     }
                 }
             });
 
         }
-        $this->annotation = $annotation;
+
+        $this->getCandles()->setValues(
+            $this->getSignature().':::annotation',
+            $annotation,
+            null
+        );
 
         return [$line];
     }

@@ -147,6 +147,7 @@ class PHPlot extends Chart
 
     public function plot(array $item)
     {
+        //dump('plot '.$item['label']);
         if (!is_array($item['values'])) {
             return $this;
         }
@@ -184,7 +185,7 @@ class PHPlot extends Chart
         $this->_plot->SetDataValues($item['values']);
         //dump('start '.$item['label']);
         $this->_plot->drawGraph();
-        //dump('end '.$item['label']);
+        //dump('end plot '.$item['label']);
         return $this;
     }
 
@@ -369,6 +370,7 @@ class PHPlot extends Chart
     // Patterns
     protected function mode_annotation(array &$item)
     {
+        //dump($item);
         $this->colors = ['#ff0000a3', '#00ff00b3'];
         $item['num_outputs'] = 2;
         $this->_plot->setPlotType('points');
@@ -378,7 +380,6 @@ class PHPlot extends Chart
         $contents = [];
 
         $t = Arr::get($this->data, 'times', []);
-
         //$item['values'] = [];
 
         foreach ($item['values'] as $key => $val) {
@@ -401,6 +402,7 @@ class PHPlot extends Chart
 
             foreach ($contents as $index => $content) {
                 list($x, $y) = $plot->GetDeviceXY($index, $content['price']);
+                //dump($x.' '.$y);
                 $long = [];
                 $short = [];
                 array_walk($content['contents'], function ($v, $k)
@@ -411,7 +413,6 @@ class PHPlot extends Chart
                     }
                     $short[] = $k.' '.$v;
                 });
-
                 if (count($long)) {
                     $text_long = join(', ', $long);
                     $text_coords = imagettfbbox($font_size, $rotation, $font_path, $text_long);
@@ -576,27 +577,40 @@ class PHPlot extends Chart
             return $this;
         }
 
-        if (!count($times = $candles->extract(
-            'time',
-            'sequential',
-            true,
-            $this->getParam('density_cutoff')
-        ))) {
+        if (!count($times = $candles->extract('time', 'sequential', true, $this->getParam('density_cutoff')))) {
             error_log('PHPlot::createDataArray() could not extract times');
             return false;
         }
 
         $this->data = [
             'times' => $times,
-            'left' => $items = [
-                'items' => []
+            'left' => [
+                'items' => [],
             ],
-            'right' => $items,
+            'right' => [
+                'items' => [],
+            ],
         ];
 
-        foreach ($this->getIndicatorsVisibleSorted() as $ind) {
+        $inds = $this->getIndicatorsVisibleSorted();
+
+        while ($ind = array_shift($inds)) {
 
             $ind->checkAndRun();
+
+            if ('Patterns' === $ind->getShortClass()) {
+                if ('line' === $ind->getParam('display.mode')) {
+                    if ($ind->getParam('indicator.show_annotation')) {
+                        $ind->setParam('display.mode', 'annotation');
+                        $ind->setParam('display.y-axis', 'left');
+                        array_unshift($inds, $ind);
+                    }
+                }
+                else {
+                    $ind->setParam('display.mode', 'line');
+                    $ind->setParam('display.y-axis', 'right');
+                }
+            }
 
             $dir = in_array(
                 $dir = $ind->getParam('display.y-axis', 'left'),
