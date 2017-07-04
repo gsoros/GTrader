@@ -5,6 +5,7 @@ namespace GTrader\Indicators;
 /** CDL_* family of patterns from TA-Lib */
 class Patterns extends Trader
 {
+    protected $annotation = [];
 
     public function __construct(array $params = [])
     {
@@ -41,6 +42,16 @@ class Patterns extends Trader
         $this->setParam('adjustable.use_functions.items', $functions);
     }
 
+    public function __sleep()
+    {
+        $this->annotation = [];
+        return array_keys(get_object_vars($this));
+    }
+
+    public function getAnnotation()
+    {
+        return $this->annotation;
+    }
 
     public function getDisplaySignature(string $format = 'long')
     {
@@ -67,10 +78,7 @@ class Patterns extends Trader
         $low = $values[$this->getInput('input_low')];
         $close = $values[$this->getInput('input_close')];
 
-        //end($open);
-        //$signals = array_fill(0, key($open), null);
-
-        $signals = [];
+        $annotation = $line = [];
 
         foreach ($this->getParam('indicator.use_functions', []) as $func) {
 
@@ -85,19 +93,27 @@ class Patterns extends Trader
                 $close,
             ]);
 
-            array_walk($open, function ($v, $k) use (&$signals, $func, $output) {
-                if (!isset($signals[$k])) {
-                    $signals[$k] = [];
+            array_walk($open, function ($v, $k)
+                use (&$annotation, &$line, $func, $output) {
+                if (!isset($line[$k])) {
+                    $line[$k] = 0;
+                }
+                if (!isset($annotation[$k])) {
+                    $annotation[$k] = [];
                 }
                 if (isset($output[$k])) {
                     if ($output[$k]) {
-                        $signals[$k]['price'] = $v;
-                        $signals[$k]['contents'][$this->getParam('map.'.$func, $func)] = $output[$k] / 100;
+                        $value = $output[$k] / 100;
+                        $line[$k] += $value;
+                        $annotation[$k]['price'] = $v;
+                        $annotation[$k]['contents'][$this->getParam('map.'.$func, $func)] = $value;
                     }
                 }
             });
 
         }
-        return [$signals];
+        $this->annotation = $annotation;
+
+        return [$line];
     }
 }

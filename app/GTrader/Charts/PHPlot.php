@@ -366,9 +366,11 @@ class PHPlot extends Chart
     }
 
 
+    // Patterns
     protected function mode_annotation(array &$item)
     {
         $this->colors = ['#ff0000a3', '#00ff00b3'];
+        $item['num_outputs'] = 2;
         $this->_plot->setPlotType('points');
         $this->_plot->setPointSizes(0);
         $this->_plot->SetPointShapes('dot');
@@ -394,21 +396,32 @@ class PHPlot extends Chart
 
             $red = imagecolorallocatealpha($img, 200, 0, 0, 66);
             $green = imagecolorallocatealpha($img, 0, 180, 0, 85);
+            $font_path = storage_path('fonts/Vera.ttf');
+            $rotation = 270; // counter-clockwise rotation
+
             foreach ($contents as $index => $content) {
                 list($x, $y) = $plot->GetDeviceXY($index, $content['price']);
-                $val = array_sum($content['contents']);
-                $text = join(', ', array_keys($content['contents'])).' '.$val;
-                $color = 0 > $val ? $red : $green;
-                //$plot->DrawText('', 90, $x, $y, $color, $text, 'center', 'bottom');
+                $long = [];
+                $short = [];
+                array_walk($content['contents'], function ($v, $k)
+                    use (&$long, &$short) {
+                    if (0 <= $v) {
+                        $long[] = $k.' +'.$v;
+                        return;
+                    }
+                    $short[] = $k.' '.$v;
+                });
 
-                $fontPath = storage_path('fonts/Vera.ttf');
-                $rotation = 270; // counter-clockwise rotation
-                $textCoords = imagettfbbox($font_size, $rotation, $fontPath, $text);
-                $y = 0 > $val ? $y - $textCoords[3] - 10 : $y + 10;
-                imagettftext($img, $font_size, $rotation, $x-3, $y, $color, $fontPath, $text);
-
-
-
+                if (count($long)) {
+                    $text_long = join(', ', $long);
+                    $text_coords = imagettfbbox($font_size, $rotation, $font_path, $text_long);
+                    $ylong = $y - $text_coords[3] - 10;
+                    imagettftext($img, $font_size, $rotation, $x-3, $ylong, $green, $font_path, $text_long);
+                }
+                if (count($short)) {
+                    $text_short = join(', ', $short);
+                    imagettftext($img, $font_size, $rotation, $x-3, $y+10, $red, $font_path, $text_short);
+                }
 
             }
         }, $this->_plot);

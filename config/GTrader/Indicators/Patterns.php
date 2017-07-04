@@ -34,9 +34,16 @@ return [
     'display' => [
         'name' => 'Patterns',
         'description' => 'Candlestick pattern recognition from TA-Lib',
-        'mode' => 'annotation',
-        'y-axis' => 'left',
-        'top_level' => true,
+        'mode' => 'line',
+        'y-axis' => 'right',
+        'top_level' => false,
+    ],
+    'normalize' => [
+        'mode' => 'range',
+        'range' => [
+            'min' => -10,
+            'max' => 10,
+        ],
     ],
     'trader_func_prefix' => 'trader_cdl',
     'map' => [
