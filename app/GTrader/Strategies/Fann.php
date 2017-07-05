@@ -36,6 +36,12 @@ class Fann extends Strategy
     }
 
 
+    public function __sleep()
+    {
+        $this->destroyFann();
+        return ['params', 'candles', 'indicators'];
+    }
+
     public function __wakeup()
     {
         parent::__wakeup();

@@ -109,7 +109,10 @@ class Strategy
         return view(
             'Indicators/List', [
                 'owner' => $this,
-                'indicators' => $this->getIndicatorsFilteredSorted([], ['display.name']),
+                'indicators' => $this->getIndicatorsFilteredSorted(
+                    ['display.visible' => true],
+                    ['display.name']
+                ),
                 'available' => $this->getIndicatorsAvailable(),
                 'name' => 'strategy_'.$this->getParam('id'),
                 'owner_class' => 'Strategy',
