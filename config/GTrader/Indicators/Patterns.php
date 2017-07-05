@@ -6,8 +6,8 @@ return [
         'input_high' => 'high',
         'input_low' => 'low',
         'input_close' => 'close',
-        'show_line' => false,
-        'show_annotation' => true,
+        'show_line' => true,
+        'show_annotation' => false,
         'use_functions' => [], // items are added in the constructor
     ],
     'adjustable' => [

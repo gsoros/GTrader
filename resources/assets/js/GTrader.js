@@ -58,19 +58,7 @@ $(function() {
                         return;
                     }
                     window.setLoading(target, false);
-                    var top = $('#' + target).height() / 2 - 10;
-                    var left = $('#' + target).width() / 2 - 70;
-                    console.log('left: ' + left);
-                    $('#' + target).append('<span id="errorBubble" class="errorBubble" ' +
-                                'style="top: -' + top + 'px; left: ' + left + 'px"><strong>' +
-                                response.status + ': ' + response.statusText + '</strong></span>');
-                    $('#errorBubble').css({opacity: 1});
-                    setTimeout(function() {
-                        $('#errorBubble').css({opacity: 0});
-                        setTimeout(function() {
-                            $('#errorBubble').remove();
-                        }, 1000);
-                    }, 3000)
+                    GTrader.errorBubble(target, response.status + ': ' + response.statusText);
                 }
             });
         },
@@ -236,6 +224,22 @@ $(function() {
                 if (chartObj.updateStrategySelector)
                     chartObj.updateStrategySelector();
             });
-        } // updateAllStrategySelectors
+        }, // updateAllStrategySelectors
+
+
+        errorBubble: function (target, message) {
+            var top = $('#' + target).height() / 2 - 10;
+            var left = $('#' + target).width() / 2 - 70;
+            $('#' + target).append('<span id="errorBubble" class="errorBubble" ' +
+                        'style="top: -' + top + 'px; left: ' + left + 'px"><strong>' +
+                        message + '</strong></span>');
+            $('#errorBubble').css({opacity: 1});
+            setTimeout(function() {
+                $('#errorBubble').css({opacity: 0});
+                setTimeout(function() {
+                    $('#errorBubble').remove();
+                }, 1000);
+            }, 3000);
+        } // errorBubble
     } // window.GTrader
 });

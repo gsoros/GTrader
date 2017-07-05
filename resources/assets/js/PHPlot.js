@@ -55,6 +55,42 @@ $(function() {
                 window.GTrader.requestPlot(name, command, args);
         };
         //console.log(window[name].refresh);
+        $('#' + name).swipe( {
+            //Generic swipe handler for all directions
+            swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
+                var command;
+                if ('left' == direction) {
+                    command = 'forward';
+                }
+                else if ('right' == direction) {
+                    command = 'backward';
+                }
+                else if ('up' == direction) {
+                    command = 'zoomIn';
+                }
+                else if ('down' == direction) {
+                    command = 'zoomOut';
+                }
+                else {
+                    return;
+                }
+                window.GTrader.requestPlot(this.prop('id'), command);
+            },
+            pinchIn: function(event, direction, distance, duration, fingerCount, pinchZoom) {
+                //console.log(this.prop('id') + ' pinchIn ' + direction + ' by ' + distance +
+                //    'px, zoom scale is ' + pinchZoom);
+            },
+            pinchOut: function(event, direction, distance, duration, fingerCount, pinchZoom)
+            {
+                //console.log(this.prop('id') + ' pinchOut ' + direction + ' by ' + distance +
+                //    'px, zoom scale is ' + pinchZoom);
+            },
+            pinchStatus: function(event, phase, direction, distance, duration, fingerCount, pinchZoom) {
+                if (direction)
+                    window.GTrader.errorBubble(this.prop('id'), 'pinchZoom ' + pinchZoom + '  distance ' +
+                        distance + ' direction ' + direction);
+            },
+        });
     };
 
     window.GTrader.viewSample = function (name, time) {
