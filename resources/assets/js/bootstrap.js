@@ -13,7 +13,9 @@ require('bootstrap-sass');
 
 require('jquery-touchswipe');
 
-window.fscreen = require('fscreen');
+require('fscreen');
+import fscreen from 'fscreen';
+window.fscreen = fscreen;
 
 /**
  * Vue is a modern JavaScript library for building interactive web interfaces

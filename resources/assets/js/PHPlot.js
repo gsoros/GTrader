@@ -41,39 +41,42 @@ $(function() {
             });
         });
 
-        //console.log('fsn: ', fscreen);
-        $('#fullscreen_' + name).on('click', function() {
-            if ('undefined' === typeof fscreen.default) {
-                console.log('fscreen not defined');
-                return false;
-            }
-            if (fscreen.default.fullscreenElement !== null) {
-                if (fscreen.default.exitFullscreeen) {
-                    fscreen.default.exitFullscreeen();
-                    return;
-                }
-            }
-            if (!fscreen.default.fullscreenEnabled) {
-                console.log('fullscreenEnabled is false');
-                return false;
-            }
-            console.log('fullscreen request');
-            if (!fscreen.default.requestFullscreen) {
-                console.log('requestFullscreen is false', fscreen.default);
-                return false;
-            }
-/*
-            fscreen.default.addEventListener('fullscreenchange', function () {
-                if (fscreen.default.fullscreenElement !== null) {
-                    //window[name].setChartSize(true);
-                } else {
-                    //window[name].setChartSize();
-                }
-                window.GTrader.setPanZoomPosition(name);
-            }, false);
-*/
-            fscreen.default.requestFullscreen($('#fullscreen-wrap_' + name)[0]);
+        $('#fullscreen_' + name).on('click', function () {
+            GTrader.toggleFullscreen(name);
         });
+    };
+
+    window.GTrader.toggleFullscreen = function (name) {
+        if ('undefined' === typeof fscreen) {
+            console.log('fscreen not defined');
+            return;
+        }
+        if (fscreen.fullscreenElement !== null) {
+            if (fscreen.exitFullscreen) {
+                fscreen.exitFullscreen();
+                return;
+            }
+        }
+        if (!fscreen.fullscreenEnabled) {
+            console.log('fullscreenEnabled is false');
+            return;
+        }
+        console.log('fullscreen request');
+        if (!fscreen.requestFullscreen) {
+            console.log('requestFullscreen is false', fscreen.default);
+            return;
+        }
+/*
+        fscreen.addEventListener('fullscreenchange', function () {
+            if (fscreen.fullscreenElement !== null) {
+                //window[name].setChartSize(true);
+            } else {
+                //window[name].setChartSize();
+            }
+            window.GTrader.setPanZoomPosition(name);
+        }, false);
+*/
+        fscreen.requestFullscreen($('#fullscreen-wrap_' + name)[0]);
     };
 
 

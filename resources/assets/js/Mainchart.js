@@ -6,7 +6,7 @@ $(function() {
     window.mainchart.setChartSize = function() {
         console.log('setChartSize');
         $('#mainchart').width($(window).width()-2);
-        if (fscreen.default.fullscreenElement !== null) {
+        if (fscreen.fullscreenElement !== null) {
             $('#mainchart').height($(window).height());
         }
         else {
@@ -17,6 +17,30 @@ $(function() {
     waitForFinalEvent(function() {
         window.mainchart.setChartSize();
     }, 500, 'setChartSize');
+
+
+    $(document).keydown(function(event) {
+        //console.log('key: ' + event.keyCode);
+        if (!$('#mainchart').is(':visible')) {
+            return;
+        }
+        var commands = {};
+        commands[37] = 'backward';
+        commands[39] = 'forward';
+        commands[38] = 'zoomIn';
+        commands[40] = 'zoomOut';
+        commands[70] = 'fullscreen';
+        if (!(command = commands[event.keyCode])) {
+            return;
+        }
+        if ('fullscreen' === command) {
+            window.GTrader.toggleFullscreen('mainchart');
+            return;
+        }
+        event.preventDefault();
+        console.log(command);
+        window.GTrader.requestPlot('mainchart', command);
+    });
 
 });
 
