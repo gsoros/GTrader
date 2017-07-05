@@ -25,6 +25,12 @@
                     id="forward_{{ $name }}">
                 <span class="glyphicon glyphicon-forward"></span>
             </button>
+            <button type="button"
+                    title="Fullscreen"
+                    class="btn btn-primary btn-sm"
+                    id="fullscreen_{{ $name }}">
+                <span class="glyphicon glyphicon-fullscreen"></span>
+            </button>
         </div>
     </div>
 @endif
@@ -32,13 +38,13 @@
     $initial_refresh = in_array('initial_refresh', $disabled) ? 'false' : 'true';
 @endphp
 <script>
-    @if (!in_array('panZoom', $disabled))
-
-    @endif
-    if (window.GTrader)
+    if (window.GTrader) {
+        console.log('straight calling registerPHPlot');
         window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
+    }
     else {
         $(function() {
+            console.log('docready calling registerPHPlot');
             window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
         });
     }

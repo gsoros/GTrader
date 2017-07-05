@@ -13,9 +13,9 @@ $(function() {
             name: name,
             height: container.height()
         }
-        if (undefined !== command)
+        if ('undefined' !== typeof command)
             params.command = command;
-        if (undefined !== args)
+        if ('undefined' !== typeof args)
             params.args = args;
         /*
         if (typeof this.lastRequest !== 'undefined') {
@@ -39,6 +39,40 @@ $(function() {
                 var split = this.id.split('_');
                 window.GTrader.requestPlot(split[1], split[0]);
             });
+        });
+
+        //console.log('fsn: ', fscreen);
+        $('#fullscreen_' + name).on('click', function() {
+            if ('undefined' === typeof fscreen.default) {
+                console.log('fscreen not defined');
+                return false;
+            }
+            if (fscreen.default.fullscreenElement !== null) {
+                if (fscreen.default.exitFullscreeen) {
+                    fscreen.default.exitFullscreeen();
+                    return;
+                }
+            }
+            if (!fscreen.default.fullscreenEnabled) {
+                console.log('fullscreenEnabled is false');
+                return false;
+            }
+            console.log('fullscreen request');
+            if (!fscreen.default.requestFullscreen) {
+                console.log('requestFullscreen is false', fscreen.default);
+                return false;
+            }
+/*
+            fscreen.default.addEventListener('fullscreenchange', function () {
+                if (fscreen.default.fullscreenElement !== null) {
+                    //window[name].setChartSize(true);
+                } else {
+                    //window[name].setChartSize();
+                }
+                window.GTrader.setPanZoomPosition(name);
+            }, false);
+*/
+            fscreen.default.requestFullscreen($('#fullscreen-wrap_' + name)[0]);
         });
     };
 
@@ -108,8 +142,9 @@ $(function() {
         window.GTrader.registerRefreshFunc(name);
         window.GTrader.registerPanZoomHandler(name);
         window.GTrader.setPanZoomPosition(name);
-        if (initialRefresh)
+        if (initialRefresh) {
             window.GTrader.requestPlot(name);
+        }
     };
 
 });

@@ -13,6 +13,8 @@ require('bootstrap-sass');
 
 require('jquery-touchswipe');
 
+window.fscreen = require('fscreen');
+
 /**
  * Vue is a modern JavaScript library for building interactive web interfaces
  * using reactive data binding and reusable components. Vue's API is clean

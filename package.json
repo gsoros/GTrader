@@ -20,6 +20,7 @@
     "webpack": "2.2.1"
   },
   "dependencies": {
+    "fscreen": "^1.0.1",
     "jquery-touchswipe": "^1.6.15",
     "nouislider": "^9.2.0"
   }

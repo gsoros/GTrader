@@ -5,7 +5,13 @@ $(function() {
     */
     window.mainchart.setChartSize = function() {
         console.log('setChartSize');
-        $('#mainchart').width($(window).width()-2).height($(window).height() - 100);
+        $('#mainchart').width($(window).width()-2);
+        if (fscreen.default.fullscreenElement !== null) {
+            $('#mainchart').height($(window).height());
+        }
+        else {
+            $('#mainchart').height($(window).height() - 100);
+        }
         this.refresh();
     };
     waitForFinalEvent(function() {

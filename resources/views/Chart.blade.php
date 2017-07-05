@@ -1,9 +1,11 @@
-<div id="{{ $name }}" class="GTraderChart npr npl"
-@if ($height)
-    style="height: {{ $height }}px"
-@endif
-></div>
-
+<div id="fullscreen-wrap_{{ $name }}">
+    <div id="{{ $name }}" class="GTraderChart npr npl"
+    @if ($height)
+        style="height: {{ $height }}px"
+    @endif
+    ></div>
+    {!! $content !!}
+</div>
 <script>
     window.{{ $name }} = {!! $JSON !!};
     if (window.GTrader)
@@ -14,7 +16,6 @@
         });
     }
 </script>
-{!! $content !!}
 <div class="container-fluid">
     <div class="row">
 
