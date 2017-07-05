@@ -76,7 +76,6 @@
                     data-toggle="modal"
                     data-target=".bs-modal-lg">
                 <span class="glyphicon glyphicon-wrench"></span>
-                Chart Settings
             </button>
         </div>
         @endif
