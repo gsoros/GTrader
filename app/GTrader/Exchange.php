@@ -178,12 +178,14 @@ abstract class Exchange
             $exo = new \stdClass();
             $exo->name = $exchange->getParam('local_name');
             $exo->long_name = $exchange->getParam('long_name');
+            $exo->short_name = $exchange->getParam('short_name');
             $exo->symbols = [];
 
             foreach ($exchange->getParam('symbols') as $symbol) {
                 $symo = new \stdClass();
                 $symo->name = $symbol['local_name'];
                 $symo->long_name = $symbol['long_name'];
+                $symo->short_name = $symbol['short_name'];
                 $symo->resolutions = $symbol['resolutions'];
                 $exo->symbols[] = $symo;
             }
@@ -206,8 +208,8 @@ abstract class Exchange
         if (!($symbol = $exchange->getParam('symbols')[$symbol])) {
             return null;
         }
-        return $exchange->getParam('long_name').' / '.
-            $symbol['long_name'].' / '.
+        return $exchange->getParam('short_name').' / '.
+            $symbol['short_name'].' / '.
             $symbol['resolutions'][$resolution];
     }
 

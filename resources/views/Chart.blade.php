@@ -21,7 +21,7 @@
 
         @if (!in_array('esr', $disabled))
         <!-- Exchange, Symbol, Resolution Selectors -->
-        <div class="col-sm-8 npl" id="esr_{{ $name }}">
+        <div class="col-xs-6 npl" id="esr_{{ $name }}">
             <form class="form-inline">
                 <div class="form-group">
                     @if (in_array('esr', $readonly))
@@ -44,7 +44,7 @@
 
         @if (!in_array('strategy', $disabled))
         <!-- Strategy Selector -->
-        <div class="col-sm-2 npl">
+        <div class="col-xs-3 npl">
             <form class="form-inline">
                 @if (in_array('strategy', $readonly))
                     <small>[{{ $chart->getStrategy()->getParam('name') }}]</small>
@@ -69,7 +69,7 @@
 
         @if (!in_array('settings', $disabled))
         <!-- Chart Settings Button -->
-        <div class="col-sm-2 text-right">
+        <div class="col-xs-3 text-right">
             <button type="button"
                     class="btn btn-primary btn-sm"
                     id="settings_{{ $name }}"

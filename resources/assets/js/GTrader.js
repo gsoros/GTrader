@@ -180,16 +180,16 @@ $(function() {
                                         selected.resolution = true;
                                         chartObj.resolution = resolution;
                                     }
-                                    opts.resolution += 'value="' + resolution + '">'
-                                                        + symbol.resolutions[resolution] + '</option>';
+                                    opts.resolution += 'value="' + resolution + '">' +
+                                        symbol.resolutions[resolution] + '</option>';
                                 }
                             }
-                            opts.symbol += 'value="' + symbol.name + '">'
-                                            + symbol.long_name + '</option>';
+                            opts.symbol += 'value="' + symbol.name + '" title="'+ symbol.long_name +'">' +
+                                symbol.short_name + '</option>';
                         });
                     }
-                    opts.exchange += 'value="' + exchange.name + '">'
-                                        + exchange.long_name + '</option>';
+                    opts.exchange += 'value="' + exchange.name + '" title="'+ exchange.long_name + '">' +
+                        exchange.short_name + '</option>';
                 });
                 $('#exchange_' + name).html(opts.exchange);
                 $('#symbol_' + name).html(opts.symbol);

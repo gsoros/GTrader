@@ -25,19 +25,19 @@ return [
             'local_name' => 'eth_usd',                          // used in the local database, same as the key
             'remote_name' => 'eth_usd',                         // used when querying the remote data
             'resolutions'=> [
-                60     => '1 minute',
-                180     => '3 minutes',
-                300     => '5 minutes',
-                900     => '15 minutes',
-                1800    => '30 minutes',
-                3600    => '1 hour',
-                7200    => '2 hours',
-                14400   => '4 hours',
-                21600   => '6 hours',
-                43200   => '12 hours',
-                86400   => '1 day',
-                259200  => '3 days',
-                604800  => '1 week'
+                60     => '1m',
+                180     => '3m',
+                300     => '5m',
+                900     => '15m',
+                1800    => '30m',
+                3600    => '1h',
+                7200    => '2h',
+                14400   => '4h',
+                21600   => '6h',
+                43200   => '12h',
+                86400   => '1d',
+                259200  => '3d',
+                604800  => '1w'
             ],
         ],
     ],
