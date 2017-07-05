@@ -56,7 +56,7 @@ $(function() {
         };
         //console.log(window[name].refresh);
         $('#' + name).swipe( {
-            //Generic swipe handler for all directions
+            allowPageScroll: 'vertical',
             swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
                 var command;
                 if ('left' == direction) {
@@ -76,17 +76,18 @@ $(function() {
                 }
                 window.GTrader.requestPlot(this.prop('id'), command);
             },
+            /*
             pinchIn: function(event, direction, distance, duration, fingerCount, pinchZoom) {
                 window.GTrader.errorBubble(this.prop('id'), 'pi:' + pinchZoom + '  ds:' +
                         distance + ' dir:' + direction);
             },
-            pinchOut: function(event, direction, distance, duration, fingerCount, pinchZoom)
-            {
+            pinchOut: function(event, direction, distance, duration, fingerCount, pinchZoom) {
                 window.GTrader.errorBubble(this.prop('id'), 'po:' + pinchZoom + '  ds:' +
                         distance + ' dir:' + direction);
             },
             pinchStatus: function(event, phase, direction, distance, duration, fingerCount, pinchZoom) {
             },
+            */
         });
     };
 
