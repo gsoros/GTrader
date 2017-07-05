@@ -77,18 +77,15 @@ $(function() {
                 window.GTrader.requestPlot(this.prop('id'), command);
             },
             pinchIn: function(event, direction, distance, duration, fingerCount, pinchZoom) {
-                //console.log(this.prop('id') + ' pinchIn ' + direction + ' by ' + distance +
-                //    'px, zoom scale is ' + pinchZoom);
+                window.GTrader.errorBubble(this.prop('id'), 'pi:' + pinchZoom + '  ds:' +
+                        distance + ' dir:' + direction);
             },
             pinchOut: function(event, direction, distance, duration, fingerCount, pinchZoom)
             {
-                //console.log(this.prop('id') + ' pinchOut ' + direction + ' by ' + distance +
-                //    'px, zoom scale is ' + pinchZoom);
+                window.GTrader.errorBubble(this.prop('id'), 'po:' + pinchZoom + '  ds:' +
+                        distance + ' dir:' + direction);
             },
             pinchStatus: function(event, phase, direction, distance, duration, fingerCount, pinchZoom) {
-                if (direction)
-                    window.GTrader.errorBubble(this.prop('id'), 'pinchZoom ' + pinchZoom + '  distance ' +
-                        distance + ' direction ' + direction);
             },
         });
     };
