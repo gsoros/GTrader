@@ -19,7 +19,7 @@ class CreateChartsTable extends Migration
             $table->string('name')->index();
             //$table->binary('chart')->nullable();
         });
-        DB::statement('ALTER TABLE charts ADD chart LONGBLOB');
+        DB::statement('ALTER TABLE charts ADD chart LONGBLOB NULL DEFAULT NULL');
     }
 
     /**
