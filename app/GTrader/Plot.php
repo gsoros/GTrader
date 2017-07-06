@@ -160,10 +160,11 @@ class Plot
     {
         static $index = 0;
         $colors = [
-            '#22226640',
+            'orange:80',
             'yellow:110',
             'maroon:70',
             'brown:70',
+            '#22226640',
             'pink:100',
             'cyan:100',
             'blue:90',
