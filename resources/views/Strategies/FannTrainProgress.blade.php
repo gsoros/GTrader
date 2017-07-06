@@ -84,6 +84,11 @@
                     var new_max = parseFloat(reply.verify_max);
                     if (new_max > verify_max) {
                         verify_max = new_max;
+                        if (!window.{{ $chart->getParam('name') }}.refresh) {
+                            //console.log('Error: window.{{ $chart->getParam('name') }}.refresh is false',
+                            //    window.{{ $chart->getParam('name') }});
+                            return;
+                        }
                         window.{{ $chart->getParam('name') }}.refresh();
                     }
                 },

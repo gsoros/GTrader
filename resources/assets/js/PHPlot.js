@@ -81,7 +81,7 @@ $(function() {
 
 
     window.GTrader.registerRefreshFunc = function (name) {
-        //console.log('registering refresh() for window.' + name);
+        console.log('registering refresh() for window.' + name);
         // Register a refresh func
         window[name].refresh = function (command, args) {
             var visible = $('#' + name).is(':visible');
@@ -159,8 +159,10 @@ $(window).resize(function() {
         $('.GTraderChart').each(function() {
             var name = $(this).attr('id');
             console.log(name + ' resize');
-            window[name].refresh();
-            window.GTrader.setPanZoomPosition(name);
+            if (window[name].refresh)
+                window[name].refresh();
+            if (window.GTrader.setPanZoomPosition)
+                window.GTrader.setPanZoomPosition(name);
         });
 
     }, 500, 'updateAllPlots');
