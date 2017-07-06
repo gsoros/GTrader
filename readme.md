@@ -3,7 +3,7 @@
 GTrader is a trading strategy back-tester and bot manager.
 
 ## Requirements
-* PHP 7
+* PHP 7 with GD support
 * [PHP-FANN extension] (http://php.net/manual/en/book.fann.php)
 * Trader extension ```sudo pecl channel-update pecl.php.net && sudo pecl install trader```
 
