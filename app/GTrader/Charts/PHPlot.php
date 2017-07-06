@@ -370,6 +370,11 @@ class PHPlot extends Chart
     // Patterns
     protected function mode_annotation(array &$item)
     {
+        if (!function_exists('imagettftext')) {
+            error_log('Plot::initPlot(): function imagettftext is missing');
+            return $this;
+        }
+
         //dump($item);
         $this->colors = ['#ff0000a3', '#00ff00b3'];
         $item['num_outputs'] = 2;

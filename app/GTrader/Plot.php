@@ -46,6 +46,11 @@ class Plot
             error_log('Plot::initPlot(): Missing width or height.');
             return null;
         }
+        if (!function_exists('imagecreatetruecolor')) {
+            error_log('Plot::initPlot(): function imagecreatetruecolor is missing');
+            dump('Plot::initPlot(): function imagecreatetruecolor is missing. GD support is required by PHPlot.');
+            return null;
+        }
         $this->_plot = new PHPlot_truecolor($width, $height);
         $this->_plot->SetPrintImage(false);
         $this->_plot->SetFailureImage(false);
