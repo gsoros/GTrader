@@ -44,7 +44,7 @@ trait HasParams
     }
 
 
-    public function unSetParam(string $key = null)
+    public function unsetParam(string $key = null)
     {
         Arr::forget($this->params, $key);
         return $this;
