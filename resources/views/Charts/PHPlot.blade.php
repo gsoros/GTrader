@@ -25,12 +25,14 @@
                     id="forward_{{ $name }}">
                 <span class="glyphicon glyphicon-forward"></span>
             </button>
+            @if (!in_array('fullscreen', $disabled))
             <button type="button"
                     title="Fullscreen"
                     class="btn btn-primary btn-sm"
                     id="fullscreen_{{ $name }}">
                 <span class="glyphicon glyphicon-fullscreen"></span>
             </button>
+            @endif
         </div>
     </div>
 @endif

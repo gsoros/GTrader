@@ -118,7 +118,7 @@ class Fann extends Strategy
             'strategy' => $this,
             'name' => 'trainingProgressChart',
             'height' => 200,
-            'disabled' => ['title', 'strategy', 'map', 'settings'],
+            'disabled' => ['title', 'strategy', 'map', 'settings', 'fullscreen'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
