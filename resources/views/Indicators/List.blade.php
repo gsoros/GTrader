@@ -43,11 +43,11 @@
                         @endphp
                         <label>
                             <input type="checkbox"
-                                name="inputs[]"
-                                value="{{ $checkbox['value'] }}"
-                                @if ($checkbox['checked'])
-                                    checked
-                                @endif
+                            name="inputs[]"
+                            value="{{ $checkbox['value'] }}"
+                            @if ($checkbox['checked'])
+                                checked
+                            @endif
                             >
                             {{ $indicator->getDisplaySignature($format) }}
                         </label>

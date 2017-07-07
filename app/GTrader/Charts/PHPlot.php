@@ -484,18 +484,20 @@ class PHPlot extends Chart
         ]);
         $this->_plot->SetXAxisPosition(0);
 
-        // get rising/falling data from Roc(close)
-        if ($roc = $this->getOrAddIndicator('Roc',
-            ['indicator' => ['input_source' => 'close']]
-        )) {
-            if ($roc = $roc->getOutputArray('sequential', true,
+        // get rising/falling data sub(close, open)
+        if ($sub = $this->getOrAddIndicator('Operator', [
+            'input_a' => 'close',
+            'operation' => 'sub',
+            'input_b' => 'open',
+        ])) {
+            if ($sub = $sub->getOutputArray('sequential', true,
                 $this->getParam('density_cutoff')
             )) {
                 $this->_plot->SetCallback(
                     'data_color',
-                    function ($img, $junk, $row, $col, $extra = 0) use ($roc) {
-                        $rising = isset($roc[$row][0]) ? (0 <= $roc[$row][0]) : 0;
-                        //dump('R: '.$row.' C: '.$col.' E:'.$extra.' R:'.$rising.' R:', $roc[$row]);
+                    function ($img, $junk, $row, $col, $extra = 0) use ($sub) {
+                        $rising = isset($sub[$row][0]) ? (0 <= $sub[$row][0]) : 0;
+                        //dump('R: '.$row.' C: '.$col.' E:'.$extra.' R:'.$rising.' R:', $sub[$row]);
                         return $rising ? 1 : 0;
                     }
                 );
