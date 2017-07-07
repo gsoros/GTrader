@@ -401,6 +401,7 @@ class PHPlot extends Chart
         }
         $font_size = floor($this->getParam('width') / count($item['values']) / 2.5);
         $font_size = 5 > $font_size ? 5 : $font_size;
+        $font_size = 16 < $font_size ? 16 : $font_size;
         $this->_plot->SetCallback('draw_all', function ($img, $plot)
             use ($contents, $font_size){
 
@@ -425,12 +426,15 @@ class PHPlot extends Chart
                 if (count($long)) {
                     $text_long = join(', ', $long);
                     $text_coords = imagettfbbox($font_size, $rotation, $font_path, $text_long);
+                    $xlong = $x - floor(($text_coords[6] - $text_coords[0]) / 3);
                     $ylong = $y - $text_coords[3] - 10;
-                    imagettftext($img, $font_size, $rotation, $x-3, $ylong, $green, $font_path, $text_long);
+                    imagettftext($img, $font_size, $rotation, $xlong, $ylong, $green, $font_path, $text_long);
                 }
                 if (count($short)) {
                     $text_short = join(', ', $short);
-                    imagettftext($img, $font_size, $rotation, $x-3, $y+10, $red, $font_path, $text_short);
+                    $text_coords = imagettfbbox($font_size, $rotation, $font_path, $text_short);
+                    $xshort = $x - floor(($text_coords[6] - $text_coords[0]) / 3);
+                    imagettftext($img, $font_size, $rotation, $xshort, $y + 10, $red, $font_path, $text_short);
                 }
 
             }
