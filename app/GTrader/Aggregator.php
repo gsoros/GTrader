@@ -9,7 +9,7 @@ class Aggregator
     public function aggregate()
     {
 
-        ignore_user_abort(true);
+        //ignore_user_abort(true);
 
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock)) {
