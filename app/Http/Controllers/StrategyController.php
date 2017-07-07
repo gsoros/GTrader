@@ -482,7 +482,8 @@ class StrategyController extends Controller
         $strategy->setCandles($candles);
         $candles->setStrategy($strategy);
 
-        $html = $strategy->getSamplePlot(abs(floor($request->width / 2) - 100), 400, $request->t);
+        $width = abs(floor($request->width))-30;
+        $html = $strategy->getSamplePlot($width, floor($width / 2), $request->t);
 
         return response($html, 200);
     }

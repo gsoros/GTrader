@@ -129,6 +129,11 @@ $(function() {
     };
 
     window.GTrader.viewSample = function (name, time) {
+        var width = $(window).width() / 2;
+        if (400 > width) width = 400;
+        $('#settings_content').html('<div id="sample_container" style="width: ' + width +
+            'px; height: ' + $(window).height() / 2 + 'px">');
+        console.log($('#sample_container').width());
         window.GTrader.request(
             'strategy',
             'sample', {
@@ -136,7 +141,7 @@ $(function() {
                 t: time
             },
             'GET',
-            'settings_content'
+            'sample_container'
         );
         return false;
     };
