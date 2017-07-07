@@ -67,7 +67,7 @@ class Ohlc extends HasInputs
             return 'Open';
         }
         else if ('candlestick' === $mode) {
-            return 'OHLC';
+            return 'Candles';
         }
         return $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');;
     }

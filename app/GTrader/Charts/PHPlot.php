@@ -325,6 +325,7 @@ class PHPlot extends Chart
     protected function mode_linepoints(array &$item)
     {
         if (stristr($item['class'], 'Signals')) {
+            $item['num_outputs'] = 2;
             $this->colors = ['#ff000010', '#00ff0050'];
             $this->_plot->SetYDataLabelType('data', 2);         // precision
             $this->label = array_merge($this->label, ['']);
@@ -359,6 +360,9 @@ class PHPlot extends Chart
             $this->_plot->SetPointSizes($pointsize);
             $this->_plot->SetYDataLabelPos('plotin');
             return $this;
+        }
+        else {
+            $item['num_outputs'] = 1;
         }
         $this->colors = [self::nextColor()];
         $this->_plot->SetPointShapes('dot');

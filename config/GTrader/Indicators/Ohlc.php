@@ -22,7 +22,7 @@ return [
     'outputs' => ['open', 'high', 'low', 'close'],
     'display' => [
         'mode' => 'candlestick',
-        'name' => 'OHLC',
+        'name' => 'Candles',
         'description' => 'Open, High, Low, Close',
         'y-axis' => 'left',
         'z-index' => -1, // below indicators
