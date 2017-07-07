@@ -22,11 +22,13 @@ class Vol extends HasInputs
 
     public function runDependencies(bool $force_rerun = false)
     {
-        // ROC is used to display the colors
-        if ($roc = $this->getOwner()->getOrAddIndicator('Roc', [
-            'indicator' => ['input_source' => 'close'],
-            ])) {
-            $roc->addRef($this);
+        // sum(close, open) is used to display the colors
+        if ($op = $this->getOwner()->getOrAddIndicator('Operator', [
+            'input_a' => 'close',
+            'operation' => 'sub',
+            'input_b' => 'open',
+        ])) {
+            $op->addRef($this);
         }
         return $this;
     }

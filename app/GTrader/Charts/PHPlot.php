@@ -43,6 +43,7 @@ class PHPlot extends Chart
             return '';
         }
         $this->setParam('density_cutoff', $this->getParam('width'));
+        $this->setParam('image_map_active', false);
 
         if (!$this->createDataArray()) {
             error_log('PHPlot::getImage() could not create data array');
@@ -530,6 +531,7 @@ class PHPlot extends Chart
 
     protected function mode_imagemap($item)
     {
+        //dump('mode_imagemap', $item);
         $this->setParam('image_map_active', true);
     }
 

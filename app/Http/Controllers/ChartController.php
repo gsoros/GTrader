@@ -133,4 +133,21 @@ class ChartController extends Controller
         return response('OK', 200);
     }
 
+
+    public function dump(Request $request)
+    {
+        if (! $chart = Chart::loadFromSession($request->name)) {
+            error_log('no chart in session');
+            if (! $chart = Chart::loadFromDB(Auth::id(), $request->name)) {
+                error_log('no chart in db');
+                return response('No such chart.', 403);
+            }
+        }
+
+        foreach ($chart->getIndicators() as $i) {
+            dump($i);
+        }
+        return response('OK', 200);
+    }
+
 }
