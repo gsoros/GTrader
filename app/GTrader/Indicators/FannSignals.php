@@ -96,9 +96,11 @@ class FannSignals extends Indicator
             }
 
             // skip trading while inside the first sample
+            /*
             if ($candles_seen < $num_input) {
                 continue;
             }
+            */
 
             if (isset($candle->$indicator_key)) {
                 // skip trade if last trade was recent
