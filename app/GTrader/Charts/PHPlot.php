@@ -663,7 +663,7 @@ class PHPlot extends Chart
 
             // used later to set the page title
             if ('Ohlc' === $item['class']) {
-                $this->last_close = $item['values'][count($item['values'])-1][0];
+                $this->last_close = $item['values'][count($item['values'])-1][3];
             }
 
             $this->data[$dir]['items'][] = $item;
