@@ -36,13 +36,13 @@ return [
             'name' => 'Average Balance',
             'class' => 'Avg',
             'params' => [
-                'indicator' => ['base' => '{"class":"Balance","params":{"mode":"fixed","capital":100}}'],
+                'indicator' => ['input_source' => '{"class":"Balance","params":{"mode":"fixed","capital":100}}'],
             ],
         ],
     ],
     /* Default indicator to maximise training on */
     'indicator'           => [
-        'name' => 'Profitability',
+        'name' => 'Winners vs. losers',
         'class' => 'Profitability',
         'params' => [],
     ],

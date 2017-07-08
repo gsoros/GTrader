@@ -14,7 +14,6 @@ use GTrader\Strategy;
 //use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Bot;
-use GTrader\SeriesNg;
 
 
 class HomeController extends Controller
