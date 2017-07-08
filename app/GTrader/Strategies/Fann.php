@@ -204,6 +204,11 @@ class Fann extends Strategy
             error_log('Failed to get the sample at '.$t.' + '.$sample_size);
             return false;
         }
+        /*
+        dump('Req: '.date('Y-m-d H:i', $time).
+            ' Ss: '.date('Y-m-d H:i', $sample[0]->time).
+            ' Se: '.date('Y-m-d H:i', $sample[count($sample)-1]->time));
+        */
         $input = $this->sample2io($sample, true);
         //dump($input);
         $input = $this->normalizeInput($input, true);

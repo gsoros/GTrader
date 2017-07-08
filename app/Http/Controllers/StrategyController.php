@@ -465,7 +465,7 @@ class StrategyController extends Controller
             return response('Could not get the series.', 200);
         }
 
-
+        $request->t += 1;
         $resolution = $candles->getParam('resolution');
         $sample_size = $strategy->getParam('sample_size');
         $target_distance = $strategy->getParam('target_distance');
