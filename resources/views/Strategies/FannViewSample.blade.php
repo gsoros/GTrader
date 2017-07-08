@@ -9,7 +9,7 @@
             <button type="button"
                     title="Step back one sample"
                     class="btn btn-primary btn-sm"
-                    onClick="window.GTrader.viewSample('{{ $chart_name }}', '{{ $prev }}', false)">
+                    onClick="return window.GTrader.viewSample('{{ $chart_name }}', '{{ $prev }}', false)">
                 <span class="glyphicon glyphicon-backward"></span>
             </button>
             <button type="button"
@@ -19,7 +19,7 @@
             <button type="button"
                     title="Go forward one sample"
                     class="btn btn-primary btn-sm"
-                    onClick="window.GTrader.viewSample('{{ $chart_name }}', '{{ $next }}', false)">
+                    onClick="return window.GTrader.viewSample('{{ $chart_name }}', '{{ $next }}', false)">
                 <span class="glyphicon glyphicon-forward"></span>
             </button>
         </div>

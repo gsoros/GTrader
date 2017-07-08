@@ -137,7 +137,7 @@ class PHPlot extends Chart
                     $shape = 'circle';
                 }
                 $href = '#';
-                $on_click = 'onClick="window.GTrader.viewSample(\''.$this->getParam('name').'\''.
+                $on_click = 'onClick="return window.GTrader.viewSample(\''.$this->getParam('name').'\''.
                     ', '.$times[$row].')"';
                 $image_map .= '<area shape="'.$shape.'" coords="'.$coords.'" title="'.
                     $title.'" data-toggle="modal" data-target=".bs-modal-lg" '.$on_click.' href="'.$href.'">';
