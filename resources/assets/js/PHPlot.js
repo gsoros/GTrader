@@ -128,12 +128,13 @@ $(function() {
         });
     };
 
-    window.GTrader.viewSample = function (name, time) {
+    window.GTrader.viewSample = function (name, time, clearContents = true) {
         var width = $(window).width() / 2;
         if (400 > width) width = 400;
-        $('#settings_content').html('<div id="sample_container" style="width: ' + width +
-            'px; height: ' + $(window).height() / 2 + 'px">');
-        console.log($('#sample_container').width());
+        if (clearContents) {
+            $('#settings_content').html('<div id="sample_container" style="width: ' + width +
+                'px; height: ' + $(window).height() / 2 + 'px">');
+        }
         window.GTrader.request(
             'strategy',
             'sample', {

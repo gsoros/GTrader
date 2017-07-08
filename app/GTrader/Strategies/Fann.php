@@ -201,8 +201,16 @@ class Fann extends Strategy
         $t = $time - $sample_size * $resolution;
         $this->resetSampleTo($t);
         if (!$sample = $this->nextSample($sample_size)) {
-            error_log('Failed to get the sample at '.$t.' + '.$sample_size);
-            return false;
+            // Try one candle earlier
+            if ($s = $this->getSamplePlot($width, $height, $time - $resolution)) {
+                return $s;
+            }
+            // Try one candle later
+            if ($s = $this->getSamplePlot($width, $height, $time + $resolution)) {
+                return $s;
+            }
+            // give up
+            return '';
         }
         /*
         dump('Req: '.date('Y-m-d H:i', $time).
@@ -215,12 +223,15 @@ class Fann extends Strategy
         //dump($input);
         $p = $this->getPredictionIndicator();
         $p->checkAndRun();
+        $p_key = $candles->key($p->getSignature());
         $last = $candles->firstAfter($time);
-        $prediction = $last->{$candles->key($p->getSignature())};
-        $realtime = $time + $target_distance * $resolution;
-        //dump(date('Y-m-d H:i', $last->time).' O: '.$last->open.' Pred for '.date('Y-m-d H:i', $realtime).': '.$prediction);
-        if ($reality = $candles->firstAfter($realtime)) {
-            //dump('Reality: '.date('Y-m-d H:i', $reality->time).' O: '.$reality->open);
+        if (isset($last->$p_key)) {
+            $prediction = $last->$p_key;
+            $realtime = $time + $target_distance * $resolution;
+            //dump(date('Y-m-d H:i', $last->time).' O: '.$last->open.' Pred for '.date('Y-m-d H:i', $realtime).': '.$prediction);
+            if ($reality = $candles->firstAfter($realtime)) {
+                //dump('Reality: '.date('Y-m-d H:i', $reality->time).' O: '.$reality->open);
+            }
         }
         foreach ($input as $sig => $values) {
             $label = $sig;
@@ -241,7 +252,13 @@ class Fann extends Strategy
             'height' => $height,
             'data' => $data,
         ]);
-        return $plot->toHTML();
+        return view('Strategies/FannViewSample', [
+            'plot' => $plot->toHTML(),
+            'chart_name' => 'mainchart',
+            'prev' => $time - $resolution,
+            'now' => $time,
+            'next' => $time + $resolution,
+        ]);
     }
 
 
