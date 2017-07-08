@@ -194,7 +194,7 @@ class Series extends Collection
         return $this;
     }
 
-    public function first(?callable $callback = null, $default = null)
+    public function first(callable $callback = null, $default = null)
     {
         $this->_load();
         return parent::first($callback, $default);
