@@ -9,11 +9,13 @@ use Illuminate\Http\Request;
 use GTrader\Page;
 use GTrader\Exchange;
 use GTrader\Chart;
-//use GTrader\Series;
+use GTrader\Series;
 use GTrader\Strategy;
 //use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Bot;
+use GTrader\SeriesNg;
+
 
 class HomeController extends Controller
 {
@@ -66,8 +68,63 @@ class HomeController extends Controller
     }
 
 
+
+
+
     public function test()
     {
+/*
+        $t0 = time();
+        $m0 = memory_get_usage();
+        $candlesOl = new Series([
+            'start' => 1,
+            'end' => $t0,
+            'limit' => 0,
+            'resolution' => 300,
+        ]);
+
+        $candlesOl->reset();
+        dump($candlesOl->next());
+        echo 'CandlesOl: '.$candlesOl->size().
+            ' Mem: '.Util::humanBytes(memory_get_usage() - $m0).
+            ' Time: '.(time() - $t0).'s';
+        //dump($candlesOl->getParams());
+*/
+/*
+        DB::listen(function ($query) {
+
+            $replace = function ($sql, $bindings) {
+                $needle = '?';
+                foreach ($bindings as $replace) {
+                    $pos = strpos($sql, $needle);
+                    if ($pos !== false) {
+                        $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
+                    }
+                }
+                return $sql;
+            };
+            $sql = $replace($query->sql, $query->bindings);
+            dump($sql);
+        });
+*/
+
+        $t1 = time();
+        $m1 = memory_get_usage();
+        $candles = new Series([
+            'start' => 1,
+            'end' => $t1,
+            'limit' => 0,
+            'resolution' => 300,
+        ]);
+
+        $candles->reset();
+        dump($candles->next());
+        return 'Candles: '.$candles->size().
+            ' Mem: '.Util::humanBytes(memory_get_usage() - $m1).
+            ' Time: '.(time() - $t1).'s';
+
+
+
 
         $functions = get_defined_functions();
         $functions_list = [];

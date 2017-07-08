@@ -67,7 +67,7 @@ class Balance extends Indicator
             error_log('Balance::calculate() signal indicator not found.');
             return $this;
         }
-        $signal_sig = $candles->key($signal_ind->getSignature());
+        $signal_key = $candles->key($signal_ind->getSignature());
         $signal_ind->checkAndRun($force_rerun);
 
         $signature = $candles->key($this->getSignature());
@@ -100,46 +100,47 @@ class Balance extends Indicator
                     }
                 }
             }
-
-            if ($signal = $candle->$signal_sig) {
-                if ($signal['signal'] == 'long' && $capital > 0) {
-                    // go long
-                    if ($prev_signal && $prev_signal['signal'] == 'short') {
-                        // close last short
-                        if ($prev_signal['price']) {
-                            // avoid division by zero
-                            $capital +=
-                                $stake / $prev_signal['price'] *
-                                ($prev_signal['price'] - $signal['price']) *
-                                $leverage;
+            if (isset($candle->$signal_key)) {
+                if ($signal = $candle->$signal_key) {
+                    if ($signal['signal'] == 'long' && $capital > 0) {
+                        // go long
+                        if ($prev_signal && $prev_signal['signal'] == 'short') {
+                            // close last short
+                            if ($prev_signal['price']) {
+                                // avoid division by zero
+                                $capital +=
+                                    $stake / $prev_signal['price'] *
+                                    ($prev_signal['price'] - $signal['price']) *
+                                    $leverage;
+                            }
+                            $upl = 0;
                         }
-                        $upl = 0;
-                    }
-                    if ($mode == 'dynamic') {
-                        $stake = $capital * $position_size / 100;
-                    }
-                    // open long
-                    $capital -= $stake * $fee_multiplier;
-                } elseif ($signal['signal'] == 'short' && $capital > 0) {
-                    // go short
-                    if ($prev_signal && $prev_signal['signal'] == 'long') {
-                        // close last long
-                        if ($prev_signal['price']) {
-                            // avoid division by zero
-                            $capital +=
-                                $stake / $prev_signal['price'] *
-                                ($signal['price'] - $prev_signal['price']) *
-                                $leverage;
+                        if ($mode == 'dynamic') {
+                            $stake = $capital * $position_size / 100;
                         }
-                        $upl = 0;
+                        // open long
+                        $capital -= $stake * $fee_multiplier;
+                    } elseif ($signal['signal'] == 'short' && $capital > 0) {
+                        // go short
+                        if ($prev_signal && $prev_signal['signal'] == 'long') {
+                            // close last long
+                            if ($prev_signal['price']) {
+                                // avoid division by zero
+                                $capital +=
+                                    $stake / $prev_signal['price'] *
+                                    ($signal['price'] - $prev_signal['price']) *
+                                    $leverage;
+                            }
+                            $upl = 0;
+                        }
+                        if ($mode == 'dynamic') {
+                            $stake = $capital * $position_size / 100;
+                        }
+                        // open short
+                        $capital -= $stake * $fee_multiplier;
                     }
-                    if ($mode == 'dynamic') {
-                        $stake = $capital * $position_size / 100;
-                    }
-                    // open short
-                    $capital -= $stake * $fee_multiplier;
+                    $prev_signal = $signal;
                 }
-                $prev_signal = $signal;
             }
             $new_balance = $capital + $upl;
             if ($new_balance <= 0) {

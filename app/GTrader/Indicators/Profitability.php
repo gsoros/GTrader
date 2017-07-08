@@ -37,7 +37,7 @@ class Profitability extends Indicator
             return $this;
         }
         $signal_ind->checkAndRun($force_rerun);
-        $signal_sig = $candles->key($signal_ind->getSignature());
+        $signal_key = $candles->key($signal_ind->getSignature());
 
         if (!$candles->hasIndicatorClass('Balance')) {
             error_log('Profitability::calculate() adding balance indicator');
@@ -63,26 +63,28 @@ class Profitability extends Indicator
 
         while ($candle = $candles->next()) {
 
-            if ($signal = $candle->$signal_sig) {
-                if (in_array($signal['signal'], ['long', 'short'])) {
-                    if ($prev_signal &&
-                        $prev_signal['signal'] !== $signal['signal']) {
+            if (isset($candle->$signal_key)) {
+                if ($signal = $candle->$signal_key) {
+                    if (in_array($signal['signal'], ['long', 'short'])) {
+                        if ($prev_signal &&
+                            $prev_signal['signal'] !== $signal['signal']) {
 
-                        if (isset($candle->$balance_sig)) {
-                            if ($candle->$balance_sig > $prev_balance) {
-                                $winners++;
-                            } elseif ($candle->$balance_sig < $prev_balance) {
-                                $losers++;
+                            if (isset($candle->$balance_sig)) {
+                                if ($candle->$balance_sig > $prev_balance) {
+                                    $winners++;
+                                } elseif ($candle->$balance_sig < $prev_balance) {
+                                    $losers++;
+                                }
+                                $prev_balance = $candle->$balance_sig;
                             }
-                            $prev_balance = $candle->$balance_sig;
                         }
                     }
-                }
-                //$total = $winners + $losers;
-                //$score = $total ? $winners / $total * 100 + $winners: 0;
-                $score = $winners - $losers;
+                    //$total = $winners + $losers;
+                    //$score = $total ? $winners / $total * 100 + $winners: 0;
+                    $score = $winners - $losers;
 
-                $prev_signal = $signal;
+                    $prev_signal = $signal;
+                }
             }
             $candle->$signature = $score;
         }

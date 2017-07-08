@@ -9,7 +9,6 @@ use GTrader\Util;
 use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Chart;
-use GTrader\Candle;
 use GTrader\Indicator;
 
 class IndicatorController extends Controller

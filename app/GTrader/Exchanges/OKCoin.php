@@ -3,7 +3,6 @@
 namespace GTrader\Exchanges;
 
 use GTrader\Exchange;
-use GTrader\Candle;
 use GTrader\Trade;
 
 class OKCoin extends Exchange
@@ -218,7 +217,7 @@ class OKCoin extends Exchange
      * @param $resolution int
      * @param $since int
      * @param $size int
-     * @return array of GTrader\Candle
+     * @return array of Candles
      */
     public function getCandles(
         string $symbol,
@@ -257,7 +256,7 @@ class OKCoin extends Exchange
         $candles = [];
         foreach ($kline as $candle) {
 
-            $new_candle = new Candle();
+            $new_candle = new \stdClass();
             $new_candle->open = $candle[1];
             $new_candle->high = $candle[2];
             $new_candle->low = $candle[3];

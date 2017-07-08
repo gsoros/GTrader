@@ -23,9 +23,9 @@ class Aggregator
             $exchange = Exchange::make($exchange_class);
             $exchange_id = null;
             $exchange_o = DB::table('exchanges')
-                                    ->select('id')
-                                    ->where('name', $exchange->getParam('local_name'))
-                                    ->first();
+                ->select('id')
+                ->where('name', $exchange->getParam('local_name'))
+                ->first();
             if (is_object($exchange_o)) {
                 $exchange_id = $exchange_o->id;
             }
@@ -46,26 +46,27 @@ class Aggregator
                 }
                 $symbol_id = null;
                 $symbol_o = DB::table('symbols')
-                                        ->select('id')
-                                        ->where('name', $symbol_local)
-                                        ->where('exchange_id', $exchange_id)
-                                        ->first();
+                    ->select('id')
+                    ->where('name', $symbol_local)
+                    ->where('exchange_id', $exchange_id)
+                    ->first();
                 if (is_object($symbol_o)) {
                     $symbol_id = $symbol_o->id;
                 }
                 if (!$symbol_id) {
                     $symbol_id = DB::table('symbols')
-                                        ->insertGetId([
-                                            'name' => $symbol_local,
-                                            'exchange_id' => $exchange_id,
-                                            'long_name' => $symbol['long_name']]);
+                        ->insertGetId([
+                            'name' => $symbol_local,
+                            'exchange_id' => $exchange_id,
+                            'long_name' => $symbol['long_name']]);
                 }
 
                 echo ' ID: '.$symbol_id."\n";
                 foreach ($symbol['resolutions'] as $resolution => $res_name) {
                     //set_time_limit(59);
 
-                    $time = Candle::select('time')
+                    $time = DB::table('candles')
+                            ->select('time')
                             ->where('exchange_id', $exchange_id)
                             ->where('symbol_id', $symbol_id)
                             ->where('resolution', $resolution)
@@ -90,7 +91,10 @@ class Aggregator
                         continue;
                     }
                     foreach ($candles as $candle) {
-                        $candle->save();
+                        $candle->exchange_id = $exchange_id;
+                        $candle->symbol_id = $symbol_id;
+                        $candle->resolution = $resolution;
+                        Series::saveCandle($candle);
                     }
                     echo count($candles)." processed\n";
                 }

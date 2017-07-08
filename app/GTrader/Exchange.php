@@ -117,9 +117,9 @@ abstract class Exchange
     public static function getIdByName(string $name)
     {
         $query = DB::table('exchanges')
-                    ->select('id')
-                    ->where('name', $name)
-                    ->first();
+            ->select('id')
+            ->where('name', $name)
+            ->first();
         if (is_object($query)) {
             return $query->id;
         }
@@ -131,9 +131,9 @@ abstract class Exchange
         $query = DB::table('symbols')
                     ->select('symbols.id')
                     ->join('exchanges', function ($join) use ($exchange_name) {
-                                $join->on('exchanges.id', '=', 'symbols.exchange_id')
-                                    ->where('exchanges.name', $exchange_name);
-                            })
+                        $join->on('exchanges.id', '=', 'symbols.exchange_id')
+                            ->where('exchanges.name', $exchange_name);
+                    })
                     ->where('symbols.name', $symbol_name)
                     ->first();
         if (is_object($query)) {
@@ -159,9 +159,9 @@ abstract class Exchange
     public static function getSymbolNameById(int $id)
     {
         $query = DB::table('symbols')
-                    ->select('name')
-                    ->where('id', $id)
-                    ->first();
+            ->select('name')
+            ->where('id', $id)
+            ->first();
         if (is_object($query)) {
             return $query->name;
         }

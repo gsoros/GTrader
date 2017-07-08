@@ -2,8 +2,6 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Candle;
-
 class Ohlc extends HasInputs
 {
 
@@ -124,7 +122,7 @@ class Ohlc extends HasInputs
 
 
 
-    protected function candle2arr(Candle $c = null, $key_open, $key_high, $key_low, $key_close)
+    protected function candle2arr($c = null, $key_open, $key_high, $key_low, $key_close)
     {
         if (is_null($c)) {
             return null;

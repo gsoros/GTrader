@@ -3,6 +3,7 @@
 namespace GTrader;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 
 class Series extends Collection
@@ -125,7 +126,7 @@ class Series extends Collection
         //return $this->items[$this->size()-1];
     //}
 
-    public function set(Candle $candle = null)
+    public function set($candle = null)
     {
         $this->_load();
         if (isset($this->items[$this->_iter-1])) {
@@ -193,6 +194,11 @@ class Series extends Collection
         return $this;
     }
 
+    public function first(?callable $callback = null, $default = null)
+    {
+        $this->_load();
+        return parent::first($callback, $default);
+    }
 
     public function firstAfter(int $time)
     {
@@ -262,7 +268,8 @@ class Series extends Collection
 
         list ($start, $end, $limit) = $this->getStartEndLimit(true);
 
-        $candles = Candle::select('time', 'open', 'high', 'low', 'close', 'volume')
+        $candles = DB::table('candles')
+            ->select('time', 'open', 'high', 'low', 'close', 'volume')
             ->where('resolution', $resolution)
             ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
             ->where('exchanges.name', $this->getParam('exchange'))
@@ -298,6 +305,7 @@ class Series extends Collection
 */
 
         $this->items = $candles->items;
+        //dump('SeriesNg::_load()', $this->items);
         //$this->setParam('start', $this->next()->time);
         //$this->setParam('end', $this->last()->time);
         return $this->reset();
@@ -319,11 +327,72 @@ class Series extends Collection
 
     public function save()
     {
+        if ($e = $this->getParam('exchange')) {
+            if ($r = Exchange::getIdByName($e)) {
+                $exchange_id = intval($r);
+            }
+            if ($s = $this->getParam('symbol')) {
+                if ($s = Exchange::getSymbolIdByExchangeSymbolName($e, $s)) {
+                    $symbol_id = intval($s);
+                }
+            }
+        }
+        if ($r = $this->getParam('resolution')) {
+            $resolution = intval($r);
+        }
+
         $this->reset();
         while ($candle = $this->next()) {
-            $candle->save();
+            if (isset($exchange_id)) {
+                $candle->exchange_id = $exchange_id;
+            }
+            if (isset($symbol_id)) {
+                $candle->symbol_id = $symbol_id;
+            }
+            if (isset($resolution)) {
+                $candle->resolution = $resolution;
+            }
+            self::saveCandle($candle);
         }
         return $this;
+    }
+
+
+    public static function saveCandle($candle)
+    {
+        $table = \Config::get('GTrader.Series.table');
+        $attributes = ['id', 'time', 'exchange_id', 'symbol_id', 'resolution',
+            'open', 'high', 'low', 'close', 'volume'];
+
+        if (! $vars = get_object_vars($candle)) {
+            error_log('Series::saveCandle() could not get object vars for '.json_encode($candle));
+            return null;
+        }
+        foreach ($vars as $k => $v) {
+            if (!in_array($k, $attributes)) {
+                error_log('Series::saveCandle() not saving attribute '.$k.' = '.$v);
+                unset($candle->$k);
+            }
+        }
+
+        $query = DB::table($table)->select('id');
+
+        foreach (['time', 'exchange_id', 'symbol_id', 'resolution'] as $k) {
+            if (!isset($candle->$k)) {
+                error_log('Series::saveCandle() Cannot save without '.$k);
+                return null;
+            }
+            $query->where($k, $candle->$k);
+        }
+
+        if (is_object($query->first())) {
+            DB::table($table)
+                ->where('id', $query->first()->id)
+                ->update(get_object_vars($candle));
+            return null;
+        }
+
+        return DB::table($table)->insert(get_object_vars($candle));
     }
 
 
@@ -341,7 +410,8 @@ class Series extends Collection
             return $cached;
         }
 
-        $candle = Candle::select('time')
+        $candle = DB::table('candles')
+            ->select('time')
             ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
             ->where('exchanges.name', $exchange)
             ->join('symbols', function ($join) {
@@ -374,16 +444,17 @@ class Series extends Collection
             return $cached;
         }
 
-        $candle = Candle::select('time')
-                        ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
-                        ->where('exchanges.name', $exchange)
-                        ->join('symbols', function ($join) {
-                            $join->on('candles.symbol_id', '=', 'symbols.id')
-                                ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
-                        })
-                        ->where('symbols.name', $symbol)
-                        ->where('resolution', $resolution)
-                        ->orderBy('time', 'desc')->first();
+        $candle = DB::table('candles')
+            ->select('time')
+            ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
+            ->where('exchanges.name', $exchange)
+            ->join('symbols', function ($join) {
+                $join->on('candles.symbol_id', '=', 'symbols.id')
+                    ->whereColumn('symbols.exchange_id', '=', 'exchanges.id');
+            })
+            ->where('symbols.name', $symbol)
+            ->where('resolution', $resolution)
+            ->orderBy('time', 'desc')->first();
 
         $last = isset($candle->time) ? $candle->time : null;
         $this->cache($cache_key, $last);
@@ -462,7 +533,7 @@ class Series extends Collection
 
 
     /** Midrate */
-    public static function ohlc4(Candle $candle)
+    public static function ohlc4($candle)
     {
         if (isset($candle->open) && isset($candle->high) && isset($candle->low) && isset($candle->close)) {
             return ($candle->open + $candle->high + $candle->low + $candle->close) / 4;

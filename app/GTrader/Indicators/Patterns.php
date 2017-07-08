@@ -2,9 +2,12 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\HasCache;
+
 /** CDL_* family of patterns from TA-Lib */
 class Patterns extends Trader
 {
+    use HasCache;
 
     public function __construct(array $params = [])
     {
@@ -57,6 +60,21 @@ class Patterns extends Trader
         return $this;
     }
 
+    protected function getAnnotationSig()
+    {
+        if ($annot_sig = $this->cached('annot_sig')) {
+            return $annot_sig;
+        }
+
+        $annot_ind = clone $this;
+        $annot_ind->setParam('outputs', ['annotation']);
+        $annot_sig = $annot_ind->getSignature();
+        //error_log('Patterns::getAnnotationSig() annot_sig: '.$annot_sig);
+
+        $this->cache('annot_sig', $annot_sig);
+        return $annot_sig;
+    }
+
     public function getOutputArray(
         string $index_type = 'sequential',
         bool $respect_padding = false,
@@ -66,8 +84,9 @@ class Patterns extends Trader
             if (!$this->getParam('indicator.show_annotation')) {
                 return [];
             }
+
             return $this->getCandles()->extract(
-                $this->getSignature().':::annotation',
+                $this->getAnnotationSig(),
                 $index_type,
                 $respect_padding,
                 $density_cutoff
@@ -129,7 +148,7 @@ class Patterns extends Trader
         }
 
         $this->getCandles()->setValues(
-            $this->getSignature().':::annotation',
+            $this->getAnnotationSig(),
             $annotation,
             null
         );

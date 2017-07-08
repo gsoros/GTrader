@@ -25,7 +25,7 @@ class Dummy extends Exchange
      * @param $resolution int
      * @param $since int
      * @param $size int
-     * @return array of GTrader\Candle
+     * @return array of Candles
      */
     public function getCandles(
         string $symbol,
