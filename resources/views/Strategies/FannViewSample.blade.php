@@ -14,7 +14,7 @@
             </button>
             <button type="button"
                     class="editable btn btn-primary btn-sm">
-                {{ date('Y-m-d : Hi', $now) }}
+                {{ date('Y-m-d H:i', $now) }}
             </button>
             <button type="button"
                     title="Go forward one sample"
