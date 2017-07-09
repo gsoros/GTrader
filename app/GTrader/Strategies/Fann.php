@@ -239,6 +239,13 @@ class Fann extends Strategy
             if ($i = $candles->getOrAddIndicator($sig)) {
                 $o = Indicator::getOutputFromSignature($sig);
                 $label = $i->getDisplaySignature('short').' ==> '.$o;
+                $i = 2;
+                $suffix = '';
+                while (100 > $i && isset($data[$label.$suffix])) {
+                    $suffix = ' '.$i;
+                    $i++;
+                }
+                $label .= $suffix;
             }
             //if () {
                 //$display = ['y-axis' => 'right'];
