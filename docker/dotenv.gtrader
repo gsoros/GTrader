@@ -1,0 +1,19 @@
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_LOG_LEVEL=debug
+APP_URL=https://localhost
+APP_NAME="GTrader Docker"
+
+TIMEZONE=Europe/London
+TRAINING_MANAGER_SLOTS=4
+TRAINING_MANAGER_PHP_COMMAND="ionice -c 3 nice -n 19 php"
+MAX_USERS=1
+ALLOW_PASSWORD_RESETS=false
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=33066
+DB_DATABASE=gtrader
+DB_USERNAME=gtrader
+DB_PASSWORD=gtrader

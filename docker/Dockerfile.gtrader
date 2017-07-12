@@ -1,0 +1,45 @@
+FROM php:7-fpm
+WORKDIR /gtrader
+
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libmcrypt-dev \
+    mysql-client \
+    libfann-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng12-dev \
+    zlib1g-dev \
+    attr \
+    cron \
+    && docker-php-ext-install mcrypt pdo_mysql zip \
+    && pecl install trader && docker-php-ext-enable trader \
+    && pecl install fann && docker-php-ext-enable fann \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
+    && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
+    && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
+    && apt-get install -y nodejs
+
+RUN mkdir -p /var/log/nginx
+
+COPY . /gtrader
+RUN chown -R www-data:www-data /gtrader
+
+RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && composer install
+
+RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && npm install
+
+RUN cp docker/dotenv.gtrader .env
+
+RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && php artisan key:generate
+
+RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && npm run dev
+
+RUN (crontab -l; echo -e "### GTrader Schedule\n* * * * * sg www-data '`which php` `pwd`/artisan schedule:run \
+    >> `pwd`/storage/logs/schedule.log 2>&1'") | crontab -
