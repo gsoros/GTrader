@@ -22,26 +22,24 @@ RUN apt-get update && apt-get install -y \
     && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs
 
-RUN mkdir -p /var/log/nginx
-
 COPY . /gtrader
-
-RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
-    && composer install
-
-RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && npm install
-
-RUN cp docker/dotenv.gtrader .env
-
-RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
-    && php artisan key:generate
-
-RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && npm run dev
 
 RUN chown -R www-data:www-data /gtrader
 
-USER www-data
+RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && su -s /bin/sh -m www-data -c "composer install"
 
-RUN crontab < /gtrader/docker/crontab.gtrader
+RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && su -s /bin/sh -m www-data -c "npm install"
+
+RUN su -s /bin/sh -m www-data -c "cp docker/dotenv.gtrader .env"
+
+RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && su -s /bin/sh -m www-data -c "php artisan key:generate"
+
+RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && su -s /bin/sh -m www-data -c "npm run dev"
+
+RUN su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
+
+# CMD /usr/sbin/cron -f&

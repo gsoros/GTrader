@@ -60,7 +60,6 @@ services:
       - '44333'
     volumes:
       - gtrader:/gtrader:ro
-      - log:/var/log
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
       - /etc/localtime:/etc/localtime:ro
     restart: always
