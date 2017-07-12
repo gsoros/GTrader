@@ -20,26 +20,23 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install -j$(nproc) gd \
     && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
     && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/*
 
 COPY . /gtrader
 
-RUN chown -R www-data:www-data /gtrader
-
-RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
-    && su -s /bin/sh -m www-data -c "composer install"
-
-RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "npm install"
-
-RUN su -s /bin/sh -m www-data -c "cp docker/dotenv.gtrader .env"
-
-RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
-    && su -s /bin/sh -m www-data -c "php artisan key:generate"
-
-RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "npm run dev"
-
-RUN su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
+RUN chown -R www-data:www-data /gtrader \
+    && setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && su -s /bin/sh -m www-data -c "export COMPOSER_CACHE_DIR=/tmp/cache/composer && mkdir -p /tmp/cache/composer && composer install" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && su -s /bin/sh -m www-data -c "export npm_config_cache=/tmp/cache/npm && mkdir /tmp/cache/npm && npm install" \
+    && rm -rf /tmp/cache/ \
+    && su -s /bin/sh -m www-data -c "cp docker/dotenv.gtrader .env" \
+    && setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && su -s /bin/sh -m www-data -c "php artisan key:generate" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
+    && su -s /bin/sh -m www-data -c "npm run dev" \
+    && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
 
 # CMD /usr/sbin/cron -f&
