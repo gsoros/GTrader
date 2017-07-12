@@ -25,7 +25,6 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /var/log/nginx
 
 COPY . /gtrader
-RUN chown -R www-data:www-data /gtrader
 
 RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
     && composer install
@@ -41,5 +40,8 @@ RUN setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
 RUN setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && npm run dev
 
-RUN (crontab -l; echo -e "### GTrader Schedule\n* * * * * sg www-data '`which php` `pwd`/artisan schedule:run \
-    >> `pwd`/storage/logs/schedule.log 2>&1'") | crontab -
+RUN chown -R www-data:www-data /gtrader
+
+USER www-data
+
+RUN crontab < /gtrader/docker/crontab.gtrader
