@@ -3,8 +3,6 @@ WORKDIR /gtrader
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /gtrader
-
 RUN apt-get update && apt-get install -y \
     php7.0-dev \
     php7.0-cli \
@@ -24,37 +22,45 @@ RUN apt-get update && apt-get install -y \
     attr \
     cron \
     gnupg \
-    runit \
-    && phpenmod pdo_mysql \
-    && echo "############### PECL ################" \
+    runit
+
+RUN echo "############### PECL ################" \
     && pecl channel-update pecl.php.net \
-    && pecl install trader && phpenmod trader \
-    && pecl install fann && phpenmod fann \
+    && pecl install trader \
+    && pecl install fann \
     && echo "############### GET COMPOSER ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
     && echo "############### GET NODE ################" \
-    && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
+    && curl -sL https://deb.nodesource.com/setup_7.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
-    && rm -rf /var/cache/apt/* \
-    && echo "############### FILES ################" \
+    && rm -rf /var/cache/apt/*
+
+COPY . /gtrader
+
+RUN echo "############### FILES ################" \
     && cp -R /gtrader/docker/fs-gtrader/* / \
-    && chown -R www-data:www-data /gtrader \
-    && echo "############### COMPOSER INSTALL ################" \
+    && phpenmod pdo_mysql && phpenmod trader && phpenmod fann \
+    && chown -R www-data:www-data /gtrader
+
+RUN echo "############### COMPOSER INSTALL ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && su -s /bin/sh -m www-data -c "mkdir -p /tmp/cache/composer && COMPOSER_CACHE_DIR=/tmp/cache/composer composer install" \
-    && echo "############### NPM INSTALL ################" \
+    && su -s /bin/sh -m www-data -c "mkdir -p /tmp/cache/composer && COMPOSER_CACHE_DIR=/tmp/cache/composer composer install"
+
+RUN echo "############### NPM INSTALL ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "mkdir /tmp/cache/npm && npm_config_cache=/tmp/cache/npm npm install" \
     && rm -rf /tmp/cache/ \
-    && su -s /bin/sh -m www-data -c "cp env.docker .env" \
+    && su -s /bin/sh -m www-data -c "cp env.docker .env"
+
+RUN echo "############### ARTISAN ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && echo "############### ARTISAN ################" \
     && su -s /bin/sh -m www-data -c "php artisan key:generate" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && su -s /bin/sh -m www-data -c "php artisan optimize" \
-    && echo "############### NPM RUN DEV ################" \
+    && su -s /bin/sh -m www-data -c "php artisan optimize"
+
+RUN echo "############### NPM RUN DEV ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
