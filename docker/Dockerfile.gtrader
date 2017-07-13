@@ -52,7 +52,7 @@ RUN echo "############### NPM INSTALL ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "mkdir /tmp/cache/npm && npm_config_cache=/tmp/cache/npm npm install" \
     && rm -rf /tmp/cache/ \
-    && su -s /bin/sh -m www-data -c "cp env.docker .env"
+    && su -s /bin/sh -m www-data -c "cp docker/env .env"
 
 RUN echo "############### ARTISAN ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
