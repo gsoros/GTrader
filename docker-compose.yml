@@ -17,8 +17,6 @@ services:
     volumes:
       - gtrader:/gtrader
       - log:/var/log
-      - ./docker/service:/etc/service
-      - ./docker/php-log.conf:/etc/php/7.0/fpm/conf.d/zz-log.conf
       - /etc/localtime:/etc/localtime:ro
     ports:
       - '9000:9000'
@@ -61,7 +59,6 @@ services:
       - '44333'
     volumes:
       - gtrader:/gtrader:ro
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
       - /etc/localtime:/etc/localtime:ro
     restart: always
     networks:

@@ -57,7 +57,8 @@ RUN chown -R www-data:www-data /gtrader \
     && su -s /bin/sh -m www-data -c "npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
 
-##RUN mkdir -p /run/php/
-COPY docker/php_listen.conf /etc/php/7.0/fpm/pool.d/wwwzzz.conf
+RUN cp docker/php_listen.conf /etc/php/7.0/fpm/pool.d/wwwzzz.conf \
+    && cp docker/php-log.conf /etc/php/7.0/fpm/conf.d/zz-log.conf \
+    && cp -R docker/service/* /etc/service/
 
 CMD /usr/bin/runsvdir -P /etc/service
