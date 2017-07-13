@@ -3,6 +3,8 @@ WORKDIR /gtrader
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+COPY . /gtrader
+
 RUN apt-get update && apt-get install -y \
     php7.0-dev \
     php7.0-cli \
@@ -22,47 +24,39 @@ RUN apt-get update && apt-get install -y \
     attr \
     cron \
     gnupg \
-    runit
-
-COPY docker/php-mods-available/* /etc/php/7.0/mods-available/
-
-RUN phpenmod pdo_mysql \
+    runit \
+    && phpenmod pdo_mysql \
     && echo "############### PECL ################" \
     && pecl channel-update pecl.php.net \
     && pecl install trader && phpenmod trader \
     && pecl install fann && phpenmod fann \
-    && echo "############### COMPOSER ################" \
+    && echo "############### GET COMPOSER ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
-    && echo "############### NODE ################" \
+    && echo "############### GET NODE ################" \
     && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
-    && rm -rf /var/cache/apt/*
-
-COPY . /gtrader
-
-RUN chown -R www-data:www-data /gtrader \
+    && rm -rf /var/cache/apt/* \
+    && echo "############### FILES ################" \
+    && cp -R /gtrader/docker/fs-gtrader/* / \
+    && chown -R www-data:www-data /gtrader \
+    && echo "############### COMPOSER INSTALL ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && su -s /bin/sh -m www-data -c "mkdir -p /tmp/cache/composer && COMPOSER_CACHE_DIR=/tmp/cache/composer composer install" \
+    && echo "############### NPM INSTALL ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "mkdir /tmp/cache/npm && npm_config_cache=/tmp/cache/npm npm install" \
     && rm -rf /tmp/cache/ \
     && su -s /bin/sh -m www-data -c "cp env.docker .env" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
+    && echo "############### ARTISAN ################" \
     && su -s /bin/sh -m www-data -c "php artisan key:generate" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && su -s /bin/sh -m www-data -c "php artisan optimize" \
+    && echo "############### NPM RUN DEV ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
-
-COPY docker/php_listen.conf /etc/php/7.0/fpm/pool.d/zz-listen.conf
-COPY docker/php-log.conf /etc/php/7.0/fpm/conf.d/zz-log.conf
-RUN mkdir /etc/service/cron
-COPY docker/service/cron/ /etc/service/cron/
-RUN mkdir /etc/service/php-fpm
-COPY docker/service/php-fpm/ /etc/service/php-fpm/
-RUN mkdir -p /run/php/
 
 CMD /usr/bin/runsvdir -P /etc/service
