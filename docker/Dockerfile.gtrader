@@ -1,24 +1,39 @@
-FROM php:7.0-fpm
+FROM debian:stretch-slim
 WORKDIR /gtrader
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y \
+    php7.0-dev \
+    php7.0-cli \
+    php7.0-fpm \
+    php7.0-mysql \
+    php7.0-gd \
+    php7.0-mcrypt \
+    php7.0-zip\
+    php7.0-mysql \
+    php7.0-mbstring \
+    php-pear \
+    curl \
     git \
     unzip \
-    libmcrypt-dev \
     mysql-client \
     libfann-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng12-dev \
-    zlib1g-dev \
     attr \
     cron \
-    && docker-php-ext-install mcrypt pdo_mysql zip \
-    && pecl install trader && docker-php-ext-enable trader \
-    && pecl install fann && docker-php-ext-enable fann \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd \
+    gnupg
+
+COPY docker/php-mods-available/* /etc/php/7.0/mods-available/
+
+RUN phpenmod pdo_mysql \
+    && echo "############### PECL ################" \
+    && pecl channel-update pecl.php.net \
+    && pecl install trader && phpenmod trader \
+    && pecl install fann && phpenmod fann \
+    && echo "############### COMPOSER ################" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
+    && echo "############### NODE ################" \
     && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -27,13 +42,13 @@ RUN apt-get update && apt-get install -y \
 COPY . /gtrader
 
 RUN chown -R www-data:www-data /gtrader \
-    && setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
-    && su -s /bin/sh -m www-data -c "export COMPOSER_CACHE_DIR=/tmp/cache/composer && mkdir -p /tmp/cache/composer && composer install" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
+    && su -s /bin/sh -m www-data -c "mkdir -p /tmp/cache/composer && COMPOSER_CACHE_DIR=/tmp/cache/composer composer install" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "export npm_config_cache=/tmp/cache/npm && mkdir /tmp/cache/npm && npm install" \
+    && su -s /bin/sh -m www-data -c "mkdir /tmp/cache/npm && npm_config_cache=/tmp/cache/npm npm install" \
     && rm -rf /tmp/cache/ \
-    && su -s /bin/sh -m www-data -c "cp docker/dotenv.gtrader .env" \
-    && setfattr -n user.pax.flags -v "m" /usr/local/bin/php \
+    && su -s /bin/sh -m www-data -c "cp env.docker .env" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && su -s /bin/sh -m www-data -c "php artisan key:generate" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "npm run dev" \

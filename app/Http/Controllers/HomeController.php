@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use GTrader\Page;
@@ -25,8 +26,47 @@ class HomeController extends Controller
      */
     public function __construct()
     {
+        if (! $this->checkDB()) {
+            dd('Could not connect to the database. Check your DB settings in .env');
+        }
         $this->middleware('auth');
     }
+
+
+    protected function checkDB()
+    {
+        $users = 0;
+        $max_tries = 10;
+        $tries = 0;
+        $delay = 3;
+        while ($tries <= $max_tries && !$users) {
+            $tries++;
+            try {
+                if ($users = DB::table('users')->count()) {
+                    return true;
+                }
+                $this->migrateAndSeed();
+            } catch (\Exception $e) {
+                try {
+                    $this->migrateAndSeed();
+                } catch (\Exception $f) {
+                    dump('Automigrate attempt '.$tries.' failed');
+                }
+            }
+            if ($tries < $max_tries) {
+                sleep($delay);
+            }
+        }
+        return false;
+    }
+
+    protected function migrateAndSeed()
+    {
+        dump('Migrate: ', Artisan::call('migrate', array('--path' => 'database/migrations')));
+        dump('Seed: ', Artisan::call('db:seed'));
+    }
+
+
 
     /**
      * Show the application dashboard.
