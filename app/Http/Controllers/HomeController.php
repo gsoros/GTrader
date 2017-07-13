@@ -50,7 +50,8 @@ class HomeController extends Controller
                 try {
                     $this->migrateAndSeed();
                 } catch (\Exception $f) {
-                    dump('Automigrate attempt '.$tries.' failed');
+                    echo 'Automigrate attempt '.$tries.' failed<br>';
+                    flush();
                 }
             }
             if ($tries < $max_tries) {
@@ -62,8 +63,8 @@ class HomeController extends Controller
 
     protected function migrateAndSeed()
     {
-        dump('Migrate: ', Artisan::call('migrate', array('--path' => 'database/migrations')));
-        dump('Seed: ', Artisan::call('db:seed'));
+        Artisan::call('migrate', ['--path' => 'database/migrations']);
+        Artisan::call('db:seed');
     }
 
 

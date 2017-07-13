@@ -51,11 +51,13 @@ RUN chown -R www-data:www-data /gtrader \
     && su -s /bin/sh -m www-data -c "cp env.docker .env" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/php \
     && su -s /bin/sh -m www-data -c "php artisan key:generate" \
+    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
+    && su -s /bin/sh -m www-data -c "php artisan optimize" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
 
-RUN mkdir -p /run/php/
+##RUN mkdir -p /run/php/
 COPY docker/php_listen.conf /etc/php/7.0/fpm/pool.d/wwwzzz.conf
 
 CMD /usr/bin/runsvdir -P /etc/service

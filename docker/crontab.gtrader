@@ -1,2 +1,2 @@
-* * * * * /usr/local/bin/php /gtrader/artisan schedule:run >> /gtrader/storage/logs/schedule.log 2>&1
+* * * * * /usr/bin/php /gtrader/artisan schedule:run >> /gtrader/storage/logs/schedule.log 2>&1
 ##
