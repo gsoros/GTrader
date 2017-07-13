@@ -63,5 +63,6 @@ RUN mkdir /etc/service/cron
 COPY docker/service/cron/ /etc/service/cron/
 RUN mkdir /etc/service/php-fpm
 COPY docker/service/php-fpm/ /etc/service/php-fpm/
+RUN mkdir -p /run/php/
 
 CMD /usr/bin/runsvdir -P /etc/service
