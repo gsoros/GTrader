@@ -58,7 +58,7 @@ RUN echo "############### FILES ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
     && su -s /bin/sh -m www-data -c "HOME=/tmp npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader" \
-    && apt-get remove php7.0-dev shared-mime-info exim4 manpages libfann-dev && \
+    && apt-get remove php7.0-dev shared-mime-info exim4 manpages libfann-dev \
     && apt-get autoremove && apt-get clean \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /tmp/cache/
 
