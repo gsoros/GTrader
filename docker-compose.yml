@@ -17,6 +17,7 @@ services:
     volumes:
       - gtrader:/gtrader
       - log:/var/log
+      - ./docker/service:/etc/service
       - ./docker/php-log.conf:/etc/php/7.0/fpm/conf.d/zz-log.conf
       - /etc/localtime:/etc/localtime:ro
     ports:

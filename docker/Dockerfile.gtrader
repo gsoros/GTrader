@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y \
     libfann-dev \
     attr \
     cron \
-    gnupg
+    gnupg \
+    runit
 
 COPY docker/php-mods-available/* /etc/php/7.0/mods-available/
 
@@ -54,4 +55,7 @@ RUN chown -R www-data:www-data /gtrader \
     && su -s /bin/sh -m www-data -c "npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
 
-# CMD /usr/sbin/cron -f&
+RUN mkdir -p /run/php/
+COPY docker/php_listen.conf /etc/php/7.0/fpm/pool.d/wwwzzz.conf
+
+CMD /usr/bin/runsvdir -P /etc/service
