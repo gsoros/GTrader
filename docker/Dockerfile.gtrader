@@ -62,7 +62,7 @@ RUN echo "############### ARTISAN ################" \
 
 RUN echo "############### NPM RUN DEV ################" \
     && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "npm run dev" \
+    && su -s /bin/sh -m www-data -c "HOME=/tmp npm run dev" \
     && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader"
 
 CMD /usr/bin/runsvdir -P /etc/service
