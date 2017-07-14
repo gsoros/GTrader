@@ -80,7 +80,7 @@ RUN    echo "############### FILES #########################" \
     \
     \
     && echo "############### ARTISAN #######################" \
-    && $SUW "cp docker/gtrader.env .env" \
+    && $SUW "cp docker/docker-gtrader.env .env" \
     && $PAX_PHP \
     && $SUW "php artisan key:generate" \
     && $PAX_PHP \

@@ -6,15 +6,15 @@ networks:
 
 volumes:
   mysql-data:
-  gtrader:
+  source:
 
 services:
-  gtrader:
+  php:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.gtrader
+      dockerfile: docker/php.Dockerfile
     volumes:
-      - gtrader:/gtrader
+      - source:/gtrader
       - /etc/localtime:/etc/localtime:ro
     expose:
       - '9000'
@@ -44,14 +44,14 @@ services:
   nginx:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.nginx
+      dockerfile: docker/nginx.Dockerfile
     ports:
       - "$LISTEN_HOST:$LISTEN_PORT:443"
     volumes:
-      - gtrader:/gtrader:ro
+      - source:/gtrader:ro
       - /etc/localtime:/etc/localtime:ro
     restart: always
     networks:
       - web
     depends_on:
-      - gtrader
+      - php
