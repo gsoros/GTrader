@@ -1,0 +1,57 @@
+version: "3"
+
+networks:
+  database:
+  web:
+
+volumes:
+  mysql-data:
+  gtrader:
+
+services:
+  gtrader:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gtrader
+    volumes:
+      - gtrader:/gtrader
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - '9000'
+    restart: always
+    networks:
+      - database
+      - web
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - '3306'
+    restart: always
+    networks:
+      - database
+    environment:
+      MYSQL_ROOT_PASSWORD: gtrader
+      MYSQL_USER: gtrader
+      MYSQL_PASSWORD: gtrader
+      MYSQL_DATABASE: gtrader
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.nginx
+    ports:
+      - "127.0.0.1:$EXTERNAL_PORT:443"
+    volumes:
+      - gtrader:/gtrader:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    networks:
+      - web
+    depends_on:
+      - gtrader

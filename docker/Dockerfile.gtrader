@@ -1,66 +1,101 @@
 FROM debian:stretch-slim
+
 WORKDIR /gtrader
 
-ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
-    php7.0-dev \
-    php7.0-cli \
-    php7.0-fpm \
-    php7.0-mysql \
-    php7.0-gd \
-    php7.0-mcrypt \
-    php7.0-zip\
-    php7.0-mysql \
-    php7.0-mbstring \
-    php-pear \
-    curl \
-    git \
-    unzip \
-    mysql-client \
-    libfann2 \
-    libfann-dev \
-    attr \
-    nano \
-    cron \
-    gnupg \
-    runit \
-    && echo "############### PECL ################" \
+ENV DEBIAN_FRONTEND noninteractive
+
+ENV PAXIFY 'setfattr -n user.pax.flags -v "m"'
+ENV PAX_PHP "$PAXIFY /usr/bin/php"
+ENV PAX_NODE "$PAXIFY /usr/bin/nodejs"
+
+ENV SUW "su -s /bin/sh -m www-data -c"
+ENV CACHE /tmp/cache
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+                php7.0-dev \
+                php7.0-cli \
+                php7.0-fpm \
+                php7.0-mysql \
+                php7.0-gd \
+                php7.0-mcrypt \
+                php7.0-zip\
+                php7.0-mysql \
+                php7.0-mbstring \
+                php-pear \
+                curl \
+                openssl \
+                ca-certificates \
+                git \
+                unzip \
+                mysql-client \
+                libfann2 \
+                libfann-dev \
+                make \
+                attr \
+                nano \
+                cron \
+                gnupg \
+                runit
+
+
+RUN set -eux; \
+    echo "############### PECL ##########################" \
     && pecl channel-update pecl.php.net \
     && pecl install trader \
     && pecl install fann \
-    && echo "############### GET COMPOSER ################" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
+    \
+    \
+    && echo "############### GET COMPOSER ##################" \
+    && $PAX_PHP \
     && curl -sL https://getcomposer.org/installer | php -- --install-dir /usr/bin --filename composer \
-    && echo "############### GET NODE ################" \
+    \
+    \
+    && echo "############### GET NODE ######################" \
     && curl -sL https://deb.nodesource.com/setup_7.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    \
+    \
+    && echo "############### CLEAN UP ######################" \
+    && apt-get -y remove libfann-dev make php7.0-dev \
+    && apt-get -y autoremove && apt-get clean \
+    && rm -rfv /var/cache/apt/* /var/lib/apt/lists/*
 
 COPY . /gtrader
 
-RUN echo "############### FILES ################" \
+RUN    echo "############### FILES #########################" \
     && cp -Rv /gtrader/docker/fs-gtrader/* / \
     && chown -R www-data:www-data /gtrader \
     && phpenmod pdo_mysql trader fann \
-    && echo "############### COMPOSER INSTALL ################" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && su -s /bin/sh -m www-data -c "mkdir -p /tmp/cache/composer && COMPOSER_CACHE_DIR=/tmp/cache/composer composer install" \
-    && echo "############### NPM INSTALL ################" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "mkdir /tmp/cache/npm && npm_config_cache=/tmp/cache/npm npm install" \
-    && su -s /bin/sh -m www-data -c "cp docker/env .env" \
-    && echo "############### ARTISAN ################" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && su -s /bin/sh -m www-data -c "php artisan key:generate" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/php \
-    && su -s /bin/sh -m www-data -c "php artisan optimize" \
-    && echo "############### NPM RUN DEV ################" \
-    && setfattr -n user.pax.flags -v "m" /usr/bin/nodejs \
-    && su -s /bin/sh -m www-data -c "HOME=/tmp npm run dev" \
-    && su -s /bin/sh -m www-data -c "crontab < /gtrader/docker/crontab.gtrader" \
-    && apt-get -y remove php7.0-dev shared-mime-info exim4 manpages libfann-dev \
-    && apt-get -y autoremove && apt-get clean \
-    && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /tmp/cache/
+    \
+    \
+    && echo "############### COMPOSER INSTALL ##############" \
+    && $PAX_PHP \
+    && $SUW "mkdir -p $CACHE/composer && COMPOSER_CACHE_DIR=$CACHE/composer composer install" \
+    \
+    \
+    && echo "############### NPM INSTALL ###################" \
+    && $PAX_NODE \
+    && $SUW "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
+    && $SUW "cp docker/gtrader.env .env" \
+    && rm -rf $CACHE \
+    \
+    \
+    && echo "############### ARTISAN #######################" \
+    && $PAX_PHP \
+    && $SUW "php artisan key:generate" \
+    && $PAX_PHP \
+    && $SUW "php artisan optimize" \
+    \
+    \
+    && echo "############### NPM RUN DEV ###################" \
+    && $PAX_NODE \
+    && $SUW "HOME=/tmp npm run dev" \
+    \
+    \
+    && echo "############### CRONTAB #######################" \
+    && $SUW "crontab < /gtrader/docker/crontab.gtrader"
 
 
 CMD /usr/bin/runsvdir -P /etc/service
