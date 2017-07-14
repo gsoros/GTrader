@@ -49,6 +49,7 @@ $(function() {
                     $('#' + target).html(response);
                     console.log('GTraderRequest success: ' + request + '.' + method);
                     if (-1 == [
+                        'change',
                         'image',
                         'list',
                         'form',

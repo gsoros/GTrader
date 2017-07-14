@@ -94,6 +94,16 @@
 
                                 <ul class="dropdown-menu" role="menu">
                                     <li>
+                                        <a href="#"
+                                            onClick="return window.GTrader.request(
+                                                'password', 'change', null, 'GET', 'settings_content'
+                                            )"
+                                            data-toggle="modal"
+                                            data-target=".bs-modal-lg">
+                                            Change Password
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a href="{{ url('/logout') }}"
                                             onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">

@@ -3,6 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UsersTableSeeder extends Seeder
 {
@@ -20,7 +21,7 @@ class UsersTableSeeder extends Seeder
         DB::table('users')->insert([
             'name' => 'gtrader',
             'email' => 'gtrader@localhost',
-            'password' => bcrypt('gtrader'),
+            'password' => Hash::make('gtrader'),
         ]);
     }
 }

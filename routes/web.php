@@ -65,3 +65,6 @@ Route::post('/bot.save',                'BotController@save');
 Route::get('/exchange.form',            'ExchangeController@form');
 Route::get('/exchange.list',            'ExchangeController@list');
 Route::post('/exchange.save',           'ExchangeController@save');
+
+Route::get('/password.change', function() { return view('auth.passwords.change'); });
+Route::post('/password.change', 'Auth\ChangePasswordController@change');
