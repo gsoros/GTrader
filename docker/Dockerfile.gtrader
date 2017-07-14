@@ -14,29 +14,29 @@ ENV CACHE /tmp/cache
 
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-                php7.0-dev \
-                php7.0-cli \
-                php7.0-fpm \
+                                            php7.0-dev \
+                                        php7.0-cli \
+                                    php7.0-fpm \
+                                php7.0-mysql \
+                            php7.0-gd \
+                        php7.0-mcrypt \
+                    php7.0-zip\
                 php7.0-mysql \
-                php7.0-gd \
-                php7.0-mcrypt \
-                php7.0-zip\
-                php7.0-mysql \
-                php7.0-mbstring \
+            php7.0-mbstring \
                 php-pear \
-                curl \
-                openssl \
-                ca-certificates \
-                git \
-                unzip \
-                mysql-client \
-                libfann2 \
-                libfann-dev \
-                make \
-                attr \
-                nano \
-                cron \
-                gnupg \
+                    curl \
+                        openssl \
+                            ca-certificates \
+                                git \
+                                    unzip \
+                                        mysql-client \
+                                            libfann2 \
+                                        libfann-dev \
+                                    make \
+                                attr \
+                            nano \
+                        cron \
+                    gnupg \
                 runit
 
 

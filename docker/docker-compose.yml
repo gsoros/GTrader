@@ -46,7 +46,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.nginx
     ports:
-      - "127.0.0.1:$EXTERNAL_PORT:443"
+      - "$LISTEN_HOST:$LISTEN_PORT:443"
     volumes:
       - gtrader:/gtrader:ro
       - /etc/localtime:/etc/localtime:ro
