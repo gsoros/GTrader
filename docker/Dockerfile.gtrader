@@ -97,4 +97,4 @@ RUN    echo "############### FILES #########################" \
     && $SUW "crontab < /gtrader/docker/crontab.gtrader"
 
 
-CMD /usr/bin/runsvdir -P" /etc/service
+CMD /usr/bin/runsvdir -P /etc/service
