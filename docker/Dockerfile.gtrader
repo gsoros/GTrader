@@ -90,7 +90,7 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM RUN DEV ###################" \
     && $PAX_NODE \
     && $SUW "HOME=/tmp npm run dev" \
-    && rm -rf /tmp/npm*
+    && rm -rf /tmp/npm* \
     \
     \
     && echo "############### CRONTAB #######################" \
