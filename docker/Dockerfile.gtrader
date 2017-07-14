@@ -2,9 +2,6 @@ FROM debian:stretch-slim
 
 WORKDIR /gtrader
 
-
-ENV DEBIAN_FRONTEND noninteractive
-
 ENV PAXIFY 'setfattr -n user.pax.flags -v "m"'
 ENV PAX_PHP "$PAXIFY /usr/bin/php"
 ENV PAX_NODE "$PAXIFY /usr/bin/nodejs"
@@ -13,7 +10,8 @@ ENV SUW "su -s /bin/sh -m www-data -c"
 ENV CACHE /tmp/cache
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && apt-get install -y --no-install-recommends \
                                             php7.0-dev \
                                         php7.0-cli \
                                     php7.0-fpm \
@@ -30,14 +28,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
                                 git \
                                     unzip \
                                         mysql-client \
-                                            libfann2 \
-                                        libfann-dev \
-                                    make \
-                                attr \
-                            nano \
-                        cron \
-                    gnupg \
-                runit
+                                    libfann2 \
+                                libfann-dev \
+                            make \
+                        attr \
+                    nano \
+                cron \
+            gnupg \
+        runit
 
 
 RUN set -eux; \
@@ -54,13 +52,13 @@ RUN set -eux; \
     \
     && echo "############### GET NODE ######################" \
     && curl -sL https://deb.nodesource.com/setup_7.x | bash - \
-    && apt-get install -y nodejs \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs \
     \
     \
     && echo "############### CLEAN UP ######################" \
     && apt-get -y remove libfann-dev make php7.0-dev \
     && apt-get -y autoremove && apt-get clean \
-    && rm -rfv /var/cache/apt/* /var/lib/apt/lists/*
+    && rm -rfv /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
 
 COPY . /gtrader
 
@@ -78,11 +76,11 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM INSTALL ###################" \
     && $PAX_NODE \
     && $SUW "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
-    && $SUW "cp docker/gtrader.env .env" \
-    && rm -rf $CACHE \
+    && rm -rfv $CACHE \
     \
     \
     && echo "############### ARTISAN #######################" \
+    && $SUW "cp docker/gtrader.env .env" \
     && $PAX_PHP \
     && $SUW "php artisan key:generate" \
     && $PAX_PHP \
@@ -92,10 +90,11 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM RUN DEV ###################" \
     && $PAX_NODE \
     && $SUW "HOME=/tmp npm run dev" \
+    && rm -rf /tmp/npm*
     \
     \
     && echo "############### CRONTAB #######################" \
     && $SUW "crontab < /gtrader/docker/crontab.gtrader"
 
 
-CMD /usr/bin/runsvdir -P /etc/service
+CMD [“/usr/bin/runsvdir”, “-P", "/etc/service”]
