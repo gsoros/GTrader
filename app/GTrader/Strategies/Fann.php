@@ -549,7 +549,7 @@ class Fann extends Strategy
             error_log('saveFann to '.$fn.' failed');
             return false;
         }
-        if (!chmod($fn, 0666)) {
+        if (!chmod($fn, 0664)) {
             error_log('chmod of '.$fn.' failed');
             return false;
         }
