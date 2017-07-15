@@ -64,7 +64,8 @@ COPY . /gtrader
 
 RUN    echo "############### FILES #########################" \
     && cp -Rv /gtrader/docker/fs-gtrader/* / \
-    && useradd -G www-data -d /gtrader -m gtrader \
+    && useradd -G www-data -d /gtrader -s /bin/bash -M gtrader \
+    && usermod -s /bin/bash gtrader \
     && for file in laravel schedule trainingManager; do touch /gtrader/storage/logs/$file.log; done \
     && chown -Rc gtrader:gtrader /gtrader \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
