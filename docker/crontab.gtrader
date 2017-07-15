@@ -1,2 +1,2 @@
-* * * * * /usr/bin/php /gtrader/artisan schedule:run >> /gtrader/storage/logs/schedule.log 2>&1
+* * * * * sg www-data "/usr/bin/php /gtrader/artisan schedule:run >> /gtrader/storage/logs/schedule.log 2>&1"
 ##

@@ -6,7 +6,7 @@ ENV PAXIFY 'setfattr -n user.pax.flags -v "m"'
 ENV PAX_PHP "$PAXIFY /usr/bin/php"
 ENV PAX_NODE "$PAXIFY /usr/bin/nodejs"
 
-ENV SUW "su -s /bin/sh -m www-data -c"
+ENV SUG "su -s /bin/sh -m gtrader -c"
 ENV CACHE /tmp/cache
 
 
@@ -64,37 +64,43 @@ COPY . /gtrader
 
 RUN    echo "############### FILES #########################" \
     && cp -Rv /gtrader/docker/fs-gtrader/* / \
-    && chown -R www-data:www-data /gtrader \
+    && useradd -G www-data -m gtrader \
+    && chown -Rc gtrader:gtrader /gtrader \
+    && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
+            chgrp -Rc www-data $dir; \
+            find $dir -type d -exec chmod -c 775 {} \;; \
+            find $dir -type f -exec chmod -c 664 {} \;; \
+        done \
     && phpenmod pdo_mysql trader fann \
     \
     \
     && echo "############### COMPOSER INSTALL ##############" \
     && $PAX_PHP \
-    && $SUW "mkdir -p $CACHE/composer && COMPOSER_CACHE_DIR=$CACHE/composer composer install" \
+    && $SUG "mkdir -p $CACHE/composer && COMPOSER_CACHE_DIR=$CACHE/composer composer install" \
     \
     \
     && echo "############### NPM INSTALL ###################" \
     && $PAX_NODE \
-    && $SUW "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
+    && $SUG "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
     && rm -rfv $CACHE \
     \
     \
     && echo "############### ARTISAN #######################" \
-    && $SUW "cp docker/docker-gtrader.env .env" \
+    && $SUG "cp docker/docker-gtrader.env .env" \
     && $PAX_PHP \
-    && $SUW "php artisan key:generate" \
+    && $SUG "php artisan key:generate" \
     && $PAX_PHP \
-    && $SUW "php artisan optimize" \
+    && $SUG "php artisan optimize" \
     \
     \
     && echo "############### NPM RUN DEV ###################" \
     && $PAX_NODE \
-    && $SUW "HOME=/tmp npm run dev" \
+    && $SUG "HOME=/tmp npm run dev" \
     && rm -rf /tmp/npm* \
     \
     \
     && echo "############### CRONTAB #######################" \
-    && $SUW "crontab < /gtrader/docker/crontab.gtrader"
+    && $SUG "crontab -u gtrader /gtrader/docker/crontab.gtrader"
 
 
 CMD /usr/bin/runsvdir -P /etc/service
