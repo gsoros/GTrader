@@ -63,9 +63,8 @@ RUN set -eux; \
 COPY . /gtrader
 
 RUN    echo "############### FILES #########################" \
-    && cp -Rv /gtrader/docker/fs-gtrader/* / \
+    && cp -Rv /gtrader/docker-fs/* / \
     && useradd -G www-data -d /gtrader -s /bin/bash -M gtrader \
-    && usermod -s /bin/bash gtrader \
     && for file in laravel schedule trainingManager; do touch /gtrader/storage/logs/$file.log; done \
     && chown -Rc gtrader:gtrader /gtrader \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
@@ -88,7 +87,7 @@ RUN    echo "############### FILES #########################" \
     \
     \
     && echo "############### ARTISAN #######################" \
-    && $SUG "cp docker/docker-gtrader.env .env" \
+    && $SUG "cp docker.env .env" \
     && $PAX_PHP \
     && $SUG "php artisan key:generate" \
     && $PAX_PHP \
@@ -102,7 +101,7 @@ RUN    echo "############### FILES #########################" \
     \
     \
     && echo "############### CRONTAB #######################" \
-    && $SUG "crontab -u gtrader /gtrader/docker/crontab.gtrader"
+    && $SUG "crontab -u gtrader crontab"
 
 
 CMD /usr/bin/runsvdir -P /etc/service

@@ -1176,7 +1176,8 @@ class Fann extends Strategy
 
     public function path()
     {
-        $dir = $this->getParam('path');
+        //$dir = $this->getParam('path');
+        $dir = self::getClassConf(get_class($this), 'path');
         if (!is_dir($dir)) {
             if (!mkdir($dir)) {
                 throw new \Exception('Failed to create '.$dir);
