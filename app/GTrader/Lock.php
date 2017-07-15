@@ -22,11 +22,20 @@ class Lock
 
     protected function lock(string $lock)
     {
-        $lockfile = fopen($this->path($lock), 'c+');
+        $fn = $this->path($lock);
+
+        $lockfile = fopen($fn, 'c+');
+
+        if (is_writable($fn)) {
+            @chmod($fn, 0664);
+        }
+
         if (!$lockfile || !flock($lockfile, LOCK_EX | LOCK_NB)) {
             return false;
         }
+
         $this->locks[$lock] = $lockfile;
+
         return true;
     }
 
@@ -53,6 +62,9 @@ class Lock
         if (!is_dir($dir)) {
             if (!mkdir($dir)) {
                 throw new \Exception('Failed to create directory '.$dir);
+            }
+            if (is_writable($dir)) {
+                @chmod($dir, 0775);
             }
         }
         if (!($lock = addslashes(str_replace(DIRECTORY_SEPARATOR, '', trim($lock))))) {
