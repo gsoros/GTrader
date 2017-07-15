@@ -2,12 +2,18 @@
 
 GTrader is a trading strategy back-tester and bot manager.
 
-## Requirements
+## For users
+Please use [GTrader-env] (https://github.com/gsoros/GTrader-env) which sets up the PHP, MySQL and Nginx-SSL environment in Docker containers.
+
+## For developers
+# Requirements
 * PHP 7 with GD support
 * [PHP-FANN extension] (http://php.net/manual/en/book.fann.php)
-* Trader extension ```sudo pecl channel-update pecl.php.net && sudo pecl install trader```
+* [Trader extension] (http://php.net/manual/en/book.trader.php)
+* [Composer] (https://getcomposer.org/)
+* [NPM] (https://www.npmjs.com/)
 
-## Installation
+# Installation
 1. ```git clone https://github.com/gsoros/GTrader.git```
 2. ```cd GTrader```
 3. ```composer install```
