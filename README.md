@@ -1,6 +1,5 @@
 # About GTrader
-![docker automated build status](https://img.shields.io/docker/build/gsoros/gtrader.svg)
-
+[![Docker Build Automated Status](https://img.shields.io/docker/build/gsoros/gtrader.svg?style=plastic)](https://hub.docker.com/r/gsoros/gtrader/)
 
 GTrader is a trading strategy back-tester and bot manager.
 
