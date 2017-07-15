@@ -42,7 +42,12 @@ class TrainingManager
     protected function main()
     {
         // Check for any trainings
-        $trainings = Training::where('status', 'training')->get();
+        try {
+            $trainings = Training::where('status', 'training')->get();
+        } catch (\Exception $e) {
+            error_log('TrainingManager::main() Could not fetch trainings from the database.');
+            return $this;
+        }
         foreach ($trainings as $training) {
             // Check if we have a free trainer slot
             while (is_null($slot = $this->getSlot())) {
@@ -57,6 +62,7 @@ class TrainingManager
                 $this->assign($slot, $training);
             }
         }
+        return $this;
     }
 
 

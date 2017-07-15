@@ -17,6 +17,16 @@ class Aggregator
             return null;
         }
 
+        try {
+            if (!count(DB::select(DB::raw('show tables like "exchanges"')))) {
+                error_log('Aggregator::aggregate() Exchanges table does not (yet) exist in the database.');
+                return null;
+            }
+        } catch (\Exception $e) {
+            error_log('Aggregator::aggregate() Database is not ready (yet).');
+            return null;
+        }
+
         $default_exchange = Exchange::make();
         foreach ($default_exchange->getParam('available_exchanges') as $exchange_class) {
             echo 'Exchange: '.$exchange_class;
