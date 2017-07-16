@@ -97,11 +97,12 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM RUN DEV ###################" \
     && $PAX_NODE \
     && $SUG "HOME=/tmp npm run dev" \
-    && rm -rf /tmp/npm* \
+    && rm -rfv /tmp/npm* \
     \
     \
     && echo "############### CRONTAB #######################" \
     && $SUG "crontab -u gtrader crontab"
 
+EXPOSE 9000
 
-CMD /usr/bin/runsvdir -P /etc/service
+CMD ["/usr/bin/runsvdir", "/etc/service"]
