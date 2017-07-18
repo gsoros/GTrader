@@ -14,6 +14,7 @@ return [
             'type' => 'select',
             'options' => [
                 'candlestick' => 'Candlesticks',
+                'ohlc' => 'OHLC',
                 'ha' => 'Heikin Ashi',
                 'linepoints' => 'Line',
             ],

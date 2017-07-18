@@ -184,9 +184,9 @@ class PHPlot extends Chart
         $this->_plot->setDataColors($this->colors);
 
         $this->_plot->SetDataValues($item['values']);
-        //dump('start '.$item['label']);
+        //dump('before drawGraph()'.$item['label']);
         $this->_plot->drawGraph();
-        //dump('end plot '.$item['label']);
+        //dump('after drawGraph()'.$item['label']);
         return $this;
     }
 
@@ -262,6 +262,10 @@ class PHPlot extends Chart
                 $this->createImageMap($item);
                 $this->mode_candlestick($item);
                 break;
+            case 'ohlc':
+                $this->createImageMap($item);
+                $this->mode_ohlc($item);
+                break;
             case 'linepoints':
                 $this->createImageMap($item);
                 $this->mode_linepoints($item);
@@ -294,7 +298,7 @@ class PHPlot extends Chart
 
 
     // Candles
-    protected function mode_candlestick(array &$item)
+    protected function mode_candlestick(array $item)
     {
         //dump('candles:', $item);
         $this->colors = ['#b0100010', '#00600010', 'grey:90', 'grey:90'];
@@ -321,6 +325,19 @@ class PHPlot extends Chart
 
         return $this;
     }
+
+
+    // OHLC
+    protected function mode_ohlc(array &$item)
+    {
+        //dump('candles:', $item);
+        //$this->_plot->SetDataType('text-data');
+        $this->colors = ['#b0100010', '#00600010'];
+        $item['num_outputs'] = 2;
+        $this->_plot->SetLineWidths(2);
+        return $this;
+    }
+
 
     // Signals, Ohlc or Vol
     protected function mode_linepoints(array &$item)

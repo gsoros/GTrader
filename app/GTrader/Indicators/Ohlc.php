@@ -11,14 +11,17 @@ class Ohlc extends HasInputs
             dd('Ohlc::key() no output', debug_backtrace());
         }
         $mode = $this->getParam('indicator.mode');
+        // line returns open
         if ('linepoints' === $mode) {
             return $this->getParam('indicator.input_open', 'open');
         }
-        if ('candlestick' === $mode) {
+        // candlesticks and ohlc: input = output
+        if (in_array($mode, ['candlestick', 'ohlc'])) {
             if ($o = $output) {
                 return $this->getParam('indicator.input_'.$o, $o);
             }
         }
+        // heikin-ashi modifies the output
         return null;
     }
 
