@@ -1,21 +1,21 @@
-# About GTrader
+## About GTrader
 [![Docker Automated Build](https://img.shields.io/docker/automated/gsoros/gtrader.svg?style=plastic)](https://hub.docker.com/r/gsoros/gtrader/)
 [![Docker Build Status](https://img.shields.io/docker/build/gsoros/gtrader.svg?style=plastic)](https://hub.docker.com/r/gsoros/gtrader/)
 
 GTrader is a trading strategy back-tester and bot manager.
 
-# For users
+## For users
 Please use [GTrader-env](https://github.com/gsoros/GTrader-env) which sets up the PHP, MySQL and Nginx-SSL environment in Docker containers.
 
-# For developers
-## Requirements
+## For developers
+### Requirements
 * PHP 7 with GD support
 * [PHP-FANN extension](http://php.net/manual/en/book.fann.php)
 * [Trader extension](http://php.net/manual/en/book.trader.php)
 * [Composer](https://getcomposer.org/)
 * [NPM](https://www.npmjs.com/)
 
-## Installation
+### Installation
 1. ```git clone https://github.com/gsoros/GTrader.git```
 2. ```cd GTrader```
 3. ```composer install```
@@ -29,7 +29,7 @@ Please use [GTrader-env](https://github.com/gsoros/GTrader-env) which sets up th
 11. ```(crontab -l; echo -e "### GTrader Schedule\n* * * * * `which php` `pwd`/artisan schedule:run >> `pwd`/storage/logs/schedule.log 2>&1") | crontab -```
 12. ```php artisan serve```
 
-# Screenshots
+## Screenshots
 ![main chart](https://cloud.githubusercontent.com/assets/12033369/23566860/fdeaecca-0053-11e7-9c57-7de5d9aa8297.png)
 
 ![settings](https://cloud.githubusercontent.com/assets/12033369/23566869/08e82b60-0054-11e7-9637-3de98b20c5cf.png)
@@ -38,5 +38,5 @@ Please use [GTrader-env](https://github.com/gsoros/GTrader-env) which sets up th
 
 ![strategies](https://cloud.githubusercontent.com/assets/12033369/23566871/0e0255da-0054-11e7-861d-3412d534c426.png)
 
-# License
+## License
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
