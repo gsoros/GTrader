@@ -7,18 +7,8 @@
 
 require('./bootstrap');
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
-
-//Vue.component('example', require('./components/Example.vue'));
-
-//const app = new Vue({
-//    el: '#app'
-//});
-
+// Select2
+require('select2/dist/js/select2.min.js');
 
 /**
  * Helps avoiding frequent events e.g. on resize
@@ -54,6 +44,9 @@ window.setLoading = function (element, loading) {
 
 
 $(function () {
+
+    $.fn.select2.defaults.set( "theme", "bootstrap" );
+
     $.ajaxSetup({
         /**
          * Add CSRF header to all ajax requests

@@ -91,6 +91,9 @@ class HomeController extends Controller
         Page::add('stylesheets', '<link href="/css/nouislider.min.css" rel="stylesheet">');
         Page::add('scripts_bottom', '<script src="/js/nouislider.min.js"></script>');
 
+        //Page::add('stylesheets', '<link href="/css/bootstrap-combobox.css" rel="stylesheet">');
+        //Page::add('scripts_bottom', '<script src="/js/bootstrap-combobox.js"></script>');
+
         $viewData = [
             'chart'             => $chart->toHtml(),
             'strategies'        => Strategy::getListOfUser(Auth::id()),
@@ -113,6 +116,11 @@ class HomeController extends Controller
 
     public function test()
     {
+        $chart = Chart::load(Auth::id(), 'mainchart');
+        foreach ($chart->getIndicators() as $i) {
+            dump($i->getSignature());
+        }
+        exit;
 /*
         $t0 = time();
         $m0 = memory_get_usage();

@@ -48,6 +48,31 @@
                         value="{{ urlencode($signature) }}">{{ $display_name }}</option>
                     @endforeach
                 </select>
+                <script>
+                    $('#{{ $key }}_{{ $uid }}').select2({
+                        tags: true,
+                        createTag: function (params) {
+                            var text = String(parseFloat(params.term));
+                            if ('NaN' == text) {
+                                return null;
+                            }
+                            return {
+                                id: encodeURIComponent('{"class": "Constant", "params": {"value": "' + text + '"}}'),
+                                text: 'Constant (' + text + ')',
+                                newOption: true
+                            }
+                        },
+                        templateResult: function (data) {
+                            var $result = $('<span></span>');
+                            $result.text(data.text);
+                            if (data.newOption) {
+                                $result.html('<em>' + data.text + '</em>');
+                            }
+                            return $result;
+                            }
+                        }
+                    );
+                </script>
 
                 @elseif ('bool' === $param['type'])
                 <div class="form-check form-check-inline">

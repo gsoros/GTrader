@@ -29,7 +29,6 @@ class Aggregator
 
         $default_exchange = Exchange::make();
         foreach ($default_exchange->getParam('available_exchanges') as $exchange_class) {
-            echo 'Exchange: '.$exchange_class;
             $exchange = Exchange::make($exchange_class);
             $exchange_id = null;
             $exchange_o = DB::table('exchanges')
@@ -41,16 +40,16 @@ class Aggregator
             }
             if (!$exchange_id) {
                 $exchange_id = DB::table('exchanges')
-                                    ->insertGetId([  'name' => $exchange->getParam('local_name'),
-                                                'long_name' => $exchange->getParam('long_name')]);
+                    ->insertGetId([
+                        'name' => $exchange->getParam('local_name'),
+                        'long_name' => $exchange->getParam('long_name')
+                    ]);
             }
-            echo ' ID: '.$exchange_id."\n";
             $symbols = $exchange->getParam('symbols');
             if (!is_array($symbols)) {
                 continue;
             }
             foreach ($symbols as $symbol_local => $symbol) {
-                echo 'Symbol: '.$symbol_local;
                 if (!is_array($symbol['resolutions'])) {
                     continue;
                 }
@@ -68,36 +67,39 @@ class Aggregator
                         ->insertGetId([
                             'name' => $symbol_local,
                             'exchange_id' => $exchange_id,
-                            'long_name' => $symbol['long_name']]);
+                            'long_name' => $symbol['long_name']
+                        ]);
                 }
-
-                echo ' ID: '.$symbol_id."\n";
                 foreach ($symbol['resolutions'] as $resolution => $res_name) {
                     //set_time_limit(59);
-
+                    echo 'candles:fetch '.$exchange_class.':'.$symbol_local.'('.$symbol_id.') '.$res_name.' ';
                     $time = DB::table('candles')
-                            ->select('time')
-                            ->where('exchange_id', $exchange_id)
-                            ->where('symbol_id', $symbol_id)
-                            ->where('resolution', $resolution)
-                            ->latest('time')
-                            ->first();
-                    $time = is_object($time) ? $time->time : 0;
-                    echo 'Res: '.$res_name.' Last: '.date('Y-m-d H:i', $time)."\n";
+                        ->select('time')
+                        ->where('exchange_id', $exchange_id)
+                        ->where('symbol_id', $symbol_id)
+                        ->where('resolution', $resolution)
+                        ->latest('time')
+                        ->first();
+                    if ($time = is_object($time) ? $time->time : 0) {
+                        echo 'Last: '.date('Y-m-d H:i', $time).' ';
+                    }
+                    flush();
                     //if ($time > time() - $resolution) continue;
 
                     $candles = $exchange->getCandles(
                         $symbol_local,
                         $resolution,
-                        $time - $resolution - 1,
+                        $time - $resolution + 1,
                         100000
                     );
                     //dd($candles);
 
                     if (!is_array($candles)) {
+                        echo PHP_EOL;
                         continue;
                     }
                     if (!count($candles)) {
+                        echo PHP_EOL;
                         continue;
                     }
                     foreach ($candles as $candle) {
@@ -106,12 +108,10 @@ class Aggregator
                         $candle->resolution = $resolution;
                         Series::saveCandle($candle);
                     }
-                    echo count($candles)." processed\n";
+                    echo count($candles).' processed'.PHP_EOL;
                 }
             }
         }
-
         Lock::release($lock);
-
     }
 }

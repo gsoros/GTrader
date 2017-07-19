@@ -2,14 +2,9 @@
 
 return [
     'indicator' => [
-        'name' => 'Constant',
         'value' => 0,
     ],
     'adjustable' => [
-        'name' => [
-            'name' => 'Name',
-            'type' => 'string',
-        ],
         'value' => [
             'name' => 'Value',
             'type' => 'float',

@@ -28,9 +28,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('candles:fetch')->everyMinute();
+        $schedule->command('candles:fetch')->everyMinute()
+            ->appendOutputTo(storage_path('logs/schedule.log'));
         $schedule->command('trainingManager:run')->everyMinute()
-            ->appendOutputTo(storage_path('logs/trainingManager.log'));;
+            ->appendOutputTo(storage_path('logs/trainingManager.log'));
         $schedule->command('bots:run')->everyFiveMinutes();
     }
 

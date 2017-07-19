@@ -8,6 +8,32 @@
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
 
+// Select2
+@import "node_modules/select2/dist/css/select2.min";
+
+.select2,
+    .select2-results__option,
+    .select2-search--dropdown,
+    .select2-search__field {
+    @extend .btn-primary;
+    @extend .btn-mini;
+    @extend .btn;
+}
+
+.select2-results {
+    padding-top: 10px !important;
+}
+
+.select2-dropdown,
+    .select2-results__options {
+    background-color: #151515;
+    border: 0;
+}
+
+.select2-search--dropdown {
+    padding: 0 !important;
+}
+
 .navbar {
     margin-bottom: 0;
     min-height: 0;
