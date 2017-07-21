@@ -10,6 +10,22 @@ return [
         'fastperiod' => 3,
     ],
     'adjustable' => [
+        'input_high' => [
+            'name' => 'High Source',
+            'type' => 'source',
+        ],
+        'input_low' => [
+            'name' => 'Low Source',
+            'type' => 'source',
+        ],
+        'input_close' => [
+            'name' => 'Close Source',
+            'type' => 'source',
+        ],
+        'input_volume' => [
+            'name' => 'Volume Source',
+            'type' => 'source',
+        ],
         'slowperiod' => [
             'name' => 'Slow Period',
             'type' => 'int',

@@ -7,11 +7,6 @@ use GTrader\Series;
 /** On Balance Volume */
 class Obv extends Trader
 {
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_obv($values['input'], $values['volume']))) {

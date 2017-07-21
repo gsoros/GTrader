@@ -88,12 +88,12 @@
         <label for="maximize_for">Maximise Strategy For</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="maximize_for">
-            @foreach (\Config::get('GTrader.FannTraining.indicators') as $ind)
-                <option value="{{ $ind['name'] }}"
-                @if ($ind['name'] == $preferences['maximize_for'])
+            @foreach (\Config::get('GTrader.FannTraining.maximize') as $val => $label)
+                <option value="{{ $val }}"
+                @if ($val == $preferences['maximize'])
                     selected
                 @endif
-                >{{ $ind['name'] }}</option>
+                >{{ $label }}</option>
             @endforeach
         </select>
     </div>

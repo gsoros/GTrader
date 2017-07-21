@@ -16,7 +16,7 @@ class Constant extends Indicator
         );
     }
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $value = $this->getParam('indicator.value', 0);
         return ('short' === $format) ? $value : $this->getParam('display.name').' ('.$value.')';

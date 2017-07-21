@@ -5,12 +5,6 @@ namespace GTrader\Indicators;
 /** Balance Of Power */
 class Bop extends Trader
 {
-
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_bop(

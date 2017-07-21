@@ -6,11 +6,6 @@ namespace GTrader\Indicators;
 class Adosc extends Trader
 {
 
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_adosc(

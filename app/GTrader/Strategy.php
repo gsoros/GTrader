@@ -186,34 +186,44 @@ class Strategy
 
     public function getSignalsIndicator()
     {
-        if (!($class = $this->getParam('signals_indicator_class'))) {
-            return null;
-        }
-
-        $candles = $this->getCandles();
-        foreach ($candles->getIndicators() as $indicator) {
-            if ($class === $indicator->getShortClass()) {
-                return $indicator;
-            }
-        }
-        //error_log('Strategy::getSignalsIndicator() creating invisible '.$class);
-        $indicator = Indicator::make($class);
-        $candles->addIndicator($indicator);
-        $indicator->addRef($this);
-
-        return $indicator;
+        error_log('Strategy::getSignalsIndicator() not overridden in '.$this->getShortClass());
+        return null;
     }
 
+    public function getBalanceIndicator()
+    {
+        if (!$candles = $this->getCandles()) {
+            error_log('Strategy::getBalanceIndicator() could not get candles');
+            return null;
+        }
+        if (!$signals = $this->getSignalsIndicator()) {
+            error_log('Strategy::getBalanceIndicator() could not get Signals');
+            return null;
+        }
+        return $candles->getOrAddIndicator('Balance', [
+            'input_signal' => $signals->getSignature(),
+        ]);
+    }
 
     public function getLastBalance(bool $force_rerun = false)
     {
-        return $this->getIndicatorLastValue('Balance', [], $force_rerun);
+        if (!$b = $this->getBalanceIndicator()) {
+            error_log('Strategy::getLastBalance() could not get balance ind');
+            return 0;
+        }
+        return $b->getLastValue($force_rerun);
     }
 
 
     public function getLastProfitability(bool $force_rerun = false)
     {
-        return $this->getIndicatorLastValue('Profitability', [], $force_rerun);
+        if (!$signals = $this->getSignalsIndicator()) {
+            error_log('Strategy::getLastProfitability() could not get Signals');
+            return 0;
+        }
+        return $this->getIndicatorLastValue('Profitability', [
+            'input_signal' => $signals->getSignature(),
+            ], $force_rerun);
     }
 
 

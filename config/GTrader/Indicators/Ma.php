@@ -27,6 +27,7 @@ return [
         'name' => 'MA',
         'description' => 'Moving Average',
         'y-axis' => 'right',
+        'auto-y-axis' => true,
     ],
 
 ];

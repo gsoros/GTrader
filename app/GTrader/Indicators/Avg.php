@@ -8,7 +8,7 @@ class Avg extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        $this->runDependencies($force_rerun);
+        $this->runInputIndicators($force_rerun);
 
         if (!($candles = $this->getCandles())) {
             return $this;

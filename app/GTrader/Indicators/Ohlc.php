@@ -5,6 +5,11 @@ namespace GTrader\Indicators;
 class Ohlc extends HasInputs
 {
 
+    public function init()
+    {
+        return $this;
+    }
+
     public function key(string $output = '')
     {
         if (!$output) {
@@ -45,6 +50,13 @@ class Ohlc extends HasInputs
         return parent::getInputs();
     }
 
+    public function getOutputs()
+    {
+        if ('linepoints' === $this->getParam('indicator.mode')) {
+            return ['open'];
+        }
+        return parent::getOutputs();
+    }
 
     public function outputDependsOn(array $sigs = [], string $output = null)
     {
@@ -61,23 +73,17 @@ class Ohlc extends HasInputs
     }
 
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $mode = $this->getParam('indicator.mode');
         if ('linepoints' === $mode) {
             return 'Open';
         }
         else if ('candlestick' === $mode) {
-            return 'Candles';
+            return $output ? ucfirst($output) : 'Candles';
         }
-        return $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');;
-    }
-
-
-
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
+        $mode_name = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
+        return $output ? $mode_name.' => '.ucfirst($output) : $mode_name;
     }
 
 

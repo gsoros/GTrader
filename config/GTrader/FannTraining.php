@@ -12,38 +12,10 @@ return [
     'max_boredom'           => 10,   // increase jump size after this number of uneventful epochs
     'epoch_jump_max'        => 100,  // max amount of epochs between tests
     'test_regression'       => .9,   // allow this amount of regression to test max
-    'indicators'            => [
-        [
-            'name' => 'Balance Fixed',
-            'class' => 'Balance',
-            'params' => [
-                'indicator' => ['mode' => 'fixed'],
-            ],
-        ],
-        [
-            'name' => 'Balance Dynamic',
-            'class' => 'Balance',
-            'params' => [
-                'indicator' => ['mode' => 'dynamic'],
-            ],
-        ],
-        [
-            'name' => 'Winners vs. losers',
-            'class' => 'Profitability',
-            'params' => [],
-        ],
-        [
-            'name' => 'Average Balance',
-            'class' => 'Avg',
-            'params' => [
-                'indicator' => ['input_source' => '{"class":"Balance","params":{"mode":"fixed","capital":100}}'],
-            ],
-        ],
-    ],
-    /* Default indicator to maximise training on */
-    'indicator'           => [
-        'name' => 'Winners vs. losers',
-        'class' => 'Profitability',
-        'params' => [],
+    'maximize'              => [
+        'balance_fixed' => 'Balance Fixed',
+        'balance_dynamic' => 'Balance Dynamic',
+        'profitability' => 'Winners vs. losers',
+        'avg_balance' => 'Average Balance',
     ],
 ];

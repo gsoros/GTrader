@@ -4,6 +4,7 @@ return [
     'indicator' => [
         'mode' => 'fixed',
         'capital' => 100,
+        'input_signal' => '', // set in createDependencies()
     ],
     'adjustable' => [
         'mode' => [
@@ -21,10 +22,21 @@ return [
             'step' => 1,
             'max' => 1000,
         ],
+        'input_signal' => [
+            'name' => 'Signal',
+            'type' => 'source',
+            'filters' => [
+                'class' => 'Signals',
+            ],
+            'disabled' => [
+                'Constant',
+                'outputs',
+            ],
+        ],
     ],
     'display' => [
         'name' => 'Balance',
-        'description' => 'Balance',
+        'description' => 'Calculates Balance',
         'y-axis' => 'right',
     ],
     'normalize' => [

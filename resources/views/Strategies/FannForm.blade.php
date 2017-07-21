@@ -12,24 +12,6 @@
             Inputs
         </label>
         <div class="col-sm-9" style="padding: 0 25px">
-            <div class="row">
-                <div class="col-sm-12 editable trans">
-                    @php
-                        $inputs = $strategy->getParam('inputs', []);
-                    @endphp
-                    @foreach (['open', 'high', 'low', 'close', 'volume'] as $field)
-                        <label>
-                            <input type="checkbox"
-                                name="inputs[]"
-                                value="{{ $field }}"
-                                @if (false !== array_search($field, $inputs))
-                                    checked
-                                @endif
-                                > {{ ucfirst($field) }}
-                        </label> &nbsp;
-                    @endforeach
-                </div>
-            </div>
             <div id="strategy_indicators_list">
                 {!! $strategy->viewIndicatorsList() !!}
             </div>

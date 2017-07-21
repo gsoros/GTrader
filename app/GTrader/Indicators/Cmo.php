@@ -4,19 +4,6 @@ namespace GTrader\Indicators;
 
 class Cmo extends Trader
 {
-
-    public function runDependencies(bool $force_rerun = false)
-    {
-       if (! $inds = $this->getOrAddInputIndicators()) {
-            return $this;
-        }
-        foreach ($inds as $ind) {
-            $ind->addRef($this);
-            $ind->checkAndRun($force_rerun);
-        }
-        return $this;
-    }
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_cmo(

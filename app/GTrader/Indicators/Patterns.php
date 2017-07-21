@@ -45,7 +45,7 @@ class Patterns extends Trader
     }
 
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $name = $this->getParam('display.name');
         if ('short' === $format) {
@@ -54,11 +54,6 @@ class Patterns extends Trader
         return $name;
     }
 
-
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
 
     protected function getAnnotationSig()
     {

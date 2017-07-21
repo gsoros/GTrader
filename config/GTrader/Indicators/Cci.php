@@ -8,6 +8,18 @@ return [
         'period' => 20,
     ],
     'adjustable' => [
+        'input_high' => [
+            'name' => 'High Source',
+            'type' => 'source',
+        ],
+        'input_low' => [
+            'name' => 'Low Source',
+            'type' => 'source',
+        ],
+        'input_close' => [
+            'name' => 'Close Source',
+            'type' => 'source',
+        ],
         'period' => [
             'name' => 'Period',
             'type' => 'int',

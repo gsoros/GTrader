@@ -5,6 +5,7 @@ namespace GTrader;
 //use GTrader\Strategies\Fann as FannStrategy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use GTrader\Strategies\Fann as FannStrategy;
 
 class FannTraining extends Model
@@ -117,6 +118,71 @@ class FannTraining extends Model
     }
 
 
+    protected function init()
+    {
+        $exchange_name = Exchange::getNameById($this->exchange_id);
+        $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
+
+        foreach ([
+            'train_start', 'train_end',
+            'test_start', 'test_end',
+            'verify_start', 'verify_end'
+        ] as $field) {
+            if (!isset($this->options[$field]) || !$this->options[$field]) {
+                throw new \Exception('Missing option: '.$field);
+            }
+        }
+
+        // Set up training strategy
+        $train_candles = new Series([
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['train_start'],
+            'end' => $this->options['train_end'],
+            'limit' => 0
+        ]);
+
+        define('FANN_WAKEUP_PREFERRED_SUFFX', $this->getParam('suffix'));
+        $train_strategy = Strategy::load($this->strategy_id);
+        $train_strategy->setCandles($train_candles);
+        $this->setStrategy('train', $train_strategy);
+
+        // Set up test strategy
+        $test_candles = new Series([
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['test_start'],
+            'end' => $this->options['test_end'],
+            'limit' => 0
+        ]);
+        $test_strategy = clone $train_strategy;
+        $test_strategy->setCandles($test_candles);
+        $this->setStrategy('test', $test_strategy);
+
+        // Set up verify strategy
+        $verify_candles = new Series([
+            'exchange' => $exchange_name,
+            'symbol' => $symbol_name,
+            'resolution' => $this->resolution,
+            'start' => $this->options['verify_start'],
+            'end' => $this->options['verify_end'],
+            'limit' => 0
+        ]);
+        $verify_strategy = clone $train_strategy;
+        $verify_strategy->setCandles($verify_candles);
+        $this->setStrategy('verify', $verify_strategy);
+
+        $this->setProgress('epoch_jump', 1);
+        if (!$this->getProgress('last_improvement_epoch')) {
+            $this->setProgress('last_improvement_epoch', 0);
+        }
+
+        return $this;
+    }
+
+
     protected function resetIfNoImprovement()
     {
         if (!isset($this->options['reset_after'])) {
@@ -185,23 +251,48 @@ class FannTraining extends Model
     }
 
 
-    public function getMaximizeSig()
+    public function getMaximizeSig(Strategy $strategy)
     {
-        if (!$sig = $this->cached('maximize.sig')) {
-            foreach (['class', 'params'] as $val) {
-                $$val =
-                    isset($this->options['indicator_'.$val]) ?
-                        $this->options['indicator_'.$val] :
-                        $this->getParam('indicator.'.$val);
-            }
-            $indicator = Indicator::make($class, $params);
-            $sig = $indicator->getSignature();
-            $this->cache('maximize', [
-                'class' => $class,
-                'params' => $params,
-                'sig' => $sig,
-            ]);
+        if ($sig = $this->cached('maximize.'.$strategy->getParam('id'))) {
+            return $sig;
         }
+        $maximize = Arr::get(
+            $this->options,
+            'maximize',
+            array_keys($this->getParam('maximize'))[0]
+        );
+
+        switch ($maximize) {
+
+            case 'balance_fixed':
+                $indicator = $strategy->getBalanceIndicator();
+                break;
+
+            case 'balance_dynamic':
+                $indicator = $strategy->getBalanceIndicator();
+                $indicator->setParam('indicator.mode', 'dynamic');
+                break;
+
+            case 'profitability':
+                $signals = $strategy->getSignalsIndicator();
+                $indicator = $strategy->getOrAddIndicator('Profitability', [
+                    'input_signal' => $signals->getSignature(),
+                ]);
+                break;
+
+            case 'avg_balance':
+                $bal = $strategy->getBalanceIndicator();
+                $indicator = $bal->getOwner()->getOrAddIndicator('Avg', [
+                    'input_source' => $bal->getSignature(),
+                ]);
+                break;
+
+            default:
+                error_log('FannTraining::getMaximizeSig() unknown maximize target');
+                return null;
+        }
+        $sig = $indicator->getSignature();
+        $this->cache('maximize.'.$strategy->getParam('id'), $sig);
         return $sig;
     }
 
@@ -210,12 +301,12 @@ class FannTraining extends Model
     {
         $strat = $this->getStrategy($type);
         $candles = $strat->getCandles();
-        $sig = $this->getMaximizeSig();
+        $sig = $this->getMaximizeSig($strat);
         if (!($ind = $candles->getOrAddIndicator($sig))) {
             error_log('FannTraining::test() could not getOrAddIndicator()');
             return 0;
         }
-        $ind->addRef($this);
+        $ind->addRef('root');
         return $ind->getLastValue(true);
     }
 
@@ -297,69 +388,6 @@ class FannTraining extends Model
     }
 
 
-    protected function init()
-    {
-        $exchange_name = Exchange::getNameById($this->exchange_id);
-        $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
-
-        foreach ([
-            'train_start', 'train_end',
-            'test_start', 'test_end',
-            'verify_start', 'verify_end'
-        ] as $field) {
-            if (!isset($this->options[$field]) || !$this->options[$field]) {
-                throw new \Exception('Missing option: '.$field);
-            }
-        }
-
-        // Set up training strategy
-        $train_candles = new Series([
-            'exchange' => $exchange_name,
-            'symbol' => $symbol_name,
-            'resolution' => $this->resolution,
-            'start' => $this->options['train_start'],
-            'end' => $this->options['train_end'],
-            'limit' => 0
-        ]);
-
-        define('FANN_WAKEUP_PREFERRED_SUFFX', $this->getParam('suffix'));
-        $train_strategy = Strategy::load($this->strategy_id);
-        $train_strategy->setCandles($train_candles);
-        $this->setStrategy('train', $train_strategy);
-
-        // Set up test strategy
-        $test_candles = new Series([
-            'exchange' => $exchange_name,
-            'symbol' => $symbol_name,
-            'resolution' => $this->resolution,
-            'start' => $this->options['test_start'],
-            'end' => $this->options['test_end'],
-            'limit' => 0
-        ]);
-        $test_strategy = clone $train_strategy;
-        $test_strategy->setCandles($test_candles);
-        $this->setStrategy('test', $test_strategy);
-
-        // Set up verify strategy
-        $verify_candles = new Series([
-            'exchange' => $exchange_name,
-            'symbol' => $symbol_name,
-            'resolution' => $this->resolution,
-            'start' => $this->options['verify_start'],
-            'end' => $this->options['verify_end'],
-            'limit' => 0
-        ]);
-        $verify_strategy = clone $train_strategy;
-        $verify_strategy->setCandles($verify_candles);
-        $this->setStrategy('verify', $verify_strategy);
-
-        $this->setProgress('epoch_jump', 1);
-        if (!$this->getProgress('last_improvement_epoch')) {
-            $this->setProgress('last_improvement_epoch', 0);
-        }
-
-        return $this;
-    }
 
 
     protected function obtainLock()

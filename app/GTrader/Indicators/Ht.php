@@ -8,27 +8,27 @@ use GTrader\Series;
 /** Hilbert Transform */
 class Ht extends Trader
 {
-    protected $init_done = false;
+    protected $setup_done = false;
 
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        //$this->init();
+        //$this->setup();
     }
 
     public function __wakeup()
     {
         parent::__wakeup();
-        $this->init(true);
+        $this->setup();
     }
 
 
-    public function init(bool $force = false)
+    public function setup($force = false)
     {
-        if ($this->init_done && !$force) {
+        if ($this->setup_done && !$force) {
             return $this;
         }
-        $this->init_done = true;
+        $this->setup_done = true;
 
         // get the selected mode
         $mode = $this->getParam('indicator.mode');
@@ -77,7 +77,7 @@ class Ht extends Trader
 
     public function getInputs()
     {
-        $this->init();
+        $this->setup();
 
         $mode = $this->getParam('indicator.mode');
         $sources = $this->getParam('modes.'.$mode.'.sources', []);
@@ -92,23 +92,9 @@ class Ht extends Trader
     }
 
 
-    public function runDependencies(bool $force_rerun = false)
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
-        if (! $inds = $this->getOrAddInputIndicators()) {
-            //error_log('HT::runDependencies() could not getOrAdd input indicators for '.get_class($this));
-            return $this;
-        }
-        foreach ($inds as $ind) {
-            $ind->addRef($this);
-            $ind->checkAndRun($force_rerun);
-        }
-        return $this;
-    }
-
-
-    public function getDisplaySignature(string $format = 'long')
-    {
-        $this->init();
+        $this->setup();
 
         $name = parent::getDisplaySignature('short');
         if ('short' === $format) {
@@ -130,7 +116,7 @@ class Ht extends Trader
     public function traderCalc(array $values)
     {
         //dd($values);
-        $this->init();
+        $this->setup(true);
 
         $func = 'trader_ht_'.$this->getParam('indicator.mode');
         if (!function_exists($func)) {

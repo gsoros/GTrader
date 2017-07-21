@@ -6,13 +6,17 @@ use GTrader\Indicator;
 
 class Vol extends HasInputs
 {
+    public function init()
+    {
+        return $this;
+    }
+
     public function key(string $output = '')
     {
         return 'volume';
-        return $this->getInput();
     }
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         // hide params if default input is selected
         return $this->getParam('indicator.input_source') ===
@@ -20,22 +24,23 @@ class Vol extends HasInputs
             'Volume' : parent::getDisplaySignature($format);
     }
 
-    public function runDependencies(bool $force_rerun = false)
+    public function runInputIndicators(bool $force_rerun = false)
     {
-        // sum(close, open) is used to display the colors
+        // sub(close, open) is used to display the colors
         if ($op = $this->getOwner()->getOrAddIndicator('Operator', [
             'input_a' => 'close',
             'operation' => 'sub',
             'input_b' => 'open',
         ])) {
             $op->addRef($this);
+            $op->checkAndRun();
         }
         return $this;
     }
 
     public function calculate(bool $force_rerun = false)
     {
-        $this->runDependencies($force_rerun);
+        $this->runInputIndicators($force_rerun);
         return $this;
     }
 }

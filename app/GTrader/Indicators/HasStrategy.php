@@ -15,7 +15,7 @@ trait HasStrategy
         return $owner;
     }
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $s = $this->getParam('display.name');
         if ('short' === $format) {

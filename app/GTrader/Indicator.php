@@ -29,6 +29,26 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
+    public function init()
+    {
+        if (!$owner = $this->getOwner()) {
+            return $this;
+        }
+        if (!$this->hasInputs()) {
+            return $this;
+        }
+        foreach ($this->getInputs() as $input_key => $input_val) {
+            if (in_array($input_val, ['open', 'high', 'low', 'close', 'volume'])) {
+                $this->setParam(
+                    'indicator.'.$input_key,
+                    $owner->getFirstIndicatorOutput($input_val)
+                );
+            }
+        }
+        return $this;
+    }
+
+
     public function __clone()
     {
         $this->calculated = false;
@@ -98,11 +118,46 @@ abstract class Indicator //implements \JsonSerializable
         return $this;
     }
 
-    public function refCount() {
-
-        return count($this->refs);
+    public function delRef(string $sig)
+    {
+        foreach ($this->getRefs() as $k => $v) {
+            if ($sig === $v) {
+                unset($this->refs[$k]);
+            }
+        }
+        return $this;
     }
 
+    public function refCount()
+    {
+        return count($this->getRefs());
+    }
+
+
+    public function getRefs()
+    {
+        return $this->refs;
+    }
+
+
+    public function hasRefRecursive(string $sig)
+    {
+        if (in_array($sig, $this->getRefs())) {
+            return true;
+        }
+        if (!$owner = $this->getOwner()) {
+            error_log('Indicator::hasRefRecursive() could not getOwner() for '.$this->getShortClass());
+            return false;
+        }
+        foreach ($this->getRefs() as $ref) {
+            if ($i = $owner->getIndicator($ref)) {
+                if ($i->hasRefRecursive($sig)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
     public function getSignature(string $output = null)
@@ -142,6 +197,18 @@ abstract class Indicator //implements \JsonSerializable
                     }
                 }
             }
+            /*
+            else { // unknown type
+                if ($temp_value = self::decodeSignature($value)) {
+                    if (Arr::get($temp_value, 'class') &&
+                        Arr::get($temp_value, 'params') &&
+                        Arr::get($temp_value, 'output')) {
+                        $value = $temp_value;
+                    }
+                }
+            }
+            */
+            //dump($key, $value);
             $out_params[$key] = $value;
         }
         $a = [
@@ -164,15 +231,17 @@ abstract class Indicator //implements \JsonSerializable
             //error_log('Indicator::decodeSignature() cache hit for '.$sig);
             return $cache[$sig];
         }
-        if (\Config::get('GTrader.Indicators.available.'.$sig)) {
+        if (!strlen($sig) ||
+            in_array($sig, ['open', 'high', 'low', 'close', 'volume']) ||
+            \Config::get('GTrader.Indicators.available.'.$sig)) {
             $cache[$sig] = false;
             return false;
         }
         //dump('decodeSignature() '.$sig);
         if (is_null($a = json_decode($sig, true)) || json_last_error()) {
             $cache[$sig] = false;
-            error_log('Indicator::decodeSignature() could not decode sig: '.$sig
-                .' en: '.json_last_error().' em: '.json_last_error_msg());
+            //error_log('Indicator::decodeSignature() could not decode sig: '.$sig
+            //    .' en: '.json_last_error().' em: '.json_last_error_msg());
             return false;
         }
         $cache[$sig] = [
@@ -204,7 +273,7 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $name = $this->getParam('display.name');
 
@@ -212,7 +281,11 @@ abstract class Indicator //implements \JsonSerializable
             return $name;
         }
 
-        return ($param_str = $this->getParamString()) ? $name.' ('.$param_str.')' : $name;
+        if ($param_str = $this->getParamString()) {
+            $name .= ' ('.$param_str.')';
+        }
+
+        return $output ? $name.' => '.$output : $name;
     }
 
 
@@ -239,7 +312,7 @@ abstract class Indicator //implements \JsonSerializable
                     if (isset($value['type'])) {
                         if ('select' === $value['type']) {
                             if (isset($value['options'])) {
-                                if ($selected = $value['options'][$this->getParam('indicator.'.$key, 0)]) {
+                                if ($selected = Arr::get($value, 'options.'.$this->getParam('indicator.'.$key, 0))) {
                                     $param_str .= $delimiter.$selected;
                                     continue;
                                 }
@@ -250,17 +323,29 @@ abstract class Indicator //implements \JsonSerializable
                             continue;
                         }
                         if ('source' === $value['type']) {
-                            //error_log('getParamString() '.$this->getShortClass().': '.$key.': '.$this->getParam('indicator.'.$key));
-                            if ($indicator = $this->getOwner()->getOrAddIndicator(
-                                $this->getParam('indicator.'.$key, ''))
-                            ) {
-                                $param_str .= $delimiter.$indicator->getDisplaySignature('short');
+                            $sig = $this->getParam('indicator.'.$key, '');
+                            if ($indicator = $this->getOwner()->getOrAddIndicator($sig)) {
+                                $output = '';
+                                if (is_array($sig)) {
+                                    $output = Arr::get($sig, 'output');
+                                }
+                                else {
+                                    $output = Indicator::getOutputFromSignature($sig);
+                                }
+                                $param_str .= $delimiter.$indicator->getDisplaySignature(
+                                    'short',
+                                    $output
+                                );
                                 continue;
                             }
                         }
                     }
+                    $param = $this->getParam('indicator.'.$key);
+                    if (is_array($param)) {
+                        dd($this);
+                    }
                     //$param_str .= $delimiter.ucfirst(explode('', $this->getParam('indicator.'.$key))[0]);
-                    $param_str .= $delimiter.ucfirst($this->getParam('indicator.'.$key));
+                    $param_str .= $delimiter.ucfirst($param);
                 }
             }
         }
@@ -302,7 +387,7 @@ abstract class Indicator //implements \JsonSerializable
             if (count($depends)) {
                 foreach ($depends as $indicator) {
                     if ($indicator !== $this) {
-                        //dump('checkAndRun() '.$this->getShortClass().' -> '.$indicator->getShortClass());
+                        error_log('TODO REMOVE checkAndRun() '.$this->getShortClass().' depends on '.$indicator->getShortClass());
                         $indicator->addRef($this);
                         $indicator->checkAndRun($force_rerun);
                     }
@@ -321,7 +406,7 @@ abstract class Indicator //implements \JsonSerializable
         $candles = $this->getCandles();
         $key = $candles->key($this->getSignature());
         if ($last = $candles->last()) {
-            return $last->$key;
+            return isset($last->$key) ? $last->$key : 0;
         }
         return 0;
     }
@@ -350,14 +435,25 @@ abstract class Indicator //implements \JsonSerializable
 
     public function updateReferences()
     {
-        if (!$this->hasInputs()) {
-            return $this;
-        }
         if (! $owner = $this->getOwner()) {
             error_log('Indicator::updateReferences() no owner');
             return $this;
         }
+        foreach ($this->getRefs() as $ref) {
+            if ('root' === $ref) {
+                continue;
+            }
+            if (!$owner->hasIndicator($ref)) {
+                $this->delRef($ref);
+            }
+        }
+        if (!$this->hasInputs()) {
+            return $this;
+        }
         foreach ($this->getInputs() as $input_sig) {
+            if (!strlen($input_sig)) {
+                continue;
+            }
             if (! $ind = $owner->getOrAddIndicator($input_sig)) {
                 //error_log('Indicator::updateReferences() coild not getOrAdd '.$input_sig);
                 continue;
@@ -367,6 +463,36 @@ abstract class Indicator //implements \JsonSerializable
         return $this;
     }
 
+
+    public function setAutoYAxis()
+    {
+        if (!$this->getParam('display.auto-y-axis')) {
+            return false;
+        }
+        if (!$this->hasInputs()) {
+            return $this;
+        }
+        $inputs = $this->getInputs();
+        if (in_array('volume', $inputs)) {
+            $this->setParam('display.y-axis', 'right');
+        }
+        else if (!$this->inputFromIndicator() &&
+            count(array_intersect(['open', 'high', 'low', 'close'], $inputs))) {
+            $this->setParam('display.y-axis', 'left');
+            return $this;
+        }
+        if (! $inds = $this->getOrAddInputIndicators()) {
+            return $this;
+        }
+        $count_left = 0;
+        foreach ($inds as $ind) {
+            if ('left' === $ind->getParam('display.y-axis')) {
+                $count_left++;
+            }
+        }
+        $this->setParam('display.y-axis', ($count_left === count($inds)) ? 'left' : 'right');
+        return $this;
+    }
 
 
 
@@ -431,6 +557,7 @@ abstract class Indicator //implements \JsonSerializable
         $this->checkAndRun();
         $r = null;
         foreach ($this->getOutputs() as $output) {
+
             $arr = $candles->extract(
                 $this->getSignature($output),
                 $index_type,

@@ -4,6 +4,12 @@ return [
     'indicator' =>  [
         'input_source' => 'close',
     ],
+    'adjustable' => [
+        'input_source' => [
+            'name' => 'Source',
+            'type' => 'source',
+        ],
+    ],
     'display' => [
         'name' => 'OBV',
         'description' => 'On Balance Volume',

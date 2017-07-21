@@ -103,9 +103,10 @@ abstract class HasInputs extends Indicator
             if (!($indicator = $owner->getOrAddIndicator($input))) {
                 //error_log(get_class($this).'::getOrAddInputIndicators() could not find indicator '.
                 //    $input.' for '.get_class($owner));
-                return null;
+                continue;
             }
             $inds[] = $indicator;
+            $indicator->addRef($this);
         }
         return count($inds) ? $inds : null;
     }
@@ -123,36 +124,18 @@ abstract class HasInputs extends Indicator
     }
 
 
-    // TOOD !!! side effects !!! this method should not modify y-axis etc
-    public function runDependencies(bool $force_rerun = false)
+    public function runInputIndicators(bool $force_rerun = false)
     {
-        $inputs = $this->getInputs();
-        //error_log('HasInputs::runDependencies() inputs: '.json_encode($inputs));
-        if (in_array('volume', $inputs)) {
-            $this->setParam('display.y-axis', 'right');
-        }
-        else if (!$this->inputFromIndicator() &&
-            count(array_intersect(['open', 'high', 'low', 'close'], $inputs))) {
-            $this->setParam('display.y-axis', 'left');
-            return true;
-        }
-        if (! $inds = $this->getOrAddInputIndicators()) {
-            //error_log('HasInputs::runDependencies() could not getOrAdd input indicators for '.get_class($this));
+        if (!$inds = $this->getOrAddInputIndicators()) {
             return $this;
         }
-        $count_left = 0;
         foreach ($inds as $ind) {
-            if ('left' === $ind->getParam('display.y-axis')) {
-                $count_left++;
-            }
             $ind->addRef($this);
-            //dump('runDependencies() '.$this->getShortClass().' running '.$ind->getShortClass());
+            //dump($this->getShortClass().' running '.$ind->getShortClass().($force_rerun ? ' forced' : ''));
             $ind->checkAndRun($force_rerun);
         }
-        $this->setParam('display.y-axis', ($count_left === count($inds)) ? 'left' : 'right');
         return $this;
     }
-
 
     public function extract(Series $candles, string $index_type = 'sequential')
     {

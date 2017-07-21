@@ -5,11 +5,6 @@ namespace GTrader\Indicators;
 class Dmi extends Trader
 {
 
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     public function traderCalc(array $values)
     {
         $mode = $this->getParam('indicator.mode');

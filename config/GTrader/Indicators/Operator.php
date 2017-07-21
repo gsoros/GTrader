@@ -19,6 +19,7 @@ return [
                 'sub' => 'Subtract',
                 'mult' => 'Multiply',
                 'div' => 'Divide',
+                'perc' => 'Percentage',
             ],
         ],
         'input_b' => [

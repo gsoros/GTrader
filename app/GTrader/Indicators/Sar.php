@@ -26,11 +26,6 @@ class Sar extends Trader
         return false;
     }
 
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     protected function trader_sarext(array $high, array $low)
     {
         return trader_sarext(

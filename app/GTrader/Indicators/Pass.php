@@ -54,7 +54,7 @@ class Pass extends HasInputs
         return $norm;
     }
 
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $mode = $this->getParam('indicator.mode');
         $name = ucfirst($mode).' Pass';
@@ -72,7 +72,7 @@ class Pass extends HasInputs
     }
 
 
-    public function runDependencies(bool $force_rerun = false)
+    public function runInputIndicators(bool $force_rerun = false)
     {
         $mode = $this->getParam('indicator.mode');
         $sigs[] = $this->getInput();
@@ -113,7 +113,7 @@ class Pass extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        $this->runDependencies($force_rerun);
+        $this->runInputIndicators($force_rerun);
 
         if (!($candles = $this->getCandles())) {
             return $this;

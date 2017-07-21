@@ -5,7 +5,7 @@
 GTrader is a trading strategy back-tester and bot manager.
 
 ## For users
-Please use [GTrader-env](https://github.com/gsoros/GTrader-env) which sets up the PHP, MySQL and Nginx-SSL environment in Docker containers.
+Please use [GTrader-env](https://github.com/gsoros/GTrader-env) to set up the PHP, MySQL and Nginx-SSL environment in Docker containers.
 
 ## For developers
 ### Requirements

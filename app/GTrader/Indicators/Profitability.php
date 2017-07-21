@@ -2,13 +2,10 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicator;
 
 /* Winners vs. losers */
-class Profitability extends Indicator
+class Profitability extends HasInputs
 {
-    use HasStrategy;
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);
@@ -18,9 +15,12 @@ class Profitability extends Indicator
 
     public function createDependencies()
     {
-        if ($s = $this->getStrategy()) {
-            $i = $s->getSignalsIndicator();
-            $i->addRef($this);
+        if (!$this->getParam('indicator.input_signal')) {
+            if (!$s = $this->getOwner()->getOrAddIndicator('Signals')) {
+                return $this;
+            }
+            $s->addRef($this);
+            $this->setParam('indicator.input_signal', $s->getSignature());
         }
         return $this;
     }
@@ -28,29 +28,27 @@ class Profitability extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        if (!$strategy = $this->getStrategy()) {
-            return $this;
-        }
         $candles = $this->getCandles();
 
-        if (!($signal_ind = $strategy->getSignalsIndicator())) {
+        if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
+            $this->getParam('indicator.input_signal')))) {
+            error_log('Profitability::calculate() signal indicator not found.');
             return $this;
         }
-        $signal_ind->checkAndRun($force_rerun);
-        $signal_key = $candles->key($signal_ind->getSignature());
+        $signal_key = $candles->key($signal_ind->getSignature('signal'));
+        $signal_price_key = $candles->key($signal_ind->getSignature('price'));
 
-        if (!$candles->hasIndicatorClass('Balance')) {
-            error_log('Profitability::calculate() adding balance indicator');
-            $candles->addIndicator('Balance');
-        }
-        if (!($balance_ind = $candles->getFirstIndicatorByClass('Balance'))) {
-            error_log('Profitability::calculate() could not find balance indicator');
+        if (!($balance_ind = $this->getOwner()->getOrAddIndicator(
+            'Balance', [
+            'input_signal' => $this->getParam('indicator.input_signal'),
+            ]))) {
+            error_log('Profitability::calculate() balance indicator not found.');
             return $this;
         }
         $balance_ind->checkAndRun($force_rerun);
-        $balance_sig = $candles->key($balance_ind->getSignature());
+        $balance_key = $candles->key($balance_ind->getSignature());
 
-        $signature = $candles->key($this->getSignature());
+        $output_key = $candles->key($this->getSignature());
 
         $prev_signal = false;
         $prev_balance = false;
@@ -63,32 +61,33 @@ class Profitability extends Indicator
 
         while ($candle = $candles->next()) {
 
-            if (isset($candle->$signal_key)) {
-                if ($signal = $candle->$signal_key) {
-                    if (in_array($signal['signal'], ['long', 'short'])) {
+            if (isset($candle->$signal_key) &&
+                isset($candle->$signal_price_key)) {
+                if (($signal = $candle->$signal_key) &&
+                    ($signal_price = $candle->$signal_price_key)) {
+                    if (in_array($signal, ['long', 'short'])) {
                         if ($prev_signal &&
-                            $prev_signal['signal'] !== $signal['signal']) {
+                            $prev_signal['signal'] !== $signal) {
 
-                            if (isset($candle->$balance_sig)) {
-                                if ($candle->$balance_sig > $prev_balance) {
+                            if (isset($candle->$balance_key)) {
+                                if ($candle->$balance_key > $prev_balance) {
                                     $winners++;
-                                } elseif ($candle->$balance_sig < $prev_balance) {
+                                } elseif ($candle->$balance_key < $prev_balance) {
                                     $losers++;
                                 }
-                                $prev_balance = $candle->$balance_sig;
+                                $prev_balance = $candle->$balance_key;
                             }
                         }
                     }
-                    //$total = $winners + $losers;
-                    //$score = $total ? $winners / $total * 100 + $winners: 0;
                     $score = $winners - $losers;
-
-                    $prev_signal = $signal;
+                    $prev_signal = [
+                        'signal' => $signal,
+                        'price' => $signal_price,
+                    ];
                 }
             }
-            $candle->$signature = $score;
+            $candle->$output_key = $score;
         }
-
         return $this;
     }
 }

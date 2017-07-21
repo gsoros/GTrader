@@ -8,6 +8,22 @@ return [
         'input_close' => 'close',
     ],
     'adjustable' => [
+        'input_open' => [
+            'name' => 'Open Source',
+            'type' => 'source',
+        ],
+        'input_high' => [
+            'name' => 'High Source',
+            'type' => 'source',
+        ],
+        'input_low' => [
+            'name' => 'Low Source',
+            'type' => 'source',
+        ],
+        'input_close' => [
+            'name' => 'Close Source',
+            'type' => 'source',
+        ],
     ],
     'display' => [
         'name' => 'BOP',

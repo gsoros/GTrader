@@ -12,5 +12,6 @@ return [
         'name' => 'Unnamed Indicator',
         'visible' => false,
         'z-index' => 0,
+        'auto-y-axis' => false,
     ],
 ];

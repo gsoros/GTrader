@@ -27,6 +27,7 @@
                     $output_checkboxes = [];
                     foreach ($outputs as $output) {
                         $cbname = $indicator->getSignature($output);
+                        //dump($cbname);
                         $output_checkboxes[] = [
                             'value' => $cbname,
                             'label' => ucwords($output),

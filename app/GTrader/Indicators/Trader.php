@@ -26,7 +26,8 @@ abstract class Trader extends HasInputs
             return $this;
         }
 
-        $this->runDependencies($force_rerun);
+        $this->runInputIndicators($force_rerun);
+        $this->setAutoYAxis();
 
         $values = $this->traderCalc($this->extract($candles));
 

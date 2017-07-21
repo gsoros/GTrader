@@ -8,6 +8,22 @@ return [
         'input_volume' => 'volume',
     ],
     'adjustable' => [
+        'input_high' => [
+            'name' => 'High Source',
+            'type' => 'source',
+        ],
+        'input_low' => [
+            'name' => 'Low Source',
+            'type' => 'source',
+        ],
+        'input_close' => [
+            'name' => 'Close Source',
+            'type' => 'source',
+        ],
+        'input_volume' => [
+            'name' => 'Volume Source',
+            'type' => 'source',
+        ],
     ],
     'display' => [
         'name' => 'A/D Line',

@@ -21,11 +21,6 @@ class Stoch extends Trader
         );
     }
 
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
-    }
-
     public function hasInputs()
     {
         return false;

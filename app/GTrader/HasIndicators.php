@@ -3,6 +3,8 @@
 namespace GTrader;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+
 
 trait HasIndicators
 {
@@ -39,6 +41,7 @@ trait HasIndicators
             return false;
         }
         $indicator->setOwner($owner);
+        $indicator->init();
         if ($owner->hasIndicator($sig = $indicator->getSignature())) {
             $existing = $owner->getIndicator($sig);
             $existing->setParams($indicator->getParams());
@@ -91,6 +94,9 @@ trait HasIndicators
         if (!is_string($signature)) {
             $signature = json_encode($signature, true);
             //error_log('HasIndicators::getOrAddIndicator() warning, converted to string: '.$signature);
+        }
+        if (!strlen($signature)) {
+            return false;
         }
         if (in_array($signature, ['open', 'high', 'low', 'close', 'volume'])) {
             return false;
@@ -169,7 +175,7 @@ trait HasIndicators
             error_log('unsetIndicator() but not set: '.$sig);
             return $this;
         }
-        if (0 < $target->refCount()) {
+        if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
             error_log('unsetIndicator() warning: refcount is non-zero for '.$sig);
         }
         //error_log('unsetIndicator() '.$target->debugObjId());
@@ -209,6 +215,13 @@ trait HasIndicators
         if (count($filters)) {
             foreach ($indicators as $ind_key => $ind_obj) {
                 foreach ($filters as $cond_key => $cond_val) {
+                    if ('class' === $cond_key) {
+                        if ($cond_val !== $ind_obj->getShortClass()) {
+                            unset($indicators[$ind_key]);
+                            break;
+                        }
+                        continue;
+                    }
                     if ($ind_obj->getParam($cond_key) !== $cond_val) {
                         unset($indicators[$ind_key]);
                         break;
@@ -238,9 +251,14 @@ trait HasIndicators
                     usort(
                         $indicators,
                         function (Indicator $ind1, Indicator $ind2) use ($sort_val) {
-                            $val1 = floatval($ind1->getParam($sort_val));
-                            $val2 = floatval($ind2->getParam($sort_val));
-                            return $val1 === $val2 ? 0 : ($val1 > $val2 ? 1 : -1);
+                            $val1 = $ind1->getParam($sort_val);
+                            $val2 = $ind2->getParam($sort_val);
+                            if (is_numeric($val1) && is_numeric($val2)) {
+                                $val1 = floatval($val1);
+                                $val2 = floatval($val2);
+                                return $val1 === $val2 ? 0 : ($val1 > $val2 ? 1 : -1);
+                            }
+                            return strcmp(strval($val1), strval($val2));
                         }
                     );
                 }
@@ -342,9 +360,7 @@ trait HasIndicators
         if (! $indicator = $this->getIndicator($sig)) {
             error_log('HasIndicators::handleIndicatorFormRequest() could not find indicator '.$sig);
         }
-        return $indicator->getForm(
-            array_merge(['sources' => $this->getSourcesAvailable(urldecode($request->signature))], $pass_params)
-        );
+        return $indicator->getForm($pass_params);
     }
 
 
@@ -356,9 +372,8 @@ trait HasIndicators
         }
         if ($indicator = $this->addIndicatorBySignature($sig)) {
             $indicator->setParam('display.visible', true);
-            $indicator->addRef($this);
+            $indicator->addRef('root');
         }
-
         return $this->viewIndicatorsList($request);
     }
 
@@ -388,7 +403,7 @@ trait HasIndicators
 
     public function handleIndicatorSaveRequest(Request $request)
     {
-        error_log('handleIndicatorSaveRequest() req: '.json_encode($request->all()));
+        //error_log('handleIndicatorSaveRequest() req: '.json_encode($request->all()));
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
             error_log('handleIndicatorSaveRequest() cannot find indicator '.$sig);
@@ -438,39 +453,40 @@ trait HasIndicators
                 $val = stripslashes(urldecode($val));
                 $dependency = $this->getOrAddIndicator($val);
                 if (is_object($dependency)) {
-                    $dependency->addRef($this);
-                    $val = $dependency->getSignature();
+                    $dependency->addRef('root');
+                    $val = $dependency->getSignature(Indicator::getOutputFromSignature($val));
                 }
             }
             $indicator->setParam('indicator.'.$key, $val);
         }
-        if (method_exists($indicator, 'init')) {
-            $indicator->init(true);
-        }
+        $indicator->init();
         //dump($indicator);
         $this->unsetIndicators($sig);
         $indicator->setParam('display.visible', true);
         $this->addIndicator($indicator);
+        $indicator->addRef('root');
+        if (method_exists($indicator, 'createDependencies')) {
+            $indicator->createDependencies();
+        }
         return $this->viewIndicatorsList($request);
     }
 
 
-    public function getSourcesAvailable(string $except_signature = null, array $sources = null)
+    public function getSourcesAvailable(
+        string $except_signature = null,
+        array $sources = [],
+        array $filters = [],
+        array $disabled = [])
     {
-        if (!is_array($sources)) {
-            $sources = [
-                'open' => 'Open',
-                'high' => 'High',
-                'low' => 'Low',
-                'close' => 'Close',
-                'volume' => 'Volume'
-            ];
-        }
-        foreach ($this->getIndicatorsFilteredSorted([], ['display.name']) as $ind) {
+        foreach ($this->getIndicatorsFilteredSorted($filters, ['display.name']) as $ind) {
             if ($ind->getParam('display.top_level')) {
                 continue;
             }
             if (Indicator::signatureSame($except_signature, $ind->getSignature())) {
+                continue;
+            }
+            if (in_array('outputs', $disabled)) {
+                $sources[$ind->getSignature()] = $ind->getDisplaySignature();
                 continue;
             }
             $outputs = $ind->getOutputs();
@@ -502,6 +518,31 @@ trait HasIndicators
     }
 
 
+    public function getFirstIndicatorOutput(string $output)
+    {
+        $indicator = $class = null;
+        $outputs = [];
+        if (in_array($output, ['open', 'high', 'low', 'close'])) {
+            $class = 'Ohlc';
+        } else if ('volume' === $output) {
+            $class = 'Vol';
+        }
+        if ($indicator = $this->getFirstIndicatorByClass($class)) {
+            $outputs = $indicator->getOutputs();
+        }
+        if (!$indicator || !in_array($output, $outputs)) {
+            if (!$indicator = $this->getOrAddIndicator('Ohlc')) {
+                return $output;
+            }
+        }
+        if ($indicator) {
+            return in_array($output, $indicator->getOutputs()) ?
+                $indicator->getSignature($output) : $output;
+        }
+        return $output;
+    }
+
+
     public function updateReferences()
     {
         foreach ($this->getIndicators() as $ind) {
@@ -510,15 +551,26 @@ trait HasIndicators
         return $this;
     }
 
+
     public function purgeIndicators()
     {
-        $this->updateReferences();
-        foreach ($this->getIndicators() as $ind) {
-            //error_log('purgeIndicators() checking '.$ind->getSignature().' refs: '.$ind->refCount());
-            if (!$ind->refCount() && !$ind->getParam('display.visible')) {
-                //dd('purgeIndicators() removing', $ind->debugObjId());
-                $this->getIndicatorOwner()->unsetIndicator($ind);
+        $loop = 0;
+        while ($loop < 100) {
+            $this->updateReferences();
+            $removed = 0;
+            foreach ($this->getIndicators() as $ind) {
+                if (!$ind->hasRefRecursive('root') ||
+                    (['root'] == array_merge($ind->getRefs()) && // renumber keys
+                    !$ind->getParam('display.visible'))) {
+                    $this->unsetIndicator($ind);
+                    $removed++;
+                    //dump('purgeIndicators() removed '.md5($ind->getSignature()).' from '.$this->debugObjId(), $ind);
+                }
             }
+            if (!$removed) {
+                return $this;
+            }
+            $loop++;
         }
     }
 }

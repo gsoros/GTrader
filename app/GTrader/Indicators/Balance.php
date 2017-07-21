@@ -2,51 +2,46 @@
 
 namespace GTrader\Indicators;
 
-use GTrader\Indicator;
+use Illuminate\Support\Facades\Auth;
 use GTrader\Exchange;
 use GTrader\UserExchangeConfig;
 
-class Balance extends Indicator
+class Balance extends HasInputs
 {
-    use HasStrategy;
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);
         $this->allowed_owners = ['GTrader\\Series'];
-        //error_log($this->getSignature());
     }
 
     public function createDependencies()
     {
-        if ($strategy = $this->getStrategy()) {
-            if ($ind = $strategy->getSignalsIndicator()) {
-                $ind->addRef($this);
+        if (!$this->getParam('indicator.input_signal')) {
+            if (!$s = $this->getOwner()->getOrAddIndicator('Signals')) {
+                return $this;
             }
+            $s->addRef($this);
+            $this->setParam('indicator.input_signal', $s->getSignature());
         }
         return $this;
     }
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->runInputIndicators($force_rerun);
+
         $candles = $this->getCandles();
 
         $mode = $this->getParam('indicator.mode');
-
         if (!in_array($mode, ['dynamic', 'fixed'])) {
             error_log('Balance::calculate() mode must be either dynamic or fixed.');
-            return $this;
-        }
-
-        if (!($strategy = $this->getOwner()->getStrategy())) {
-            error_log('Balance::calculate() could not find strategy');
             return $this;
         }
 
         $exchange = Exchange::make($candles->getParam('exchange'));
         $config = UserExchangeConfig::firstOrNew([
             'exchange_id' => $exchange->getId(),
-            'user_id' => $strategy->getParam('user_id', 0)
+            'user_id' => Auth::id()
         ]);
 
         // Get defaults from exchange config file
@@ -63,27 +58,28 @@ class Balance extends Indicator
             }
         }
 
-        if (!($signal_ind = $strategy->getSignalsIndicator())) {
+        if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
+            $this->getParam('indicator.input_signal')))) {
             error_log('Balance::calculate() signal indicator not found.');
             return $this;
         }
-        $signal_key = $candles->key($signal_ind->getSignature());
-        $signal_ind->checkAndRun($force_rerun);
+        $signal_key = $candles->key($signal_ind->getSignature('signal'));
+        $signal_price_key = $candles->key($signal_ind->getSignature('price'));
 
-        $signature = $candles->key($this->getSignature());
+        $output_key = $candles->key($this->getSignature());
 
         $capital = floatval($this->getParam('indicator.capital'));
         $upl = 0;
         $stake = $capital * $position_size / 100;
         $fee_multiplier = $exchange->getParam('fee_multiplier');
         $liquidated = false;
-        $prev_signal = false;
+        $prev_signal = null;
 
         $candles->reset();
 
         while ($candle = $candles->next()) {
             if ($liquidated) {
-                $candle->$signature = 0;
+                $candle->$output_key = 0;
                 continue;
             }
 
@@ -100,9 +96,11 @@ class Balance extends Indicator
                     }
                 }
             }
-            if (isset($candle->$signal_key)) {
-                if ($signal = $candle->$signal_key) {
-                    if ($signal['signal'] == 'long' && $capital > 0) {
+            if (isset($candle->$signal_key) &&
+                isset($candle->$signal_price_key)) {
+                if (($signal = $candle->$signal_key) &&
+                    ($signal_price = $candle->$signal_price_key)) {
+                    if ($signal == 'long' && $capital > 0) {
                         // go long
                         if ($prev_signal && $prev_signal['signal'] == 'short') {
                             // close last short
@@ -110,7 +108,7 @@ class Balance extends Indicator
                                 // avoid division by zero
                                 $capital +=
                                     $stake / $prev_signal['price'] *
-                                    ($prev_signal['price'] - $signal['price']) *
+                                    ($prev_signal['price'] - $signal_price) *
                                     $leverage;
                             }
                             $upl = 0;
@@ -120,7 +118,7 @@ class Balance extends Indicator
                         }
                         // open long
                         $capital -= $stake * $fee_multiplier;
-                    } elseif ($signal['signal'] == 'short' && $capital > 0) {
+                    } elseif ($signal == 'short' && $capital > 0) {
                         // go short
                         if ($prev_signal && $prev_signal['signal'] == 'long') {
                             // close last long
@@ -128,7 +126,7 @@ class Balance extends Indicator
                                 // avoid division by zero
                                 $capital +=
                                     $stake / $prev_signal['price'] *
-                                    ($signal['price'] - $prev_signal['price']) *
+                                    ($signal_price - $prev_signal['price']) *
                                     $leverage;
                             }
                             $upl = 0;
@@ -139,7 +137,10 @@ class Balance extends Indicator
                         // open short
                         $capital -= $stake * $fee_multiplier;
                     }
-                    $prev_signal = $signal;
+                    $prev_signal = [
+                        'signal' => $signal,
+                        'price' => $signal_price,
+                    ];
                 }
             }
             $new_balance = $capital + $upl;
@@ -147,7 +148,7 @@ class Balance extends Indicator
                 $liquidated = true;
                 $new_balance = 0;
             }
-            $candle->$signature = $new_balance;
+            $candle->$output_key = $new_balance;
         }
 
         return $this;

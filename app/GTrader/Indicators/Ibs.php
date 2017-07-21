@@ -2,13 +2,11 @@
 
 namespace GTrader\Indicators;
 
+use \GTrader\Indicator;
+
 /** Internal Bar Strength */
-class Ibs extends HasInputs
+class Ibs extends Indicator
 {
-    public function getInputs()
-    {
-        return ['high', 'low', 'close'];
-    }
 
     public function calculate(bool $force_rerun = false)
     {

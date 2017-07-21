@@ -1,11 +1,9 @@
 <?php
 
 return [
-    'signals_indicator_class'       => 'FannSignals',
     'prediction_indicator_class'    => 'FannPrediction',
     'path'                          => env('FANN_PATH', storage_path('fann')),
     'sample_size'                   => env('FANN_SAMPLE_SIZE', 5),          // # candles to sample for input
-    'inputs'                        => ['open', 'high', 'low', 'close'],    // FANN input fields
     'fann_type'                     => 'fixed',                             // 'fixed' or 'cascade'
     'hidden_array'                  => [60, 30, 30, 15],                    // # neurons in hidden layers
     'target_distance'               => 2,                                   // prediction distance in candles

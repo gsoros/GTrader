@@ -40,6 +40,14 @@
                 <select class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         title="{{ $param['description'] or 'Select the source' }}">
+                    @php
+                    $sources = $indicator->getOwner()->getSourcesAvailable(
+                        $indicator->getSignature(),
+                        [],
+                        Arr::get($param, 'filters', []),
+                        Arr::get($param, 'disabled', [])
+                    );
+                    @endphp
                     @foreach ($sources as $signature => $display_name)
                         <option
                         @if ($signature === $indicator->getParam('indicator.'.$key))
@@ -48,6 +56,7 @@
                         value="{{ urlencode($signature) }}">{{ $display_name }}</option>
                     @endforeach
                 </select>
+                @if (!in_array('Constant', Arr::get($param, 'disabled', [])))
                 <script>
                     $('#{{ $key }}_{{ $uid }}').select2({
                         tags: true,
@@ -73,6 +82,7 @@
                         }
                     );
                 </script>
+                @endif
 
                 @elseif ('bool' === $param['type'])
                 <div class="form-check form-check-inline">

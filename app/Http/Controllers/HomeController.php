@@ -111,14 +111,31 @@ class HomeController extends Controller
     }
 
 
-
+    public function dump(Request $request)
+    {
+        if (!in_array(strtolower($request->class), ['strategy', 'chart'])) {
+            return '';
+        }
+        if (!$request->id) {
+            return '';
+        }
+        $o = call_user_func($request->class.'::load', $request->id);
+        dump($o);
+    }
 
 
     public function test()
     {
         $chart = Chart::load(Auth::id(), 'mainchart');
         foreach ($chart->getIndicators() as $i) {
-            dump($i->getSignature());
+            $r = $i->getRefs();
+            array_walk($r, function (&$v) {
+                if ($c = \GTrader\Indicator::getClassFromSignature($v)) {
+                    $v = $c;
+                }
+            });
+            dump(join(', ', $r).' <-- '.$i->getSignature(), $i);
+            //dump($i->getRefs());
         }
         exit;
 /*

@@ -4,7 +4,7 @@ namespace GTrader\Indicators;
 
 class Operator extends HasInputs
 {
-    public function getDisplaySignature(string $format = 'long')
+    public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $op = $this->getParam('indicator.operation');
         $op = $this->getParam('adjustable.operation.options.'.$op, 'Operator');
@@ -12,11 +12,6 @@ class Operator extends HasInputs
             return $op;
         }
         return ($param_str = $this->getParamString(['operation'])) ? $op.' ('.$param_str.')' : $op;
-    }
-
-    public function runDependencies(bool $force_rerun = false)
-    {
-        return $this;
     }
 
     protected function operate(float $a, float $b)
@@ -30,13 +25,15 @@ class Operator extends HasInputs
                 return $a * $b;
             case 'div':
                 return $b != 0 ? $a / $b : null;
+            case 'perc':
+                return $a * $b / 100;
         }
         return 0;
     }
 
     public function calculate(bool $force_rerun = false)
     {
-        //$this->runDependencies($force_rerun);
+        $this->runInputIndicators($force_rerun);
 
         if (!($candles = $this->getCandles())) {
             return $this;
@@ -49,10 +46,15 @@ class Operator extends HasInputs
         $candles->reset();
         while ($candle = $candles->next()) {
 
-            $candle->$key_out = $this->operate(
-                floatval($candle->$key_a),
-                floatval($candle->$key_b)
-            );
+            $val = null;
+            if (isset($candle->$key_a) && isset($candle->$key_b)) {
+                $val = $this->operate(
+                    floatval($candle->$key_a),
+                    floatval($candle->$key_b)
+                );
+                //error_log($candle->$key_a.' '.$this->getParam('indicator.operation').' '.$candle->$key_b.' = '.$val);
+            }
+            $candle->$key_out = $val;
             //dd($candle->$key_out);
         }
 

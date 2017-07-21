@@ -147,9 +147,11 @@ class StrategyController extends Controller
             $default_prefs[$item.'_end_percent'] =
                 \Config::get('GTrader.FannTraining.'.$item.'_range.end_percent');
         }
-        foreach (['crosstrain', 'reset_after', 'maximize_for'] as $item) {
+        foreach (['crosstrain', 'reset_after'] as $item) {
             $default_prefs[$item] = \Config::get('GTrader.FannTraining.'.$item);
         }
+        $conf_maximize = \Config::get('GTrader.FannTraining.maximize');
+        $default_prefs['maximize'] = array_keys($conf_maximize)[0];
 
         $html = view('Strategies/FannTrainForm', [
             'strategy' => $strategy,
@@ -209,7 +211,7 @@ class StrategyController extends Controller
             $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
             $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
         }
-        foreach (['crosstrain', 'reset_after', 'maximize_for'] as $item) {
+        foreach (['crosstrain', 'reset_after', 'maximize'] as $item) {
             if (isset($request->$item)) {
                 $prefs[$item] = $request->$item;
             }
@@ -253,16 +255,11 @@ class StrategyController extends Controller
             $options['reset_after'] = 10000;
         }
 
-        $options['indicator_class'] = \Config::get('GTrader.FannTraining.indicator.class');
-        $options['indicator_params'] = \Config::get('GTrader.FannTraining.indicator.params');
-        if (isset($request->maximize_for)) {
-            $available = \Config::get('GTrader.FannTraining.indicators');
-            foreach ($available as $ind) {
-                if ($ind['name'] == $request->maximize_for)  {
-                    $options['indicator_class'] = $ind['class'];
-                    $options['indicator_params'] = $ind['params'];
-                    break;
-                }
+        $conf_maximize = \Config::get('GTrader.FannTraining.maximize');
+        $options['maximize'] = array_keys($conf_maximize)[0];
+        if (isset($request->maximize)) {
+            if (array_key_exists($request->maximize, $conf_maximize)) {
+                $options['maximize'] = $request->maximize;
             }
         }
 

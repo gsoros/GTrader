@@ -349,9 +349,9 @@ class PHPlot extends Chart
             $this->label = array_merge($this->label, ['']);
             $signals = $values = [];
             foreach ($item['values'] as $k => $v) {
-                if (isset($v[2]['signal'])) {
-                    $signals[] = $v[2]['signal'];
-                    $values[] = ['', $v[1], round($v[2]['price'], 2)];
+                if (isset($v[2])) {
+                    $signals[] = $v[2];
+                    $values[] = ['', $v[1], round($v[3], 2)];
                 }
             }
             $item['values'] = $values;
@@ -690,7 +690,8 @@ class PHPlot extends Chart
 
             // used later to set the page title
             if ('Ohlc' === $item['class']) {
-                $this->last_close = $item['values'][count($item['values'])-1][3];
+                $index = ('linepoints' === $item['mode']) ? 0 : 2;
+                $this->last_close = $item['values'][count($item['values'])-1][$index];
             }
 
             $this->data[$dir]['items'][] = $item;
