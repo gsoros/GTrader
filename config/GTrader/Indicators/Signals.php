@@ -2,6 +2,7 @@
 
 return [
     'indicator' => [
+        'strategy_id' => 0,
         'input_long_a' => 'open',
         'long_cond' => '>',
         'input_long_b' => 'open',
@@ -12,6 +13,13 @@ return [
         'input_short_source' => 'open',
     ],
     'adjustable' => [
+        'strategy_id' => [
+            'name' => 'Strategy or Custom',
+            'type' => 'select',
+            'options' => [
+                0 => 'Custom',
+            ],
+        ],
         'input_long_a' => [
             'name' => 'Long A',
             'type' => 'source',

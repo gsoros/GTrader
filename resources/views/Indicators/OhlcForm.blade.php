@@ -1,5 +1,5 @@
 <script>
-    var disableElements_{{ $uid }} = function () {
+    var updateElements_{{ $uid }} = function () {
         var mode = $('#mode_{{ $uid }}').val();
         if ('line' == mode) {
             $('#form_group_{{ $uid }}_input_open label').text('Source');
@@ -15,7 +15,7 @@
         }
     };
     $('#mode_{{ $uid }}').on('change', function () {
-        disableElements_{{ $uid }}();
+        updateElements_{{ $uid }}();
     });
-    disableElements_{{ $uid }}();
+    updateElements_{{ $uid }}();
 </script>

@@ -23,7 +23,9 @@ namespace GTrader;
 
 trait Skeleton
 {
-    use HasParams, ClassUtils;
+    use HasParams, HasStatCache, ClassUtils;
+
+    protected static $stat_cache = [];
 
     public function __construct(array $params = [])
     {

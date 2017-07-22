@@ -85,7 +85,7 @@
                 'high' => 'High',
                 'low' => 'Low',
                 'close' => 'Close',
-                'ohlc4' => 'OHLC4',
+                //'ohlc4' => 'OHLC4',
             ];
             $setting = $strategy->getParam('long_source', 'open');
             @endphp
@@ -98,9 +98,6 @@
             @endforeach
             </select>
         </div>
-    </div>
-
-    <div class="form-group editable">
         <label class="col-sm-3 control-label" for="long_source">Short signal price source</label>
         <div class="col-sm-9">
             <select class="btn-primary form-control form-control-sm" name="short_source" id="short_source">
@@ -125,10 +122,10 @@
                 type="number"
                 id="long_threshold"
                 name="long_threshold"
-                min="1"
-                step="1"
-                max="1000"
-                title="Prediction fraction of price to trigger a long signal"
+                min="0"
+                step=".01"
+                max="10"
+                title="Trigger long signal if prediction exeeds price by this percentage"
                 value="{{ $strategy->getParam('long_threshold') }}">
         </div>
         <label for="short_threshold" class="col-sm-3 control-label">Short threshold</label>
@@ -137,10 +134,10 @@
                 type="number"
                 id="short_threshold"
                 name="short_threshold"
-                min="1"
-                step="1"
-                max="1000"
-                title="Prediction fraction of price to trigger a short signal"
+                min="0"
+                step=".01"
+                max="10"
+                title="Trigger short signal if prediction is lower than price minus this percentage"
                 value="{{ $strategy->getParam('short_threshold') }}">
         </div>
     </div>

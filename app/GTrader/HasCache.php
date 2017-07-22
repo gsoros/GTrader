@@ -18,24 +18,24 @@ trait HasCache
 
     public function cache(string $key, $value = null)
     {
-        $this->logCache('put', $key, $value);
         Arr::set($this->cache, $key, $value);
+        $this->logCache('put', $key, $value);
         return $this;
     }
 
 
     public function unCache(string $key)
     {
-        $this->logCache('forget', $key);
         Arr::forget($this->cache, $key);
+        $this->logCache('forget', $key);
         return $this;
     }
 
 
     public function cleanCache()
     {
-        $this->logCache('clean');
         $this->cache = [];
+        $this->logCache('clean');
         return $this;
     }
 

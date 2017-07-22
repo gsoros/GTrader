@@ -90,7 +90,7 @@ class Fann extends Strategy
             'height' => 200,
             'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
-        $ind = $chart->addIndicator('Ohlc', ['indicator' => ['mode' => 'linepoints']]);
+        $ind = $chart->addIndicator('Ohlc', ['mode' => 'linepoints']);
         $ind->setParam('display.visible', true);
         $ind->addRef('root');
         $chart->saveToSession();
@@ -127,7 +127,7 @@ class Fann extends Strategy
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
         ]);
-        $ind = $chart->addIndicator('Ohlc', ['indicator' => ['mode' => 'linepoints']]);
+        $ind = $chart->addIndicator('Ohlc', ['mode' => 'linepoints']);
         $ind->setParam('display.visible', true);
         $ind->addRef('root');
 
@@ -277,9 +277,10 @@ class Fann extends Strategy
     {
         $topology_changed = false;
 
-        $inputs = isset($request->inputs) ? $request->inputs : ['open'];
-        $inputs = is_array($inputs) ? $inputs : ['open'];
-        $inputs = count($inputs) ? $inputs : ['open'];
+        $default_inputs = ['open'];
+        $inputs = isset($request->inputs) ? $request->inputs : $default_inputs;
+        $inputs = is_array($inputs) ? $inputs : $default_inputs;
+        $inputs = count($inputs) ? $inputs : $default_inputs;
         foreach ($inputs as $k => $input) {
             if (!is_string($input)) {
                 error_log('Fann::handleSaveRequest() input not a string: '.json_encode($input));
@@ -330,14 +331,15 @@ class Fann extends Strategy
             $this->deleteFiles();
         }
 
-        foreach ([
-            'target_distance',
-            'long_threshold',
-            'short_threshold',
-            'min_trade_distance'
-        ] as $param) {
+        foreach (['target_distance', 'min_trade_distance'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
+            }
+        }
+
+        foreach (['long_threshold', 'short_threshold'] as $param) {
+            if (isset($request->$param)) {
+                $this->setParam($param, floatval($request->$param));
             }
         }
 
@@ -389,15 +391,7 @@ class Fann extends Strategy
             throw new \Exception('loadOrCreateFann called but _fann is already a resource');
         }
 
-        // try first with suffix, if supplied
-        if (strlen($prefer_suffix)) {
-            $this->loadFann($this->path().$prefer_suffix);
-        }
-
-        // try without suffix
-        if (!is_resource($this->_fann)) {
-            $this->loadFann($this->path());
-        }
+        $this->loadFann($this->path().$prefer_suffix);
 
         // create a new fann
         if (!is_resource($this->_fann)) {
@@ -414,6 +408,7 @@ class Fann extends Strategy
             $this->_fann = fann_create_from_file($path);
             return true;
         }
+        //error_log('loadFann() cannot read '.$path);
         return false;
     }
 
@@ -1173,45 +1168,40 @@ class Fann extends Strategy
 
     public function getPredictionIndicator()
     {
-        $class = $this->getParam('prediction_indicator_class');
+        if ($i = $this->cached('prediction_indicator')) {
+            return $i;
+        }
 
         $candles = $this->getCandles();
 
-        $indicator = null;
-        foreach ($candles->getIndicators() as $candidate) {
-            if ($class === $candidate->getShortClass()) {
-                $indicator = $candidate;
-            }
-        }
-        if (is_null($indicator)) {
-            $indicator = Indicator::make($class);
-            $candles->addIndicator($indicator);
-        }
+        $pred = $candles->getOrAddIndicator(
+            $this->getParam('prediction_indicator_class')
+        );
+        $pred->addRef('root');
 
         $ema_len = $this->getParam('prediction_ema');
         if ($ema_len > 1) {
-            $indicator = Indicator::make(
-                'Ema', [
-                    'indicator' => [
-                        'input_source' => $indicator->getSignature($indicator->getOutput()),
-                        'length' => $ema_len,
-                    ],
-                    'depends' => [$indicator],
-                ]
-            );
-
-            $candles->addIndicator($indicator);
-            $indicator = $candles->getIndicator($indicator->getSignature());
+            $ema = $candles->getOrAddIndicator('Ema', [
+                'indicator' => [
+                    'input_source' => $pred->getSignature($pred->getOutput()),
+                    'length' => $ema_len,
+                ],
+            ]);
+            $ema->addRef($pred);
+            $ema->addRef('root');
+            $pred = $ema;
         }
-
-        return $indicator;
+        $this->cache('prediction_indicator', $pred);
+        return $pred;
     }
 
 
 
     public function getSignalsIndicator()
     {
-
+        if ($i = $this->cached('signals_indicator')) {
+            return $i;
+        }
         if (!$candles = $this->getCandles()) {
             error_log('Fann::getSignalsIndicator() no candles');
             return null;
@@ -1222,14 +1212,16 @@ class Fann extends Strategy
         }
         $pred_sig = $pred->getSignature();
 
-        $long_thresh = $candles->getOrAddIndicator('Constant', ['value' => 100.5]);
+        $long_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 + $this->getParam('long_threshold', 0.5)]);
         $long_ind = $candles->getOrAddIndicator('Operator', [
             'input_a' => 'open',
             'operation' => 'perc',
             'input_b' => $long_thresh->getSignature(),
         ]);
 
-        $short_thresh = $candles->getOrAddIndicator('Constant', ['value' => 99.5]);
+        $short_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 - $this->getParam('short_threshold', 0.5)]);
         $short_ind = $candles->getOrAddIndicator('Operator', [
             'input_a' => 'open',
             'operation' => 'perc',
@@ -1240,16 +1232,17 @@ class Fann extends Strategy
                 'input_long_a' => $long_ind->getSignature(),
                 'long_cond' => '<',
                 'input_long_b' => $pred_sig,
-                'input_long_source' => 'open',
+                'input_long_source' => $this->getParam('long_source', 'open'),
                 'input_short_a' => $short_ind->getSignature(),
                 'short_cond' => '>',
                 'input_short_b' => $pred_sig,
-                'input_short_source' => 'open',
+                'input_short_source' =>  $this->getParam('short_source', 'open'),
             ])) {
             error_log('Fann::getSignalsIndicator() could not add Signals');
             return null;
         }
         $signals->addRef('root');
+        $this->cache('signals_indicator', $signals);
         return $signals;
 
     }

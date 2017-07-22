@@ -119,7 +119,7 @@ class HomeController extends Controller
         if (!$request->id) {
             return '';
         }
-        $o = call_user_func($request->class.'::load', $request->id);
+        $o = call_user_func(['GTrader\\'.$request->class, 'load'], $request->id);
         dump($o);
     }
 

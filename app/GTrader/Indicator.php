@@ -31,20 +31,6 @@ abstract class Indicator //implements \JsonSerializable
 
     public function init()
     {
-        if (!$owner = $this->getOwner()) {
-            return $this;
-        }
-        if (!$this->hasInputs()) {
-            return $this;
-        }
-        foreach ($this->getInputs() as $input_key => $input_val) {
-            if (in_array($input_val, ['open', 'high', 'low', 'close', 'volume'])) {
-                $this->setParam(
-                    'indicator.'.$input_key,
-                    $owner->getFirstIndicatorOutput($input_val)
-                );
-            }
-        }
         return $this;
     }
 
@@ -380,7 +366,7 @@ abstract class Indicator //implements \JsonSerializable
             //error_log($this->getSignature().' has already run');
             return $this;
         }
-        //dump('checkAndRun() '.$this->getShortClass().' '.$this->getParam('display.y-axis'));
+        //dump('checkAndRun() '.$this->getSignature());
 
         // TODO is this still used??
         if (is_array($depends = $this->getParam('depends'))) {

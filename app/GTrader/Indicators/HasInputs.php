@@ -8,6 +8,22 @@ use GTrader\Indicator;
 abstract class HasInputs extends Indicator
 {
 
+    public function init()
+    {
+        if (!$owner = $this->getOwner()) {
+            return $this;
+        }
+        foreach ($this->getInputs() as $input_key => $input_val) {
+            if (in_array($input_val, ['open', 'high', 'low', 'close', 'volume'])) {
+                $this->setParam(
+                    'indicator.'.$input_key,
+                    $owner->getFirstIndicatorOutput($input_val)
+                );
+            }
+        }
+        return parent::init();
+    }
+
     public function getInputs()
     {
         $inputs = [];

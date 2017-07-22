@@ -12,10 +12,14 @@ return [
     'output_scaling'                => 4,
     // apply ema to the prediction
     'prediction_ema'                => 0,
-     // trade only if prediction is over this fraction of candle open price
-    'long_threshold'                => 200,
-    // trade only if prediction is under this fraction of candle open price
-    'short_threshold'               => 200,
+    // long signal price source
+    'long_source'                   => 'open',
+    // short signal price source
+    'short_source'                  => 'open',
+    // trigger long signal if prediction exeeds price by this percentage
+    'long_threshold'                => 0.5,
+    // trigger short signal if prediction is lower than price minus this percentage
+    'short_threshold'               => 0.5,
     // do not trade if last trade was more recent than this value
     'min_trade_distance'            => 0,
     // compensate for the bias of the null sample

@@ -14,7 +14,7 @@
 <h5 title="{{ $indicator->getParam('display.description') }}">
     {{ $indicator->getParam('display.name') }}
 </h5>
-<form class="form-horizontal row">
+<form id="form_{{ $uid }}" class="form-horizontal row">
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
         <div class="form-group"
             id="form_group_{{ $uid }}_{{ $key }}"

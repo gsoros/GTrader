@@ -1,5 +1,5 @@
 <script>
-    var disableElements_{{ $uid }} = function () {
+    var updateElements_{{ $uid }} = function () {
         var mode = $('#mode_{{ $uid }}').val();
         var modes_with_b = [
         @php
@@ -24,7 +24,7 @@
         }
     };
     $('#mode_{{ $uid }}').on('change', function () {
-        disableElements_{{ $uid }}();
+        updateElements_{{ $uid }}();
     });
-    disableElements_{{ $uid }}();
+    updateElements_{{ $uid }}();
 </script>

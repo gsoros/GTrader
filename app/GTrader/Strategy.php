@@ -13,8 +13,9 @@ class Strategy
         HasIndicators::getSourcesAvailable as public __HasIndicatorsGetSourcesAvailable;
     }
 
+    //protected static $stat_cache_log = 'all';
 
-    public function setCandles(Series &$candles)
+    public function setCandles(Series $candles)
     {
         $this->__hasCandlesSetCandles($candles);
         $candles->setStrategy($this);
@@ -25,6 +26,9 @@ class Strategy
 
     public static function load(int $id)
     {
+        if ($strategy = static::statCached('id_'.$id)) {
+            return $strategy;
+        }
         $query = DB::table('strategies')
                     ->select('user_id', 'name', 'strategy')
                     ->where('id', $id)
@@ -36,6 +40,7 @@ class Strategy
         $strategy->setParam('id', $id);
         $strategy->setParam('user_id', $query->user_id);
         $strategy->setParam('name', $query->name);
+        static::statCache('id_'.$id, $strategy);
         return $strategy;
     }
 
@@ -154,27 +159,35 @@ class Strategy
     }
 
 
+    public static function getStrategiesOfUser(int $user_id)
+    {
+        $strategies = DB::table('strategies')
+            ->select('id', 'name')
+            ->where('user_id', $user_id)
+            ->orderBy('name')
+            ->get();
+        $ret = [];
+        foreach ($strategies as $strategy) {
+            $ret[$strategy->id] = $strategy->name;
+        }
+        return $ret;
+    }
+
+
     public static function getSelectorOptions(
         int $user_id,
-        int $selected_strategy = null
-    ) {
-        $strategies = DB::table('strategies')
-                        ->select('id', 'name')
-                        ->where('user_id', $user_id)
-                        ->orderBy('name')
-                        ->get();
-
-        return view(
-            'StrategySelectorOptions',
-            [
-                'selected_strategy' => $selected_strategy,
-                'strategies' => $strategies]
-        );
+        int $selected_strategy = null)
+    {
+        return view('StrategySelectorOptions', [
+            'selected_strategy' => $selected_strategy,
+            'strategies' => self::getStrategiesOfUser($user_id),
+        ]);
     }
 
 
     public function handleSaveRequest(Request $request)
     {
+        $this->purgeIndicators();
         foreach (['name', 'description'] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, $request->$param);
