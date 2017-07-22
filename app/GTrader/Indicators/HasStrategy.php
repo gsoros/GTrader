@@ -29,6 +29,6 @@ trait HasStrategy
                 return $s.' ('.$n.')';
             }
         }
-        return parent::getDisplaySignature($format);
+        return parent::getDisplaySignature($format, $output);
     }
 }

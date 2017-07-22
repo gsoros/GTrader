@@ -1,10 +1,41 @@
 $(function() {
-    /**
-    * Requests an action and inserts the result into the DOM
-    */
-    window.GTrader = {
 
+    window.GTrader = $.extend(true, window.GTrader, {
+
+        charts: {},
         lastRequest: [],
+
+
+        waitForFinalEvent: (function() {
+            var timers = [];
+            return function (callback, ms, uid, arg) {
+                if (!uid) {
+                    uid = 'uid';
+                }
+                if (timers[uid]) {
+                    clearTimeout(timers[uid]);
+                }
+                timers[uid] = setTimeout(callback, ms, arg);
+                console.log('timeout set for ' + uid);
+            };
+        })(),
+
+
+        setLoading: function (element, loading) {
+            console.log('setLoading(' + element + ')');
+            if (true === loading) {
+                var container = $('#' + element);
+                if (0 === $('#loading-' + element).length)
+                    container.append('<img id="loading-' + element + '" src="/img/ajax-loader.gif">');
+                $('#loading-' + element).css({
+                        position: 'absolute',
+                        top: (container.height() / 2 - 20) + 'px',
+                        left: (container.width() / 2 - 20) + 'px'});
+            }
+            else
+                $('#loading-' + element).remove();
+        },
+
         request: function(request, method, params, type, target) {
 
             if (!type) type = 'GET';
@@ -13,7 +44,7 @@ $(function() {
             if (100 > width) {
                 width = $(window).width();
             }
-            window.setLoading(target, true);
+            window.GTrader.setLoading(target, true);
             var url = '/' + request + '.' + method + '?width=' + width;
             var data = null;
             if (type === 'POST') {
@@ -58,15 +89,15 @@ $(function() {
                         'trainStop',
                         'sample'].indexOf(method)) {
                         window.GTrader.updateAllStrategySelectors();
-                        window.mainchart.refresh();
+                        window.GTrader.charts.mainchart.refresh();
                     }
                 },
                 error: function(response) {
                     if (0 == response.status && 'abort' === response.statusText) {
                         return;
                     }
-                    window.setLoading(target, false);
-                    GTrader.errorBubble(target, response.status + ': ' + response.statusText);
+                    window.GTrader.setLoading(target, false);
+                    window.GTrader.errorBubble(target, response.status + ': ' + response.statusText);
                 }
             });
         },
@@ -77,7 +108,14 @@ $(function() {
         */
         registerChart: function(name) {
 
-            var chartObj = window[name];
+            console.log('registering chart ' + name);
+            if (!this.charts[name]) this.charts[name] = {};
+            if (this.charts[name].registerCallbacks) {
+                this.charts[name].registerCallbacks.forEach(function (callback) {
+                    console.log('running callback: ' + callback);
+                    callback();
+                });
+            }
 
             /**
             * Register click handler for settings button
@@ -97,7 +135,12 @@ $(function() {
         */
         registerStrategySelector: function (name, register_onchange = true, selected) {
 
-            var chartObj = window[name];
+            var chartObj = this.charts[name];
+            if (!chartObj) chartObj = window[name];
+            if (!chartObj) {
+                console.log('registerStrategySelector() could not get obj for ' + name);
+                return false;
+            }
             /**
             * Requests the strategy dropdown and inserts it into the DOM
             */
@@ -140,7 +183,12 @@ $(function() {
         */
         registerESR: function (name) {
 
-            var chartObj = window[name];
+            var chartObj = this.charts[name];
+            if (!chartObj) chartObj = window[name];
+            if (!chartObj) {
+                console.log('registerESR() could not get obj for ' + name);
+                return false;
+            }
 
             /**
             * Get selected Exchange, Symbol, Resolution values
@@ -160,12 +208,13 @@ $(function() {
             chartObj.updateESR = function (changed) {
                 var opts = {exchange: '', symbol: '', resolution: ''},
                     selected = {};
+                console.log(window.GTrader);
                 // loop through all exchanges
-                window.ESR.forEach(function(exchange) {                         // loop through all exchanges
+                window.GTrader.ESR.forEach(function(exchange) {                         // loop through all exchanges
                     opts.exchange += '<option ';
                     if (!chartObj.exchange ||                                   // nothing
                         chartObj.exchange === exchange.name                     // or selected exchange
-                            || 1 === window.ESR.length) {                       // or only one exchange
+                            || 1 === window.GTrader.ESR.length) {                       // or only one exchange
                         opts.exchange += 'selected ';                           // found selected exchange
                         exchange.symbols.forEach(function(symbol) {             // loop through all symbols within selected exchange
                             opts.symbol += '<option ';
@@ -219,6 +268,7 @@ $(function() {
                     // Send refresh command to the chart
                     if (chartObj.refresh)
                         chartObj.refresh('ESR', JSON.stringify(chartObj.getSelectedESR()));
+                    else console.log('refresh not registered for:' + name);
                 });
             });
         }, // registerESR
@@ -228,7 +278,7 @@ $(function() {
         */
         updateAllStrategySelectors: function() {
             $('.GTraderChart').each(function() {
-                var chartObj = window[$( this ).attr('id')];
+                var chartObj = window.GTrader.charts[$( this ).attr('id')];
                 if (chartObj.updateStrategySelector)
                     chartObj.updateStrategySelector();
             });
@@ -249,5 +299,5 @@ $(function() {
                 }, 1000);
             }, 3000);
         } // errorBubble
-    } // window.GTrader
-});
+    }) // $.extend( window.GTrader
+}); // $(f () {

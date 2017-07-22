@@ -146,6 +146,7 @@ class FannTraining extends Model
         define('FANN_WAKEUP_PREFERRED_SUFFX', $this->getParam('suffix'));
         $train_strategy = Strategy::load($this->strategy_id);
         $train_strategy->setCandles($train_candles);
+        $train_candles->setStrategy($train_strategy);
         $this->setStrategy('train', $train_strategy);
 
         // Set up test strategy
@@ -159,6 +160,7 @@ class FannTraining extends Model
         ]);
         $test_strategy = clone $train_strategy;
         $test_strategy->setCandles($test_candles);
+        $test_candles->setStrategy($test_strategy);
         $this->setStrategy('test', $test_strategy);
 
         // Set up verify strategy
@@ -172,6 +174,7 @@ class FannTraining extends Model
         ]);
         $verify_strategy = clone $train_strategy;
         $verify_strategy->setCandles($verify_candles);
+        $verify_candles->setStrategy($verify_strategy);
         $this->setStrategy('verify', $verify_strategy);
 
         $this->setProgress('epoch_jump', 1);
@@ -253,7 +256,7 @@ class FannTraining extends Model
 
     public function getMaximizeSig(Strategy $strategy)
     {
-        if ($sig = $this->cached('maximize.'.$strategy->getParam('id'))) {
+        if ($sig = $strategy->getParam('cached_maximize_sig')) {
             return $sig;
         }
         $maximize = Arr::get(
@@ -292,7 +295,7 @@ class FannTraining extends Model
                 return null;
         }
         $sig = $indicator->getSignature();
-        $this->cache('maximize.'.$strategy->getParam('id'), $sig);
+        $strategy->setParam('cached_maximize_sig', $sig);
         return $sig;
     }
 
@@ -303,7 +306,7 @@ class FannTraining extends Model
         $candles = $strat->getCandles();
         $sig = $this->getMaximizeSig($strat);
         if (!($ind = $candles->getOrAddIndicator($sig))) {
-            error_log('FannTraining::test() could not getOrAddIndicator()');
+            error_log('FannTraining::test() could not getOrAddIndicator() for '.$type);
             return 0;
         }
         $ind->addRef('root');

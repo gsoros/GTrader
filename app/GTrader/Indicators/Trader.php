@@ -35,7 +35,7 @@ abstract class Trader extends HasInputs
         $fill = $this->getParam('fill_value', null);
         if (is_string($fill) && $this->hasInputs()) {
             if ($fill = $this->getInput($fill)) {
-                //error_log('Trader::calculate() fill is '.$fill.' C:'.json_encode($candles->first()));
+                //dump('Trader::calculate() fill is '.$fill.' C:', $candles->first());
                 $fill = $candles->first()->{$candles->key($fill)};
             }
         }
@@ -45,6 +45,7 @@ abstract class Trader extends HasInputs
                 continue;
             }
             //error_log(json_encode($values[$output_index]));
+            //dump('Trader::calc() sig: '.$this->getSignature($output_name));
             $candles->setValues(
                 $this->getSignature($output_name),
                 $values[$output_index],

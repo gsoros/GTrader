@@ -85,8 +85,8 @@ class HomeController extends Controller
             ],
         ]);
         Page::add('scripts_top', '<script src="/js/GTrader.js"></script>');
-        Page::add('scripts_bottom', '<script src="/js/Mainchart.js"></script>');
         $chart->addPageElements();
+        Page::add('scripts_bottom', '<script src="/js/Mainchart.js"></script>');
 
         Page::add('stylesheets', '<link href="/css/nouislider.min.css" rel="stylesheet">');
         Page::add('scripts_bottom', '<script src="/js/nouislider.min.js"></script>');
@@ -113,13 +113,20 @@ class HomeController extends Controller
 
     public function dump(Request $request)
     {
-        if (!in_array(strtolower($request->class), ['strategy', 'chart'])) {
-            return '';
+        switch ($request->class) {
+            case 'Chart':
+                $o = Chart::load(Auth::id(), $request->name);
+                break;
+            case 'Strategy':
+                $o = Strategy::load($request->id);
+                break;
+            case 'FannTraining':
+                $o = \GTrader\FannTraining::where('id', $request->id)->first();
+                //$o->init();
+                break;
+            default:
+                return 'unknown class';
         }
-        if (!$request->id) {
-            return '';
-        }
-        $o = call_user_func(['GTrader\\'.$request->class, 'load'], $request->id);
         dump($o);
     }
 

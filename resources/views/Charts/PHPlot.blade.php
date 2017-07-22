@@ -40,14 +40,17 @@
     $initial_refresh = in_array('initial_refresh', $disabled) ? 'false' : 'true';
 @endphp
 <script>
-    if (window.GTrader) {
-        console.log('straight calling registerPHPlot');
-        window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
-    }
-    else {
-        $(function() {
-            console.log('docready calling registerPHPlot');
-            window.GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
+    $(function() {
+        window.GTrader = $.extend(true, window.GTrader, {
+            charts: {
+                {{ $name }}: {
+                    registerCallbacks: [
+                        function () {
+                            GTrader.registerPHPlot('{{ $name }}', {{ $initial_refresh }});
+                        }
+                    ]
+                }
+            }
         });
-    }
+    });
 </script>

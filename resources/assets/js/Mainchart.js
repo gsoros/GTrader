@@ -3,19 +3,28 @@ $(function() {
     /**
     * Set chart dimensions
     */
-    window.mainchart.setChartSize = function() {
-        console.log('setChartSize');
-        $('#mainchart').width($(window).width()-2);
-        if (fscreen.fullscreenElement !== null) {
-            $('#mainchart').height($(window).height());
+    window.GTrader = $.extend(true,
+        window.GTrader, {
+            charts: {
+                mainchart: {
+                    setChartSize: function() {
+                        console.log('setChartSize');
+                        $('#mainchart').width($(window).width()-2);
+                        if (fscreen.fullscreenElement !== null) {
+                            $('#mainchart').height($(window).height());
+                        }
+                        else {
+                            $('#mainchart').height($(window).height() - 100);
+                        }
+                        this.refresh();
+                    }
+                }
+            }
         }
-        else {
-            $('#mainchart').height($(window).height() - 100);
-        }
-        this.refresh();
-    };
-    waitForFinalEvent(function() {
-        window.mainchart.setChartSize();
+    );
+
+    window.GTrader.waitForFinalEvent(function() {
+        window.GTrader.charts.mainchart.setChartSize();
     }, 500, 'setChartSize');
 
 
@@ -46,7 +55,7 @@ $(function() {
 
 
 $(window).resize(function() {
-    waitForFinalEvent(function() {
-        window.mainchart.setChartSize();
+    window.GTrader.waitForFinalEvent(function() {
+        window.GTrader.charts.mainchart.setChartSize();
     }, 500, 'setChartSize');
 });

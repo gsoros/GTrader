@@ -22,6 +22,12 @@ class Ht extends Trader
         $this->setup();
     }
 
+    public function init()
+    {
+        $this->setup(true);
+        return parent::init();
+    }
+
 
     public function setup($force = false)
     {
@@ -115,7 +121,7 @@ class Ht extends Trader
 
     public function traderCalc(array $values)
     {
-        //dd($values);
+        //dump('Ht: candles: '.$this->getCandles()->debugObjId());
         $this->setup(true);
 
         $func = 'trader_ht_'.$this->getParam('indicator.mode');
@@ -127,13 +133,14 @@ class Ht extends Trader
         $args = [];
         foreach ($this->getInputs() as $input) {
             $args[] = $values[$input];
+            //dump('Ht: in: '.count($values[$input]));
         }
 
         if (!$values = call_user_func_array($func, $args)) {
             error_log('Ht::traderCalc() '.$func.' returned false');
             return [];
         }
-        //dd($args, $values);
+        //dump('Ht: out: '.count($values));
         //dd($this->getParams());
         return 1 < count($this->getOutputs()) ? $values : [$values];
     }

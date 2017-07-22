@@ -26,10 +26,13 @@ trait HasStrategy
             error_log($this->getShortClass().'::setStrategy() could not get owner');
             return null;
         }
+        //dump($this->debugObjId().' setStrategy('.$strategy->debugObjId().') owner: '.$owner->debugObjId()); flush();
+        /*
         if (is_callable([$owner, 'getCandles']) && !$owner->isClass('GTrader\\Series')) {
             $candles = $owner->getCandles();
             $strategy->setCandles($candles);
         }
+        */
         $owner->strategy = $strategy;
         return $this;
     }

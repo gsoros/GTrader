@@ -26,11 +26,11 @@ trait HasIndicators
         $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
-            $ind_str = $indicator;
             if ($indicator) {
+                $ind_str = $indicator;
                 if (!($indicator = Indicator::make($indicator, ['indicator' => $params]))) {
                     error_log('addIndicator() could not make('.$ind_str.')');
-                    return false;
+                    return null;
                 }
             }
             else {
@@ -38,13 +38,13 @@ trait HasIndicators
             }
         }
         if (!$indicator->canBeOwnedBy($owner)) {
-            return false;
+            return null;
         }
         $indicator->setOwner($owner);
         $indicator->init();
         if ($owner->hasIndicator($sig = $indicator->getSignature())) {
             $existing = $owner->getIndicator($sig);
-            $existing->setParams($indicator->getParams());
+            //$existing->setParams($indicator->getParams());
             return $existing;
         }
         $class = $indicator->getShortClass();
@@ -166,13 +166,13 @@ trait HasIndicators
         $sig = $indicator->getSignature();
         $target = null;
         foreach ($this->getIndicatorOwner()->indicators as $key => $existing) {
-            if ($sig === $existing->getSignature()) {
+            if ($indicator === $existing) {
                 $target = $existing;
                 break;
             }
         }
         if (is_null($target)) {
-            error_log('unsetIndicator() but not set: '.$sig);
+            //error_log('unsetIndicator() not found: '.$sig);
             return $this;
         }
         if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
@@ -279,6 +279,7 @@ trait HasIndicators
     public function calculateIndicators()
     {
         foreach ($this->getIndicators() as $indicator) {
+            //dump('HasInd::calculateIndicators() '.$indicator->debugObjId());
             $indicator->checkAndRun();
         }
         return $this;
@@ -298,6 +299,11 @@ trait HasIndicators
 
     public function getIndicatorsAvailable()
     {
+        if ($cache_enabled = method_exists($this, 'cached')) {
+            if ($available = $this->cached('indicators_available')) {
+                return $available;
+            }
+        }
         $available = [];
         if (!is_object($owner = $this->getIndicatorOwner())) {
             return $available;
@@ -314,7 +320,9 @@ trait HasIndicators
                 }
             }
         }
-        //error_log(serialize($available));
+        if ($cache_enabled) {
+            $this->cache('indicators_available', $available);
+        }
         return $available;
     }
 
@@ -410,6 +418,7 @@ trait HasIndicators
             return $this->viewIndicatorsList($request);
         }
         $indicator = clone $indicator;
+        $sig = $indicator->getSignature();
         $jso = json_decode($request->params);
         foreach ($indicator->getParam('adjustable') as $key => $param) {
             $val = null;
@@ -460,10 +469,12 @@ trait HasIndicators
             $indicator->setParam('indicator.'.$key, $val);
         }
         $indicator->init();
-        //dump($indicator);
         $this->unsetIndicators($sig);
+        if (!$indicator = $this->addIndicator($indicator)) {
+            error_log('HasIndicators::handleIndicatorSaveRequest() could not save');
+            $this->viewIndicatorsList($request);
+        }
         $indicator->setParam('display.visible', true);
-        $this->addIndicator($indicator);
         $indicator->addRef('root');
         if (method_exists($indicator, 'createDependencies')) {
             $indicator->createDependencies();
@@ -520,26 +531,38 @@ trait HasIndicators
 
     public function getFirstIndicatorOutput(string $output)
     {
+        if ($cache_enabled = method_exists($this, 'cached')) {
+            if ($f = $this->cached('first_indicator_output_'.$output)) {
+                return $f;
+            }
+        }
         $indicator = $class = null;
         $outputs = [];
         if (in_array($output, ['open', 'high', 'low', 'close'])) {
             $class = 'Ohlc';
         } else if ('volume' === $output) {
             $class = 'Vol';
+        } else {
+            return $output;
         }
+        $ret = null;
         if ($indicator = $this->getFirstIndicatorByClass($class)) {
             $outputs = $indicator->getOutputs();
         }
         if (!$indicator || !in_array($output, $outputs)) {
-            if (!$indicator = $this->getOrAddIndicator('Ohlc')) {
-                return $output;
+            if (!$indicator = $this->getOrAddIndicator($class)) {
+                $ret = $output;
             }
         }
         if ($indicator) {
-            return in_array($output, $indicator->getOutputs()) ?
+            $ret = in_array($output, $indicator->getOutputs()) ?
                 $indicator->getSignature($output) : $output;
         }
-        return $output;
+        if ($cache_enabled) {
+            $this->cache('first_indicator_output_'.$output, $ret);
+        }
+        //dump($this->debugObjId().' HasInd::getFirstIndicatorOutput('.$output.') : '.$ret);
+        return $ret;
     }
 
 
@@ -564,7 +587,7 @@ trait HasIndicators
                     !$ind->getParam('display.visible'))) {
                     $this->unsetIndicator($ind);
                     $removed++;
-                    //dump('purgeIndicators() removed '.md5($ind->getSignature()).' from '.$this->debugObjId(), $ind);
+                    //dump('purgeIndicators() removed '.$ind->getSignature().' from '.$this->debugObjId(), $ind);
                 }
             }
             if (!$removed) {

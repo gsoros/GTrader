@@ -2,7 +2,7 @@
 
 return [
     'indicator' => [
-        'strategy_id' => 0,
+        'strategy_id' => -1,
         'input_long_a' => 'open',
         'long_cond' => '>',
         'input_long_b' => 'open',
@@ -14,10 +14,11 @@ return [
     ],
     'adjustable' => [
         'strategy_id' => [
-            'name' => 'Strategy or Custom',
+            'name' => 'Strategy',
             'type' => 'select',
             'options' => [
-                0 => 'Custom',
+                -1 => 'Automatic From Parent',
+                0 => 'Custom Settings',
             ],
         ],
         'input_long_a' => [

@@ -7,8 +7,9 @@ trait HasCandles
     protected $candles;
 
 
-    public function setCandles(Series &$candles)
+    public function setCandles(Series $candles)
     {
+        //dump($this->debugObjId().' setCandles('.$candles->debugObjId().')');
         $this->candles = $candles;
         return $this;
     }

@@ -161,7 +161,6 @@ abstract class Indicator //implements \JsonSerializable
             //error_log('Indicator::getSignature() null output requested for '.$this->getShortClass());
         }
 
-
         $params = $this->getParam('indicator', []);
         if (!is_array($params)) {
             //error_log('getSignatureObject() not array in '.$this->debugObjId().' params: '.serialize($params));
@@ -363,26 +362,17 @@ abstract class Indicator //implements \JsonSerializable
     public function checkAndRun(bool $force_rerun = false)
     {
         if (!$force_rerun && $this->calculated) {
-            //error_log($this->getSignature().' has already run');
             return $this;
         }
-        //dump('checkAndRun() '.$this->getSignature());
-
-        // TODO is this still used??
-        if (is_array($depends = $this->getParam('depends'))) {
-            if (count($depends)) {
-                foreach ($depends as $indicator) {
-                    if ($indicator !== $this) {
-                        error_log('TODO REMOVE checkAndRun() '.$this->getShortClass().' depends on '.$indicator->getShortClass());
-                        $indicator->addRef($this);
-                        $indicator->checkAndRun($force_rerun);
-                    }
-                }
-            }
-        }
-
+        /*
+        dump('Indicator::checkAndRun() '.$this->debugObjId().
+            ' C: '.$this->getCandles()->debugObjId().
+            ' CS: '.$this->getCandles()->getStrategy()->debugObjId());
+        */
         $this->calculated = true;
-        return $this->calculate($force_rerun);
+        $ret = $this->calculate($force_rerun);
+        //if ('Ht' == $this->getShortClass()) dump($this);
+        return $ret;
     }
 
 

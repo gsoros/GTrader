@@ -17,10 +17,58 @@ class Signals extends HasInputs
 
     public function init()
     {
-        if ($strategy_id = $this->getParam('indicator.strategy_id')) {
-            //dump('Signals::init() strategy_id = '.$strategy_id);
-        }
+        $this->setParam(
+            'indicator.strategy_id',
+            intval($this->getParam('indicator.strategy_id'))
+        );
         return parent::init();
+    }
+
+    public function createDependencies()
+    {
+        $this->copyParamsFromStrategy();
+        return parent::createDependencies();
+    }
+
+    protected function copyParamsFromStrategy()
+    {
+        // Custom Settings
+        if (0 == ($strategy_id = $this->getParam('indicator.strategy_id'))) {
+            return $this;
+        }
+
+        if (!$owner = $this->getOwner()) {
+            error_log('Signals::calculate() could not get owner');
+            return $this;
+        }
+        // Get Strategy from Parent
+        if (0 > $strategy_id) {
+            if (!$strategy = $owner->getStrategy()) {
+                error_log('Signals::calculate() could not get strat from owner');
+                return $this;
+            }
+        }
+        // Selected Strategy
+        else {
+            if (!$strategy = Strategy::load($strategy_id)) {
+                error_log('Signals::calculate() could not load strategy');
+                return $this;
+            }
+        }
+        if (!$i = $strategy->getSignalsIndicator()) {
+            error_log('Signals::calculate() could not load signals ind from strat');
+            return $this;
+        }
+        // Copy params from strategy's signal ind
+        $this->setParam('indicator', $i->getParam('indicator'));
+        //dump('Signals::copyParamsFromStrategy() this: '.$this->debugObjId().' from strat: '.$i->debugObjId());
+        // Except for strat_id
+        $this->setParam('indicator.strategy_id', $strategy_id);
+        // remove strategy's signal ind
+        if ($i !== $this) {
+            $owner->unsetIndicator($i);
+        }
+        return $this;
     }
 
     public function getForm(array $params = [])
@@ -47,18 +95,65 @@ class Signals extends HasInputs
         return null;
     }
 
+    public function getSignature(string $output = null)
+    {
+        // Custom Settings
+        if (0 == ($strategy_id = $this->getParam('indicator.strategy_id'))) {
+            return parent::getSignature($output);
+        }
+        if (!$output) {
+            $output = $this->getOutputs()[0];
+        }
+        $a = [
+            'class' => $this->getShortClass(),
+            'params' => [
+                'strategy_id' => $strategy_id,
+            ],
+            'output' => $output,
+        ];
+        /*
+        // Selected Strategy
+        if (0 < $strategy_id) {
+            return json_encode($a);
+        }
+        // Get Strategy from Parent
+        if (!$owner = $this->getOwner()) {
+            error_log('Signals::getSignature() could not get owner');
+            return json_encode($a);
+        }
+        if (!$strategy = $owner->getStrategy()) {
+            //error_log('Signals::getSignature() could not get strategy from owner');
+            //dd('Signals::getSignature() could not get strategy from owner:', $this, $owner);
+            return json_encode($a);
+        }
+        $a['params']['strategy_id'] = $strategy->getParam('id');
+        */
+        return json_encode($a);
+    }
+
     public function getDisplaySignature(string $format = 'long', string $output = null)
     {
         $name = parent::getDisplaySignature('short');
         if ('short' === $format) {
             return $name;
         }
-        if (!$strategy_id = $this->getParam('indicator.strategy_id')) {
+        // Get Strategy from Parent
+        if (0 > ($strategy_id = $this->getParam('indicator.strategy_id'))) {
+            $strat_name = 'No Strategy';
+            if ($owner = $this->getOwner()) {
+                if ($strategy = $owner->getStrategy()) {
+                    $strat_name = $strategy->getParam('name', 'No Strategy');
+                }
+            }
+            return $name.' (Auto: '.$strat_name.')';
+        }
+        // Custom Settings
+        if (0 == ($strategy_id = $this->getParam('indicator.strategy_id'))) {
             return ($param_str = $this->getParamString(['strategy_id'])) ?
                 $name.' ('.$param_str.')' :
                 $name;
         }
-
+        // Selected Strategy
         $strategy_name = Strategy::statCached('id_'.$strategy_id.'_name');
         if (!$strategy_name) {
             if ($strategy = Strategy::statCached('id_'.$strategy_id)) {
@@ -66,38 +161,24 @@ class Signals extends HasInputs
             }
         }
         if (!$strategy_name) {
-            if ($strategy_name = DB::table('strategies')
+            if ($strategy = DB::table('strategies')
                     ->select('name')
                     ->where('id', $strategy_id)
                     ->where('user_id', Auth::id())
-                    ->first()
-                    ->name) {
-                Strategy::statCache('id_'.$strategy_id.'_name', $strategy_name);
-            } else {
-                $strategy_name = 'Unknown Strategy';
+                    ->first()) {
+                if ($strategy_name = $strategy->name) {
+                    Strategy::statCache('id_'.$strategy_id.'_name', $strategy_name);
+                }
             }
         }
-        return $name.' ('.$strategy_name.')';
+        return $name.' ('.($strategy_name ? $strategy_name : 'No Strategy').')';
     }
 
     public function calculate(bool $force_rerun = false)
     {
-        if ($strategy_id = $this->getParam('indicator.strategy_id')) {
-            //dump('Signals::calculate() strategy_id = '.$strategy_id);
-            if (!$strategy = Strategy::load($strategy_id)) {
-                error_log('Signals::calculate() could not load strategy');
-                return $this;
-            }
-            if (!$i = $strategy->getSignalsIndicator()) {
-                error_log('Signals::calculate() could not load signals ind from strat');
-                return $this;
-            }
-            $this->setParam('indicator', $i->getParam('indicator'));
-            $this->setParam('indicator.strategy_id', $strategy_id);
-        }
-
+        //dump('Signals::calculate() 1 '.$this->debugObjId());
+        $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);
-
         $candles = $this->getCandles();
 
         $output_keys = [
@@ -144,7 +225,7 @@ class Signals extends HasInputs
                     !isset($candle->{$input_keys['input_'.$signal.'_source']})) {
                     error_log('Signals::calculate() missing input');
                     //dd($this);
-                    continue;
+                    return $this;
                 }
                 if ($this->conditionMet(
                         $candle->{$input_keys['input_'.$signal.'_a']},

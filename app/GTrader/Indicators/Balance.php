@@ -17,8 +17,10 @@ class Balance extends HasInputs
     public function createDependencies()
     {
         if (!$this->getParam('indicator.input_signal')) {
-            if (!$s = $this->getOwner()->getOrAddIndicator('Signals')) {
-                return $this;
+            if (!$s = $this->getOwner()->getFirstIndicatorByClass('Signals')) {
+                if (!$s = $this->getOwner()->getOrAddIndicator('Signals')) {
+                    return $this;
+                }
             }
             $s->addRef($this);
             $this->setParam('indicator.input_signal', $s->getSignature());

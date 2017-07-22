@@ -18,7 +18,7 @@ class Strategy
     public function setCandles(Series $candles)
     {
         $this->__hasCandlesSetCandles($candles);
-        $candles->setStrategy($this);
+        //$candles->setStrategy($this);
         return $this;
     }
 
@@ -30,9 +30,9 @@ class Strategy
             return $strategy;
         }
         $query = DB::table('strategies')
-                    ->select('user_id', 'name', 'strategy')
-                    ->where('id', $id)
-                    ->first();
+            ->select('user_id', 'name', 'strategy')
+            ->where('id', $id)
+            ->first();
         if (!is_object($query)) {
             return null;
         }
@@ -44,6 +44,11 @@ class Strategy
         return $strategy;
     }
 
+
+    public function __sleep()
+    {
+        return ['params', 'indicators'];
+    }
 
     public function __wakeup()
     {
@@ -111,13 +116,14 @@ class Strategy
     public function viewIndicatorsList(Request $request = null)
     {
         $format = $this->formatFromRequest($request);
+        $indicators = $this->getIndicatorsFilteredSorted(
+            ['display.visible' => true],
+            ['display.name']
+        );
         return view(
             'Indicators/List', [
                 'owner' => $this,
-                'indicators' => $this->getIndicatorsFilteredSorted(
-                    ['display.visible' => true],
-                    ['display.name']
-                ),
+                'indicators' => $indicators,
                 'available' => $this->getIndicatorsAvailable(),
                 'name' => 'strategy_'.$this->getParam('id'),
                 'owner_class' => 'Strategy',
@@ -161,6 +167,9 @@ class Strategy
 
     public static function getStrategiesOfUser(int $user_id)
     {
+        if ($s = static::statCached('strategies_of_user_'.$user_id)) {
+            return $s;
+        }
         $strategies = DB::table('strategies')
             ->select('id', 'name')
             ->where('user_id', $user_id)
@@ -170,6 +179,7 @@ class Strategy
         foreach ($strategies as $strategy) {
             $ret[$strategy->id] = $strategy->name;
         }
+        static::statCache('strategies_of_user_'.$user_id, $ret);
         return $ret;
     }
 

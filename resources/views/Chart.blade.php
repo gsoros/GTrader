@@ -7,14 +7,14 @@
     {!! $content !!}
 </div>
 <script>
-    window.{{ $name }} = {!! $JSON !!};
-    if (window.GTrader)
-        window.GTrader.registerChart('{{ $name }}');
-    else {
-        $(function() {
-            window.GTrader.registerChart('{{ $name }}');
+    $(function() {
+        window.GTrader = $.extend(true, window.GTrader, {
+            charts: {
+                {{ $name }}: {!! $JSON !!}
+            }
         });
-    }
+        window.GTrader.registerChart('{{ $name }}');
+    });
 </script>
 <div class="container-fluid">
     <div class="row">
@@ -53,13 +53,9 @@
                             class="btn-primary btn btn-mini"
                             id="strategy_select_{{ $name }}"></select>
                     <script>
-                        if (window.GTrader)
+                        $(function() {
                             window.GTrader.registerStrategySelector('{{ $name }}');
-                        else {
-                            $(function() {
-                                window.GTrader.registerStrategySelector('{{ $name }}');
-                            });
-                        }
+                        });
                     </script>
                 @endif
 

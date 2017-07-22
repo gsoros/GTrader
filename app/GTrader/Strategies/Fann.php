@@ -37,13 +37,15 @@ class Fann extends Strategy
         $this->setParam('inputs', [
             $ohlc->getSignature('open'),
         ]);
+        $ohlc->addRef('root');
+        //dump($this->getIndicators());
     }
 
 
     public function __sleep()
     {
         $this->destroyFann();
-        return ['params', 'candles', 'indicators'];
+        return ['params', 'indicators'];
     }
 
     public function __wakeup()
@@ -140,7 +142,8 @@ class Fann extends Strategy
         }
 
         if (!$chart->hasIndicatorClass('Balance')) {
-            $ind = $chart->addIndicator('Balance');
+            $ind = $chart->addIndicator('Balance', [
+            ]);
             $ind->setParam('display.visible', true);
             $ind->addRef('root');
             $this->save();
@@ -148,8 +151,12 @@ class Fann extends Strategy
         $ind = $chart->getFirstIndicatorByClass('Balance');
         $ind->setParam('display.visible', true);
 
+        $signal_sig = $this->getSignalsIndicator()->getSignature();
         if (!$chart->hasIndicatorClass('Profitability')) {
-            $ind = $chart->addIndicator('Profitability');
+            $ind = $chart->addIndicator('Profitability', [
+                'input_signal' => $signal_sig,
+            ]);
+            $ind->setParam('display.visible', true);
             $ind->addRef('root');
             $this->save();
         }
@@ -719,7 +726,7 @@ class Fann extends Strategy
         $inputs = $this->getParam('inputs', []);
         $candles = $this->getCandles();
         foreach ($inputs as $sig) {
-            //dump('Fann::runInputIndicators() sig: '.$sig);
+            //dump('Fann::runInputIndicators() sig: '.$sig); flush();
             if (! $indicator = $candles->getOrAddIndicator($sig)) {
                 //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
                 continue;
@@ -826,12 +833,12 @@ class Fann extends Strategy
                 foreach ($group as $sig => $params) {
 
                     $key = $this->getCandles()->key($sig);
-                    if (!isset($sample[$i]->$key)) {
-                        error_log('Fann::sample2io() key not set for '.$sig);
-                        //dd($this);
-                        continue;
+                    if (isset($sample[$i]->$key)) {
+                        $value = floatval($sample[$i]->$key);
+                    } else {
+                        error_log('Fann::sample2io() value not set for key:'.$key.' sig:'.$sig);
+                        $value = 0;
                     }
-                    $value = floatval($sample[$i]->$key);
 
                     if ($i == $out_sample_size - 1) {
                         // for the last input candle, we only include fields which are based on "open",
@@ -1177,10 +1184,10 @@ class Fann extends Strategy
         $pred = $candles->getOrAddIndicator(
             $this->getParam('prediction_indicator_class')
         );
+        $pred->setStrategy($this);
         $pred->addRef('root');
 
-        $ema_len = $this->getParam('prediction_ema');
-        if ($ema_len > 1) {
+        if (1 < ($ema_len = $this->getParam('prediction_ema'))) {
             $ema = $candles->getOrAddIndicator('Ema', [
                 'indicator' => [
                     'input_source' => $pred->getSignature($pred->getOutput()),
@@ -1229,6 +1236,7 @@ class Fann extends Strategy
         ]);
 
         if (!$signals = $candles->getOrAddIndicator('Signals', [
+                'strategy_id' => 0, // Custom Settings
                 'input_long_a' => $long_ind->getSignature(),
                 'long_cond' => '<',
                 'input_long_b' => $pred_sig,

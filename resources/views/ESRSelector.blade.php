@@ -11,11 +11,7 @@
         id="resolution_{{ $name }}"
         name="resolution_{{ $name }}"></select>
 <script>
-    if (window.GTrader)
+    $(function() {
         window.GTrader.registerESR('{{ $name }}');
-    else {
-        $(function() {
-            window.GTrader.registerESR('{{ $name }}');
-        });
-    }
+    });
 </script>

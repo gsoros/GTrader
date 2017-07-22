@@ -342,7 +342,8 @@ class PHPlot extends Chart
     // Signals, Ohlc or Vol
     protected function mode_linepoints(array &$item)
     {
-        if (stristr($item['class'], 'Signals')) {
+        //dump($item);
+        if (strstr($item['class'], 'Signals')) {
             $item['num_outputs'] = 2;
             $this->colors = ['#ff000010', '#00ff0050'];
             $this->_plot->SetYDataLabelType('data', 2);         // precision
@@ -711,9 +712,9 @@ class PHPlot extends Chart
         if ($this->getCandles()->getParam('end')) {
             return null;
         }
-        $refresh = "<script>window.waitForFinalEvent(function () {window.".
+        $refresh = "<script>window.GTrader.waitForFinalEvent(function () {window.GTrader.charts.".
             $this->getParam('name').".refresh()}, ".
-            ($refresh * 1000).", 'refresh".
+            ($refresh * 1000).", 'refresh_".
             $this->getParam('name')."');";
         if ($this->last_close) {
             $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.

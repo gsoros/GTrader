@@ -30,7 +30,7 @@ abstract class Chart extends Plot
         if ($candles = $this->getCandles()) {
             if ($strategy = $this->getStrategy()) {
                 if ($candles !== $strategy->getCandles()) {
-                    error_log('Chart->getCandles !== $strategy->getCandles()');
+                    error_log('Chart->getCandles() !== $strategy->getCandles()');
                     $strategy->setCandles($candles);
                 }
             }
@@ -78,7 +78,7 @@ abstract class Chart extends Plot
     }
 
 
-    public function setStrategy(Strategy &$strategy)
+    public function setStrategy(Strategy $strategy)
     {
         $candles = $this->getCandles();
         $strategy->setCandles($candles);
@@ -273,7 +273,14 @@ abstract class Chart extends Plot
         );
         Page::add(
             'scripts_top',
-            '<script> window.ESR = '.json_encode(Exchange::getESR()).'; </script>'
+            '<script>
+                $(function() {
+                    if (!window.GTrader) {
+                        window.GTrader = {};
+                    }
+                    window.GTrader.ESR = '.json_encode(Exchange::getESR()).';
+                });
+            </script>'
         );
         //Page::add('scripts_top',
         //            '<script> window.'.$this->getParam('name').' = '.$this->toJSON().'; </script>');

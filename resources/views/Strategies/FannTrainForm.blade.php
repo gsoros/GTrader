@@ -125,7 +125,7 @@
                                 'strategy',
                                 'trainStart',
                                 $.extend(
-                                    window.trainingChart.getSelectedESR(),
+                                    window.GTrader.charts.trainingChart.getSelectedESR(),
                                     {
                                         id: {{ $strategy->getParam('id') }},
                                         train_start_percent: train_slider.noUiSlider.get()[0],

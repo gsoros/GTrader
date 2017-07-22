@@ -17,8 +17,10 @@ class FannPrediction extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
-        $candles = $this->getCandles();
-
+        if (!$candles = $this->getCandles()) {
+            error_log('FannPrediction::calculate() no candles');
+            return $this;
+        }
         $key = $candles->key($this->getSignature());
 
         if (!$strategy = $this->getStrategy()) {
@@ -32,6 +34,7 @@ class FannPrediction extends Indicator
 
         $sample_size = $strategy->getSampleSize();
 
+        $strategy->setCandles($candles);
         $strategy->runInputIndicators($force_rerun);
 
         $prediction = [];
