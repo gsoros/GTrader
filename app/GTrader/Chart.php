@@ -275,10 +275,9 @@ abstract class Chart extends Plot
             'scripts_top',
             '<script>
                 $(function() {
-                    if (!window.GTrader) {
-                        window.GTrader = {};
-                    }
-                    window.GTrader.ESR = '.json_encode(Exchange::getESR()).';
+                    window.GTrader = $.extend(true, window.GTrader, {
+                      ESR: '.json_encode(Exchange::getESR()).'
+                    });
                 });
             </script>'
         );
