@@ -4,7 +4,6 @@ namespace GTrader\Indicators;
 
 class Pass extends HasInputs
 {
-
     protected function getInputIndicator($signature)
     {
         return $this->getOwner()->getOrAddIndicator($signature);
@@ -64,8 +63,7 @@ class Pass extends HasInputs
         $except = ['mode'];
         if ('high' === $mode) {
             $except[] = 'input_lowRef';
-        }
-        elseif ('low' === $mode) {
+        } elseif ('low' === $mode) {
             $except[] = 'input_highRef';
         }
         return ($param_str = $this->getParamString($except)) ? $name.' ('.$param_str.')' : $name;
@@ -145,14 +143,12 @@ class Pass extends HasInputs
                 if (!is_null($candle->$high_ref)) {
                     $val = $this->pass($mode, $val, $candle->$high_ref, $inc);
                 }
-            }
-            else if ('low' === $mode) {
+            } elseif ('low' === $mode) {
                 //error_log('IS: '.$input.' V: '.$val.' LR: '.$candle->$low_ref); continue;
                 if (!is_null($candle->$low_ref)) {
                     $val = $this->pass($mode, $val, $candle->$low_ref, $inc);
                 }
-            }
-            else if ('band' === $mode) {
+            } elseif ('band' === $mode) {
                 if (is_null($candle->$high_ref) || is_null($candle->$low_ref)) {
                     continue;
                 }

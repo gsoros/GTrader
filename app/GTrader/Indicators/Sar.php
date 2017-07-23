@@ -7,7 +7,6 @@ use GTrader\Series;
 /** Parabolic Stop And Reverse */
 class Sar extends Trader
 {
-
     public function getInputs()
     {
         // Trick fann to include this indicator in the most recent candle
@@ -45,7 +44,6 @@ class Sar extends Trader
     protected function getLookBack()
     {
         return 1 < ($lookback = intval($this->getParam('indicator.simulationLookback'))) ? $lookback : false;
-
     }
 
     // Simulate real-time usage considering only the open price of the latest input
@@ -62,7 +60,6 @@ class Sar extends Trader
         $ocml = $open_count - $lookback;
 
         for ($i = 0; $i < $ocml; $i++) {
-
             $high = array_slice($values['high'], $i, $lookback);
             array_push($high, $values['open'][$i + $lookback]);
 

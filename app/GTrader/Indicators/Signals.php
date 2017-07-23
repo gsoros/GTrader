@@ -8,7 +8,6 @@ use GTrader\Strategy;
 
 class Signals extends HasInputs
 {
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);
@@ -74,7 +73,8 @@ class Signals extends HasInputs
     public function getForm(array $params = [])
     {
         if ($user_id = Auth::id()) {
-            $this->setParam('adjustable.strategy_id.options',
+            $this->setParam(
+                'adjustable.strategy_id.options',
                 array_replace(
                     $this->getParam('adjustable.strategy_id.options'),
                     Strategy::getStrategiesOfUser($user_id)

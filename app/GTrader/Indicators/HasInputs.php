@@ -7,7 +7,6 @@ use GTrader\Indicator;
 
 abstract class HasInputs extends Indicator
 {
-
     public function init()
     {
         if (!$owner = $this->getOwner()) {
@@ -163,5 +162,4 @@ abstract class HasInputs extends Indicator
         //dd($out);
         return $out;
     }
-
 }

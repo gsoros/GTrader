@@ -43,7 +43,6 @@ class FannPrediction extends Indicator
 
         $strategy->resetSample();
         while ($sample = $strategy->nextSample($sample_size)) {
-
             $input = $strategy->sample2io($sample, true);
 
             $norm_input = $strategy->normalizeInput($input);

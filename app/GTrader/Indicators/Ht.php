@@ -49,7 +49,7 @@ class Ht extends Trader
                 if ($input = $this->getInput($ypos)) {
                     if ($this->inputFrom(['open', 'high', 'low', 'close'])) {
                         $ypos = 'left';
-                    } else if ($this->inputFrom(['volume'])) {
+                    } elseif ($this->inputFrom(['volume'])) {
                         $ypos = 'right';
                     }
                 }
@@ -64,7 +64,7 @@ class Ht extends Trader
                     $sig = $this->getInput($norm);
                     if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                         $this->setParam('normalize', ['mode' => 'ohlc']);
-                    } else if ($owner = $this->getOwner()) {
+                    } elseif ($owner = $this->getOwner()) {
                         if ($ind = $owner->getOrAddIndicator($sig)) {
                             $this->setParam('normalize', $ind->getParam('normalize'));
                         }
@@ -144,6 +144,4 @@ class Ht extends Trader
         //dd($this->getParams());
         return 1 < count($this->getOutputs()) ? $values : [$values];
     }
-
-
 }

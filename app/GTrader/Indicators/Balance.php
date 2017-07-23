@@ -61,7 +61,8 @@ class Balance extends HasInputs
         }
 
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
-            $this->getParam('indicator.input_signal')))) {
+            $this->getParam('indicator.input_signal')
+        ))) {
             error_log('Balance::calculate() signal indicator not found.');
             return $this;
         }

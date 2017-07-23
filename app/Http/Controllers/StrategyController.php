@@ -128,7 +128,7 @@ class StrategyController extends Controller
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
             ->where(function ($query) {
-                    $query->where('status', 'training')
+                $query->where('status', 'training')
                         ->orWhere('status', 'paused');
             })
             ->first();
@@ -230,7 +230,7 @@ class StrategyController extends Controller
         $options = [];
         foreach (['train', 'test', 'verify'] as $item) {
             $options[$item.'_start'] = floor($epoch + $total / 100 * ${$item.'_start_percent'});
-            $options[$item.'_end']   = ceil( $epoch + $total / 100 * ${$item.'_end_percent'});
+            $options[$item.'_end']   = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
         }
 
         $options['crosstrain'] = 0;
@@ -269,7 +269,8 @@ class StrategyController extends Controller
                 'exchange' => $exchange,
                 'symbol' => $symbol,
                 'resolution' => $resolution,
-            ], $options))
+            ], $options)
+        )
             ->save();
 
         $training = FannTraining::firstOrNew([
@@ -329,9 +330,9 @@ class StrategyController extends Controller
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
                          ->where(function ($query) {
-                                $query->where('status', 'training')
+                             $query->where('status', 'training')
                                     ->orWhere('status', 'paused');
-                        })
+                         })
                         ->first();
         if (is_object($training)) {
             //$training->status = 'stopped';

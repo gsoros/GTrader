@@ -16,7 +16,6 @@ use GTrader\Strategy;
 use GTrader\Util;
 use GTrader\Bot;
 
-
 class HomeController extends Controller
 {
     /**
@@ -145,40 +144,40 @@ class HomeController extends Controller
             //dump($i->getRefs());
         }
         exit;
-/*
-        $t0 = time();
-        $m0 = memory_get_usage();
-        $candlesOl = new Series([
-            'start' => 1,
-            'end' => $t0,
-            'limit' => 0,
-            'resolution' => 300,
-        ]);
+        /*
+                $t0 = time();
+                $m0 = memory_get_usage();
+                $candlesOl = new Series([
+                    'start' => 1,
+                    'end' => $t0,
+                    'limit' => 0,
+                    'resolution' => 300,
+                ]);
 
-        $candlesOl->reset();
-        dump($candlesOl->next());
-        echo 'CandlesOl: '.$candlesOl->size().
-            ' Mem: '.Util::humanBytes(memory_get_usage() - $m0).
-            ' Time: '.(time() - $t0).'s';
-        //dump($candlesOl->getParams());
-*/
-/*
-        DB::listen(function ($query) {
+                $candlesOl->reset();
+                dump($candlesOl->next());
+                echo 'CandlesOl: '.$candlesOl->size().
+                    ' Mem: '.Util::humanBytes(memory_get_usage() - $m0).
+                    ' Time: '.(time() - $t0).'s';
+                //dump($candlesOl->getParams());
+        */
+        /*
+                DB::listen(function ($query) {
 
-            $replace = function ($sql, $bindings) {
-                $needle = '?';
-                foreach ($bindings as $replace) {
-                    $pos = strpos($sql, $needle);
-                    if ($pos !== false) {
-                        $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
-                    }
-                }
-                return $sql;
-            };
-            $sql = $replace($query->sql, $query->bindings);
-            dump($sql);
-        });
-*/
+                    $replace = function ($sql, $bindings) {
+                        $needle = '?';
+                        foreach ($bindings as $replace) {
+                            $pos = strpos($sql, $needle);
+                            if ($pos !== false) {
+                                $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
+                            }
+                        }
+                        return $sql;
+                    };
+                    $sql = $replace($query->sql, $query->bindings);
+                    dump($sql);
+                });
+        */
 
         $t1 = time();
         $m1 = memory_get_usage();

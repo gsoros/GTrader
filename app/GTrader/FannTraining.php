@@ -68,7 +68,6 @@ class FannTraining extends Model
         */
 
         while ($this->shouldRun()) {
-
             $this->swapIfCrossTraining()
                 ->resetIfNoImprovement()
                 ->increaseEpoch()
@@ -84,7 +83,6 @@ class FannTraining extends Model
                 ->setProgress('no_improvement', $this->getProgress('no_improvement') + 1);
 
             if ($this->acceptable('test', 10)) {
-
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
@@ -93,7 +91,6 @@ class FannTraining extends Model
                     $this->brake(50);
                 }
                 if ($this->acceptable('verify')) {
-
                     $this->setProgress('test_max', $test)
                         ->setProgress('verify_max', $verify)
                         ->setProgress('last_improvement_epoch', $this->getProgress('epoch'))
@@ -345,7 +342,6 @@ class FannTraining extends Model
             $this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) ||
             $current_epoch >= $last_epoch + $this->options['crosstrain'] * 10) {
-
             error_log('*** Swap ***');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
 
@@ -385,7 +381,6 @@ class FannTraining extends Model
 
             // Save fann for reverting
             $this->saved_fann = $this->getStrategy('train')->copyFann();
-
         }
         return $this;
     }
@@ -533,5 +528,4 @@ class FannTraining extends Model
         error_log('Memory used: '.Util::getMemoryUsage());
         return $this;
     }
-
 }

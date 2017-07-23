@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Rate of change */
 class Roc extends Trader
 {
-
     public function traderCalc(array $values)
     {
         if (! $values = trader_roc($values[$this->getInput()])) {

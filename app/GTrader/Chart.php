@@ -124,7 +124,8 @@ abstract class Chart extends Plot
                 ->first();
 
         if (is_object($query)) {
-            $chart = unserialize($query->chart);;
+            $chart = unserialize($query->chart);
+            ;
             return $chart;
         }
     }

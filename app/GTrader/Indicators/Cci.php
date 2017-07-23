@@ -4,7 +4,6 @@ namespace GTrader\Indicators;
 
 class Cci extends Trader
 {
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_cci(

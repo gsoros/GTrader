@@ -45,7 +45,6 @@ class Operator extends HasInputs
 
         $candles->reset();
         while ($candle = $candles->next()) {
-
             $val = null;
             if (isset($candle->$key_a) && isset($candle->$key_b)) {
                 $val = $this->operate(

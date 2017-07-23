@@ -1,9 +1,8 @@
 <?php
 
-Namespace GTrader;
+namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
-
 
 abstract class Exchange
 {
@@ -194,10 +193,11 @@ abstract class Exchange
         return $esr;
     }
 
-    public static function getESRReadonly(  string $exchange,
+    public static function getESRReadonly(
+        string $exchange,
                                             string $symbol,
-                                            int $resolution)
-    {
+                                            int $resolution
+    ) {
         //error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
         //return '';
         try {

@@ -9,8 +9,8 @@ use Validator;
 
 class ChangePasswordController extends Controller
 {
-
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware('auth');
     }
 
@@ -27,7 +27,7 @@ class ChangePasswordController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        $validator->after(function($validator) use ($request) {
+        $validator->after(function ($validator) use ($request) {
             if (! Hash::check($request->password, $request->user()->password)) {
                 $validator->errors()->add('password', 'Incorrect password.');
             }

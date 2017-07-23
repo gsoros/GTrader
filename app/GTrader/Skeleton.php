@@ -20,7 +20,6 @@
 
 namespace GTrader;
 
-
 trait Skeleton
 {
     use HasParams, HasStatCache, ClassUtils;
@@ -47,7 +46,6 @@ trait Skeleton
             if (!$class) {
                 $class = $called;
             }
-
         }
         if ($class !== $called) {
             $class = __NAMESPACE__.'\\'

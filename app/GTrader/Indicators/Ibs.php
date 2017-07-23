@@ -7,7 +7,6 @@ use \GTrader\Indicator;
 /** Internal Bar Strength */
 class Ibs extends Indicator
 {
-
     public function calculate(bool $force_rerun = false)
     {
         if (!($candles = $this->getCandles())) {
@@ -16,7 +15,6 @@ class Ibs extends Indicator
         $key = $candles->key($this->getSignature());
         $candles->reset();
         while ($candle = $candles->next()) {
-
             $candle->$key =
                 0 == ($div = $candle->high - $candle->low) ?
                 .5 :

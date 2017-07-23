@@ -11,7 +11,6 @@ if (!extension_loaded('trader')) {
 /** Indicators using the Trader PHP extension */
 abstract class Trader extends HasInputs
 {
-
     public function __construct(array $params = [])
     {
         trader_set_unstable_period(TRADER_FUNC_UNST_ALL, 0);
@@ -56,5 +55,5 @@ abstract class Trader extends HasInputs
         return $this;
     }
 
-    abstract function traderCalc(array $values);
+    abstract public function traderCalc(array $values);
 }

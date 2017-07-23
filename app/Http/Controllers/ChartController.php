@@ -148,5 +148,4 @@ class ChartController extends Controller
         }
         return response('OK', 200);
     }
-
 }

@@ -259,7 +259,7 @@ class Fann extends Strategy
                 $label .= $suffix;
             }
             //if () {
-                //$display = ['y-axis' => 'right'];
+            //$display = ['y-axis' => 'right'];
             //}
             $data[$label] = ['display' => $display, 'values' => $values];
         }
@@ -758,12 +758,10 @@ class Fann extends Strategy
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
                 //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
                 $norm_mode = 'ohlc';
-            }
-            elseif ('volume' === $sig) {
+            } elseif ('volume' === $sig) {
                 $norm_mode = 'individual';
                 $norm_params['to'] = 0;
-            }
-            elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig)) {
+            } elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig)) {
                 error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
                 continue;
             }
@@ -783,12 +781,10 @@ class Fann extends Strategy
             if ('individual' === $norm_mode) {
                 $groups['individual'][$sig]['normalize_to'] = $norm_params['to'];
                 continue;
-            }
-            else if ('ohlc' === $norm_mode) {
+            } elseif ('ohlc' === $norm_mode) {
                 $groups['ohlc'][$sig] = true;
                 continue;
-            }
-            else if ('range' === $norm_mode) {
+            } elseif ('range' === $norm_mode) {
                 if (is_null($min = $norm_params['range']['min']) ||
                     is_null($max = $norm_params['range']['max'])) {
                     error_log('Fann::getInputGroups() min or max range not set for '.$sig);
@@ -806,8 +802,8 @@ class Fann extends Strategy
     }
 
 
-    public function sample2io(array $sample, bool $input_only = false) {
-
+    public function sample2io(array $sample, bool $input_only = false)
+    {
         $groups = $this->getInputGroups();
         //error_log('Fann::sample2io() inputs: '.json_encode($this->getParam('inputs'))); exit;
 
@@ -831,7 +827,6 @@ class Fann extends Strategy
                 //error_log('sample2io() group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
-
                     $key = $this->getCandles()->key($sig);
                     if (isset($sample[$i]->$key)) {
                         $value = floatval($sample[$i]->$key);
@@ -937,7 +932,6 @@ class Fann extends Strategy
 
     public function candlesToData(string $name, bool $force_rerun = false)
     {
-
         if (isset($this->_data[$name]) && !$force_rerun) {
             return true;
         }
@@ -1069,7 +1063,6 @@ class Fann extends Strategy
 
     public function createCallback($num_data, $num_input, $num_output)
     {
-
         if (!$this->_callback_type) {
             throw new \Exception('callback type not set');
         }
@@ -1252,6 +1245,5 @@ class Fann extends Strategy
         $signals->addRef('root');
         $this->cache('signals_indicator', $signals);
         return $signals;
-
     }
 }

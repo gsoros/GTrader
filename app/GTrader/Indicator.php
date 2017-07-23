@@ -41,38 +41,38 @@ abstract class Indicator //implements \JsonSerializable
         $this->refs = [];
     }
 
-/*
-    public function __sleep()
-    {
-        //dump('Indicator::__sleep()', $this);
-        $this->sleepingbag = $this->getParam('indicator');
-        return ['sleepingbag', 'owner', 'refs'];
-        //return [];
-    }
+    /*
+        public function __sleep()
+        {
+            //dump('Indicator::__sleep()', $this);
+            $this->sleepingbag = $this->getParam('indicator');
+            return ['sleepingbag', 'owner', 'refs'];
+            //return [];
+        }
 
+        public function __wakeup()
+        {
+            //dump('Indicator::__wakeup()', $this);
+
+            self::loadConfRecursive(get_class($this));
+            $this->setParam('indicator', $this->sleepingbag);
+            $this->calculated = false;
+        }
+    */
     public function __wakeup()
     {
-        //dump('Indicator::__wakeup()', $this);
-
-        self::loadConfRecursive(get_class($this));
-        $this->setParam('indicator', $this->sleepingbag);
         $this->calculated = false;
     }
-*/
-    public function __wakeup()
-    {
-        $this->calculated = false;
-    }
-/*
-    public function jsonSerialize()
-    {
-        //return get_object_vars($this);
-        return [
-            'class' => get_class($this),
-            'params' => $this->getParam('indicator'),
-        ];
-    }
-*/
+    /*
+        public function jsonSerialize()
+        {
+            //return get_object_vars($this);
+            return [
+                'class' => get_class($this),
+                'params' => $this->getParam('indicator'),
+            ];
+        }
+    */
 
 
     abstract public function calculate(bool $force_rerun = false);
@@ -86,11 +86,9 @@ abstract class Indicator //implements \JsonSerializable
         if (is_object($ind_or_sig)) {
             if (method_exists($ind_or_sig, 'getSignature')) {
                 $sig = $ind_or_sig->getSignature();
-            }
-            else if (method_exists($ind_or_sig, 'getShortClass')) {
+            } elseif (method_exists($ind_or_sig, 'getShortClass')) {
                 $sig = $ind_or_sig->getShortClass();
-            }
-            else {
+            } else {
                 $sig = get_class($ind_or_sig);
             }
         }
@@ -174,8 +172,7 @@ abstract class Indicator //implements \JsonSerializable
             }
             if ('string' === $type) {
                 $value = strval($value);
-            }
-            else if ('source' === $type) {
+            } elseif ('source' === $type) {
                 if (!in_array($value, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
                     if (!is_array($value)) {
                         $value = self::decodeSignature($value);
@@ -281,7 +278,7 @@ abstract class Indicator //implements \JsonSerializable
         }
         $params = array_filter(
             $params,
-            function($k) use ($except_keys) {
+            function ($k) use ($except_keys) {
                 return false === array_search($k, $except_keys);
             },
             ARRAY_FILTER_USE_KEY
@@ -313,8 +310,7 @@ abstract class Indicator //implements \JsonSerializable
                                 $output = '';
                                 if (is_array($sig)) {
                                     $output = Arr::get($sig, 'output');
-                                }
-                                else {
+                                } else {
                                     $output = Indicator::getOutputFromSignature($sig);
                                 }
                                 $param_str .= $delimiter.$indicator->getDisplaySignature(
@@ -390,7 +386,8 @@ abstract class Indicator //implements \JsonSerializable
 
     public function getForm(array $params = [])
     {
-        return view('Indicators/Form',
+        return view(
+            'Indicators/Form',
             array_merge($params, ['indicator' => $this])
         );
     }
@@ -451,8 +448,7 @@ abstract class Indicator //implements \JsonSerializable
         $inputs = $this->getInputs();
         if (in_array('volume', $inputs)) {
             $this->setParam('display.y-axis', 'right');
-        }
-        else if (!$this->inputFromIndicator() &&
+        } elseif (!$this->inputFromIndicator() &&
             count(array_intersect(['open', 'high', 'low', 'close'], $inputs))) {
             $this->setParam('display.y-axis', 'left');
             return $this;
@@ -474,7 +470,6 @@ abstract class Indicator //implements \JsonSerializable
 
     public static function signatureSame(string $sig_a, string $sig_b)
     {
-
         if (($ca = self::getClassFromSignature($sig_a))
             !== ($cb = self::getClassFromSignature($sig_b))) {
             //error_log('signatureSame() '.$ca.' != '.$cb);
@@ -524,8 +519,8 @@ abstract class Indicator //implements \JsonSerializable
     public function getOutputArray(
         string $index_type = 'sequential',
         bool $respect_padding = false,
-        int $density_cutoff = null)
-    {
+        int $density_cutoff = null
+    ) {
         if (!$candles = $this->getCandles()) {
             error_log('Indicator::getOutputArray() could not get candles');
             return [];
@@ -533,7 +528,6 @@ abstract class Indicator //implements \JsonSerializable
         $this->checkAndRun();
         $r = null;
         foreach ($this->getOutputs() as $output) {
-
             $arr = $candles->extract(
                 $this->getSignature($output),
                 $index_type,

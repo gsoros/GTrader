@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Moving Average */
 class Ma extends Trader
 {
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);

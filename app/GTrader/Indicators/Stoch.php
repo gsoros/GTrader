@@ -7,7 +7,6 @@ use GTrader\Series;
 /** Stochastic Oscillator */
 class Stoch extends Trader
 {
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);

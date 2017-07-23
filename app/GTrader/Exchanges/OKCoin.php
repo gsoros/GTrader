@@ -7,7 +7,6 @@ use GTrader\Trade;
 
 class OKCoin extends Exchange
 {
-
     public function saveFilledOrders(string $symbol, int $bot_id = null)
     {
         $order_types = $this->getParam('order_types');
@@ -52,7 +51,6 @@ class OKCoin extends Exchange
 
     public function cancelUnfilledOrders(string $symbol, int $before_timestamp)
     {
-
         $orders = $this->getOrderHistory($symbol, 'unfilled');
 
         if (!is_object($orders)) {
@@ -81,7 +79,6 @@ class OKCoin extends Exchange
         float $price,
         int $bot_id = null
     ) {
-
         if (!($symbol_arr = $this->getParam('symbols.'.$symbol))) {
             throw new \Exception('Symbol config not found for '.$symbol);
         }
@@ -139,7 +136,7 @@ class OKCoin extends Exchange
             // open long position
             if ($long_contracts_open < $position_contracts
                                     && $position_contracts - $long_contracts_open > 0) {
-                    $reply = $this->trade(
+                $reply = $this->trade(
                         'open_long',
                         $price,
                         $position_contracts - $long_contracts_open,
@@ -255,7 +252,6 @@ class OKCoin extends Exchange
 
         $candles = [];
         foreach ($kline as $candle) {
-
             $new_candle = new \stdClass();
             $new_candle->open = $candle[1];
             $new_candle->high = $candle[2];
@@ -357,7 +353,6 @@ class OKCoin extends Exchange
         $trade->save();
 
         return $this;
-
     }
 
 
@@ -402,7 +397,6 @@ class OKCoin extends Exchange
         int $current_page = 1,
         int $page_length = 200
     ) {
-
         $statuscodes = [1 => 'unfilled', 2 => 'filled'];
 
         if (!($statuscode = array_search($status, $statuscodes))) {

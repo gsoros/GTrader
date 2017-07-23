@@ -6,7 +6,6 @@ use GTrader\FannTraining as Training;
 
 class TrainingManager
 {
-
     use Skeleton;
 
 

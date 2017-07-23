@@ -53,7 +53,8 @@ trait HasStatCache
             return;
         }
 
-        error_log('StatCache '.$action.': '.__CLASS__.' '.json_encode($key).' '.(
+        error_log(
+            'StatCache '.$action.': '.__CLASS__.' '.json_encode($key).' '.(
             is_resource($value) ?
                 get_resource_type($value) : (
                     (75 < strlen($j = json_encode($value))) ?

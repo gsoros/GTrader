@@ -30,7 +30,7 @@ class ExchangeController extends Controller
 
     public function form(Request $request)
     {
-        list ($exchange, $config, $class, $error) =
+        list($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
         if ($error) {
             return $error;
@@ -46,7 +46,7 @@ class ExchangeController extends Controller
 
     public function save(Request $request)
     {
-        list ($exchange, $config, $class, $error) =
+        list($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
         if ($error) {
             return $error;

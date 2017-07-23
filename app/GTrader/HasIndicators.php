@@ -5,7 +5,6 @@ namespace GTrader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
-
 trait HasIndicators
 {
     public $indicators = [];
@@ -20,8 +19,8 @@ trait HasIndicators
     public function addIndicator(
         $indicator,
         array $params = [],
-        array $params_if_new = [])
-    {
+        array $params_if_new = []
+    ) {
         //dump('addIndicator() i: '.json_encode($indicator).' p: '.json_encode($params).' pin: '.json_encode($params_if_new));
         $owner = $this->getIndicatorOwner();
 
@@ -32,8 +31,7 @@ trait HasIndicators
                     error_log('addIndicator() could not make('.$ind_str.')');
                     return null;
                 }
-            }
-            else {
+            } else {
                 error_log('addIndicator() tried to make ind without class');
             }
         }
@@ -64,8 +62,8 @@ trait HasIndicators
     public function addIndicatorBySignature(
         string $signature,
         array $params = [],
-        array $params_if_new = [])
-    {
+        array $params_if_new = []
+    ) {
         //dump('addIndicatorBySignature() '.$signature);
         $class = Indicator::getClassFromSignature($signature);
         $sig_params = Indicator::getParamsFromSignature($signature);
@@ -89,8 +87,8 @@ trait HasIndicators
     public function getOrAddIndicator(
         $signature,
         array $params = [],
-        array $params_if_new = [])
-    {
+        array $params_if_new = []
+    ) {
         if (!is_string($signature)) {
             $signature = json_encode($signature, true);
             //error_log('HasIndicators::getOrAddIndicator() warning, converted to string: '.$signature);
@@ -345,7 +343,8 @@ trait HasIndicators
     {
         $format = $this->formatFromRequest($request);
         return view(
-            'Indicators/List', [
+            'Indicators/List',
+            [
                 'owner' => $this,
                 'indicators' => $this->getIndicatorsVisibleSorted(),
                 'available' => $this->getIndicatorsAvailable(),
@@ -401,8 +400,7 @@ trait HasIndicators
         if ($indicator->refCount()) {
             error_log('handleIndicatorDeleteRequest() has refCount, hiding');
             $indicator->setParam('display.visible', false);
-        }
-        else {
+        } else {
             $this->unsetIndicators($sig);
         }
         return $this->viewIndicatorsList($request);
@@ -423,21 +421,17 @@ trait HasIndicators
         foreach ($indicator->getParam('adjustable') as $key => $param) {
             $val = null;
             if (isset($jso->$key)) {
-               $val = $jso->$key;
+                $val = $jso->$key;
             }
             if ('bool' === ($type = $param['type'])) {
                 $val = boolval($val);
-            }
-            else if ('string' === $type) {
+            } elseif ('string' === $type) {
                 $val = strval($val);
-            }
-            else if ('int' === $type) {
+            } elseif ('int' === $type) {
                 $val = intval($val);
-            }
-            else if ('float' === $type) {
+            } elseif ('float' === $type) {
                 $val = floatval($val);
-            }
-            else if ('select' === $type) {
+            } elseif ('select' === $type) {
                 if (isset($param['options'])) {
                     if (is_array($param['options'])) {
                         if (!array_key_exists($val, $param['options'])) {
@@ -445,8 +439,7 @@ trait HasIndicators
                         }
                     }
                 }
-            }
-            else if ('list' === $type) {
+            } elseif ('list' === $type) {
                 $items = [];
                 if (isset($param['items'])) {
                     if (is_array($param['items'])) {
@@ -457,8 +450,7 @@ trait HasIndicators
                     $val = [$val];
                 }
                 $val = array_intersect(array_keys($items), $val);
-            }
-            else if ('source' === $type) {
+            } elseif ('source' === $type) {
                 $val = stripslashes(urldecode($val));
                 $dependency = $this->getOrAddIndicator($val);
                 if (is_object($dependency)) {
@@ -487,8 +479,8 @@ trait HasIndicators
         string $except_signature = null,
         array $sources = [],
         array $filters = [],
-        array $disabled = [])
-    {
+        array $disabled = []
+    ) {
         foreach ($this->getIndicatorsFilteredSorted($filters, ['display.name']) as $ind) {
             if ($ind->getParam('display.top_level')) {
                 continue;
@@ -540,7 +532,7 @@ trait HasIndicators
         $outputs = [];
         if (in_array($output, ['open', 'high', 'low', 'close'])) {
             $class = 'Ohlc';
-        } else if ('volume' === $output) {
+        } elseif ('volume' === $output) {
             $class = 'Vol';
         } else {
             return $output;

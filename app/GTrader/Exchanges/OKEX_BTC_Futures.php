@@ -4,5 +4,4 @@ namespace GTrader\Exchanges;
 
 class OKEX_BTC_Futures extends OKEX_Futures
 {
-
 }

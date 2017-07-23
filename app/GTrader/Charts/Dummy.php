@@ -7,7 +7,6 @@ use GTrader\Page;
 
 class Dummy extends Chart
 {
-
     public function toHTML(string $content = '')
     {
         $html = parent::toHTML();

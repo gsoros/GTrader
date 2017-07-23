@@ -2,7 +2,6 @@
 
 namespace GTrader\Indicators;
 
-
 /* Winners vs. losers */
 class Profitability extends HasInputs
 {
@@ -31,7 +30,8 @@ class Profitability extends HasInputs
         $candles = $this->getCandles();
 
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
-            $this->getParam('indicator.input_signal')))) {
+            $this->getParam('indicator.input_signal')
+        ))) {
             error_log('Profitability::calculate() signal indicator not found.');
             return $this;
         }
@@ -39,9 +39,11 @@ class Profitability extends HasInputs
         $signal_price_key = $candles->key($signal_ind->getSignature('price'));
 
         if (!($balance_ind = $this->getOwner()->getOrAddIndicator(
-            'Balance', [
+            'Balance',
+            [
             'input_signal' => $this->getParam('indicator.input_signal'),
-            ]))) {
+            ]
+        ))) {
             error_log('Profitability::calculate() balance indicator not found.');
             return $this;
         }
@@ -60,7 +62,6 @@ class Profitability extends HasInputs
         $candles->reset();
 
         while ($candle = $candles->next()) {
-
             if (isset($candle->$signal_key) &&
                 isset($candle->$signal_price_key)) {
                 if (($signal = $candle->$signal_key) &&
@@ -68,7 +69,6 @@ class Profitability extends HasInputs
                     if (in_array($signal, ['long', 'short'])) {
                         if ($prev_signal &&
                             $prev_signal['signal'] !== $signal) {
-
                             if (isset($candle->$balance_key)) {
                                 if ($candle->$balance_key > $prev_balance) {
                                     $winners++;

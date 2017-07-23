@@ -4,7 +4,6 @@ namespace GTrader\Indicators;
 
 class Ohlc extends HasInputs
 {
-
     public function init()
     {
         return $this;
@@ -78,8 +77,7 @@ class Ohlc extends HasInputs
         $mode = $this->getParam('indicator.mode');
         if ('linepoints' === $mode) {
             return 'Open';
-        }
-        else if ('candlestick' === $mode) {
+        } elseif ('candlestick' === $mode) {
             return $output ? ucfirst($output) : 'Candles';
         }
         $mode_name = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
@@ -111,8 +109,7 @@ class Ohlc extends HasInputs
         reset($candles);
 
         $prev_c = null;
-        foreach($candles as $c) {
-
+        foreach ($candles as $c) {
             $new_c = $this->heikinashi(
                 $this->candle2arr($c, $in_key_open, $in_key_high, $in_key_low, $in_key_close),
                 $this->candle2arr($prev_c, $in_key_open, $in_key_high, $in_key_low, $in_key_close)

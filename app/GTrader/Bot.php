@@ -112,7 +112,8 @@ class Bot extends Model
 
         // Set up our series
         $candles_limit = 200;
-        $candles = new Series([
+        $candles = new Series(
+            [
             'exchange' => Exchange::getNameById($this->exchange_id),
             'symbol' => $symbol,
             'resolution' => $this->resolution,

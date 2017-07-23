@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Bollinger Bands */
 class Bbands extends Trader
 {
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);

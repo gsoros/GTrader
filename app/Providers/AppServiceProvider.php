@@ -41,7 +41,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Set memory limit
         ini_set('memory_limit', \Config::get('app.memory_limit', '512M'));
-
     }
 
     /**

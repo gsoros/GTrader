@@ -4,7 +4,6 @@ namespace GTrader\Indicators;
 
 class Dmi extends Trader
 {
-
     public function traderCalc(array $values)
     {
         $mode = $this->getParam('indicator.mode');
@@ -21,7 +20,6 @@ class Dmi extends Trader
             $mode => 'dx',
             'plus_di' => 'plus',
             'minus_di' => 'minus'] as $k => $output) {
-
             $func = 'trader_'.$k;
 
             if (!function_exists($func)) {

@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Average */
 class Avg extends HasInputs
 {
-
     public function calculate(bool $force_rerun = false)
     {
         $this->runInputIndicators($force_rerun);
@@ -22,7 +21,6 @@ class Avg extends HasInputs
 
         $candles->reset();
         while ($candle = $candles->next()) {
-
             if (!isset($candle->$input)) {
                 error_log('Avg::calculate() candle->'.$input.' is not set');
                 break;
@@ -31,7 +29,6 @@ class Avg extends HasInputs
             $count ++;
 
             $candle->$output = $total / $count;
-
         }
         return $this;
     }

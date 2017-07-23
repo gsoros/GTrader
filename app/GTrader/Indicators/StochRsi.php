@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Stochastic Relative Stregnth Index */
 class StochRsi extends Trader
 {
-
     public function __construct(array $params = [])
     {
         parent::__construct($params);

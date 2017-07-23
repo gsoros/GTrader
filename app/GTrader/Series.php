@@ -5,7 +5,6 @@ namespace GTrader;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-
 class Series extends Collection
 {
     use HasParams, HasIndicators, HasStrategy, HasCache, ClassUtils;
@@ -122,8 +121,8 @@ class Series extends Collection
 
     //public function last()
     //{
-        //$this->_load();
-        //return $this->items[$this->size()-1];
+    //$this->_load();
+    //return $this->items[$this->size()-1];
     //}
 
     public function set($candle = null)
@@ -266,7 +265,7 @@ class Series extends Collection
 
         $resolution = intval($this->getParam('resolution'));
 
-        list ($start, $end, $limit) = $this->getStartEndLimit(true);
+        list($start, $end, $limit) = $this->getStartEndLimit(true);
 
         $candles = DB::table('candles')
             ->select('time', 'open', 'high', 'low', 'close', 'volume')
@@ -279,14 +278,14 @@ class Series extends Collection
             })
             ->where('symbols.name', $this->getParam('symbol'))
             ->when($start, function ($query) use ($start) {
-                    return $query->where('time', '>=', $start);
+                return $query->where('time', '>=', $start);
             })
             ->when($end, function ($query) use ($end) {
-                    return $query->where('time', '<=', $end);
+                return $query->where('time', '<=', $end);
             })
             ->orderBy('time', 'desc')
             ->when(0 < $limit, function ($query) use ($limit) {
-                    return $query->limit($limit);
+                return $query->limit($limit);
             })
             ->get()
             ->reverse()
@@ -297,12 +296,12 @@ class Series extends Collection
             return $this->reset();
         }
 
-/*
-        if ($count < intval($this->getParam('left_padding'))) {
-            $this->setParam('left_padding', 0);
-            $this->cleanCache();
-        }
-*/
+        /*
+                if ($count < intval($this->getParam('left_padding'))) {
+                    $this->setParam('left_padding', 0);
+                    $this->cleanCache();
+                }
+        */
 
         $this->items = $candles->items;
         //dump('SeriesNg::_load()', $this->items);
@@ -467,8 +466,8 @@ class Series extends Collection
         string $field,
         string $index_type = 'sequential',
         bool $respect_padding = false,
-        int $density_cutoff = null)
-    {
+        int $density_cutoff = null
+    ) {
         if (! $key = $this->key($field)) {
             error_log('Series::extract() got no key for '.$field);
             return [];
@@ -547,7 +546,6 @@ class Series extends Collection
     // Series::crossunder($prev_candle, $candle, 'close', $key)
     public static function crossover($prev_candle, $candle, $fish, $sea, $direction = 'over')
     {
-
         if (is_numeric($fish)) {
             $fish1 = $fish2 = $fish + 0;
         } elseif (is_string($fish)) {

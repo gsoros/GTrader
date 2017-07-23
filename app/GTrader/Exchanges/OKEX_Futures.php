@@ -7,7 +7,6 @@ use GTrader\Trade;
 
 class OKEX_Futures extends OKCoin
 {
-
     public function saveFilledOrders(string $symbol, int $bot_id = null)
     {
         $order_types = $this->getParam('order_types');
@@ -56,7 +55,6 @@ class OKEX_Futures extends OKCoin
         float $price,
         int $bot_id = null
     ) {
-
         if (!($symbol_arr = $this->getParam('symbols.'.$symbol))) {
             throw new \Exception('Symbol config not found for '.$symbol);
         }
@@ -125,7 +123,7 @@ class OKEX_Futures extends OKCoin
             // open long position
             if ($long_contracts_open < $position_contracts
                                     && $position_contracts - $long_contracts_open > 0) {
-                    $reply = $this->trade(
+                $reply = $this->trade(
                         'open_long',
                         $price,
                         $position_contracts - $long_contracts_open,
@@ -249,7 +247,6 @@ class OKEX_Futures extends OKCoin
 
         $candles = [];
         foreach ($kline as $candle) {
-
             $new_candle = new \stdClass();
             $new_candle->open = $candle[1];
             $new_candle->high = $candle[2];
@@ -356,7 +353,6 @@ class OKEX_Futures extends OKCoin
         $trade->save();
 
         return $this;
-
     }
 
 
@@ -405,7 +401,6 @@ class OKEX_Futures extends OKCoin
         int $current_page = 1,
         int $page_length = 200
     ) {
-
         $statuscodes = [1 => 'unfilled', 2 => 'filled'];
 
         if (!($statuscode = array_search($status, $statuscodes))) {
@@ -457,5 +452,4 @@ class OKEX_Futures extends OKCoin
         // type -- by default, futures positions with leverage rate 10 are returned.
         // If type = 1, all futures positions are returned
     }
-
 }

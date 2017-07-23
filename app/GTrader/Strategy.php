@@ -121,7 +121,8 @@ class Strategy
             ['display.name']
         );
         return view(
-            'Indicators/List', [
+            'Indicators/List',
+            [
                 'owner' => $this,
                 'indicators' => $indicators,
                 'available' => $this->getIndicatorsAvailable(),
@@ -186,8 +187,8 @@ class Strategy
 
     public static function getSelectorOptions(
         int $user_id,
-        int $selected_strategy = null)
-    {
+        int $selected_strategy = null
+    ) {
         return view('StrategySelectorOptions', [
             'selected_strategy' => $selected_strategy,
             'strategies' => self::getStrategiesOfUser($user_id),

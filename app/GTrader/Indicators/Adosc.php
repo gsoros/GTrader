@@ -5,7 +5,6 @@ namespace GTrader\Indicators;
 /** Chaikin A/D Oscillator */
 class Adosc extends Trader
 {
-
     public function traderCalc(array $values)
     {
         if (!($values = trader_adosc(

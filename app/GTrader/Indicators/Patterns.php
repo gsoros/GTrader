@@ -27,8 +27,7 @@ class Patterns extends Trader
             foreach ($f->getParameters() as $arg) {
                 if ($arg->isOptional()) {
                     $args_opt[]= $arg->getName();
-                }
-                else {
+                } else {
                     $args_req[] = $arg->getName();
                 }
             }
@@ -73,8 +72,8 @@ class Patterns extends Trader
     public function getOutputArray(
         string $index_type = 'sequential',
         bool $respect_padding = false,
-        int $density_cutoff = null)
-    {
+        int $density_cutoff = null
+    ) {
         if ('annotation' === $this->getParam('display.mode')) {
             if (!$this->getParam('indicator.show_annotation')) {
                 return [];
@@ -109,7 +108,6 @@ class Patterns extends Trader
         $annotation = $line = [];
 
         foreach ($this->getParam('indicator.use_functions', []) as $func) {
-
             if (!function_exists($prefix.$func)) {
                 continue;
             }
@@ -122,8 +120,7 @@ class Patterns extends Trader
             ]);
 
             $func_label = $this->getParam('map.'.$func, $func);
-            array_walk($open, function ($v, $k)
-                use (&$annotation, &$line, $func, $output, $func_label) {
+            array_walk($open, function ($v, $k) use (&$annotation, &$line, $func, $output, $func_label) {
                 if (!isset($line[$k])) {
                     $line[$k] = 0;
                 }
@@ -139,7 +136,6 @@ class Patterns extends Trader
                     }
                 }
             });
-
         }
 
         $this->getCandles()->setValues(

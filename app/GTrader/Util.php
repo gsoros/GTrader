@@ -4,8 +4,6 @@ namespace GTrader;
 
 class Util
 {
-
-
     public static function ksortR(&$array, $sort_flags = SORT_REGULAR)
     {
         if (!is_array($array)) {
@@ -63,7 +61,5 @@ class Util
     public static function getMemoryUsage(bool $real_usage = false)
     {
         return self::humanBytes(memory_get_usage($real_usage));
-
     }
-
 }

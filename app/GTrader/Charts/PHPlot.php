@@ -12,7 +12,6 @@ use GTrader\Util;
 
 class PHPlot extends Chart
 {
-
     protected $data = [];
     protected $last_close;
     protected $image_map;
@@ -92,7 +91,7 @@ class PHPlot extends Chart
 
         //dump($this->debug);
         // Map
-        list ($map, $map_str) = $this->getImageMapStrings();
+        list($map, $map_str) = $this->getImageMapStrings();
 
         //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
         //return $map.'<img class="img-responsive" src="'.
@@ -120,8 +119,7 @@ class PHPlot extends Chart
         $radius = 5 <= $radius ? floor($radius) : 5;
         $this->_plot->SetCallback(
             'data_points',
-            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use
-                (&$image_map, $times, $item, $radius) {
+            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use (&$image_map, $times, $item, $radius) {
                 //dd($row);
                 $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
                 $title .= ('rect' == $shape) ?
@@ -161,7 +159,7 @@ class PHPlot extends Chart
                 error_log('plot() time not found for index '.$k);
             }
             if ($empty) {
-                array_walk($v, function ($v, $k) use (&$empty){
+                array_walk($v, function ($v, $k) use (&$empty) {
                     $empty = $empty ? empty($v) : false;
                 });
             }
@@ -360,7 +358,8 @@ class PHPlot extends Chart
                 'data_color',
                 function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
                     //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                    $s = isset($signals[$row]) ? $signals[$row] : null;;
+                    $s = isset($signals[$row]) ? $signals[$row] : null;
+                    ;
                     if ('long' === $s) {
                         return (0 === $extra) ? 0 : 1;
                     } elseif ('short' === $s) {
@@ -379,8 +378,7 @@ class PHPlot extends Chart
             $this->_plot->SetPointSizes($pointsize);
             $this->_plot->SetYDataLabelPos('plotin');
             return $this;
-        }
-        else {
+        } else {
             $item['num_outputs'] = 1;
         }
         $this->colors = [self::nextColor()];
@@ -421,9 +419,7 @@ class PHPlot extends Chart
         $font_size = floor($this->getParam('width') / count($item['values']) / 2.5);
         $font_size = 5 > $font_size ? 5 : $font_size;
         $font_size = 16 < $font_size ? 16 : $font_size;
-        $this->_plot->SetCallback('draw_all', function ($img, $plot)
-            use ($contents, $font_size){
-
+        $this->_plot->SetCallback('draw_all', function ($img, $plot) use ($contents, $font_size) {
             $red = imagecolorallocatealpha($img, 200, 0, 0, 66);
             $green = imagecolorallocatealpha($img, 0, 180, 0, 85);
             $font_path = storage_path('fonts/Vera.ttf');
@@ -434,8 +430,7 @@ class PHPlot extends Chart
                 //dump($x.' '.$y);
                 $long = [];
                 $short = [];
-                array_walk($content['contents'], function ($v, $k)
-                    use (&$long, &$short) {
+                array_walk($content['contents'], function ($v, $k) use (&$long, &$short) {
                     if (0 <= $v) {
                         $long[] = $k.' +'.$v;
                         return;
@@ -455,7 +450,6 @@ class PHPlot extends Chart
                     $xshort = $x - floor(($text_coords[6] - $text_coords[0]) / 3);
                     imagettftext($img, $font_size, $rotation, $xshort, $y + 10, $red, $font_path, $text_short);
                 }
-
             }
         }, $this->_plot);
 
@@ -517,7 +511,9 @@ class PHPlot extends Chart
             'operation' => 'sub',
             'input_b' => 'open',
         ])) {
-            if ($sub = $sub->getOutputArray('sequential', true,
+            if ($sub = $sub->getOutputArray(
+                'sequential',
+                true,
                 $this->getParam('density_cutoff')
             )) {
                 $this->_plot->SetCallback(
@@ -578,7 +574,8 @@ class PHPlot extends Chart
                 $junk,
                 $row,
                 $col,
-                $extra = 0) use (
+                $extra = 0
+            ) use (
                 $highlight,
                 $item,
                 $times,
@@ -630,7 +627,6 @@ class PHPlot extends Chart
         $inds = $this->getIndicatorsVisibleSorted();
 
         while ($ind = array_shift($inds)) {
-
             $ind->checkAndRun();
 
             if ('Patterns' === $ind->getShortClass()) {
@@ -640,8 +636,7 @@ class PHPlot extends Chart
                         $ind->setParam('display.y-axis', 'left');
                         array_unshift($inds, $ind);
                     }
-                }
-                else {
+                } else {
                     $ind->setParam('display.mode', 'line');
                     $ind->setParam('display.y-axis', 'right');
                 }
@@ -763,7 +758,6 @@ class PHPlot extends Chart
         }
 
         if ('left' === $dir) {
-
         } else {
             $this->_plot->SetDrawXGrid(false);
             $this->_plot->SetDrawYGrid(false);
@@ -947,7 +941,4 @@ class PHPlot extends Chart
     {
         return $this->getParam('map.'.$key, $key);
     }
-
-
-
 }
