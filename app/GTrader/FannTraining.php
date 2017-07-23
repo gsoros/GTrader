@@ -256,7 +256,7 @@ class FannTraining extends Model
 
     public function getMaximizeSig(Strategy $strategy)
     {
-        if ($sig = $strategy->getParam('cached_maximize_sig')) {
+        if ($sig = $strategy->cached('maximize_sig')) {
             return $sig;
         }
         $maximize = Arr::get(
@@ -295,7 +295,7 @@ class FannTraining extends Model
                 return null;
         }
         $sig = $indicator->getSignature();
-        $strategy->setParam('cached_maximize_sig', $sig);
+        $strategy->cache('maximize_sig', $sig);
         return $sig;
     }
 
