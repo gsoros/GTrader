@@ -691,7 +691,7 @@ class PHPlot extends Chart
 
             // used later to set the page title
             if ('Ohlc' === $item['class']) {
-                $index = ('linepoints' === $item['mode']) ? 0 : 2;
+                $index = ('linepoints' === $item['mode']) ? 0 : 3;
                 $this->last_close = $item['values'][count($item['values'])-1][$index];
             }
 
