@@ -134,7 +134,11 @@ class Bot extends Model
         //error_log('bot:run() signals: '.json_encode($signals));
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
-        $last_signal = array_pop($signals);
+        if (! $last_signal = array_pop($signals)) {
+            echo "No signals\n";
+            Lock::release($lock);
+            return $this;
+        }
         $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
         //error_log('bot:run() last_signal: '.json_encode($last_signal));
 
