@@ -34,6 +34,8 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo(storage_path('logs/trainingManager.log'));
         $schedule->command('bots:run')->everyMinute()
             ->appendOutputTo(storage_path('logs/bots.log'));
+    }
+
 
     /**
      * Register the Closure based commands for the application.
