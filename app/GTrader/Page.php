@@ -9,8 +9,8 @@ class Page
     public function __construct()
     {
         $this->setParam('scripts_top', [])
-                ->setParam('scripts_bottom', [])
-                ->setParam('stylesheets', []);
+            ->setParam('scripts_bottom', [])
+            ->setParam('stylesheets', []);
     }
 
 

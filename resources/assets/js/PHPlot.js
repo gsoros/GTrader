@@ -4,11 +4,13 @@ $(function() {
 
         charts: [],
 
-        setPanZoomPosition: function (name) {
-            $('#panzoom_' + name).css({left: ($(window).width() / 2 - 68) + 'px'});
+        setPanZoomPosition: function(name) {
+            $('#panzoom_' + name).css({
+                left: ($(window).width() / 2 - 68) + 'px'
+            });
         },
 
-        requestPlot: function (name, command, args) {
+        requestPlot: function(name, command, args) {
             if (!window.GTrader.setLoading) return;
             window.GTrader.setLoading(name, true);
             var container = $('#' + name);
@@ -38,20 +40,25 @@ $(function() {
 
 
 
-        registerPanZoomHandler: function (name) {
-            ['zoomIn_' + name, 'zoomOut_' + name, 'backward_' + name, 'forward_' + name].forEach(function(name) {
+        registerPanZoomHandler: function(name) {
+            [
+                'zoomIn_' + name,
+                'zoomOut_' + name,
+                'backward_' + name,
+                'forward_' + name
+            ].forEach(function(name) {
                 $('#' + name).on('click', function() {
                     var split = this.id.split('_');
                     window.GTrader.requestPlot(split[1], split[0]);
                 });
             });
 
-            $('#fullscreen_' + name).on('click', function () {
+            $('#fullscreen_' + name).on('click', function() {
                 GTrader.toggleFullscreen(name);
             });
         },
 
-        toggleFullscreen: function (name) {
+        toggleFullscreen: function(name) {
             if ('undefined' === typeof fscreen) {
                 console.log('fscreen not defined');
                 return;
@@ -71,27 +78,27 @@ $(function() {
                 console.log('requestFullscreen is false', fscreen.default);
                 return;
             }
-    /*
-            fscreen.addEventListener('fullscreenchange', function () {
-                if (fscreen.fullscreenElement !== null) {
-                    //window[name].setChartSize(true);
-                } else {
-                    //window[name].setChartSize();
-                }
-                window.GTrader.setPanZoomPosition(name);
-            }, false);
-    */
+            /*
+                    fscreen.addEventListener('fullscreenchange', function () {
+                        if (fscreen.fullscreenElement !== null) {
+                            //window[name].setChartSize(true);
+                        } else {
+                            //window[name].setChartSize();
+                        }
+                        window.GTrader.setPanZoomPosition(name);
+                    }, false);
+            */
             fscreen.requestFullscreen($('#fullscreen-wrap_' + name)[0]);
         },
 
 
-        registerRefreshFunc: function (name) {
+        registerRefreshFunc: function(name) {
 
             console.log('registering refresh() for ' + name);
             var chart = this.charts[name];
 
             // Register refresh func
-            chart.refresh = function (command, args) {
+            chart.refresh = function(command, args) {
                 var visible = $('#' + name).is(':visible');
                 console.log('refresh() ' + name + ' visible? ' + visible);
                 if (!visible)
@@ -101,23 +108,19 @@ $(function() {
             };
             console.log(chart);
 
-            $('#' + name).swipe( {
+            $('#' + name).swipe({
                 allowPageScroll: 'vertical',
                 swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
                     var command;
                     if ('left' == direction) {
                         command = 'forward';
-                    }
-                    else if ('right' == direction) {
+                    } else if ('right' == direction) {
                         command = 'backward';
-                    }
-                    else if ('up' == direction) {
+                    } else if ('up' == direction) {
                         command = 'zoomIn';
-                    }
-                    else if ('down' == direction) {
+                    } else if ('down' == direction) {
                         command = 'zoomOut';
-                    }
-                    else {
+                    } else {
                         return;
                     }
                     window.GTrader.requestPlot(this.prop('id'), command);
@@ -125,7 +128,7 @@ $(function() {
             });
         },
 
-        viewSample: function (name, time, clearContents = true) {
+        viewSample: function(name, time, clearContents = true) {
             var width = $(window).width() / 2;
             if (400 > width) width = 400;
             if (clearContents) {
@@ -144,7 +147,7 @@ $(function() {
             return false;
         },
 
-        registerPHPlot: function (name, initialRefresh = true) {
+        registerPHPlot: function(name, initialRefresh = true) {
             window.GTrader.registerRefreshFunc(name);
             window.GTrader.registerPanZoomHandler(name);
             window.GTrader.setPanZoomPosition(name);

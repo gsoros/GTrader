@@ -1,4 +1,3 @@
-
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -13,9 +12,9 @@ require('select2/dist/js/select2.min.js');
 
 
 
-$(function () {
+$(function() {
 
-    $.fn.select2.defaults.set( "theme", "bootstrap" );
+    $.fn.select2.defaults.set("theme", "bootstrap");
 
     $.ajaxSetup({
         /**
@@ -27,18 +26,17 @@ $(function () {
         /**
          * Handle ajax errors
          */
-        error: function (x, status, error) {
+        error: function(x, status, error) {
             if (x.status == 401 || x.status == 403) {
                 console.log('Session expired, redirecting to login.');
-                window.location.href ='/login';
-            }
-            else {
+                window.location.href = '/login';
+            } else {
                 console.log('Ajax ' + status + ': ' + error);
             }
         }
     });
 
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         var target = $(e.target).attr('href');
         console.log('tab change: ' + target);
 

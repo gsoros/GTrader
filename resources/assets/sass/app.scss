@@ -1,20 +1,17 @@
-
 // Fonts
 //@import url(https://fonts.googleapis.com/css?family=Roboto:300,400,600);
 
 // Variables
 @import "variables";
-
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
-
 // Select2
 @import "node_modules/select2/dist/css/select2.min";
 
 .select2,
-    .select2-results__option,
-    .select2-search--dropdown,
-    .select2-search__field {
+.select2-results__option,
+.select2-search--dropdown,
+.select2-search__field {
     @extend .btn-primary;
     @extend .btn-mini;
     @extend .btn;
@@ -25,7 +22,7 @@
 }
 
 .select2-dropdown,
-    .select2-results__options {
+.select2-results__options {
     background-color: #151515;
     border: 0;
 }
@@ -64,7 +61,8 @@
     color: #ccc;
 }
 
-.dropdown-menu, .dropdown-menu > li > a {
+.dropdown-menu,
+.dropdown-menu > li > a {
     color: #ccc;
     background-color: #111;
 }
@@ -83,7 +81,7 @@ h3 {
 }
 
 .form-horizontal .control-label {
-    padding: 2px 0px 0px 15px;
+    padding: 2px 0 0 15px;
 }
 
 .btn-primary {
@@ -105,8 +103,8 @@ h3 {
 
 select.btn {
     -webkit-appearance: none;
-       -moz-appearance: none;
-            appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     padding-right: 16px;
 }
 
@@ -127,8 +125,8 @@ select.btn-mini + .caret {
 .modal-header {
     background-color: #222;
     -webkit-border-radius: 5px 5px 0 0;
-       -moz-border-radius: 5px 5px 0 0;
-            border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+    border-radius: 5px 5px 0 0;
     color: #ccc;
     border-bottom: 1px solid #333;
 }
@@ -171,36 +169,40 @@ label {
     margin: 5px 0;
     border: 1px solid #111;
     -webkit-border-radius: 5px;
-       -moz-border-radius: 5px;
-            border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
 }
 
-#train_slider > .noUi-base > .noUi-connect,
 #test_slider > .noUi-base > .noUi-connect,
+#train_slider > .noUi-base > .noUi-connect,
 #verify_slider > .noUi-base > .noUi-connect {
     text-align: center;
     overflow: hidden;
 }
+
 #train_slider > .noUi-base > .noUi-connect:after {
     content: 'Training Range';
 }
+
 #test_slider > .noUi-base > .noUi-connect:after {
     content: 'Test Range';
 }
+
 #verify_slider > .noUi-base > .noUi-connect:after {
     content: 'Verify Range';
 }
 
 .noUi-target {
     background: rgba(30, 30, 30, 0);
-    border: 0px;
-    border-radius: 0px;
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
 }
 
 .noUi-target:hover {
     cursor: crosshair;
 }
+
 .noUi-handle {
     //display: none;
     height: 61px !important;
@@ -213,8 +215,8 @@ label {
     box-shadow: none;
 }
 
-.noUi-handle:before,
-.noUi-handle:after {
+.noUi-handle:after,
+.noUi-handle:before {
     display: none;
 }
 
@@ -256,9 +258,9 @@ pre.debug {
 }
 
 :-webkit-autofill,
-:-webkit-autofill:hover,
-:-webkit-autofill:focus {
+:-webkit-autofill:focus,
+:-webkit-autofill:hover {
     -webkit-text-fill-color: white;
-    -webkit-box-shadow: 0 0 0px 1000px #333 inset;
-    transition: background-color 5000s ease-in-out 0s
+    -webkit-box-shadow: 0 0 0 1000px #333 inset;
+    transition: background-color 5000s ease-in-out 0s;
 }

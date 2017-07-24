@@ -1,19 +1,18 @@
 $(function() {
 
     /**
-    * Set chart dimensions
-    */
+     * Set chart dimensions
+     */
     window.GTrader = $.extend(true,
         window.GTrader, {
             charts: {
                 mainchart: {
                     setChartSize: function() {
                         console.log('setChartSize');
-                        $('#mainchart').width($(window).width()-2);
+                        $('#mainchart').width($(window).width() - 2);
                         if (fscreen.fullscreenElement !== null) {
                             $('#mainchart').height($(window).height());
-                        }
-                        else {
+                        } else {
                             $('#mainchart').height($(window).height() - 100);
                         }
                         this.refresh();
