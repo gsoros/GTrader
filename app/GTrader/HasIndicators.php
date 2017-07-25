@@ -378,7 +378,7 @@ trait HasIndicators
             return $this->viewIndicatorsList($request);
         }
         if ($indicator = $this->addIndicatorBySignature($sig)) {
-            $indicator->setParam('display.visible', true);
+            $indicator->visible(true);
             $indicator->addRef('root');
         }
         return $this->viewIndicatorsList($request);
@@ -399,7 +399,7 @@ trait HasIndicators
         $this->updateReferences();
         if ($indicator->refCount()) {
             error_log('handleIndicatorDeleteRequest() has refCount, hiding');
-            $indicator->setParam('display.visible', false);
+            $indicator->visible(false);
         } else {
             $this->unsetIndicators($sig);
         }
@@ -466,7 +466,7 @@ trait HasIndicators
             error_log('HasIndicators::handleIndicatorSaveRequest() could not save');
             $this->viewIndicatorsList($request);
         }
-        $indicator->setParam('display.visible', true);
+        $indicator->visible(true);
         $indicator->addRef('root');
         if (method_exists($indicator, 'createDependencies')) {
             $indicator->createDependencies();
@@ -576,7 +576,7 @@ trait HasIndicators
             foreach ($this->getIndicators() as $ind) {
                 if (!$ind->hasRefRecursive('root') ||
                     (['root'] == array_merge($ind->getRefs()) && // renumber keys
-                    !$ind->getParam('display.visible'))) {
+                    !$ind->visible())) {
                     $this->unsetIndicator($ind);
                     $removed++;
                     //dump('purgeIndicators() removed '.$ind->getSignature().' from '.$this->debugObjId(), $ind);

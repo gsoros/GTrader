@@ -589,4 +589,13 @@ abstract class Indicator //implements \JsonSerializable
         //dump('Max '.$this->getShortClass().': '.$max);
         return $max;
     }
+
+    public function visible(bool $set = null)
+    {
+        if (is_null($set)) {
+            return $this->getParam('display.visible');
+        }
+        $this->setParam('display.visible', $set);
+        return $this;
+    }
 }
