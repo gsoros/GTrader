@@ -144,7 +144,10 @@ class Bot extends Model
             Lock::release($lock);
             return $this;
         }
-        $last_signal = array_merge($last_signal, ['time' => $last_signal_time]);
+        $last_signal = array_merge(
+            ['signal' => $last_signal], 
+            ['time' => $last_signal_time],
+        );
         //error_log('bot:run() last_signal: '.json_encode($last_signal));
 
         // See if signal is recent enough
