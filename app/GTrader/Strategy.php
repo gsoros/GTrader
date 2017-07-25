@@ -256,12 +256,16 @@ class Strategy
         $sig_ind = $this->getSignalsIndicator();
         $sig_ind->checkAndRun($force_rerun);
         $candles = $this->getCandles();
-        $signature = $candles->key($sig_ind->getSignature());
+        $signature_signal = $candles->key($sig_ind->getSignature('signal'));
+        $signature_price = $candles->key($sig_ind->getSignature('price'));
         $candles->reset();
         $signals = [];
         while ($candle = $candles->next()) {
-            if (isset($candle->$signature)) {
-                $signals[$candle->time] = $candle->$signature;
+            if (isset($candle->$signature_signal)) {
+                $signals[$candle->time]['signal'] = $candle->$signature_signal;
+            }
+            if (isset($candle->$signature_price)) {
+                $signals[$candle->time]['price'] = $candle->$signature_price;
             }
         }
         return $signals;

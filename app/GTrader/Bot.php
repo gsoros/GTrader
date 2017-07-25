@@ -145,7 +145,7 @@ class Bot extends Model
             return $this;
         }
         $last_signal = array_merge(
-            ['signal' => $last_signal],
+            $last_signal,
             ['time' => $last_signal_time]
         );
         //error_log('bot:run() last_signal: '.json_encode($last_signal));
