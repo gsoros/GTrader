@@ -6,23 +6,26 @@ use GTrader\FannTraining as Training;
 
 class TrainingManager
 {
-    use Skeleton;
+    use Skeleton, Scheduled;
 
 
     public function run()
     {
+        if (!$this->scheduleEnabled()) {
+            return $this;
+        }
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock)) {
             return false;
         }
         echo "TrainingManager:run()\n";
 
-        while ($this->shouldRun()) {
+        while ($this->scheduleEnabled()) {
             $this->main();
             $this->sleep();
         }
         Lock::release($lock);
-        return true;
+        return this;
     }
 
 
@@ -31,12 +34,6 @@ class TrainingManager
         return self::singleton()->getParam('slots');
     }
 
-
-    protected function shouldRun()
-    {
-        // TODO check for the presence of a run file e.g. storage/run/TrainingManager
-        return true;
-    }
 
     protected function main()
     {

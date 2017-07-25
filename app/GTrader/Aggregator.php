@@ -6,9 +6,13 @@ use Illuminate\Support\Facades\DB;
 
 class Aggregator
 {
+    use Skeleton, Scheduled;
+
     public function aggregate()
     {
-
+        if (!$this->scheduleEnabled()) {
+            return $this;
+        }
         //ignore_user_abort(true);
 
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
@@ -113,5 +117,6 @@ class Aggregator
             }
         }
         Lock::release($lock);
+        return $this;
     }
 }

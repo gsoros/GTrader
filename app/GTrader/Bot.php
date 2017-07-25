@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 */
 class Bot extends Model
 {
-    use Skeleton, HasStrategy;
+    use Skeleton, HasStrategy, Scheduled;
 
 
     /**
@@ -73,6 +73,11 @@ class Bot extends Model
         // make sure we are active
         if ('active' !== $this->status) {
             throw new \Exception('run() called but bot not active: '.$this->id);
+        }
+
+        // make sure the schedule is enabled
+        if (!$this->scheduleEnabled()) {
+            return $this;
         }
 
         // Make sure only one instance is running

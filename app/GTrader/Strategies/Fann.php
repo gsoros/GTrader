@@ -138,7 +138,9 @@ class Fann extends Strategy
         $ind->setParam('display.visible', true);
         $ind->addRef('root');
 
-        $ind = $chart->getFirstIndicatorByClass('Balance');
+        if (!$ind = $chart->getFirstIndicatorByClass('Balance')) {
+            $ind = $chart->getOrAddIndicator('Balance');
+        }
         $ind->setParam('display.visible', true);
         $ind->addRef('root');
 

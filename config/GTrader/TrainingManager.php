@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     // number of concurrent training processes
     'slots'         => env('TRAINING_MANAGER_SLOTS', 2),
 

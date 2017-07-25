@@ -85,9 +85,9 @@
     </div>
     <div class="col-sm-6 editable"
         title="Select the indicator to maximise training on">
-        <label for="maximize_for">Maximise Strategy For</label>
+        <label for="maximize">Maximise Strategy For</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
-                id="maximize_for">
+                id="maximize">
             @foreach (\Config::get('GTrader.FannTraining.maximize') as $val => $label)
                 <option value="{{ $val }}"
                 @if ($val == $preferences['maximize'])
@@ -137,7 +137,7 @@
                                         from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
                                         crosstrain: $('#crosstrain').val(),
                                         reset_after: $('#reset_after').val(),
-                                        maximize_for: $('#maximize_for').val()
+                                        maximize: $('#maximize').val()
                                     }
                                 ))"
                     type="button"

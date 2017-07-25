@@ -275,7 +275,7 @@ class FannTraining extends Model
 
             case 'profitability':
                 $signals = $strategy->getSignalsIndicator();
-                $indicator = $strategy->getOrAddIndicator('Profitability', [
+                $indicator = $signals->getOwner()->getOrAddIndicator('Profitability', [
                     'input_signal' => $signals->getSignature(),
                 ]);
                 break;
