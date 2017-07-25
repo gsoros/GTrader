@@ -10,15 +10,15 @@ Please use [GTrader-env](https://github.com/gsoros/GTrader-env) to set up the PH
 
 # Developers
 
-## Either run from the Dockerhub container...
+#### Either run from the Dockerhub container...
 
 1. `docker run -d --name gtrader_php -p 127.0.0.1:9000:9000 gsoros/gtrader:latest`
 2. inside the container, edit .env with your database settings
 3. configure your webserver to use php-fpm
 
-## ... or rebuild everything
+#### ... or rebuild everything
 
-### Requirements
+##### Requirements
 
 - PHP 7 with GD support
 - [PHP-FANN extension](http://php.net/manual/en/book.fann.php)
@@ -26,7 +26,7 @@ Please use [GTrader-env](https://github.com/gsoros/GTrader-env) to set up the PH
 - [Composer](https://getcomposer.org/)
 - [NPM](https://www.npmjs.com/)
 
-### Installation
+##### Installation
 
 1. `git clone https://github.com/gsoros/GTrader.git`
 2. `cd GTrader`

@@ -129,40 +129,29 @@ class Fann extends Strategy
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
         ]);
-        $ind = $chart->addIndicator('Ohlc', ['mode' => 'linepoints']);
+        $ind = $chart->getOrAddIndicator('Ohlc', ['mode' => 'linepoints']);
         $ind->setParam('display.visible', true);
         $ind->addRef('root');
 
         $sig = $training->getMaximizeSig($this);
-        if (!$chart->hasIndicator($sig)) {
-            $ind = $chart->addIndicatorBySignature($sig);
-            $ind->setParam('display.visible', true);
-            $ind->addRef('root');
-            $this->save();
-        }
+        $ind = $chart->getOrAddIndicator($sig);
+        $ind->setParam('display.visible', true);
+        $ind->addRef('root');
 
-        if (!$chart->hasIndicatorClass('Balance')) {
-            $ind = $chart->addIndicator('Balance', [
-            ]);
-            $ind->setParam('display.visible', true);
-            $ind->addRef('root');
-            $this->save();
-        }
         $ind = $chart->getFirstIndicatorByClass('Balance');
         $ind->setParam('display.visible', true);
+        $ind->addRef('root');
 
         $signal_sig = $this->getSignalsIndicator()->getSignature();
         if (!$chart->hasIndicatorClass('Profitability')) {
-            $ind = $chart->addIndicator('Profitability', [
+            $ind = $chart->getOrAddIndicator('Profitability', [
                 'input_signal' => $signal_sig,
             ]);
             $ind->setParam('display.visible', true);
             $ind->addRef('root');
-            $this->save();
         }
 
         $chart->saveToSession();
-
         return $chart;
     }
 
