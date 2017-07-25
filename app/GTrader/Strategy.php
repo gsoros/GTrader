@@ -261,11 +261,12 @@ class Strategy
         $candles->reset();
         $signals = [];
         while ($candle = $candles->next()) {
-            if (isset($candle->$signature_signal)) {
-                $signals[$candle->time]['signal'] = $candle->$signature_signal;
-            }
-            if (isset($candle->$signature_price)) {
-                $signals[$candle->time]['price'] = $candle->$signature_price;
+            if (isset($candle->$signature_signal) &&
+                isset($candle->$signature_price)) {
+                $signals[$candle->time] = [
+                    'signal' => $candle->$signature_signal,
+                    'price' => $candle->$signature_price,
+                ];
             }
         }
         return $signals;
