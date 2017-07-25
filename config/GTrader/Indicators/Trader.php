@@ -1,5 +1,12 @@
 <?php
 
+if (!defined('TRADER_MA_TYPE_SMA')) {
+    $msg = 'Trader extension is not available.';
+    error_log($msg);
+    echo 'Error: '.$msg;
+    exit();
+}
+
 return [
     'MA_TYPES' => [
         TRADER_MA_TYPE_SMA => 'SMA',
