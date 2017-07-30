@@ -12,7 +12,7 @@ ENV CACHE /tmp/cache
 
 RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common dirmngr \
+    software-properties-common dirmngr gnupg \
     && add-apt-repository ppa:ondrej/php \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A \
     && apt-get update && apt-get install -y --no-install-recommends \
@@ -32,14 +32,14 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
                         git \
                             unzip \
                                 mysql-client \
-                            libfann2 \
-                        libfann-dev \
-                    make \
-                attr \
-            nano \
-        cron \
-    gnupg \
-    runit
+                                    libfann2 \
+                                libfann-dev \
+                            make \
+                        attr \
+                    nano \
+                cron \
+            gnupg \
+        runit
 
 
 RUN set -eux; \
@@ -60,7 +60,8 @@ RUN set -eux; \
     \
     \
     && echo "############### CLEAN UP ######################" \
-    && apt-get -y remove libfann-dev make php-dev software-properties-common dirmngr \
+    && apt-get -y remove libfann-dev make php-dev software-properties-common \
+    dirmngr gnupg \
     && apt-get -y autoremove && apt-get clean \
     && rm -rfv /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
 
