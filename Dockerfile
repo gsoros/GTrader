@@ -10,9 +10,9 @@ ENV SUG "su -s /bin/sh -m gtrader -c"
 ENV CACHE /tmp/cache
 
 
-RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8 \
+RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common dirmngr gnupg language-pack-en-base \
+    software-properties-common dirmngr gnupg locales \
     && add-apt-repository ppa:ondrej/php \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A \
     && apt-get update && apt-get install -y --no-install-recommends \
@@ -61,7 +61,7 @@ RUN set -eux; \
     \
     && echo "############### CLEAN UP ######################" \
     && apt-get -y remove libfann-dev make php-dev software-properties-common \
-    dirmngr gnupg language-pack-en-base \
+    dirmngr gnupg locales \
     && apt-get -y autoremove && apt-get clean \
     && rm -rfv /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
 
