@@ -14,7 +14,7 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common dirmngr \
     && add-apt-repository ppa:ondrej/php \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A \
     && apt-get update && apt-get install -y --no-install-recommends \
                                             php-dev \
                                         php-cli \
