@@ -7,7 +7,6 @@ return [
     'available_exchanges'   => [                                            // list of installed exchange classes
         'OKEX_BTC_Futures',
         'OKCoin_ETH_Spot',
-        'Dummy'
     ],
 
     'user_options'          => [],                                          // User-configurable options, to be overridden in children

@@ -18,17 +18,17 @@ class Aggregator
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock)) {
             error_log('Another aggregator process is running.');
-            return null;
+            return $this;
         }
 
         try {
             if (!count(DB::select(DB::raw('show tables like "exchanges"')))) {
                 error_log('Aggregator::aggregate() Exchanges table does not (yet) exist in the database.');
-                return null;
+                return $this;
             }
         } catch (\Exception $e) {
             error_log('Aggregator::aggregate() Database is not ready (yet).');
-            return null;
+            return $this;
         }
 
         $default_exchange = Exchange::make();
@@ -93,7 +93,7 @@ class Aggregator
                     $candles = $exchange->getCandles(
                         $symbol_local,
                         $resolution,
-                        $time - $resolution + 1,
+                        $time - $resolution,
                         100000
                     );
                     //dd($candles);

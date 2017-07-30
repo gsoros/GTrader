@@ -4,9 +4,21 @@ namespace GTrader\Exchanges;
 
 use GTrader\Exchange;
 use GTrader\Trade;
+use GuzzleHttp\Client as HttpClient;
+use OKCoinWrapper;
 
 class OKCoin extends Exchange
 {
+
+    protected function request(string $method, ...$params)
+    {
+        $client = new HttpClient(['version' => 1.0, 'timeout' => 30]);
+        $okcoin = new OKCoinWrapper($client);
+        //echo ' calling '.get_class($okcoin).'->'.$method.'('.json_encode($params).')';
+        return call_user_func_array([$okcoin, $method], $params);
+    }
+
+
     public function saveFilledOrders(string $symbol, int $bot_id = null)
     {
         $order_types = $this->getParam('order_types');
@@ -199,7 +211,7 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        $reply = \OKCoin::getTicker([
+        $reply = $this->request('getTicker', [
             'symbol' => $remote_symbol,
         ]);
 
@@ -232,11 +244,12 @@ class OKCoin extends Exchange
         $type = $this->resolution2name($resolution);
         $since = $since.'000';
 
-        $kline = \OKCoin::getKline([
+        $kline = $this->request('getKline', [
             'symbol' => $remote_symbol,
             'type' => $type,
             'since' => $since,
-            'size' => $size]);
+            'size' => $size,
+        ]);
 
         if (!is_array($kline)) {
             return [];
@@ -270,7 +283,7 @@ class OKCoin extends Exchange
 
     protected function getUserInfo()
     {
-        return \OKCoin::postUserinfo4fix(
+        return $this->request('postUserinfo4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret')
         );
@@ -310,7 +323,7 @@ class OKCoin extends Exchange
             return $this;
         }
 
-        $reply = \OKCoin::postTrade(
+        $reply = $this->request('postTrade',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -321,7 +334,7 @@ class OKCoin extends Exchange
                 'lever_rate'    => $leverage,
                 // Match best counter party price (BBO)?
                 // 0: No 1: Yes   If yes, the 'price' field is ignored
-                'match_price'   => $market_orders
+                'match_price'   => $market_orders,
             ]
         );
         if (!is_object($reply)) {
@@ -370,12 +383,12 @@ class OKCoin extends Exchange
             return $this;
         }
 
-        $reply = \OKCoin::postCancel(
+        $reply = $this->request('postCancel',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
                 'symbol' => $remote_symbol,
-                'order_id' => $remote_order_id
+                'order_id' => $remote_order_id,
             ]
         );
 
@@ -409,7 +422,7 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        return \OKCoin::postOrderInfo(
+        return $this->request('postOrderInfo',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -433,7 +446,7 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        return \OKCoin::postPosition4fix(
+        return $this->request('postPosition4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [

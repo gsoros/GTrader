@@ -228,8 +228,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        // OKCoin REST Api Wrapper Facade
-        'OKCoin' => DoubleBit\OKCoin\Facade::class,
+        // OKCoin REST Api Wrapper
+        'OKCoinWrapper' => DoubleBit\OKCoin\Okcoin::class,
 
 
     ],

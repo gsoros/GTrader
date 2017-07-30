@@ -190,9 +190,10 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Contract type not found');
         }
 
-        $reply = \OKCoin::getFutureTicker([
+        $reply = $this->request('getFutureTicker', [
             'symbol' => $remote_symbol,
-            'contract_type' => $contract_type]);
+            'contract_type' => $contract_type,
+        ]);
 
         return get_object_vars($reply->ticker);
     }
@@ -226,12 +227,13 @@ class OKEX_Futures extends OKCoin
         $type = $this->resolution2name($resolution);
         $since = $since.'000';
 
-        $kline = \OKCoin::getFutureKline([
+        $kline = $this->request('getFutureKline', [
             'symbol' => $remote_symbol,
             'type' => $type,
             'contract_type' => $contract_type,
             'since' => $since,
-            'size' => $size]);
+            'size' => $size,
+        ]);
 
         if (!is_array($kline)) {
             return [];
@@ -265,7 +267,7 @@ class OKEX_Futures extends OKCoin
 
     protected function getUserInfo()
     {
-        return \OKCoin::postFutureUserinfo4fix(
+        return $this->request('postFutureUserinfo4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret')
         );
@@ -308,7 +310,7 @@ class OKEX_Futures extends OKCoin
             return $this;
         }
 
-        $reply = \OKCoin::postFutureTrade(
+        $reply = $this->request('postFutureTrade',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -320,7 +322,7 @@ class OKEX_Futures extends OKCoin
                 'lever_rate'    => $leverage,
                 // Match best counter party price (BBO)?
                 // 0: No 1: Yes   If yes, the 'price' field is ignored
-                'match_price'   => $market_orders
+                'match_price'   => $market_orders,
             ]
         );
         if (!is_object($reply)) {
@@ -373,13 +375,13 @@ class OKEX_Futures extends OKCoin
             return $this;
         }
 
-        $reply = \OKCoin::postFutureCancel(
+        $reply = $this->request('postFutureCancel',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
                 'symbol' => $remote_symbol,
                 'contract_type' => $contract_type,
-                'order_id' => $remote_order_id
+                'order_id' => $remote_order_id,
             ]
         );
 
@@ -416,7 +418,7 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Contract type not found');
         }
 
-        return \OKCoin::postFutureOrderInfo(
+        return $this->request('postFutureOrderInfo',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -441,12 +443,12 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Remote name not found');
         }
 
-        return \OKCoin::postFuturePosition4fix(
+        return $this->request('postFuturePosition4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
                 'symbol' => $remote_symbol,
-                'type' => 1
+                'type' => 1,
             ]
         );
         // type -- by default, futures positions with leverage rate 10 are returned.

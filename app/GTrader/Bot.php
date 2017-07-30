@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 /**
-*
-*/
+ * Runs a strategy on an exchange.
+ */
 class Bot extends Model
 {
     use Skeleton, HasStrategy, Scheduled;
@@ -156,7 +156,7 @@ class Bot extends Model
         }
 
         // Looks like we have a valid signal
-        echo 'Going '.$last_signal['signal'].' at '.$last_signal['price']."\n";
+        echo 'Bot ['.$this->name.'] taking '.$last_signal['signal'].' position at '.$last_signal['price']."\n";
         // Tell the exchange to take the position
         $exchange->takePosition(
             $symbol,
@@ -175,8 +175,8 @@ class Bot extends Model
     public static function getListOfUser(int $user_id)
     {
         $bots = self::where('user_id', $user_id)
-                        ->orderBy('name')
-                        ->get();
+            ->orderBy('name')
+            ->get();
 
         return view('Bot/List', ['bots' => $bots]);
     }
@@ -213,8 +213,8 @@ class Bot extends Model
         $st = 'strategy_select_bot_'.$this->id;
         if (isset($request->$st)) {
             if (DB::table('strategies')->where('id', $request->$st)
-                                        ->where('user_id', Auth::id())
-                                        ->count()) {
+                ->where('user_id', Auth::id())
+                ->count()) {
                 $this->strategy_id = $request->$st;
             }
         }
@@ -243,8 +243,8 @@ class Bot extends Model
         $options = $this->options;
         foreach ($this->getParam('user_options') as $option => $default) {
             $options[$option] = isset($request->$option) ?
-                                $request->$option :
-                                $default;
+                $request->$option :
+                $default;
         }
         $this->options = $options;
 
