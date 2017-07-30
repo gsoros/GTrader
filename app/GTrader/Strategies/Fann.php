@@ -596,7 +596,7 @@ class Fann extends Strategy
         if (!is_resource($fann)) {
             throw new \Exception('Supplied fann is not a resource');
         }
-        if ('fann' !== get_resource_type($fann)) {
+        if ('fann' !== strtolower(get_resource_type($fann))) {
             throw new \Exception('Supplied resource is not a fann resource');
         }
         //error_log('setFann('.get_resource_type($fann).')');
