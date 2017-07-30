@@ -10,32 +10,36 @@ ENV SUG "su -s /bin/sh -m gtrader -c"
 ENV CACHE /tmp/cache
 
 
-RUN DEBIAN_FRONTEND=noninteractive \
+RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
-                                            php7.0-dev \
-                                        php7.0-cli \
-                                    php7.0-fpm \
-                                php7.0-mysql \
-                            php7.0-gd \
-                        php7.0-mcrypt \
-                    php7.0-zip\
-                php7.0-mysql \
-            php7.0-mbstring \
-                php-pear \
-                    curl \
-                        openssl \
-                            ca-certificates \
-                                git \
-                                    unzip \
-                                        mysql-client \
-                                    libfann2 \
-                                libfann-dev \
-                            make \
-                        attr \
-                    nano \
-                cron \
-            gnupg \
-        runit
+    software-properties-common dirmngr \
+    && add-apt-repository ppa:ondrej/php \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C
+    && apt-get update && apt-get install -y --no-install-recommends \
+                                            php-dev \
+                                        php-cli \
+                                    php-fpm \
+                                php-mysql \
+                            php-gd \
+                        php-mcrypt \
+                    php-xml \
+                php-zip \
+            php-mbstring \
+        php-pear \
+            curl \
+                openssl \
+                    ca-certificates \
+                        git \
+                            unzip \
+                                mysql-client \
+                            libfann2 \
+                        libfann-dev \
+                    make \
+                attr \
+            nano \
+        cron \
+    gnupg \
+    runit
 
 
 RUN set -eux; \
@@ -56,7 +60,7 @@ RUN set -eux; \
     \
     \
     && echo "############### CLEAN UP ######################" \
-    && apt-get -y remove libfann-dev make php7.0-dev \
+    && apt-get -y remove libfann-dev make php-dev software-properties-common dirmngr \
     && apt-get -y autoremove && apt-get clean \
     && rm -rfv /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
 
