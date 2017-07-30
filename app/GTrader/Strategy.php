@@ -99,8 +99,8 @@ class Strategy
     public function delete()
     {
         $affected = DB::table('strategies')
-                        ->where('id', $this->getParam('id'))
-                        ->delete();
+            ->where('id', $this->getParam('id'))
+            ->delete();
         return $this;
     }
 
@@ -108,8 +108,9 @@ class Strategy
     public function toHTML(string $content = null)
     {
         return view('StrategyForm', [
-                    'strategy' => $this,
-                    'child_settings' => $content]);
+            'strategy' => $this,
+            'child_settings' => $content
+        ]);
     }
 
 
@@ -140,10 +141,10 @@ class Strategy
     public static function getListOfUser(int $user_id)
     {
         $strategies_db = DB::table('strategies')
-                        ->select('id', 'strategy')
-                        ->where('user_id', $user_id)
-                        ->orderBy('name')
-                        ->get();
+            ->select('id', 'strategy')
+            ->where('user_id', $user_id)
+            ->orderBy('name')
+            ->get();
         $strategies = [];
         foreach ($strategies_db as $strategy_db) {
             $strategy = unserialize($strategy_db->strategy);
@@ -155,7 +156,8 @@ class Strategy
             'StrategyList',
             [
                 'available' => self::singleton()->getParam('available'),
-                'strategies' => $strategies]
+                'strategies' => $strategies
+            ]
         );
     }
 

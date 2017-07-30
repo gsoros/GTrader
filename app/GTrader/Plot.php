@@ -33,8 +33,7 @@ class Plot
 
         $this->plot($data);
         //return '<img class="img-responsive" src="'.
-        return '<img src="'.
-                $this->_plot->EncodeImage().'">';
+        return '<img src="'.$this->_plot->EncodeImage().'">';
     }
 
 

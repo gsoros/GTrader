@@ -16,5 +16,4 @@ public/mix-manifest.json
 resources/assets/bower/
 storage/fann/
 storage/locks/
-disable_TrainingManager*
 */GTrader/Strategies/Unreleased

@@ -33,8 +33,7 @@ class PHPlot extends Chart
 
 
     public function getImage()
-    {   //dd($this->getIndicators());
-        // Init
+    {
         $candles = $this->getCandles();
         //$this->setParam('width', $this->getParam('width') + 200);
         if (!$this->initPlot()) {
@@ -189,7 +188,6 @@ class PHPlot extends Chart
     }
 
 
-
     protected function setYAxis(string $dir = 'left', array $item)
     {
         static $left_labels_shown = false;
@@ -220,7 +218,6 @@ class PHPlot extends Chart
         $this->_plot->SetYTickLabelPos('plotright');
         return $this;
     }
-
 
 
 
