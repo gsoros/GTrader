@@ -591,7 +591,7 @@ class Fann extends Strategy
      * @param resource $fann
      * @return $this
      */
-    public function setFann(resource $fann)
+    public function setFann($fann)
     {
         if (!is_resource($fann)) {
             throw new \Exception('Supplied fann is not a resource');
