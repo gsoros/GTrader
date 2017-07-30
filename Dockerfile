@@ -14,7 +14,7 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common dirmngr gnupg locales \
     && add-apt-repository ppa:ondrej/php \
-    && apt-get update && apt-get install -y --no-install-recommends \
+    && apt-get update && apt-get install -y --no-install-recommends --allow-unauthenticated \
                                             php-dev \
                                         php-cli \
                                     php-fpm \
