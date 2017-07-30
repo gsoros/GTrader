@@ -9,6 +9,11 @@ return [
     'adjustable' => [
         'mode' => [
             'name' => 'Mode',
+            'description' =>
+                'Fixed mode invests a fixed percentage of the starting balance. '.
+                'Dynamic mode adjusts the invested amount after each trade; '.
+                'this can result in exponential growth and never losing the full balance. '.
+                'The percentage can be set in the exchange settings.',
             'type' => 'select',
             'options' => [
                 'fixed' => 'Fixed',
