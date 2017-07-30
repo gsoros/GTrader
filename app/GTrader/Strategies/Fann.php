@@ -19,18 +19,53 @@ if (!extension_loaded('fann')) {
     throw new \Exception('FANN extension not loaded');
 }
 
+/**
+ * Strategy using the PHP-FANN extension.
+ */
 class Fann extends Strategy
 {
-    protected $_fann = null;                // fann resource
+    /**
+     * Fann resource
+     * @var resource
+     */
+    protected $_fann = null;
+
+    /**
+     * Training data
+     * @var array
+     */
     protected $_data = [];
+
+    /**
+     * Current sample index
+     * @var int
+     */
     protected $_sample_iterator = 0;
-    protected $_callback_type = false;
+
+    /**
+     * Callback type
+     * @var string
+     */
+    protected $_callback_type;
+
+    /**
+     * Current callback index
+     * @var int
+     */
     protected $_callback_iterator = 0;
+
+    /**
+     * Fann output on the null sample
+     * @var float
+     */
     protected $_bias = null;
 
+    /**
+     * Adds an initial OHLC indicator and an input.
+     * @param array $params
+     */
     public function __construct(array $params = [])
     {
-        //error_log('Fann::__construct()');
         parent::__construct($params);
         $this->setParam('num_output', 1);
         $ohlc = $this->addIndicator('Ohlc', [], ['display' => ['visible' => true]]);
@@ -38,16 +73,20 @@ class Fann extends Strategy
             $ohlc->getSignature('open'),
         ]);
         $ohlc->addRef('root');
-        //dump($this->getIndicators());
     }
 
-
+    /**
+     * @return array
+     */
     public function __sleep()
     {
         $this->destroyFann();
         return ['params', 'indicators'];
     }
 
+    /**
+     * Re-creates the strategy.
+     */
     public function __wakeup()
     {
         parent::__wakeup();
@@ -60,7 +99,11 @@ class Fann extends Strategy
         }
     }
 
-
+    /**
+     * Returns the HTML form representation.
+     * @param  string $content not used
+     * @return string
+     */
     public function toHTML(string $content = null)
     {
         return parent::toHTML(
@@ -68,7 +111,10 @@ class Fann extends Strategy
         );
     }
 
-
+    /**
+     * Training chart for selecting the ranges.
+     * @return Chart
+     */
     public function getTrainingChart()
     {
         $exchange = Exchange::getDefault('exchange');
@@ -99,7 +145,11 @@ class Fann extends Strategy
         return $chart;
     }
 
-
+    /**
+     * Training progress chart.
+     * @param FannTraining  $training
+     * @return Chart
+     */
     public function getTrainingProgressChart(FannTraining $training)
     {
         $candles = new Series([
@@ -157,7 +207,12 @@ class Fann extends Strategy
         return $chart;
     }
 
-
+    /**
+     * Returns a plot of the training history.
+     * @param  int    $width    Plot width
+     * @param  int    $height   Plot height
+     * @return string
+     */
     public function getHistoryPlot(int $width, int $height)
     {
         $data = [];
@@ -191,7 +246,13 @@ class Fann extends Strategy
         return $plot->toHTML();
     }
 
-
+    /**
+     * Returns a plot of a sample.
+     * @param  int    $width    Plot width
+     * @param  int    $height   Plot height
+     * @param  int    $time     UTS of the last candle in the sample
+     * @return string
+     */
     public function getSamplePlot(int $width, int $height, int $time)
     {
         $data = [];
@@ -270,7 +331,12 @@ class Fann extends Strategy
         ]);
     }
 
-
+    /**
+     * Update strategy with parameters supplied by the user.
+     * @param  Request $request
+     * @return $this
+     * @todo move all handleCommandRequest(R) methods to handleRequest($command, R)
+     */
     public function handleSaveRequest(Request $request)
     {
         $topology_changed = false;
@@ -351,7 +417,10 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * Display strategy as list item.
+     * @return string
+     */
     public function listItem()
     {
         try {
@@ -382,7 +451,12 @@ class Fann extends Strategy
     }
 
 
-
+    /**
+     * Load an existing fann network from file or create new fann network.
+     * @param  string   $prefer_suffix  Filename suffix for loading the network from an alternate file.
+     * @throws
+     * @return $this
+     */
     public function loadOrCreateFann(string $prefer_suffix = '')
     {
         if (is_resource($this->_fann)) {
@@ -395,22 +469,30 @@ class Fann extends Strategy
         if (!is_resource($this->_fann)) {
             $this->createFann();
         }
-        return true;
+        return $this;
     }
 
-
+    /**
+     * Load an existing fann network from file.
+     * @param  string   $prefer_suffix  Filename suffix for loading the network from an alternate file.
+     * @return $this
+     */
     public function loadFann($path)
     {
-        if (is_file($path) && is_readable($path)) {
-            //error_log('creating fann from '.$path);
-            $this->_fann = fann_create_from_file($path);
-            return true;
+        if (!is_file($path) || !is_readable($path)) {
+            //error_log('loadFann() cannot read '.$path);
+            return $this;
         }
-        //error_log('loadFann() cannot read '.$path);
-        return false;
+        //error_log('creating fann from '.$path);
+        $this->_fann = fann_create_from_file($path);
+        return $this;
     }
 
-
+    /**
+     * Create new fann network.
+     * @throws
+     * @return $this
+     */
     public function createFann()
     {
         //error_log('Fann::createFann() Input: '.$this->getNumInput());
@@ -435,17 +517,26 @@ class Fann extends Strategy
         }
         $this->initFann();
         $this->reset();
-        return true;
+        return $this;
     }
 
 
+    /**
+     * Reset network weights to initial (random) values.
+     * @return $this
+     */
     public function reset()
     {
         fann_randomize_weights($this->_fann, -0.77, 0.77);
-        return true;
+        return $this;
     }
 
 
+    /**
+     * Initialize network.
+     * @throws
+     * @return $this
+     */
     public function initFann()
     {
         if (!is_resource($this->_fann)) {
@@ -470,10 +561,13 @@ class Fann extends Strategy
         fann_set_train_error_function($this->_fann, FANN_ERRORFUNC_TANH);
         //fann_set_learning_rate($this->_fann, 0.2);
         $this->_bias = null;
-        return true;
+        return $this;
     }
 
-
+    /**
+     * Returns the fann resource.
+     * @return resource Fann resource.
+     */
     public function getFann()
     {
         if (!is_resource($this->_fann)) {
@@ -482,56 +576,78 @@ class Fann extends Strategy
         return $this->_fann;
     }
 
-
+    /**
+     * Returns a copy of the fann resource.
+     * @return resource Fann resource.
+     */
     public function copyFann()
     {
         return fann_copy($this->getFann());
     }
 
-
-    public function setFann($fann)
+    /**
+     * Set the fann resource.
+     * @throws
+     * @param resource $fann
+     * @return $this
+     */
+    public function setFann(resource $fann)
     {
         if (!is_resource($fann)) {
-            throw new \Exception('supplied fann is not a resource');
+            throw new \Exception('Supplied fann is not a resource');
+        }
+        if ('fann' !== get_resource_type($fann)) {
+            throw new \Exception('Supplied resource is not a fann resource');
         }
         //error_log('setFann('.get_resource_type($fann).')');
         //var_dump(debug_backtrace());
         //if (is_resource($this->_fann)) $this->destroyFann(); // do not destroy, it may have a reference
         $this->_fann = $fann;
         $this->initFann();
-        return true;
+        return $this;
     }
 
-
+    /**
+     * Save the fann network to a file.
+     * @throws
+     * @param string $suffix Filename suffix
+     * @return Fann $this
+     */
     public function saveFann(string $suffix = '')
     {
         $fn = $this->path().$suffix;
         if (!fann_save($this->getFann(), $fn)) {
-            error_log('saveFann to '.$fn.' failed');
-            return false;
+            error_log('Fann::saveFann() saving to '.$fn.' failed');
+            return $this;
         }
         if (!chmod($fn, 0664)) {
-            error_log('chmod of '.$fn.' failed');
-            return false;
+            error_log('Fann::saveFann() chmod of '.$fn.' failed');
         }
-        return true;
+        return $this;
     }
 
 
-
+    /**
+     * Delete strategy and its associated data.
+     * @return $this
+     */
     public function delete()
     {
-        // remove trainings
+        // delete trainings
         FannTraining::where('strategy_id', $this->getParam('id'))->delete();
-        // remove files
+        // delete files
         $this->deleteFiles();
-        // remove training history
+        // delete training history
         $this->deleteHistory();
-        // remove strategy
+        // delete strategy
         return parent::delete();
     }
 
 
+    /**
+     * Delete training history.
+     * @return $this
+     */
     public function deleteHistory()
     {
         $affected = DB::table('fann_history')
@@ -541,7 +657,13 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * Save training history item.
+     * @param  int    $epoch Training epoch
+     * @param  string $name  Item name
+     * @param  float  $value Item value
+     * @return $this
+     */
     public function saveHistory(int $epoch, string $name, float $value)
     {
         DB::table('fann_history')
@@ -554,7 +676,10 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * Get number of history records.
+     * @return int Number of records
+     */
     public function getHistoryNumRecords()
     {
         return DB::table('fann_history')
@@ -562,7 +687,11 @@ class Fann extends Strategy
             ->count();
     }
 
-
+    /**
+     * Remove every nth training history record.
+     * @param  integer $nth
+     * @return $this
+     */
     public function pruneHistory(int $nth = 2)
     {
         if ($nth < 2) {
@@ -591,7 +720,9 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * @return int Epoch
+     */
     public function getLastTrainingEpoch()
     {
         $res = DB::table('fann_history')
@@ -603,7 +734,10 @@ class Fann extends Strategy
         return is_object($res) ? intval($res->epoch) : 0;
     }
 
-
+    /**
+     * Delete files associated with the strategy.
+     * @return $this
+     */
     public function deleteFiles()
     {
         $fann = $this->path();
@@ -624,16 +758,27 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * Destroy the fann resource.
+     * @return $this
+     */
     public function destroyFann()
     {
         if (is_resource($this->_fann)) {
-            return fann_destroy($this->_fann);
+            if (!fann_destroy($this->_fann)) {
+                error_log('Fann::destroyFann() could not destroy resource.');
+            }
         }
-        return true;
+        return $this;
     }
 
-
+    /**
+     * Run the neural network.
+     * @param array     $input          Input array
+     * @param bool      $ignore_bias    Ignore bias
+     * @throws
+     * @return float|null
+     */
     public function run($input, $ignore_bias = false)
     {
         try {
@@ -650,27 +795,39 @@ class Fann extends Strategy
         }
     }
 
-
+    /**
+     * Get the network bias by running on the null sample
+     * @return int Zero if bias compensation is disabled
+     */
     public function getBias()
     {
-        if (!$this->getParam('bias_compensation')) {
+        if (!$comp = $this->getParam('bias_compensation')) {
             return 0; // bias disabled
         }
         if (!is_null($this->_bias)) {
-            return $this->_bias * $this->getParam('bias_compensation');
+            return $this->_bias * $comp;
         }
         $this->_bias = fann_run($this->getFann(), array_fill(0, $this->getNumInput(), 0))[0];
         //error_log('bias: '.$this->_bias);
-        return $this->_bias * $this->getParam('bias_compensation');
+        return $this->_bias * $comp;
     }
 
 
+    /**
+     * Reset sample iterator.
+     * @return $this
+     */
     public function resetSample()
     {
         $this->_sample_iterator = 0;
         return $this;
     }
 
+    /**
+     * Reset sample iterator to a specific time
+     * @param int $time UTS
+     * @return $this
+     */
     public function resetSampleTo(int $time)
     {
         $k = 0;
@@ -687,8 +844,12 @@ class Fann extends Strategy
         return $this;
     }
 
-
-    public function nextSample($size = null)
+    /**
+     * Get the next sample
+     * @param int $size optional
+     * @return array|null
+     */
+    public function nextSample(int $size = null)
     {
         $candles = $this->getCandles();
 
@@ -711,7 +872,11 @@ class Fann extends Strategy
         return $sample;
     }
 
-
+    /**
+     * Runs input indicators
+     * @param bool $force_rerun Run even if already run
+     * @return $this
+     */
     public function runInputIndicators(bool $force_rerun = false)
     {
         $inputs = $this->getParam('inputs', []);
@@ -729,7 +894,16 @@ class Fann extends Strategy
         return $this;
     }
 
-
+    /**
+     * Get input indicator signatures in groups
+     * @param  bool $force_rerun Do not return cached groups
+     * @return array [
+     *                  'ohlc' => [string $sig => true, ...],
+     *                  'range' => [string $sig => ['min' => float $min, 'max' => float $max], ...],
+     *                  'individual' => [string $sig => ['normalize_to' => float $norm_to], ...]
+     *               ]
+     * @todo needs refactoring
+     */
     public function getInputGroups(bool $force_rerun = false)
     {
         //$this->setParam('cache.log', 'put, miss');
@@ -792,7 +966,13 @@ class Fann extends Strategy
         return $groups;
     }
 
-
+    /**
+     * Convert a sample array to input and output array
+     * @param  array  $sample
+     * @param  bool   $input_only
+     * @return array
+     * @todo needs refactoring
+     */
     public function sample2io(array $sample, bool $input_only = false)
     {
         $groups = $this->getInputGroups();
@@ -867,7 +1047,13 @@ class Fann extends Strategy
         return [$input, $last_ohlc4, Series::ohlc4($sample[count($sample)-1])];
     }
 
-
+    /**
+     * Normalize input array.
+     * @param  array  $input
+     * @param  bool   $assoc
+     * @return array
+     * @todo needs refactoring
+     */
     public function normalizeInput(array $input, bool $assoc = false)
     {
         $ohlc_min = Arr::get($input, 'ohlc._dim.min', 0);
@@ -920,11 +1106,17 @@ class Fann extends Strategy
         return $norm_input;
     }
 
-
+    /**
+     * Create the data array for the network.
+     * @param  string $name        Identifier
+     * @param  bool   $force_rerun
+     * @return $this
+     * @todo needs refactoring
+     */
     public function candlesToData(string $name, bool $force_rerun = false)
     {
         if (isset($this->_data[$name]) && !$force_rerun) {
-            return true;
+            return $this;
         }
 
         $this->runInputIndicators($force_rerun);
@@ -966,10 +1158,15 @@ class Fann extends Strategy
 
         $this->_data[$name] = $data;
         //error_log('candlesToData() '.json_encode($data));
-        return true;
+        return $this;
     }
 
 
+    /**
+     * Test the network
+     * @param  bool $force_rerun
+     * @return int The mean sqared error
+     */
     public function test(bool $force_rerun = false)
     {
         if (! ($test_data = $this->cached('test_data')) || $force_rerun) {
@@ -989,6 +1186,13 @@ class Fann extends Strategy
     }
 
 
+    /**
+     * Train the network
+     * @param  int    $max_epochs  maximum number of epochs
+     * @param  bool   $force_rerun
+     * @throws
+     * @return $this
+     */
     public function train(int $max_epochs = 5000, bool $force_rerun = false)
     {
         if (! ($training_data = $this->cached('training_data')) || $force_rerun) {
@@ -1046,13 +1250,23 @@ class Fann extends Strategy
             throw new \Exception('Unknown fann type.');
         }
 
+        if (!$res) {
+            error_log('Fann::train() training failed');
+        }
         $this->_bias = null;
 
-        return $res ? true : false;
+        return $this;
     }
 
-
-    public function createCallback($num_data, $num_input, $num_output)
+    /**
+     * Used internally by train() and test()
+     * @param  int $num_data
+     * @param  int $num_input
+     * @param  int $num_output
+     * @return array
+     * @todo needs refactoring
+     */
+    protected function createCallback($num_data, $num_input, $num_output)
     {
         if (!$this->_callback_type) {
             throw new \Exception('callback type not set');
@@ -1063,7 +1277,7 @@ class Fann extends Strategy
             $this->_data[$this->_callback_type][$this->_callback_iterator-1] :
             false;
         if (!$ret) {
-            error_log('Fann::createCallback() nodata for '.$this->_callback_type.' '.
+            error_log('Fann::createCallback() no data for '.$this->_callback_type.' '.
                 ($this->_callback_iterator-1));
         }
         return $ret;
@@ -1072,7 +1286,10 @@ class Fann extends Strategy
 
 
 
-    /** Mean Squared Error Reciprocal */
+    /**
+     *  Mean Squared Error Reciprocal
+     * @return float
+     */
     public function getMSER()
     {
         $mse = fann_get_MSE($this->getFann());
@@ -1083,20 +1300,30 @@ class Fann extends Strategy
         return 0;
     }
 
-
+    /**
+     * Get sample size
+     * @return int
+     */
     public function getSampleSize()
     {
         return $this->getParam('sample_size');
     }
 
-
+    /**
+     * Set sample size
+     * @param int $num
+     * @return $this
+     */
     public function setSampleSize(int $num)
     {
         $this->setParam('sample_size', $num);
         return $this;
     }
 
-
+    /**
+     * Get the number of imput neurons
+     * @return int
+     */
     public function getNumInput()
     {
         if ($cached = $this->cached('num_input')) {
@@ -1123,6 +1350,10 @@ class Fann extends Strategy
     }
 
 
+    /**
+     * Get the number of layers in the network
+     * @return int
+     */
     public function getNumLayers()
     {
         if ($this->getParam('fann_type') === 'fixed') {
@@ -1135,6 +1366,10 @@ class Fann extends Strategy
     }
 
 
+    /**
+     * Get the path to saved fann
+     * @return string
+     */
     public function path()
     {
         //$dir = $this->getParam('path');
@@ -1151,12 +1386,20 @@ class Fann extends Strategy
     }
 
 
+    /**
+     * Returns true if fann file exists
+     * @return bool
+     */
     public function hasBeenTrained()
     {
         return is_file($this->path());
     }
 
 
+    /**
+     * Creates and returns the prediction indicator
+     * @return Indicator
+     */
     public function getPredictionIndicator()
     {
         if ($i = $this->cached('prediction_indicator')) {
@@ -1187,7 +1430,10 @@ class Fann extends Strategy
     }
 
 
-
+    /**
+     * Creates and returns the signals indicator
+     * @return Indicator|null
+     */
     public function getSignalsIndicator()
     {
         if ($i = $this->cached('signals_indicator')) {
