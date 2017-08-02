@@ -51,7 +51,7 @@ class Bot extends Model
      */
     public function trades()
     {
-        return $this->hasMany('GTrader\Trade');
+        return $this->hasMany('\GTrader\Trade');
     }
 
     /**
@@ -60,7 +60,7 @@ class Bot extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('\App\User');
     }
 
     /**
@@ -172,13 +172,13 @@ class Bot extends Model
     }
 
 
-    public static function getListOfUser(int $user_id)
+    public static function getListOfUser(int $user_id, bool $return_array = false)
     {
         $bots = self::where('user_id', $user_id)
             ->orderBy('name')
             ->get();
 
-        return view('Bot/List', ['bots' => $bots]);
+        return $return_array ? $bots : view('Bot/List', ['bots' => $bots]);
     }
 
 

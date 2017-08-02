@@ -18,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         /*
-        // Log all queries
+        // Dump all queries
         DB::listen(function ($query) {
 
             $replace = function ($sql, $bindings) {
@@ -32,9 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 return $sql;
             };
             $sql = $replace($query->sql, $query->bindings);
-            error_log($sql);
+            dump($sql);
         });
         */
+
 
         // Save some memory
         DB::connection()->disableQueryLog();

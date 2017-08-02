@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\User;
 use GTrader\Page;
 use GTrader\Exchange;
 use GTrader\Chart;
@@ -112,22 +114,36 @@ class HomeController extends Controller
 
     public function dump(Request $request)
     {
-        switch ($request->class) {
-            case 'Chart':
-                $o = Chart::load(Auth::id(), $request->name);
-                break;
-            case 'Strategy':
-                $o = Strategy::load($request->id);
-                break;
-            case 'FannTraining':
-                $o = \GTrader\FannTraining::where('id', $request->id)->first();
-                //$o->init();
-                break;
-            default:
-                return 'unknown class';
-        }
-        dump($o);
+        $user = Auth::user();
+
+        echo 'Charts:';
+        dump($user->charts());
+
+        echo 'Strategies:';
+        dump(array_map(function($strategy) {
+            return $strategy->setParam(
+                'trainings',
+                \GTrader\FannTraining::where('strategy_id', $strategy->getParam('id'))
+                    ->get()
+                    ->toArray()
+            );
+        }, $user->strategies()));
+
+        echo 'Bots:';
+        dump($user->bots);
+
+        echo 'Trades:';
+        dump($user->trades->toArray());
+
+        echo 'ExchangeConfigs:';
+        dump($user->exchangeConfigs->toArray());
+
+        echo 'Session:';
+        dump($request->session()->all());
+
+        return new Response('', 200);
     }
+
 
 
     public function test()

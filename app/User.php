@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -63,7 +64,7 @@ class User extends Authenticatable
      */
     public function exchangeConfigs()
     {
-        return $this->hasMany('GTrader\UserExchangeConfig');
+        return $this->hasMany('\GTrader\UserExchangeConfig');
     }
 
 
@@ -72,7 +73,7 @@ class User extends Authenticatable
      */
     public function trades()
     {
-        return $this->hasMany('GTrader\Trade');
+        return $this->hasMany('\GTrader\Trade');
     }
 
 
@@ -81,6 +82,35 @@ class User extends Authenticatable
      */
     public function bots()
     {
-        return $this->hasMany('GTrader\Bot');
+        return $this->hasMany('\GTrader\Bot');
     }
+
+
+    /**
+     * Get the Strategies of the user.
+     */
+    public function strategies()
+    {
+        return \GTrader\Strategy::getListOfUser($this->id, true);
+    }
+
+    /**
+     * Get the Charts of the user.
+     */
+    public function charts()
+    {
+        $charts_db = DB::table('charts')
+            ->select('name')
+            ->where('user_id', $this->id)
+            ->orderBy('name')
+            ->get();
+
+        $charts = [];
+        foreach ($charts_db as $chart_db) {
+            $charts[] = \GTrader\Chart::load($this->id, $chart_db->name);
+        }
+        return $charts;
+
+    }
+
 }

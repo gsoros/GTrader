@@ -138,13 +138,14 @@ class Strategy
     }
 
 
-    public static function getListOfUser(int $user_id)
+    public static function getListOfUser(int $user_id, bool $return_array = false)
     {
         $strategies_db = DB::table('strategies')
             ->select('id', 'strategy')
             ->where('user_id', $user_id)
             ->orderBy('name')
             ->get();
+            
         $strategies = [];
         foreach ($strategies_db as $strategy_db) {
             $strategy = unserialize($strategy_db->strategy);
@@ -152,13 +153,12 @@ class Strategy
             $strategies[] = $strategy;
         }
 
-        return view(
-            'StrategyList',
-            [
+        return $return_array ?
+            $strategies :
+            view('StrategyList', [
                 'available' => self::singleton()->getParam('available'),
-                'strategies' => $strategies
-            ]
-        );
+                'strategies' => $strategies,
+            ]);
     }
 
 
