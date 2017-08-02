@@ -4,10 +4,17 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Fetches new candles from all available exchanes and stores them in the DB
+ */
 class Aggregator
 {
     use Skeleton, Scheduled;
 
+    /**
+     * Main method
+     * @return $this
+     */
     public function aggregate()
     {
         if (!$this->scheduleEnabled()) {
@@ -31,64 +38,39 @@ class Aggregator
             return $this;
         }
 
-        $default_exchange = Exchange::make();
-        foreach ($default_exchange->getParam('available_exchanges') as $exchange_class) {
-            $exchange = Exchange::make($exchange_class);
-            $exchange_id = null;
-            $exchange_o = DB::table('exchanges')
-                ->select('id')
-                ->where('name', $exchange->getParam('local_name'))
-                ->first();
-            if (is_object($exchange_o)) {
-                $exchange_id = $exchange_o->id;
-            }
-            if (!$exchange_id) {
-                $exchange_id = DB::table('exchanges')
-                    ->insertGetId([
-                        'name' => $exchange->getParam('local_name'),
-                        'long_name' => $exchange->getParam('long_name')
-                    ]);
-            }
+        echo '['.date('Y-m-d H:i:s').'] '.__METHOD__.' ';
+
+        foreach ($this->getExchanges() as $exchange_class) {
+
+            $exchange = $this->getExchange($exchange_class);
             $symbols = $exchange->getParam('symbols');
             if (!is_array($symbols)) {
                 continue;
             }
+            echo $exchange->getParam('short_name').': ';
+
             foreach ($symbols as $symbol_local => $symbol) {
                 if (!is_array($symbol['resolutions'])) {
                     continue;
                 }
-                $symbol_id = null;
-                $symbol_o = DB::table('symbols')
-                    ->select('id')
-                    ->where('name', $symbol_local)
-                    ->where('exchange_id', $exchange_id)
-                    ->first();
-                if (is_object($symbol_o)) {
-                    $symbol_id = $symbol_o->id;
-                }
-                if (!$symbol_id) {
-                    $symbol_id = DB::table('symbols')
-                        ->insertGetId([
-                            'name' => $symbol_local,
-                            'exchange_id' => $exchange_id,
-                            'long_name' => $symbol['long_name']
-                        ]);
-                }
+                $symbol_id = $this->getSymbolId(
+                    $exchange->getParam('id'),
+                    $symbol_local,
+                    $symbol['long_name']
+                );
+
+                echo $symbol_local.': ';
+
                 foreach ($symbol['resolutions'] as $resolution => $res_name) {
-                    //set_time_limit(59);
-                    echo 'candles:fetch '.$exchange_class.':'.$symbol_local.'('.$symbol_id.') '.$res_name.' ';
-                    $time = DB::table('candles')
-                        ->select('time')
-                        ->where('exchange_id', $exchange_id)
-                        ->where('symbol_id', $symbol_id)
-                        ->where('resolution', $resolution)
-                        ->latest('time')
-                        ->first();
-                    if ($time = is_object($time) ? $time->time : 0) {
-                        echo 'Last: '.date('Y-m-d H:i', $time).' ';
-                    }
+
+                    $time = $this->getLastCandleTime(
+                        $exchange->getParam('id'),
+                        $symbol_id,
+                        $resolution
+                    );
+
+                    echo $res_name.': ';
                     flush();
-                    //if ($time > time() - $resolution) continue;
 
                     $candles = $exchange->getCandles(
                         $symbol_local,
@@ -96,27 +78,120 @@ class Aggregator
                         $time - $resolution,
                         100000
                     );
-                    //dd($candles);
 
                     if (!is_array($candles)) {
-                        echo PHP_EOL;
+                        echo '0, ';
                         continue;
                     }
                     if (!count($candles)) {
-                        echo PHP_EOL;
+                        echo '0, ';
                         continue;
                     }
                     foreach ($candles as $candle) {
-                        $candle->exchange_id = $exchange_id;
+                        $candle->exchange_id = $exchange->getParam('id');
                         $candle->symbol_id = $symbol_id;
                         $candle->resolution = $resolution;
                         Series::saveCandle($candle);
                     }
-                    echo count($candles).' processed'.PHP_EOL;
+                    echo count($candles).', ';
                 }
             }
         }
+        echo 'all done.'.PHP_EOL;
+
         Lock::release($lock);
+        
         return $this;
+    }
+
+    /**
+     * Get last candle time
+     * @param  int    $exchange_id
+     * @param  int    $symbol_id
+     * @param  int    $resolution
+     * @return int
+     */
+    protected function getLastCandleTime(
+        int $exchange_id,
+        int $symbol_id,
+        int $resolution)
+    {
+        $time = DB::table('candles')
+            ->select('time')
+            ->where('exchange_id', $exchange_id)
+            ->where('symbol_id', $symbol_id)
+            ->where('resolution', $resolution)
+            ->latest('time')
+            ->first();
+        return is_object($time) ? $time->time : 0;
+    }
+
+    /**
+     * Returns available exchange class names
+     * @return array
+     */
+    protected function getExchanges()
+    {
+        $default_exchange = Exchange::make();
+        return $default_exchange->getParam('available_exchanges');
+    }
+
+    /**
+     * returns the Exhange object
+     * @param  string $class Class name
+     * @return Exchange
+     */
+    protected function getExchange(string $class)
+    {
+        $exchange = Exchange::make($class);
+        $exchange_id = null;
+        $o = DB::table('exchanges')
+            ->select('id')
+            ->where('name', $exchange->getParam('local_name'))
+            ->first();
+        if (is_object($o)) {
+            $exchange_id = $o->id;
+        }
+        if (!$exchange_id) {
+            $exchange_id = DB::table('exchanges')
+                ->insertGetId([
+                    'name' => $exchange->getParam('local_name'),
+                    'long_name' => $exchange->getParam('long_name')
+                ]);
+        }
+        $exchange->setParam('id', $exchange_id);
+        return $exchange;
+    }
+
+    /**
+     * Returns symbol ID
+     * @param  int    $exchange_id
+     * @param  string $local_name
+     * @param  string $long_name
+     * @return int
+     */
+    protected function getSymbolId(
+        int $exchange_id,
+        string $local_name,
+        string $long_name)
+    {
+        $symbol_id = null;
+        $o = DB::table('symbols')
+            ->select('id')
+            ->where('name', $local_name)
+            ->where('exchange_id', $exchange_id)
+            ->first();
+        if (is_object($o)) {
+            $symbol_id = $o->id;
+        }
+        if (!$symbol_id) {
+            $symbol_id = DB::table('symbols')
+                ->insertGetId([
+                    'name' => $local_name,
+                    'exchange_id' => $exchange_id,
+                    'long_name' => $long_name,
+                ]);
+        }
+        return $symbol_id;
     }
 }
