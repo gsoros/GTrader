@@ -9,12 +9,17 @@ class Sar extends Trader
 {
     public function getInputs()
     {
-        // Trick fann to include this indicator in the most recent candle
-        return $this->getLookBack() ? [] : ['high', 'low'];
+        return [];
+    }
+
+    public function outputDependsOn(array $sigs = [], string $output = null)
+    {
+        return $this->inputFrom($sigs);
     }
 
     public function inputFrom($signatures)
     {
+        //dump('Sar::inputFrom()', $signatures);
         if (!is_array($signatures)) {
             $signatures = [$signatures];
         }

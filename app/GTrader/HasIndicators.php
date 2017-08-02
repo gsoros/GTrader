@@ -409,7 +409,7 @@ trait HasIndicators
 
     public function handleIndicatorSaveRequest(Request $request)
     {
-        //error_log('handleIndicatorSaveRequest() req: '.json_encode($request->all()));
+        //dump($request->all());
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
             error_log('handleIndicatorSaveRequest() cannot find indicator '.$sig);
