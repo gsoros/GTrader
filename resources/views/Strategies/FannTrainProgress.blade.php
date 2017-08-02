@@ -26,7 +26,7 @@
         <span class="editable" id="trainProgressEpoch" title="Current epoch / Last improvement at"></span>
         &nbsp; Test:
         <span class="editable" id="trainProgressTest" title="Current / Best"></span>
-        &nbsp; Train <span title="Mean Square Error Recipocal">MSER</span>:
+        &nbsp; Train <span title="Mean Squared Error Recipocal">MSER</span>:
         <span class="editable" id="trainProgressTrainMSER"></span>
         &nbsp; Verify:
         <span class="editable" id="trainProgressVerify" title="Current / Best"></span>
