@@ -1,0 +1,11 @@
+/gtrader/storage/logs/*.log {
+    size 1M
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    su gtrader www-data
+    copytruncate
+}

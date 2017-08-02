@@ -38,8 +38,9 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
                         attr \
                     nano \
                 cron \
-            gnupg \
-        runit
+            logrotate \
+        gnupg \
+    runit
 
 
 RUN set -eux; \
