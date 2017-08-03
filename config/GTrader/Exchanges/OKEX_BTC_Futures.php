@@ -20,7 +20,7 @@ return [
             'remote_name' => 'btc_usd',                         // used when querying the remote data
             'contract_value' => 100,                            // value of 1 contract
             'resolutions'=> [
-                60     => '1m',
+                60      => '1m',
                 180     => '3m',
                 300     => '5m',
                 900     => '15m',

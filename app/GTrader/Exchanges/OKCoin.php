@@ -18,6 +18,13 @@ class OKCoin extends Exchange
         return call_user_func_array([$okcoin, $method], $params);
     }
 
+    public function form(array $options = [])
+    {
+        return view('Exchanges/OKCoin_form', [
+            'exchange' => $this,
+            'options' => $options,
+        ]);
+    }
 
     public function saveFilledOrders(string $symbol, int $bot_id = null)
     {

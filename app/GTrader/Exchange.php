@@ -8,6 +8,7 @@ abstract class Exchange
 {
     use Skeleton;
 
+    abstract public function form(array $options = []);
     abstract public function getTicker(string $symbol);
     abstract public function getCandles(
         string $symbol,

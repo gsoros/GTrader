@@ -1,15 +1,9 @@
 <?php
 
-/*
-    Note: remove extreme values e.g.:
-        update candles set high = greatest(open, close) where high > 1000 and
-        exchange_id = (select id from exchanges where name = 'OKCoin_ETH_Spot');
-*/
-
 return [
-    'long_name'         => 'OKCoin ETH Spot',
-    'short_name'        => 'OKCES',
-    'local_name'        => 'OKCoin_ETH_Spot',   // class name, also used in the local database
+    'long_name'         => 'OKEX BCC Spot',
+    'short_name'        => 'OKXBC',
+    'local_name'        => 'OKEX_BCC_Spot',     // class name, also used in the local database
     'user_options'      => [                    // user-configurable options
         'api_key' => '',                        // API key
         'api_secret' => '',                     // API secret
@@ -17,11 +11,11 @@ return [
         'market_orders' => 0,                   // 1: use market orders, 0: use limit orders
     ],
     'symbols' => [
-        'eth_usd' => [                              // used in the local database, same as symbolname.local_name
-            'long_name' => 'Ethereum - US Dollar',
-            'short_name' => 'ETHUSD',               // used for displaying in lists
-            'local_name' => 'eth_usd',              // used in the local database, same as the key
-            'remote_name' => 'eth_usd',             // used when querying the remote data
+        'bcc_btc' => [                                  // used in the local database, same as symbolname.local_name
+            'long_name' => 'Bicoin Cash - Bitcoin',
+            'short_name' => 'BCCBTC',                   // used for displaying in lists
+            'local_name' => 'bcc_btc',                  // used in the local database, same as the key
+            'remote_name' => 'bcc_btc',                 // used when querying the remote data
             'resolutions'=> [
                 60      => '1m',
                 180     => '3m',
