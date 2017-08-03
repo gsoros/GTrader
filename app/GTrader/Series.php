@@ -359,7 +359,7 @@ class Series extends Collection
 
     public static function saveCandle($candle)
     {
-        $table = \Config::get('GTrader.Series.table');
+        $table = config('GTrader.Series.table');
         $attributes = ['id', 'time', 'exchange_id', 'symbol_id', 'resolution',
             'open', 'high', 'low', 'close', 'volume'];
 

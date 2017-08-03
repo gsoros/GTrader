@@ -30,7 +30,7 @@ class Sar extends Trader
         return false;
     }
 
-    protected function trader_sarext(array $high, array $low)
+    protected function traderSarext(array $high, array $low)
     {
         return trader_sarext(
             $high,
@@ -71,7 +71,7 @@ class Sar extends Trader
             $low = array_slice($values['low'], $i, $lookback);
             array_push($low, $values['open'][$i + $lookback]);
 
-            $sar = $this->trader_sarext($high, $low);
+            $sar = $this->traderSarext($high, $low);
 
             if (count($new_values)) {
                 array_push($new_values, array_pop($sar));
@@ -86,7 +86,7 @@ class Sar extends Trader
     public function traderCalc(array $values)
     {
         if (!($new_values = $this->simulatedSar($values))) {
-            if (!($new_values = $this->trader_sarext($values['high'], $values['low']))) {
+            if (!($new_values = $this->traderSarext($values['high'], $values['low']))) {
                 return [];
             }
         }

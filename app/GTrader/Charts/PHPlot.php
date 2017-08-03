@@ -68,14 +68,14 @@ class PHPlot extends Chart
         $this->setParam('precision', 3 < $range ? (10 < $range ? 0 : 1) : 2);
         foreach (Arr::get($this->data, 'left.items', []) as $index => $item) {
             $this->setPlotElements('left', $index, $item);
-            $this->setYAxis('left', $item);
+            $this->setYAxis($item, 'left');
             $this->plot($item);
         }
 
         // Plot items on right Y-axis
         foreach (Arr::get($this->data, 'right.items', []) as $index => $item) {
             $this->setPlotElements('right', $index, $item);
-            $this->setYAxis('right', $item);
+            $this->setYAxis($item, 'right');
             $this->setWorld([
                 'xmin' => $this->getParam('xmin'),
                 'xmax' => $this->getParam('xmax'),
@@ -95,7 +95,7 @@ class PHPlot extends Chart
         //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
         //return $map.'<img class="img-responsive" src="'.
         return $map.'<img class="PHPlot-img" src="'.
-                $this->_plot->EncodeImage().'"'.$map_str.'>'.
+                $this->PHPlot->EncodeImage().'"'.$map_str.'>'.
                 $refresh;
     }
 
@@ -116,9 +116,24 @@ class PHPlot extends Chart
         $image_map =& $this->image_map;
         $radius = $this->getParam('width', 100) / count($item['values']);
         $radius = 5 <= $radius ? floor($radius) : 5;
-        $this->_plot->SetCallback(
+        $this->PHPlot->SetCallback(
             'data_points',
-            function ($im, $junk, $shape, $row, $col, $x1, $y1, $x2 = null, $y2 = null) use (&$image_map, $times, $item, $radius) {
+            function (
+                $im,
+                $junk,
+                $shape,
+                $row,
+                $col,
+                $x1,
+                $y1,
+                $x2 = null,
+                $y2 = null
+            ) use (
+                &$image_map,
+                $times,
+                $item,
+                $radius
+            ) {
                 //dd($row);
                 $title = 'T: '.date('Y-m-d H:i T', $times[$row]);
                 $title .= ('rect' == $shape) ?
@@ -178,17 +193,17 @@ class PHPlot extends Chart
         }
 
         //dump($item, $this->colors);
-        $this->_plot->setDataColors($this->colors);
+        $this->PHPlot->setDataColors($this->colors);
 
-        $this->_plot->SetDataValues($item['values']);
+        $this->PHPlot->SetDataValues($item['values']);
         //dump('before drawGraph()'.$item['label']);
-        $this->_plot->drawGraph();
+        $this->PHPlot->drawGraph();
         //dump('after drawGraph()'.$item['label']);
         return $this;
     }
 
 
-    protected function setYAxis(string $dir = 'left', array $item)
+    protected function setYAxis(array $item, string $dir = 'left')
     {
         static $left_labels_shown = false;
 
@@ -198,24 +213,24 @@ class PHPlot extends Chart
 
         if ('left' === $dir) {
             if ($left_labels_shown) {
-                $this->_plot->SetDrawYGrid(false);
-                $this->_plot->SetDrawXDataLabels(false);
-                $this->_plot->SetDrawYAxis(false);
-                $this->_plot->SetYTickLabelPos('none');
+                $this->PHPlot->SetDrawYGrid(false);
+                $this->PHPlot->SetDrawXDataLabels(false);
+                $this->PHPlot->SetDrawYAxis(false);
+                $this->PHPlot->SetYTickLabelPos('none');
                 return $this;
             }
             $left_labels_shown = true;
-            //$this->_plot->SetDrawYAxis(true);
-            //$this->_plot->SetYAxisPosition(200);
-            $this->_plot->SetYTickLabelPos('plotright');
+            //$this->PHPlot->SetDrawYAxis(true);
+            //$this->PHPlot->SetYAxisPosition(200);
+            $this->PHPlot->SetYTickLabelPos('plotright');
             $ohlc = 'Ohlc' === $item['class'];
-            $this->_plot->SetDrawXGrid($ohlc);          // X grid lines
-            $this->_plot->SetDrawYGrid($ohlc);          // Y grid lines
-            $this->_plot->SetXTickLabelPos('plotdown'); // X tick labels
+            $this->PHPlot->SetDrawXGrid($ohlc);          // X grid lines
+            $this->PHPlot->SetDrawYGrid($ohlc);          // Y grid lines
+            $this->PHPlot->SetXTickLabelPos('plotdown'); // X tick labels
             return $this;
         }
 
-        $this->_plot->SetYTickLabelPos('plotright');
+        $this->PHPlot->SetYTickLabelPos('plotright');
         return $this;
     }
 
@@ -226,7 +241,7 @@ class PHPlot extends Chart
         $item['num_outputs'] = count(reset($item['values'])) - 2;
 
         // Line, linepoints and candlesticks use 'data-data'
-        $this->_plot->SetDataType('data-data');
+        $this->PHPlot->SetDataType('data-data');
 
         // Set bar and candlesticks to line if it's too dense
         if (in_array($item['mode'], ['candlestick', 'bars'])) {
@@ -244,13 +259,13 @@ class PHPlot extends Chart
 
         if ($set_mode = $this->map($item['mode'])) {
             if (in_array($set_mode, $this->getParam('plot_types'))) {
-                $this->_plot->setPlotType($set_mode);
+                $this->PHPlot->setPlotType($set_mode);
             }
         }
 
-        $this->_plot->SetLineWidths(2);
+        $this->PHPlot->SetLineWidths(2);
         $this->colors = [];
-        $this->_plot->setPointShapes('none');
+        $this->PHPlot->setPointShapes('none');
 
         switch ($item['mode']) {
             case 'candlestick':
@@ -285,8 +300,8 @@ class PHPlot extends Chart
             [$item['label']],
             array_fill(0, $item['num_outputs'] - 1, '')
         );
-        $this->_plot->SetLegend($this->label);
-        $this->_plot->SetLegendPixels(5, self::nextLegendY($item['num_outputs']));
+        $this->PHPlot->SetLegend($this->label);
+        $this->PHPlot->SetLegendPixels(5, self::nextLegendY($item['num_outputs']));
 
         return $this;
     }
@@ -297,7 +312,7 @@ class PHPlot extends Chart
     {
         //dump('candles:', $item);
         $this->colors = ['#b0100010', '#00600010', 'grey:90', 'grey:90'];
-        $this->_plot->SetLineWidths(1);
+        $this->PHPlot->SetLineWidths(1);
 
         /*
         PHPlot calculates a value to use for one half the width of the candlestick bodies, or
@@ -309,14 +324,14 @@ class PHPlot extends Chart
 
         // This is one half the maximum width of the candlestick body, or the maximum length of an
         // OHLC tick mark. The default is 8 pixels.
-        $this->_plot->ohlc_max_width = 30;
+        $this->PHPlot->ohlc_max_width = 30;
         // This is one half the minimum width of the candlestick body, or the minimum length of an
         // OHLC tick mark. The default is 2 pixels.
-        $this->_plot->ohlc_min_width = 1;
+        $this->PHPlot->ohlc_min_width = 1;
         // This is the fractional amount of the available space (plot width area divided by number
         // of points) to use for half the width of the candlestick bodies or OHLC tick marks. The
         // default is 0.3. This needs to be less than 0.5 or there will be overlap between adjacent candlesticks.
-        $this->_plot->ohlc_frac_width = .3;
+        $this->PHPlot->ohlc_frac_width = .3;
 
         return $this;
     }
@@ -326,10 +341,10 @@ class PHPlot extends Chart
     protected function mode_ohlc(array &$item)
     {
         //dump('candles:', $item);
-        //$this->_plot->SetDataType('text-data');
+        //$this->PHPlot->SetDataType('text-data');
         $this->colors = ['#b0100010', '#00600010'];
         $item['num_outputs'] = 2;
-        $this->_plot->SetLineWidths(2);
+        $this->PHPlot->SetLineWidths(2);
         return $this;
     }
 
@@ -341,7 +356,7 @@ class PHPlot extends Chart
         if (strstr($item['class'], 'Signals')) {
             $item['num_outputs'] = 2;
             $this->colors = ['#ff000010', '#00ff0050'];
-            $this->_plot->SetYDataLabelType('data', 2);         // precision
+            $this->PHPlot->SetYDataLabelType('data', 2);         // precision
             $this->label = array_merge($this->label, ['']);
             $signals = $values = [];
             foreach ($item['values'] as $k => $v) {
@@ -351,7 +366,7 @@ class PHPlot extends Chart
                 }
             }
             $item['values'] = $values;
-            $this->_plot->SetCallback(
+            $this->PHPlot->SetCallback(
                 'data_color',
                 function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
                     //dump('R: '.$row.' C: '.$col.' E:'.$extra);
@@ -366,21 +381,21 @@ class PHPlot extends Chart
                 }
             );
             //dd($item);
-            $this->_plot->SetPointShapes('target');
-            $this->_plot->SetLineStyles(['dashed']);
+            $this->PHPlot->SetPointShapes('target');
+            $this->PHPlot->SetLineStyles(['dashed']);
             $pointsize = floor($this->getParam('width', 1024) / 100);
             if (5 > $pointsize) {
                 $pointsize = 5;
             }
-            $this->_plot->SetPointSizes($pointsize);
-            $this->_plot->SetYDataLabelPos('plotin');
+            $this->PHPlot->SetPointSizes($pointsize);
+            $this->PHPlot->SetYDataLabelPos('plotin');
             return $this;
         } else {
             $item['num_outputs'] = 1;
         }
         $this->colors = [self::nextColor()];
-        $this->_plot->SetPointShapes('dot');
-        $this->_plot->SetPointSizes(1);
+        $this->PHPlot->SetPointShapes('dot');
+        $this->PHPlot->SetPointSizes(1);
         return $this;
     }
 
@@ -396,9 +411,9 @@ class PHPlot extends Chart
         //dump($item);
         $this->colors = ['#ff0000a3', '#00ff00b3'];
         $item['num_outputs'] = 2;
-        $this->_plot->setPlotType('points');
-        $this->_plot->setPointSizes(0);
-        $this->_plot->SetPointShapes('dot');
+        $this->PHPlot->setPlotType('points');
+        $this->PHPlot->setPointSizes(0);
+        $this->PHPlot->SetPointShapes('dot');
 
         $contents = [];
 
@@ -416,7 +431,7 @@ class PHPlot extends Chart
         $font_size = floor($this->getParam('width') / count($item['values']) / 2.5);
         $font_size = 5 > $font_size ? 5 : $font_size;
         $font_size = 16 < $font_size ? 16 : $font_size;
-        $this->_plot->SetCallback('draw_all', function ($img, $plot) use ($contents, $font_size) {
+        $this->PHPlot->SetCallback('draw_all', function ($img, $plot) use ($contents, $font_size) {
             $red = imagecolorallocatealpha($img, 200, 0, 0, 66);
             $green = imagecolorallocatealpha($img, 0, 180, 0, 85);
             $font_path = storage_path('fonts/Vera.ttf');
@@ -448,7 +463,7 @@ class PHPlot extends Chart
                     imagettftext($img, $font_size, $rotation, $xshort, $y + 10, $red, $font_path, $text_short);
                 }
             }
-        }, $this->_plot);
+        }, $this->PHPlot);
 
         return $this;
     }
@@ -459,35 +474,35 @@ class PHPlot extends Chart
     {
         //dump($item['values']);
         $this->colors = ['#ff0000f2', '#00ff00f2'];
-        $this->_plot->SetTickLabelColor($this->colors[1]);
+        $this->PHPlot->SetTickLabelColor($this->colors[1]);
 
-        $this->_plot->SetXTickLabelPos('none');
+        $this->PHPlot->SetXTickLabelPos('none');
 
-        $this->_plot->SetDataType('text-data');
+        $this->PHPlot->SetDataType('text-data');
 
         // Controls the amount of extra space within each group of bars.
         // Default is 0.5, meaning 1/2 of the width of one bar is left as a
         // gap, within the space allocated to the group (see group_frac_width).
         // Increasing this makes each group of bars shrink together. Decreasing
         // this makes the group of bars expand within the allocated space.
-        $this->_plot->bar_extra_space = .1;
+        $this->PHPlot->bar_extra_space = .1;
 
         //Controls the amount of available space used by each bar group. Default is
         // 0.7, meaning the group of bars fills 70% of the available space (but that
         // includes the empty space due to bar_extra_space). Increasing this makes the
         // group of bars wider.
-        $this->_plot->group_frac_width = 1;
+        $this->PHPlot->group_frac_width = 1;
 
         // Controls the width of each bar. Default is 1.0. Decreasing this makes individual
         // bars narrower, leaving gaps between the bars in a group. This must be greater
         // than 0. If it is greater than 1, the bars will overlap.
-        $this->_plot->bar_width_adjust = 1;
+        $this->PHPlot->bar_width_adjust = 1;
 
         // If bar_extra_space=0, group_frac_width=1, and bar_width_adjust=1 then
         // all the bars touch (within each group, and adjacent groups).
 
         // 3D look
-        $this->_plot->SetShading('none');
+        $this->PHPlot->SetShading('none');
 
         // convert ['', time, value...] to [time, value]
         $item['values'] = array_map(function ($v) {
@@ -500,7 +515,7 @@ class PHPlot extends Chart
             'ymin' => 0,
             'ymax' => $item['max'] * 2,
         ]);
-        $this->_plot->SetXAxisPosition(0);
+        $this->PHPlot->SetXAxisPosition(0);
 
         // get rising/falling data sub(close, open)
         if ($sub = $this->getOrAddIndicator('Operator', [
@@ -513,7 +528,7 @@ class PHPlot extends Chart
                 true,
                 $this->getParam('density_cutoff')
             )) {
-                $this->_plot->SetCallback(
+                $this->PHPlot->SetCallback(
                     'data_color',
                     function ($img, $junk, $row, $col, $extra = 0) use ($sub) {
                         $rising = isset($sub[$row][0]) ? (0 <= $sub[$row][0]) : 0;
@@ -534,7 +549,7 @@ class PHPlot extends Chart
         for ($i = 0; $i < $item['num_outputs']; $i++) {
             $this->colors[] = $last_color = self::nextColor();
         }
-        $this->_plot->SetTickLabelColor($last_color);
+        $this->PHPlot->SetTickLabelColor($last_color);
 
         return $this;
     }
@@ -564,7 +579,7 @@ class PHPlot extends Chart
         $highlight_color_count = count($highlight_colors);
 
         $debug = &$this->debug;
-        $this->_plot->SetCallback(
+        $this->PHPlot->SetCallback(
             'data_color',
             function (
                 $img,
@@ -654,7 +669,7 @@ class PHPlot extends Chart
                 );
             }
 
-            $sig = $ind->getSignature();
+            //$sig = $ind->getSignature(); // unused
             $item = [
                 'class' => $ind->getShortClass(),
                 'label' => 380 < $this->getParam('width') ?
@@ -673,9 +688,7 @@ class PHPlot extends Chart
                 if ('left' === $dir) {
                     $this->data['left']['min'] = $this->min(Arr::get($this->data, 'left.min'), $values_min);
                     $this->data['left']['max'] = $this->max(Arr::get($this->data, 'left.max'), $values_max);
-                }
-                // Right Y-axis items need individual min and max
-                else {
+                } else { // Right Y-axis items need individual min and max
                     $item['min'] = $values_min;
                     $item['max'] = $values_max;
                 }
@@ -710,7 +723,7 @@ class PHPlot extends Chart
             $this->getParam('name')."');";
         if ($this->last_close) {
             $refresh .= "document.title = '".number_format($this->last_close, 2).' - '.
-                \Config::get('app.name', 'GTrader')."';";
+                config('app.name', 'GTrader')."';";
         }
         $refresh .= '</script>';
 
@@ -743,7 +756,7 @@ class PHPlot extends Chart
             $candles->getParam('resolution').' '.
             date('Y-m-d H:i', $first).' - '.
             date('Y-m-d H:i', $last);
-        $this->_plot->setTitle($title);
+        $this->PHPlot->setTitle($title);
         return $this;
     }
 
@@ -756,35 +769,35 @@ class PHPlot extends Chart
 
         if ('left' === $dir) {
         } else {
-            $this->_plot->SetDrawXGrid(false);
-            $this->_plot->SetDrawYGrid(false);
-            $this->_plot->SetXTickLabelPos('none');
+            $this->PHPlot->SetDrawXGrid(false);
+            $this->PHPlot->SetDrawYGrid(false);
+            $this->PHPlot->SetXTickLabelPos('none');
         }
 
 
-        $this->_plot->RemoveCallback('draw_all');
-        $this->_plot->RemoveCallback('data_color');
-        $this->_plot->RemoveCallback('data_points');
+        $this->PHPlot->RemoveCallback('draw_all');
+        $this->PHPlot->RemoveCallback('data_color');
+        $this->PHPlot->RemoveCallback('data_points');
 
-        $this->_plot->SetPlotBorderType('none');    // plot area border
+        $this->PHPlot->SetPlotBorderType('none');    // plot area border
 
-        $this->_plot->SetDrawXAxis(false);          // X axis line
-        $this->_plot->SetXTickPos('none');          // X tick marks
-        $this->_plot->SetXDataLabelPos('none');     // X data labels
+        $this->PHPlot->SetDrawXAxis(false);          // X axis line
+        $this->PHPlot->SetXTickPos('none');          // X tick marks
+        $this->PHPlot->SetXDataLabelPos('none');     // X data labels
 
-        $this->_plot->SetDrawYAxis(false);          // Y axis line
+        $this->PHPlot->SetDrawYAxis(false);          // Y axis line
 
-        $this->_plot->SetYTickLabelPos('none');
-        $this->_plot->SetYDataLabelPos('none');
+        $this->PHPlot->SetYTickLabelPos('none');
+        $this->PHPlot->SetYDataLabelPos('none');
 
-        $this->_plot->SetLineStyles(['solid']);
-        $this->_plot->SetTickLabelColor('#555555');
+        $this->PHPlot->SetLineStyles(['solid']);
+        $this->PHPlot->SetTickLabelColor('#555555');
 
-        $this->_plot->SetYLabelType('data', $this->getParam('precision', 0)); // precision
-        $this->_plot->SetMarginsPixels(30, 30, 15);
-        $this->_plot->SetLegendStyle('left', 'left');
-        //$this->_plot->SetLegendUseShapes(true);
-        $this->_plot->SetLegendColorboxBorders('none');
+        $this->PHPlot->SetYLabelType('data', $this->getParam('precision', 0)); // precision
+        $this->PHPlot->SetMarginsPixels(30, 30, 15);
+        $this->PHPlot->SetLegendStyle('left', 'left');
+        //$this->PHPlot->SetLegendUseShapes(true);
+        $this->PHPlot->SetLegendColorboxBorders('none');
 
         return $this;
     }
@@ -797,9 +810,9 @@ class PHPlot extends Chart
         $start = ($first = $this->getCandles()->next()) ? $first->time : 0;
         $end = ($last = $this->getCandles()->last()) ? $last->time : 0;
         $longtime = 3600*24 < ($end - $start);
-        $this->_plot->SetNumXTicks($xticks = floor($this->getParam('width', 200) / ($longtime ? 70 : 40)));
-        $this->_plot->SetXLabelType('time', $longtime ? '%m-%d %H:%M' : '%H:%M');
-        $this->_plot->SetYTickPos('none');
+        $this->PHPlot->SetNumXTicks(floor($this->getParam('width', 200) / ($longtime ? 70 : 40)));
+        $this->PHPlot->SetXLabelType('time', $longtime ? '%m-%d %H:%M' : '%H:%M');
+        $this->PHPlot->SetYTickPos('none');
 
         return $this;
     }
@@ -808,13 +821,13 @@ class PHPlot extends Chart
 
     protected function setColors()
     {
-        $this->_plot->SetBackgroundColor('black');
-        $this->_plot->SetLegendBgColor('black:50');
-        $this->_plot->SetGridColor('DarkGreen:100');
-        $this->_plot->SetLightGridColor('DimGrey:110');
-        $this->_plot->setTitleColor('DimGrey:80');
-        $this->_plot->SetTickColor('DarkGreen');
-        $this->_plot->SetTextColor('#999999');
+        $this->PHPlot->SetBackgroundColor('black');
+        $this->PHPlot->SetLegendBgColor('black:50');
+        $this->PHPlot->SetGridColor('DarkGreen:100');
+        $this->PHPlot->SetLightGridColor('DimGrey:110');
+        $this->PHPlot->setTitleColor('DimGrey:80');
+        $this->PHPlot->SetTickColor('DarkGreen');
+        $this->PHPlot->SetTextColor('#999999');
         return $this;
     }
 

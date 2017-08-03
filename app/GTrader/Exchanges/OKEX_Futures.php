@@ -124,14 +124,14 @@ class OKEX_Futures extends OKCoin
             if ($long_contracts_open < $position_contracts
                                     && $position_contracts - $long_contracts_open > 0) {
                 $reply = $this->trade(
-                        'open_long',
-                        $price,
-                        $position_contracts - $long_contracts_open,
-                        $symbol,
-                        $leverage,
-                        $market_orders,
-                        $bot_id
-                    );
+                    'open_long',
+                    $price,
+                    $position_contracts - $long_contracts_open,
+                    $symbol,
+                    $leverage,
+                    $market_orders,
+                    $bot_id
+                );
             }
         } elseif ('short' === $signal) {
             // close all long positions
@@ -267,7 +267,8 @@ class OKEX_Futures extends OKCoin
 
     protected function getUserInfo()
     {
-        return $this->request('postFutureUserinfo4fix',
+        return $this->request(
+            'postFutureUserinfo4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret')
         );
@@ -305,12 +306,13 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('need user id');
         }
 
-        if ('production' !== \Config::get('app.env')) {
+        if ('production' !== config('app.env')) {
             echo "\nNot in production, not executing trade(".serialize(func_get_args()).")\n";
             return $this;
         }
 
-        $reply = $this->request('postFutureTrade',
+        $reply = $this->request(
+            'postFutureTrade',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -370,12 +372,13 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Contract type not found');
         }
 
-        if ('production' !== \Config::get('app.env')) {
+        if ('production' !== config('app.env')) {
             echo "\nNot in production, not executing cancelOrder(".serialize(func_get_args()).")\n";
             return $this;
         }
 
-        $reply = $this->request('postFutureCancel',
+        $reply = $this->request(
+            'postFutureCancel',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -418,7 +421,8 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Contract type not found');
         }
 
-        return $this->request('postFutureOrderInfo',
+        return $this->request(
+            'postFutureOrderInfo',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -443,7 +447,8 @@ class OKEX_Futures extends OKCoin
             throw new \Exception('Remote name not found');
         }
 
-        return $this->request('postFuturePosition4fix',
+        return $this->request(
+            'postFuturePosition4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [

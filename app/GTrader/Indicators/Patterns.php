@@ -27,9 +27,9 @@ class Patterns extends Trader
             foreach ($f->getParameters() as $arg) {
                 if ($arg->isOptional()) {
                     $args_opt[]= $arg->getName();
-                } else {
-                    $args_req[] = $arg->getName();
+                    continue;
                 }
+                $args_req[] = $arg->getName();
             }
             if (['open', 'high', 'low', 'close'] !== $args_req) {
                 //dd($func, $args_req, $args_opt);

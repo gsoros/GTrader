@@ -20,7 +20,7 @@ class Tsf extends Trader
         if (!($values = trader_tsf(
             $values[$this->getInput()],
             $this->getParam('indicator.period')
-            ))) {
+        ))) {
             error_log('trader_tsf returned false');
             return [];
         }

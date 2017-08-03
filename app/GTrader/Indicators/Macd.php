@@ -11,7 +11,7 @@ class Macd extends Trader
         foreach (['fast', 'slow', 'signal'] as $type) {
             $this->setParam(
                 'adjustable.'.$type.'matype.options',
-                \Config::get('GTrader.Indicators.Trader.MA_TYPES')
+                config('GTrader.Indicators.Trader.MA_TYPES')
             );
         }
     }

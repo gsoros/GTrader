@@ -21,8 +21,8 @@ class Ohlc extends HasInputs
         }
         // candlesticks and ohlc: input = output
         if (in_array($mode, ['candlestick', 'ohlc'])) {
-            if ($o = $output) {
-                return $this->getParam('indicator.input_'.$o, $o);
+            if ($output) {
+                return $this->getParam('indicator.input_'.$output, $output);
             }
         }
         // heikin-ashi modifies the output
@@ -60,15 +60,15 @@ class Ohlc extends HasInputs
     public function outputDependsOn(array $sigs = [], string $output = null)
     {
         // Pretend that our outputs depend 1:1 on the matching input
-        $o = ($o = strtolower($output)) ? $o : 'open';
-        $i = $this->getInput('input_'.$o);
-        if (in_array($i, $sigs)) {
+        $output = ($output = strtolower($output)) ? $output : 'open';
+        $input = $this->getInput('input_'.$output);
+        if (in_array($input, $sigs)) {
             return true;
         }
         if (!$owner = $this->getOwner()) {
             return false;
         }
-        return $owner->indicatorOutputDependsOn($i, $sigs);
+        return $owner->indicatorOutputDependsOn($input, $sigs);
     }
 
 
@@ -90,10 +90,10 @@ class Ohlc extends HasInputs
     {
         if ('ha' !== $mode = $this->getParam('indicator.mode', 'candlestick')) {
             $this->setParam('display.mode', $mode);
-            return false;
+            return $this;
         }
         $this->setParam('display.mode', 'candlestick');
-        $sig = $this->getSignature();
+        //$sig = $this->getSignature(); // unused
         $candles = $this->getCandles();
 
         $in_key_open = $candles->key($this->getInput('input_open'));
@@ -128,7 +128,7 @@ class Ohlc extends HasInputs
 
 
 
-    protected function candle2arr($c = null, $key_open, $key_high, $key_low, $key_close)
+    protected function candle2arr($c, $key_open, $key_high, $key_low, $key_close)
     {
         if (is_null($c)) {
             return null;

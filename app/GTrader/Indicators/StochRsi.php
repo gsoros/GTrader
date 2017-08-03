@@ -10,7 +10,7 @@ class StochRsi extends Trader
         parent::__construct($params);
         $this->setParam(
             'adjustable.matype.options',
-            \Config::get('GTrader.Indicators.Trader.MA_TYPES')
+            config('GTrader.Indicators.Trader.MA_TYPES')
         );
     }
 

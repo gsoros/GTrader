@@ -14,7 +14,7 @@ class Adosc extends Trader
             $values[$this->getInput('input_volume')],
             $this->getParam('indicator.fastperiod'),
             $this->getParam('indicator.slowperiod')
-            ))) {
+        ))) {
             error_log('trader_adosc returned false');
             return [];
         }

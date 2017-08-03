@@ -16,11 +16,8 @@ class Dmi extends Trader
         ];
         $values = [];
 
-        foreach ([
-            $mode => 'dx',
-            'plus_di' => 'plus',
-            'minus_di' => 'minus'] as $k => $output) {
-            $func = 'trader_'.$k;
+        foreach ([$mode, 'plus_di', 'minus_di'] as $key) {
+            $func = 'trader_'.$key;
 
             if (!function_exists($func)) {
                 error_log('Dmi::traderCalc() function not found: '.$func);

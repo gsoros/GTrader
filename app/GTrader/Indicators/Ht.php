@@ -46,7 +46,7 @@ class Ht extends Trader
         // set y-axis-pos according to the selected mode
         if ($ypos = Arr::get($sel, 'display.y-axis')) {
             if (in_array($ypos, array_keys($this->getInputs()))) {
-                if ($input = $this->getInput($ypos)) {
+                if ($this->getInput($ypos)) {
                     if ($this->inputFrom(['open', 'high', 'low', 'close'])) {
                         $ypos = 'left';
                     } elseif ($this->inputFrom(['volume'])) {
@@ -108,7 +108,7 @@ class Ht extends Trader
         }
         $inputs = array_keys($this->getInputs());
         $except = [];
-        foreach ($this->getParam('indicator') as $key => $param) {
+        foreach (array_keys($this->getParam('indicator')) as $key) {
             if ('input_' === substr($key, 0, 6) && !in_array($key, $inputs)) {
                 $except[] = $key;
             }

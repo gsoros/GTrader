@@ -12,11 +12,11 @@ class Stoch extends Trader
         parent::__construct($params);
         $this->setParam(
             'adjustable.slowkmatype.options',
-            \Config::get('GTrader.Indicators.Trader.MA_TYPES')
+            config('GTrader.Indicators.Trader.MA_TYPES')
         );
         $this->setParam(
             'adjustable.slowdmatype.options',
-            \Config::get('GTrader.Indicators.Trader.MA_TYPES')
+            config('GTrader.Indicators.Trader.MA_TYPES')
         );
     }
 

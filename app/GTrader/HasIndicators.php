@@ -21,7 +21,8 @@ trait HasIndicators
         array $params = [],
         array $params_if_new = []
     ) {
-        //dump('addIndicator() i: '.json_encode($indicator).' p: '.json_encode($params).' pin: '.json_encode($params_if_new));
+        //dump('addIndicator() i: '.json_encode($indicator).' p: '.json_encode($params).
+        //' pin: '.json_encode($params_if_new));
         $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
@@ -46,7 +47,7 @@ trait HasIndicators
             return $existing;
         }
         $class = $indicator->getShortClass();
-        if (!\Config::get('GTrader.Indicators.available.'.$class.'.allow_multiple', false) &&
+        if (!config('GTrader.Indicators.available.'.$class.'.allow_multiple', false) &&
             $owner->hasIndicatorClass($class)) {
             $existing = $owner->getFirstIndicatorByClass($class);
             $existing->setParams($indicator->getParams());
@@ -184,7 +185,7 @@ trait HasIndicators
 
     public function unsetIndicators(string $sig)
     {
-        foreach ($this->getIndicators() as $key => $existing_ind) {
+        foreach ($this->getIndicators() as $existing_ind) {
             if ($sig === $existing_ind->getSignature()) {
                 $this->unsetIndicator($existing_ind);
             }
@@ -306,7 +307,7 @@ trait HasIndicators
         if (!is_object($owner = $this->getIndicatorOwner())) {
             return $available;
         }
-        foreach (\Config::get('GTrader.Indicators.available', []) as $class => $params) {
+        foreach (config('GTrader.Indicators.available', []) as $class => $params) {
             $exists = $owner->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple'])) {
                 if (!$indicator = Indicator::make($class)) {

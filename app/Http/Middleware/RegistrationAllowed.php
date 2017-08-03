@@ -16,7 +16,7 @@ class RegistrationAllowed
      */
     public function handle($request, Closure $next)
     {
-        $max_users = \Config::get('app.max_users');
+        $max_users = config('app.max_users');
 
         if ($max_users && (User::count() >= $max_users)) {
             return redirect('/');

@@ -195,8 +195,8 @@ abstract class Exchange
 
     public static function getESRReadonly(
         string $exchange,
-                                            string $symbol,
-                                            int $resolution
+        string $symbol,
+        int $resolution
     ) {
         //error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
         //return '';

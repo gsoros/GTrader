@@ -9,7 +9,7 @@ class Plot
 {
     use Skeleton;
 
-    protected $_plot;
+    protected $PHPlot;
 
     public function toHTML(string $content = '')
     {
@@ -33,7 +33,7 @@ class Plot
 
         $this->plot($data);
         //return '<img class="img-responsive" src="'.
-        return '<img src="'.$this->_plot->EncodeImage().'">';
+        return '<img src="'.$this->PHPlot->EncodeImage().'">';
     }
 
 
@@ -50,25 +50,25 @@ class Plot
             dump('Plot::initPlot(): function imagecreatetruecolor is missing. GD support is required by PHPlot.');
             return null;
         }
-        $this->_plot = new PHPlot_truecolor($width, $height);
-        $this->_plot->SetPrintImage(false);
-        $this->_plot->SetFailureImage(false);
+        $this->PHPlot = new PHPlot_truecolor($width, $height);
+        $this->PHPlot->SetPrintImage(false);
+        $this->PHPlot->SetFailureImage(false);
         return $this;
     }
 
 
     protected function plot(array $data)
     {
-        $this->_plot->SetMarginsPixels(30, 30, 15);
-        $this->_plot->SetBackgroundColor('black');
-        $this->_plot->SetGridColor('DarkGreen:100');
-        $this->_plot->SetLightGridColor('DimGrey:120');
-        $this->_plot->setTitleColor('DimGrey:80');
-        $this->_plot->SetTickColor('DarkGreen');
-        $this->_plot->SetTextColor('#999999');
-        $this->_plot->SetDataType('data-data');
-        $this->_plot->SetLegendStyle('left', 'left');
-        $this->_plot->SetLegendColorboxBorders('none');
+        $this->PHPlot->SetMarginsPixels(30, 30, 15);
+        $this->PHPlot->SetBackgroundColor('black');
+        $this->PHPlot->SetGridColor('DarkGreen:100');
+        $this->PHPlot->SetLightGridColor('DimGrey:120');
+        $this->PHPlot->setTitleColor('DimGrey:80');
+        $this->PHPlot->SetTickColor('DarkGreen');
+        $this->PHPlot->SetTextColor('#999999');
+        $this->PHPlot->SetDataType('data-data');
+        $this->PHPlot->SetLegendStyle('left', 'left');
+        $this->PHPlot->SetLegendColorboxBorders('none');
 
         $out = ['left' => [], 'right' => []];
         reset($data);
@@ -133,23 +133,23 @@ class Plot
                     continue;
                 }
                 $color = self::nextColor();
-                $this->_plot->SetDataValues($values);
-                $this->_plot->SetLineWidths(Arr::get($data, $label.'.display.stroke', 2));
-                $this->_plot->setPlotType('lines');
-                $this->_plot->SetDataColors([$color]);
-                $this->_plot->SetTickLabelColor($color);
+                $this->PHPlot->SetDataValues($values);
+                $this->PHPlot->SetLineWidths(Arr::get($data, $label.'.display.stroke', 2));
+                $this->PHPlot->setPlotType('lines');
+                $this->PHPlot->SetDataColors([$color]);
+                $this->PHPlot->SetTickLabelColor($color);
 
                 if ('right' === $dir) {
                     //$this->setWorld($out[$dir]['dim'], 'x');
-                    $this->_plot->SetYTickPos('plotright');
-                    $this->_plot->SetYTickLabelPos('plotright');
-                    //$this->_plot->TuneYAutoRange(0);
+                    $this->PHPlot->SetYTickPos('plotright');
+                    $this->PHPlot->SetYTickLabelPos('plotright');
+                    //$this->PHPlot->TuneYAutoRange(0);
                 }
 
-                //$this->_plot->TuneYAutoRange(0);
-                $this->_plot->SetLegendPixels(35, self::nextLegendY());
-                $this->_plot->SetLegend([$label]);
-                $this->_plot->DrawGraph();
+                //$this->PHPlot->TuneYAutoRange(0);
+                $this->PHPlot->SetLegendPixels(35, self::nextLegendY());
+                $this->PHPlot->SetLegend([$label]);
+                $this->PHPlot->DrawGraph();
             }
         }
         return $this;
@@ -213,7 +213,7 @@ class Plot
             //error_log('setWorld() axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
             $ymax = $ymin + 1;
         }
-        $this->_plot->setPlotAreaWorld(
+        $this->PHPlot->setPlotAreaWorld(
             $xmin,
             $ymin,
             $xmax,

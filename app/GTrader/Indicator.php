@@ -215,7 +215,7 @@ abstract class Indicator //implements \JsonSerializable
         }
         if (!strlen($sig) ||
             in_array($sig, ['open', 'high', 'low', 'close', 'volume']) ||
-            \Config::get('GTrader.Indicators.available.'.$sig)) {
+            config('GTrader.Indicators.available.'.$sig)) {
             $cache[$sig] = false;
             return false;
         }

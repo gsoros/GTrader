@@ -15,7 +15,7 @@ class PasswordResetAllowed
      */
     public function handle($request, Closure $next)
     {
-        if (!\Config::get('app.allow_password_resets')) {
+        if (!config('app.allow_password_resets')) {
             return redirect('/');
         }
 

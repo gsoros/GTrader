@@ -149,14 +149,14 @@ class OKCoin extends Exchange
             if ($long_contracts_open < $position_contracts
                                     && $position_contracts - $long_contracts_open > 0) {
                 $reply = $this->trade(
-                        'open_long',
-                        $price,
-                        $position_contracts - $long_contracts_open,
-                        $symbol,
-                        $leverage,
-                        $market_orders,
-                        $bot_id
-                    );
+                    'open_long',
+                    $price,
+                    $position_contracts - $long_contracts_open,
+                    $symbol,
+                    $leverage,
+                    $market_orders,
+                    $bot_id
+                );
             }
         } elseif ('short' === $signal) {
             // close all long positions
@@ -283,7 +283,8 @@ class OKCoin extends Exchange
 
     protected function getUserInfo()
     {
-        return $this->request('postUserinfo4fix',
+        return $this->request(
+            'postUserinfo4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret')
         );
@@ -318,12 +319,13 @@ class OKCoin extends Exchange
             throw new \Exception('need user id');
         }
 
-        if ('production' !== \Config::get('app.env')) {
+        if ('production' !== config('app.env')) {
             echo "\nNot in production, not executing trade(".serialize(func_get_args()).")\n";
             return $this;
         }
 
-        $reply = $this->request('postTrade',
+        $reply = $this->request(
+            'postTrade',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -378,12 +380,13 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        if ('production' !== \Config::get('app.env')) {
+        if ('production' !== config('app.env')) {
             echo "\nNot in production, not executing cancelOrder(".serialize(func_get_args()).")\n";
             return $this;
         }
 
-        $reply = $this->request('postCancel',
+        $reply = $this->request(
+            'postCancel',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -422,7 +425,8 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        return $this->request('postOrderInfo',
+        return $this->request(
+            'postOrderInfo',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [
@@ -446,7 +450,8 @@ class OKCoin extends Exchange
             throw new \Exception('Remote name not found');
         }
 
-        return $this->request('postPosition4fix',
+        return $this->request(
+            'postPosition4fix',
             $this->getUserOption('api_key'),
             $this->getUserOption('api_secret'),
             [

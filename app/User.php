@@ -110,7 +110,5 @@ class User extends Authenticatable
             $charts[] = \GTrader\Chart::load($this->id, $chart_db->name);
         }
         return $charts;
-
     }
-
 }

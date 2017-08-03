@@ -20,7 +20,7 @@ class Vol extends HasInputs
     {
         // hide params if default input is selected
         return $this->getParam('indicator.input_source') ===
-            \Config::get('GTrader.Indicators.'.$this->getShortClass().'.indicator.input_source') ?
+            config('GTrader.Indicators.'.$this->getShortClass().'.indicator.input_source') ?
             'Volume' : parent::getDisplaySignature($format);
     }
 

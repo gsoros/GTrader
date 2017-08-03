@@ -46,9 +46,7 @@ class Signals extends HasInputs
                 error_log('Signals::calculate() could not get strat from owner');
                 return $this;
             }
-        }
-        // Selected Strategy
-        else {
+        } else { // Selected Strategy
             if (!$strategy = Strategy::load($strategy_id)) {
                 error_log('Signals::calculate() could not load strategy');
                 return $this;
@@ -228,11 +226,10 @@ class Signals extends HasInputs
                     return $this;
                 }
                 if ($this->conditionMet(
-                        $candle->{$input_keys['input_'.$signal.'_a']},
-                        $conditions[$signal],
-                        $candle->{$input_keys['input_'.$signal.'_b']}
-                    ) &&
-                    $previous['signal'] !== $signal) {
+                    $candle->{$input_keys['input_'.$signal.'_a']},
+                    $conditions[$signal],
+                    $candle->{$input_keys['input_'.$signal.'_b']}
+                ) && $previous['signal'] !== $signal) {
                     if ($previous['time'] === $candle->time) {
                         error_log('Signals::calculate() multiple conditions met for '.$candle->time);
                         continue;

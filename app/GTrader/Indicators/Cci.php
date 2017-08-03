@@ -11,7 +11,7 @@ class Cci extends Trader
             $values[$this->getInput('input_low')],
             $values[$this->getInput('input_close')],
             $this->getParam('indicator.period')
-            ))) {
+        ))) {
             error_log('trader_cci returned false');
             return [];
         }

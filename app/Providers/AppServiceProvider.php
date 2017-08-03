@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         DB::connection()->disableQueryLog();
 
         // Set memory limit
-        ini_set('memory_limit', \Config::get('app.memory_limit', '512M'));
+        ini_set('memory_limit', config('app.memory_limit', '512M'));
     }
 
     /**

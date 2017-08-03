@@ -41,7 +41,6 @@ class Aggregator
         echo '['.date('Y-m-d H:i:s').'] '.__METHOD__.' ';
 
         foreach ($this->getExchanges() as $exchange_class) {
-
             $exchange = $this->getExchange($exchange_class);
             $symbols = $exchange->getParam('symbols');
             if (!is_array($symbols)) {
@@ -62,7 +61,6 @@ class Aggregator
                 echo $symbol_local.': ';
 
                 foreach ($symbol['resolutions'] as $resolution => $res_name) {
-
                     $time = $this->getLastCandleTime(
                         $exchange->getParam('id'),
                         $symbol_id,
@@ -100,7 +98,7 @@ class Aggregator
         echo 'all done.'.PHP_EOL;
 
         Lock::release($lock);
-        
+
         return $this;
     }
 
@@ -114,8 +112,8 @@ class Aggregator
     protected function getLastCandleTime(
         int $exchange_id,
         int $symbol_id,
-        int $resolution)
-    {
+        int $resolution
+    ) {
         $time = DB::table('candles')
             ->select('time')
             ->where('exchange_id', $exchange_id)
@@ -173,8 +171,8 @@ class Aggregator
     protected function getSymbolId(
         int $exchange_id,
         string $local_name,
-        string $long_name)
-    {
+        string $long_name
+    ) {
         $symbol_id = null;
         $o = DB::table('symbols')
             ->select('id')

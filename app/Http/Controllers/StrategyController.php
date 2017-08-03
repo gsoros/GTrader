@@ -143,14 +143,14 @@ class StrategyController extends Controller
         $default_prefs = [];
         foreach (['train', 'test', 'verify'] as $item) {
             $default_prefs[$item.'_start_percent'] =
-                \Config::get('GTrader.FannTraining.'.$item.'_range.start_percent');
+                config('GTrader.FannTraining.'.$item.'_range.start_percent');
             $default_prefs[$item.'_end_percent'] =
-                \Config::get('GTrader.FannTraining.'.$item.'_range.end_percent');
+                config('GTrader.FannTraining.'.$item.'_range.end_percent');
         }
         foreach (['crosstrain', 'reset_after'] as $item) {
-            $default_prefs[$item] = \Config::get('GTrader.FannTraining.'.$item);
+            $default_prefs[$item] = config('GTrader.FannTraining.'.$item);
         }
-        $conf_maximize = \Config::get('GTrader.FannTraining.maximize');
+        $conf_maximize = config('GTrader.FannTraining.maximize');
         $default_prefs['maximize'] = array_keys($conf_maximize)[0];
 
         $html = view('Strategies/FannTrainForm', [
@@ -255,7 +255,7 @@ class StrategyController extends Controller
             $options['reset_after'] = 10000;
         }
 
-        $conf_maximize = \Config::get('GTrader.FannTraining.maximize');
+        $conf_maximize = config('GTrader.FannTraining.maximize');
         $options['maximize'] = array_keys($conf_maximize)[0];
         if (isset($request->maximize)) {
             if (array_key_exists($request->maximize, $conf_maximize)) {
@@ -467,7 +467,7 @@ class StrategyController extends Controller
         $resolution = $candles->getParam('resolution');
         $sample_size = $strategy->getParam('sample_size');
         $target_distance = $strategy->getParam('target_distance');
-        $t = $request->t - $resolution * $sample_size;
+        //$t = $request->t - $resolution * $sample_size;
 
         $limit = $sample_size + $target_distance + 200;
         $candles = new Series([

@@ -263,7 +263,6 @@ class FannTraining extends Model
         );
 
         switch ($maximize) {
-
             case 'balance_fixed':
                 $indicator = $strategy->getBalanceIndicator();
                 break;
@@ -405,7 +404,7 @@ class FannTraining extends Model
     }
 
 
-    protected function acceptable(string $type, int $allowed_regression_percent=0)
+    protected function acceptable(string $type, int $allowed_regression_percent = 0)
     {
         $progress = $this->getProgress($type);
         return
