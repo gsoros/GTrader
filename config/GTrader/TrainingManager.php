@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Check if TrainingManager is running once every minute
+    'schedule_frequency' => env('TRAINING_MANAGER_SCHEDULE_FREQ', 1),
+
     // number of concurrent training processes
     'slots'         => env('TRAINING_MANAGER_SLOTS', 2),
 

@@ -2,6 +2,7 @@
 
 return [
 
+    'schedule_frequency' => env('EXCHANGE_SCHEDULE_FREQ', 1),               // Fetch new candles once every minute
     'children_ns'           => 'Exchanges',
     'default_child'         => env('EXCHANGE_DEFAULT', 'OKEX_BTC_Futures'),
     'available_exchanges'   => [                                            // list of installed exchange classes
