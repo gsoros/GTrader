@@ -876,7 +876,11 @@ class PHPlot extends Chart
         $live = ($end == 0) || $end > $last - $resolution;
         if ($live) {
             $end = 0;
-            $this->setParam('refresh', 30); // seconds
+            // Set refresh to half exchange fetch frequency (which is in minutes)
+            $this->setParam(
+                'refresh',
+                config('GTrader.Exchange.schedule_frequency', 1) * 30
+            );
         }
         //error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command) {
