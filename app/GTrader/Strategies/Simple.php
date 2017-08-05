@@ -32,7 +32,7 @@ class Simple extends Strategy
     public function viewIndicatorsList(Request $request = null)
     {
         $indicators = $this->getIndicatorsFilteredSorted(
-            ['display.visible' => true],
+            ['display.visible' => true, 'class' => ['not', 'Signals']],
             ['display.name']
         );
         return view(
