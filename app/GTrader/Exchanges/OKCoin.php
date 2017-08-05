@@ -14,8 +14,14 @@ class OKCoin extends Exchange
     {
         $client = new HttpClient(['version' => 1.0, 'timeout' => 30]);
         $okcoin = new OKCoinWrapper($client);
-        //echo ' calling '.get_class($okcoin).'->'.$method.'('.json_encode($params).')';
-        return call_user_func_array([$okcoin, $method], $params);
+
+        try {
+            return call_user_func_array([$okcoin, $method], $params);
+        } catch (\Exception $e) {
+            error_log('OKCoin::request() Exception msg: '.$e->getMessage().
+                ' call: '.get_class($okcoin).'->'.$method.'('.json_encode($params).')');
+            return null;
+        }
     }
 
     public function form(array $options = [])
