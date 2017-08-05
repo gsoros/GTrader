@@ -35,7 +35,7 @@ trait HasOwner
 
     public function getAllowedOwners()
     {
-        return $this->getParam('allowed_owners');
+        return $this->getParam('allowed_owners', []);
     }
 
 
