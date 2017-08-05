@@ -378,7 +378,7 @@ abstract class Indicator //implements \JsonSerializable
         $candles = $this->getCandles();
         $key = $candles->key($this->getSignature());
         if ($last = $candles->last()) {
-            return isset($last->$key) ? $last->$key : 0;
+            return $last->$key ?? 0;
         }
         return 0;
     }

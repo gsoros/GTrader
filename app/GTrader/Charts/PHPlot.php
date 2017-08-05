@@ -370,7 +370,7 @@ class PHPlot extends Chart
                 'data_color',
                 function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
                     //dump('R: '.$row.' C: '.$col.' E:'.$extra);
-                    $s = isset($signals[$row]) ? $signals[$row] : null;
+                    $s = $signals[$row] ?? null;
                     ;
                     if ('long' === $s) {
                         return (0 === $extra) ? 0 : 1;
@@ -847,8 +847,8 @@ class PHPlot extends Chart
 
     public function handleImageRequest(Request $request)
     {
-        $this->setParam('width', isset($request->width) ? $request->width : 0);
-        $this->setParam('height', isset($request->height) ? $request->height : 0);
+        $this->setParam('width', $request->width ?? 0);
+        $this->setParam('height', $request->height ?? 0);
         $candles = $this->getCandles();
         foreach (['start', 'end', 'limit', 'exchange', 'symbol', 'resolution'] as $param) {
             if (isset($request->$param)) {

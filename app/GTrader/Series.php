@@ -25,9 +25,9 @@ class Series extends Collection
             }
         }
 
-        $this->setParam('limit', isset($params['limit']) ? intval($params['limit']) : 200);
-        $this->setParam('start', isset($params['start']) ? intval($params['start']) : 0);
-        $this->setParam('end', isset($params['end']) ? intval($params['end']) : 0);
+        $this->setParam('limit', intval($params['limit'] ?? 200));
+        $this->setParam('start', intval($params['start'] ??  0));
+        $this->setParam('end', intval($params['end'] ?? 0));
         $this->setParam('resolution', intval($this->getParam('resolution')));
         parent::__construct();
     }
@@ -90,7 +90,7 @@ class Series extends Collection
     public function byKey($key)
     {
         $this->_load();
-        return isset($this->items[$key]) ? $this->items[$key] : null;
+        return $this->items[$key] ?? null;
     }
 
 
@@ -98,7 +98,7 @@ class Series extends Collection
     {
         $this->_load();
         //error_log('Series::next() '.$this->_iter);
-        $ret = isset($this->items[$this->_iter]) ? $this->items[$this->_iter] : null;
+        $ret = $this->items[$this->_iter] ?? null;
         if ($advance_iterator) {
             $this->_iter++;
         }
@@ -422,7 +422,7 @@ class Series extends Collection
             ->orderBy('time')
             ->first();
 
-        $epoch = isset($candle->time) ? $candle->time : null;
+        $epoch = $candle->time ?? null;
         $this->cache($cache_key, $epoch);
 
         return $epoch;
@@ -455,7 +455,7 @@ class Series extends Collection
             ->where('resolution', $resolution)
             ->orderBy('time', 'desc')->first();
 
-        $last = isset($candle->time) ? $candle->time : null;
+        $last = $candle->time ?? null;
         $this->cache($cache_key, $last);
 
         return $last;
@@ -488,10 +488,10 @@ class Series extends Collection
             }
             $curr = 1;
             if ('time' === $index_type) {
-                $ret[intval($candle->time)] = isset($candle->$key) ? $candle->$key : null;
+                $ret[intval($candle->time)] = $candle->$key ?? null;
                 continue;
             }
-            $ret[] = isset($candle->$key) ? $candle->$key : null;
+            $ret[] = $candle->$key ?? null;
         }
         return $ret;
     }
@@ -512,7 +512,7 @@ class Series extends Collection
             if (in_array($fill, ['open', 'high', 'low', 'close'], true)) {
                 $fill = $candle->$fill;
             }
-            $candle->$key = isset($values[$i]) ? $values[$i] : $fill;
+            $candle->$key = $values[$i] ?? $fill;
             $i++;
         }
         return $this;

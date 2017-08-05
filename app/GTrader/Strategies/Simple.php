@@ -61,7 +61,7 @@ class Simple extends Strategy
         $uid = $this->getParam('uid');
         $params = [];
         foreach ($signals->getParam('adjustable') as $key => $val) {
-            $params[$key] = isset($request->{$key.'_'.$uid}) ? $request->{$key.'_'.$uid} : null;
+            $params[$key] = $request->{$key.'_'.$uid} ?? null;
         }
         $request->merge([
             'params' => json_encode($params),

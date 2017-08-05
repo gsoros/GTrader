@@ -51,7 +51,7 @@ class ExchangeController extends Controller
 
         $options = $config->options;
         foreach ($exchange->getParam('user_options') as $key => $default) {
-            $options[$key] = isset($request->$key) ? $request->$key : $default;
+            $options[$key] = $request->$key ?? $default;
         }
         $config->options = $options;
         $config->save();

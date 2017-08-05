@@ -219,7 +219,7 @@ class FannTraining extends Model
 
     protected function getStrategy(string $type)
     {
-        return isset($this->strategies[$type]) ? $this->strategies[$type] : null;
+        return $this->strategies[$type] ?? null;
     }
 
 
@@ -509,7 +509,7 @@ class FannTraining extends Model
         if (!is_array($this->progress)) {
             return 0;
         }
-        return isset($this->progress[$key]) ? $this->progress[$key] : 0;
+        return $this->progress[$key] ?? 0;
     }
 
 

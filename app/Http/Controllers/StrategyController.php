@@ -367,7 +367,7 @@ class StrategyController extends Controller
             $progress = [];
         }
         foreach (['test', 'test_max', 'verify', 'verify_max'] as $field) {
-            $value = isset($progress[$field]) ? $progress[$field] : 0;
+            $value = $progress[$field] ?? 0;
             $progress[$field] = number_format(floatval($value), 2, '.', '');
         }
         return response(json_encode($progress), 200);

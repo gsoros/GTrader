@@ -343,7 +343,7 @@ class Fann extends Strategy
         $topology_changed = false;
 
         $default_inputs = ['open'];
-        $inputs = isset($request->inputs) ? $request->inputs : $default_inputs;
+        $inputs = $request->inputs ?? $default_inputs;
         $inputs = is_array($inputs) ? $inputs : $default_inputs;
         $inputs = count($inputs) ? $inputs : $default_inputs;
         foreach ($inputs as $k => $input) {
@@ -1070,8 +1070,8 @@ class Fann extends Strategy
                 }
                 $min = $max = null;
                 if ('range' === $group_name) {
-                    $min = isset($params['min']) ? $params['min'] : null;
-                    $max = isset($params['max']) ? $params['max'] : null;
+                    $min = $params['min'] ?? null;
+                    $max = $params['max'] ?? null;
                     if (is_null($min) || is_null($max)) {
                         error_log('Fann::normalizeInput() warning: min or max range is null for '.
                             $group_name.': '.$sig);

@@ -5,6 +5,7 @@ namespace GTrader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 
 /**
@@ -105,13 +106,11 @@ class Bot extends Model
         $exchange->saveFilledOrders($symbol, $this->id);
 
         // Cancel unfilled orders
-        if (isset($this->options['unfilled_max'])) {
-            if (intval($this->options['unfilled_max'])) {
-                $exchange->cancelUnfilledOrders(
-                    $symbol,
-                    time() - $this->options['unfilled_max'] * $this->resolution
-                );
-            }
+        if ($unfilled_max = intval(Arr::get($this->options, 'unfilled_max'))) {
+            $exchange->cancelUnfilledOrders(
+                $symbol,
+                time() - $unfilled_max * $this->resolution
+            );
         }
 
 

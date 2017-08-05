@@ -58,7 +58,7 @@ class FannPrediction extends Indicator
         $candles->reset();
 
         while ($candle = $candles->next()) {
-            $val = isset($prediction[$candle->time]) ? $prediction[$candle->time] : 0;
+            $val = $prediction[$candle->time] ?? 0;
             //error_log('P:'.$val);
             //$price = series::ohlc4($candle);
             $price = $candle->open;
