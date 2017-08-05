@@ -87,7 +87,8 @@ $(function() {
                             'train',
                             'trainStart',
                             'trainStop',
-                            'sample'
+                            'sample',
+                            'sources'
                         ].indexOf(method)) {
                         window.GTrader.updateAllStrategySelectors();
                         window.GTrader.charts.mainchart.refresh();

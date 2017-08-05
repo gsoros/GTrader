@@ -62,4 +62,51 @@ class Util
     {
         return self::humanBytes(memory_get_usage($real_usage));
     }
+
+    /**
+     * Returns the result of comparing $a to $b, using $cond
+     * @param  mixed $a
+     * @param  string $cond
+     * @param  mixed $b
+     * @return bool|null on error
+     */
+    public static function conditionMet($a, $cond, $b)
+    {
+        //dump('Util::conditionMet('.json_encode($a).', '.json_encode($cond).', '.json_encode($b).')');
+        switch ($cond) {
+            case '=':
+            case '==':
+            case 'eq':
+                return $a == $b;
+
+            case '===':
+                return $a === $b;
+
+            case '!':
+            case '!=':
+            case 'not':
+                return $a != $b;
+
+            case '!==':
+                return $a !== $b;
+
+            case '<':
+            case 'lt':
+                return $a < $b;
+
+            case '<=':
+            case 'lte':
+                return $a <= $b;
+
+            case '>':
+            case 'gt':
+                return $a > $b;
+
+            case '>=':
+            case 'gte':
+                return $a >= $b;
+        }
+        error_log('Util::conditionMet() unknown condition: '. $cond);
+        return null;
+    }
 }

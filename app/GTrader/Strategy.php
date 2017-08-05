@@ -5,7 +5,7 @@ namespace GTrader;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-class Strategy
+abstract class Strategy
 {
     use Skeleton, HasCandles, HasIndicators, HasCache
     {
@@ -14,6 +14,8 @@ class Strategy
     }
 
     //protected static $stat_cache_log = 'all';
+
+    abstract public function getSignalsIndicator();
 
     public function setCandles(Series $candles)
     {
@@ -145,7 +147,7 @@ class Strategy
             ->where('user_id', $user_id)
             ->orderBy('name')
             ->get();
-            
+
         $strategies = [];
         foreach ($strategies_db as $strategy_db) {
             $strategy = unserialize($strategy_db->strategy);
@@ -207,13 +209,6 @@ class Strategy
             }
         }
         return $this;
-    }
-
-
-    public function getSignalsIndicator()
-    {
-        error_log('Strategy::getSignalsIndicator() not overridden in '.$this->getShortClass());
-        return null;
     }
 
     public function getBalanceIndicator()

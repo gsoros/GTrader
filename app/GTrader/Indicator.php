@@ -21,7 +21,7 @@ abstract class Indicator //implements \JsonSerializable
     {
         $this->__skeletonConstruct($params);
 
-        $this->allowed_owners = ['GTrader\\Series', 'GTrader\\Strategy'];
+        $this->setAllowedOwners(['GTrader\\Series', 'GTrader\\Strategy']);
 
         if (!$this->getParam('display.y-axis')) {
             $this->setParam('display.y-axis', 'left');
@@ -468,8 +468,11 @@ abstract class Indicator //implements \JsonSerializable
 
 
 
-    public static function signatureSame(string $sig_a, string $sig_b)
+    public static function signatureSame(string $sig_a = null, string $sig_b = null)
     {
+        if (is_null($sig_a) || is_null($sig_b)) {
+            return $sig_a == $sig_b;
+        }
         if (($ca = self::getClassFromSignature($sig_a))
             !== ($cb = self::getClassFromSignature($sig_b))) {
             //error_log('signatureSame() '.$ca.' != '.$cb);

@@ -7,6 +7,7 @@
         'target_element' => 'settings_content',
         'available' => [],
         'display_outputs' => false,
+        'format' => 'short',
     ] as $varname => $default) {
         $$varname = isset($$varname) ? $$varname : $default;
     };

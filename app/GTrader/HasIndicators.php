@@ -22,21 +22,26 @@ trait HasIndicators
         array $params_if_new = []
     ) {
         //dump('addIndicator() i: '.json_encode($indicator).' p: '.json_encode($params).
-        //' pin: '.json_encode($params_if_new));
+        //  ' pin: '.json_encode($params_if_new));
         $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
-            if ($indicator) {
-                $ind_str = $indicator;
-                if (!($indicator = Indicator::make($indicator, ['indicator' => $params]))) {
-                    error_log('addIndicator() could not make('.$ind_str.')');
-                    return null;
-                }
-            } else {
+            if (!$indicator) {
                 error_log('addIndicator() tried to make ind without class');
+                return null;
+            }
+            $ind_str = $indicator;
+            if (!($indicator = Indicator::make(
+                $indicator,
+                ['indicator' => $params]
+            ))) {
+                error_log('addIndicator() could not make('.$ind_str.')');
+                return null;
             }
         }
         if (!$indicator->canBeOwnedBy($owner)) {
+            error_log('addIndicator() '.$indicator->getShortClass().
+                ' cannot be owned by '.$owner->getShortClass());
             return null;
         }
         $indicator->setOwner($owner);
@@ -90,19 +95,22 @@ trait HasIndicators
         array $params = [],
         array $params_if_new = []
     ) {
+        // dump('addIndicator() S: '.json_encode($signature).' p: '.json_encode($params).
+        //     ' pin: '.json_encode($params_if_new));
+
         if (!is_string($signature)) {
             $signature = json_encode($signature, true);
             //error_log('HasIndicators::getOrAddIndicator() warning, converted to string: '.$signature);
         }
         if (!strlen($signature)) {
-            return false;
+            return null;
         }
         if (in_array($signature, ['open', 'high', 'low', 'close', 'volume'])) {
-            return false;
+            return null;
         }
         if (!($indicator = $this->getIndicator($signature))) {
             if (!($indicator = $this->addIndicatorBySignature($signature, $params, $params_if_new))) {
-                return false;
+                return null;
             }
         }
         return $indicator;
@@ -203,67 +211,107 @@ trait HasIndicators
     /**
      * Get indicators, filtered, sorted
      *
-     * @param  array    $filters    e.g. ['display.visible' => true]
+     * @param  array    $filters    e.g. ['display.visible' => true, 'class' => ['not', 'Ema']]
      * @param  array    $sort       e.g. ['display.y-axis' => 'left', 'display.name']
      * @return array
      */
     public function getIndicatorsFilteredSorted(array $filters = [], array $sort = [])
     {
-        $indicators = $this->getIndicators();
+        return $this->sortIndicators(
+            $this->filterIndicators($this->getIndicators(), $filters),
+            $sort
+        );
+    }
 
-        if (count($filters)) {
-            foreach ($indicators as $ind_key => $ind_obj) {
-                foreach ($filters as $cond_key => $cond_val) {
-                    if ('class' === $cond_key) {
-                        if ($cond_val !== $ind_obj->getShortClass()) {
-                            unset($indicators[$ind_key]);
-                            break;
-                        }
-                        continue;
+    /**
+     * Filters an array of indicators
+     * @param  array  $indicators
+     * @param  array  $filters    e.g. ['display.visible' => true, 'class' => ['not', 'Ema']]
+     * @return array
+     */
+    protected function filterIndicators(array $indicators = [], array $filters = [])
+    {
+        if (!count($filters)) {
+            return $indicators;
+        }
+        foreach ($indicators as $ind_key => $ind_obj) {
+            foreach ($filters as $filter_key => $filter_val) {
+                $condition = '==';
+                if  (is_array($filter_val)) {
+                    //dump('HasIndicators::filterIndicators filter is array:', $filter_val);
+                    if (isset($filter_val[0]) && isset($filter_val[1])) {
+                        $condition = $filter_val[0];
+                        $filter_val = $filter_val[1];
                     }
-                    if ($ind_obj->getParam($cond_key) !== $cond_val) {
+                }
+                if ('class' === $filter_key) {
+                    if (!Util::conditionMet(
+                        $filter_val,
+                        $condition,
+                        $ind_obj->getShortClass())
+                    ) {
                         unset($indicators[$ind_key]);
                         break;
                     }
+                    continue;
+                }
+                if (!Util::conditionMet(
+                    $ind_obj->getParam($filter_key),
+                    $condition,
+                    $filter_val
+                )) {
+                    unset($indicators[$ind_key]);
+                    break;
                 }
             }
         }
+        return $indicators;
+    }
 
-        if (count($sort)) {
-            foreach (array_reverse($sort) as $sort_key => $sort_val) {
-                if (is_string($sort_key)) {
-                    usort(
-                        $indicators,
-                        function (Indicator $ind1, Indicator $ind2) use ($sort_key, $sort_val) {
-                            $val1 = $ind1->getParam($sort_key);
-                            $val2 = $ind2->getParam($sort_key);
-                            if ($val1 === $sort_val) {
-                                return ($val2 === $sort_val) ? 0 : -1;
-                            }
-                            if ($val2 === $sort_val) {
-                                return 1;
-                            }
-                            return 0;
+
+    /**
+     * Sorts an array of indicators
+     * @param  array  $indicators
+     * @param  array  $sort       e.g. ['display.y-axis' => 'left', 'display.name']
+     * @return array
+     */
+    protected function sortIndicators(array $indicators = [], array $sort = [])
+    {
+        if (!count($sort)) {
+            return $indicators;
+        }
+        foreach (array_reverse($sort) as $sort_key => $sort_val) {
+            if (is_string($sort_key)) {
+                usort(
+                    $indicators,
+                    function (Indicator $ind1, Indicator $ind2) use ($sort_key, $sort_val) {
+                        $val1 = $ind1->getParam($sort_key);
+                        $val2 = $ind2->getParam($sort_key);
+                        if ($val1 === $sort_val) {
+                            return ($val2 === $sort_val) ? 0 : -1;
                         }
-                    );
-                } else {
-                    usort(
-                        $indicators,
-                        function (Indicator $ind1, Indicator $ind2) use ($sort_val) {
-                            $val1 = $ind1->getParam($sort_val);
-                            $val2 = $ind2->getParam($sort_val);
-                            if (is_numeric($val1) && is_numeric($val2)) {
-                                $val1 = floatval($val1);
-                                $val2 = floatval($val2);
-                                return $val1 === $val2 ? 0 : ($val1 > $val2 ? 1 : -1);
-                            }
-                            return strcmp(strval($val1), strval($val2));
+                        if ($val2 === $sort_val) {
+                            return 1;
                         }
-                    );
-                }
+                        return 0;
+                    }
+                );
+            } else {
+                usort(
+                    $indicators,
+                    function (Indicator $ind1, Indicator $ind2) use ($sort_val) {
+                        $val1 = $ind1->getParam($sort_val);
+                        $val2 = $ind2->getParam($sort_val);
+                        if (is_numeric($val1) && is_numeric($val2)) {
+                            $val1 = floatval($val1);
+                            $val2 = floatval($val2);
+                            return $val1 === $val2 ? 0 : ($val1 > $val2 ? 1 : -1);
+                        }
+                        return strcmp(strval($val1), strval($val2));
+                    }
+                );
             }
         }
-        //dump($filters, $sort, $indicators);
         return $indicators;
     }
 
@@ -418,11 +466,22 @@ trait HasIndicators
         }
         $indicator = clone $indicator;
         $sig = $indicator->getSignature();
-        $jso = json_decode($request->params);
+        try {
+            $jso = json_decode($request->params);
+        } catch (\Exception $e) {
+            error_log('handleIndicatorSaveRequest() couléd not decode json: '.json_encode($request->params));
+            return $this->viewIndicatorsList($request);
+        }
+        $suffix = '';
+        if (isset($request->suffix)) {
+            if ($request->suffix) {
+                $suffix = $request->suffix;
+            }
+        }
         foreach ($indicator->getParam('adjustable') as $key => $param) {
             $val = null;
-            if (isset($jso->$key)) {
-                $val = $jso->$key;
+            if (isset($jso->{$key.$suffix})) {
+                $val = $jso->{$key.$suffix};
             }
             if ('bool' === ($type = $param['type'])) {
                 $val = boolval($val);

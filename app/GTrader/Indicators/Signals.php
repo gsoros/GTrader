@@ -5,13 +5,14 @@ namespace GTrader\Indicators;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Strategy;
+use GTrader\Util;
 
 class Signals extends HasInputs
 {
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->allowed_owners = ['GTrader\\Series'];
+        $this->setAllowedOwners(['GTrader\\Series']);
     }
 
     public function init()
@@ -70,14 +71,17 @@ class Signals extends HasInputs
 
     public function getForm(array $params = [])
     {
-        if ($user_id = Auth::id()) {
-            $this->setParam(
-                'adjustable.strategy_id.options',
-                array_replace(
-                    $this->getParam('adjustable.strategy_id.options'),
-                    Strategy::getStrategiesOfUser($user_id)
-                )
-            );
+        $key = 'adjustable.strategy_id.options';
+        if ($options = $this->getParam($key)) {
+            if ($user_id = Auth::id()) {
+                $this->setParam(
+                    $key,
+                    array_replace(
+                        $options,
+                        Strategy::getStrategiesOfUser($user_id)
+                    )
+                );
+            }
         }
         return parent::getForm($params);
     }
@@ -225,7 +229,7 @@ class Signals extends HasInputs
                     //dd($this);
                     return $this;
                 }
-                if ($this->conditionMet(
+                if (Util::conditionMet(
                     $candle->{$input_keys['input_'.$signal.'_a']},
                     $conditions[$signal],
                     $candle->{$input_keys['input_'.$signal.'_b']}
@@ -245,17 +249,5 @@ class Signals extends HasInputs
             }
         }
         return $this;
-    }
-
-    protected function conditionMet($a, $cond, $b)
-    {
-        switch ($cond) {
-            case '<':
-                return $a < $b;
-            case '>':
-                return $a > $b;
-        }
-        error_log('Signals::conditionMet() unknown condition: '. $cond);
-        return false;
     }
 }

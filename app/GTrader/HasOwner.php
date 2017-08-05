@@ -4,9 +4,7 @@ namespace GTrader;
 
 trait HasOwner
 {
-    protected $allowed_owners = [];
     protected $owner;
-
 
     public function getOwner()
     {
@@ -37,6 +35,21 @@ trait HasOwner
 
     public function getAllowedOwners()
     {
-        return $this->allowed_owners;
+        return $this->getParam('allowed_owners');
+    }
+
+
+    public function setAllowedOwners(array $owners)
+    {
+        return $this->setParam('allowed_owners', $owners);
+    }
+
+
+    public function addAllowedOwner(string $owner)
+    {
+        if (in_array($owner, $owners = $this->getAllowedOwners())) {
+            return $this;
+        }
+        return $this->setAllowedOwners(array_merge($owners, [$owner]));
     }
 }

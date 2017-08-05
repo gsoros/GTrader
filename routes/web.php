@@ -41,6 +41,7 @@ Route::get('/indicator.form',           'IndicatorController@form');
 Route::get('/indicator.new',            'IndicatorController@create');
 Route::get('/indicator.delete',         'IndicatorController@delete');
 Route::post('/indicator.save',          'IndicatorController@save');
+Route::get('/indicator.sources',        'IndicatorController@sources');
 
 Route::get('/strategy.list',            'StrategyController@list');
 Route::get('/strategy.new',             'StrategyController@create');

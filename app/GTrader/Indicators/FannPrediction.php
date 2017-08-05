@@ -12,7 +12,7 @@ class FannPrediction extends Indicator
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->allowed_owners = ['GTrader\\Series'];
+        $this->setAllowedOwners(['GTrader\\Series']);
     }
 
     public function calculate(bool $force_rerun = false)

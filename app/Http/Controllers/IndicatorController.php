@@ -84,6 +84,14 @@ class IndicatorController extends Controller
     }
 
 
+    public function sources(Request $request)
+    {
+        if (! $owner = $this->loadOwner($request)) {
+            return response('Could not load owner.', 403);
+        }
+        return response(json_encode($owner->getSourcesAvailable()), 200);
+    }
+
     protected function loadOwner(Request $request)
     {
         if (!isset($request->owner_class)) {
@@ -116,7 +124,8 @@ class IndicatorController extends Controller
             }
             return $strategy;
         }
-        error_log('IndicatorController::load() owner_class not implemented');
+        error_log('IndicatorController::load() owner_class '.
+            $request->owner_class.' not implemented');
         return false;
     }
 

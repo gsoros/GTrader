@@ -30,7 +30,9 @@ return [
             'type' => 'select',
             'options' => [
                 '<' => 'LT',
+                '<=' => 'LTE',
                 '>' => 'GT',
+                '>=' => 'GTE',
             ],
         ],
         'input_long_b' => [
@@ -50,7 +52,9 @@ return [
             'type' => 'select',
             'options' => [
                 '<' => 'LT',
+                '<=' => 'LTE',
                 '>' => 'GT',
+                '>=' => 'GTE',
             ],
         ],
         'input_short_b' => [

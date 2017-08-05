@@ -37,6 +37,7 @@
                     <span class="glyphicon glyphicon-remove"></span> Discard Changes
                 </button>
                 <button onClick="window.GTrader.request('strategy', 'save', $('#strategyForm').serialize(), 'POST')"
+                        id="strategySaveButton"
                         type="button"
                         class="btn btn-primary btn-sm trans"
                         title="Save Strategy">
