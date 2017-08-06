@@ -15,7 +15,9 @@ abstract class Strategy
 
     //protected static $stat_cache_log = 'all';
 
+
     abstract public function getSignalsIndicator();
+
 
     public function setCandles(Series $candles)
     {
@@ -23,7 +25,6 @@ abstract class Strategy
         //$candles->setStrategy($this);
         return $this;
     }
-
 
 
     public static function load(int $id)
@@ -52,10 +53,12 @@ abstract class Strategy
         return ['params', 'indicators'];
     }
 
+
     public function __wakeup()
     {
         $this->cleanCache();
     }
+
 
     public function __clone()
     {
@@ -64,6 +67,7 @@ abstract class Strategy
             $this->addIndicator($new_indicator);
         }
     }
+
 
     public function save()
     {
@@ -211,6 +215,7 @@ abstract class Strategy
         return $this;
     }
 
+
     public function getBalanceIndicator()
     {
         if (!$candles = $this->getCandles()) {
@@ -225,6 +230,7 @@ abstract class Strategy
             'input_signal' => $signals->getSignature(),
         ]);
     }
+
 
     public function getLastBalance(bool $force_rerun = false)
     {

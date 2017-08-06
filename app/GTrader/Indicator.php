@@ -7,7 +7,7 @@ use GTrader\Series;
 
 abstract class Indicator //implements \JsonSerializable
 {
-    use Skeleton, HasOwner
+    use Skeleton, HasOwner, HasCache
     {
         Skeleton::__construct as private __skeletonConstruct;
     }
@@ -29,6 +29,9 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
+    abstract public function calculate(bool $force_rerun = false);
+
+
     public function init()
     {
         return $this;
@@ -40,6 +43,7 @@ abstract class Indicator //implements \JsonSerializable
         $this->calculated = false;
         $this->refs = [];
     }
+
 
     /*
         public function __sleep()
@@ -75,10 +79,6 @@ abstract class Indicator //implements \JsonSerializable
     */
 
 
-    abstract public function calculate(bool $force_rerun = false);
-
-
-
     public function addRef($ind_or_sig)
     {
         //dump('addRef '.$this->debugObjId(), $ind_or_sig);
@@ -102,6 +102,7 @@ abstract class Indicator //implements \JsonSerializable
         return $this;
     }
 
+
     public function delRef(string $sig)
     {
         foreach ($this->getRefs() as $k => $v) {
@@ -112,6 +113,7 @@ abstract class Indicator //implements \JsonSerializable
         return $this;
     }
 
+
     public function refCount()
     {
         return count($this->getRefs());
@@ -121,6 +123,23 @@ abstract class Indicator //implements \JsonSerializable
     public function getRefs()
     {
         return $this->refs;
+    }
+
+
+    public function cleanRefs(array $except = [])
+    {
+        if (!count($except)) {
+            $this->refs = [];
+            return $this;
+        }
+        $new_refs = [];
+        foreach ($this->refs as $ref) {
+            if (in_array($ref, $except)) {
+                $new_refs[] = $ref;
+            }
+        }
+        $this->refs = $new_refs;
+        return $this;
     }
 
 
@@ -205,6 +224,7 @@ abstract class Indicator //implements \JsonSerializable
         return $sig;
     }
 
+
     public static function decodeSignature(string $sig)
     {
         static $cache = [];
@@ -244,10 +264,12 @@ abstract class Indicator //implements \JsonSerializable
         return ($decoded = self::decodeSignature($signature)) ? $decoded['class'] : $signature;
     }
 
+
     public static function getParamsFromSignature(string $signature)
     {
         return ($decoded = self::decodeSignature($signature)) ? $decoded['params'] : [];
     }
+
 
     public static function getOutputFromSignature(string $signature)
     {
@@ -392,6 +414,7 @@ abstract class Indicator //implements \JsonSerializable
         );
     }
 
+
     public function getNormalizeParams()
     {
         return [
@@ -401,17 +424,25 @@ abstract class Indicator //implements \JsonSerializable
         ];
     }
 
+
     public function hasInputs()
     {
         return false;
     }
 
-    public function updateReferences()
+
+    public function updateReferences(string $update_id = null)
     {
+        if (!$update_id) {
+            $update_id = uniqid();
+        } elseif ($update_id === $this->cached('last_references_update_id')) {
+            return $this;
+        }
         if (! $owner = $this->getOwner()) {
             error_log('Indicator::updateReferences() no owner');
             return $this;
         }
+        /*** // References are reset by HasIndicators::updateReferences
         foreach ($this->getRefs() as $ref) {
             if ('root' === $ref) {
                 continue;
@@ -420,6 +451,7 @@ abstract class Indicator //implements \JsonSerializable
                 $this->delRef($ref);
             }
         }
+        */
         if (!$this->hasInputs()) {
             return $this;
         }
@@ -432,7 +464,9 @@ abstract class Indicator //implements \JsonSerializable
                 continue;
             }
             $ind->addRef($this);
+            $ind->updateReferences($update_id);
         }
+        $this->cache('last_references_update_id', $update_id);
         return $this;
     }
 
@@ -465,7 +499,6 @@ abstract class Indicator //implements \JsonSerializable
         $this->setParam('display.y-axis', ($count_left === count($inds)) ? 'left' : 'right');
         return $this;
     }
-
 
 
     public static function signatureSame(string $sig_a = null, string $sig_b = null)
@@ -509,8 +542,6 @@ abstract class Indicator //implements \JsonSerializable
         }
         return false;
     }
-
-
 
 
     public function getOutputs()
@@ -576,6 +607,7 @@ abstract class Indicator //implements \JsonSerializable
         return $min;
     }
 
+
     public function max(array $values)
     {
         $max = null;
@@ -592,6 +624,7 @@ abstract class Indicator //implements \JsonSerializable
         //dump('Max '.$this->getShortClass().': '.$max);
         return $max;
     }
+
 
     public function visible(bool $set = null)
     {

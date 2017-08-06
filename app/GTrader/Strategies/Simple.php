@@ -57,7 +57,10 @@ class Simple extends Strategy
         $reply = parent::handleSaveRequest($request);
 
         //dump($request->all());
-        $signals = $this->getSignalsIndicator();
+        if (!$signals = $this->getSignalsIndicator()) {
+            error_log($this->getShortClass().'::handleSaveRequest() could not get signals ind');
+            return $reply;
+        }
         $uid = $this->getParam('uid');
         $params = [];
         foreach ($signals->getParam('adjustable') as $key => $val) {
@@ -100,8 +103,12 @@ class Simple extends Strategy
         array $filters = [],
         array $disabled = []
     ) {
+        $filters = array_merge_recursive($filters, ['class' => ['not', 'Signals']]);
         return parent::getSourcesAvailable(
-            $this->getSignalsIndicator()->getSignature()
+            $except_signature,
+            $sources,
+            $filters,
+            $disabled
         );
     }
 
@@ -111,6 +118,7 @@ class Simple extends Strategy
             return $ind;
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
+            error_log($this->getShortClass().'::getSignalsIndicator() could not find Signals');
             return null;
         }
         $this->cache('signals_indicator', $ind);

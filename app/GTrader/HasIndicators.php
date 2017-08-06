@@ -182,10 +182,11 @@ trait HasIndicators
             //error_log('unsetIndicator() not found: '.$sig);
             return $this;
         }
-        if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
-            error_log('unsetIndicator() warning: refcount is non-zero for '.$sig);
-        }
-        //error_log('unsetIndicator() '.$target->debugObjId());
+        // if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
+        //     error_log('unsetIndicator() warning: refcount is non-zero for sig: '.$sig.
+        //         ' refs: '.json_encode($target->getRefs()));
+        // }
+        // error_log('unsetIndicator() '.$target->debugObjId());
         unset($this->getIndicatorOwner()->indicators[$key]);
         return $this;
     }
@@ -514,7 +515,7 @@ trait HasIndicators
                 $val = stripslashes(urldecode($val));
                 $dependency = $this->getOrAddIndicator($val);
                 if (is_object($dependency)) {
-                    $dependency->addRef('root');
+                    //$dependency->addRef('root');
                     $val = $dependency->getSignature(Indicator::getOutputFromSignature($val));
                 }
             }
@@ -621,7 +622,10 @@ trait HasIndicators
     public function updateReferences()
     {
         foreach ($this->getIndicators() as $ind) {
-            $ind->updateReferences();
+            $ind->cleanRefs(['root']);
+        }
+        foreach ($this->getIndicators() as $ind) {
+            $ind->updateReferences(uniqid());
         }
         return $this;
     }
@@ -629,9 +633,10 @@ trait HasIndicators
 
     public function purgeIndicators()
     {
+        $this->updateReferences();
+
         $loop = 0;
         while ($loop < 100) {
-            $this->updateReferences();
             $removed = 0;
             foreach ($this->getIndicators() as $ind) {
                 if (!$ind->hasRefRecursive('root') ||
