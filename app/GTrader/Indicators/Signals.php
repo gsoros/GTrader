@@ -53,7 +53,7 @@ class Signals extends HasInputs
                 return $this;
             }
         }
-        if (!$i = $strategy->getSignalsIndicator()) {
+        if (!$i = $strategy->getSignalsIndicator(['set_prediction_id'])) {
             error_log('Signals::calculate() could not load signals ind from strat');
             return $this;
         }
@@ -133,7 +133,10 @@ class Signals extends HasInputs
         return json_encode($a);
     }
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
         $name = parent::getDisplaySignature('short');
         if ('short' === $format) {

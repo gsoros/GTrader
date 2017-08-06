@@ -4,7 +4,10 @@ namespace GTrader\Indicators;
 
 class Operator extends HasInputs
 {
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
         $op = $this->getParam('indicator.operation');
         $op = $this->getParam('adjustable.operation.options.'.$op, 'Operator');

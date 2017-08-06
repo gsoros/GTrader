@@ -98,7 +98,10 @@ class Ht extends Trader
     }
 
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
         $this->setup();
 

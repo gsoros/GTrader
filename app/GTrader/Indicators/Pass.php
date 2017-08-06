@@ -53,7 +53,10 @@ class Pass extends HasInputs
         return $norm;
     }
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
         $mode = $this->getParam('indicator.mode');
         $name = ucfirst($mode).' Pass';

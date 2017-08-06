@@ -112,7 +112,7 @@ class Simple extends Strategy
         );
     }
 
-    public function getSignalsIndicator()
+    public function getSignalsIndicator(array $options = [])
     {
         if ($ind = $this->cached('signals_indicator')) {
             return $ind;

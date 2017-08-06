@@ -136,8 +136,6 @@ class Series extends Collection
     }
 
 
-
-
     public function all()
     {
         $this->_load();

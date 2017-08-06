@@ -152,6 +152,11 @@
                         @endforeach
                     @endif
                 </select>
+                {{--
+                <script>
+                    $('#{{ $key }}_{{ $uid }}').select2();
+                </script>
+                --}}
 
                 {{-- Int, Float --}}
                 @elseif (in_array($param['type'], ['int', 'float']))

@@ -44,13 +44,12 @@ class Patterns extends Trader
     }
 
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
-        $name = $this->getParam('display.name');
-        if ('short' === $format) {
-            return $name;
-        }
-        return $name;
+        return $this->getParam('display.name');
     }
 
 

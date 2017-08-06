@@ -277,15 +277,18 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
-        $name = $this->getParam('display.name');
+        $name = $this->getParam('display.name', '');
 
         if ('short' === $format) {
             return $name;
         }
 
-        if ($param_str = $this->getParamString()) {
+        if ($param_str = $this->getParamString([], $overrides)) {
             $name .= ' ('.$param_str.')';
         }
 
@@ -293,7 +296,7 @@ abstract class Indicator //implements \JsonSerializable
     }
 
 
-    public function getParamString(array $except_keys = [])
+    public function getParamString(array $except_keys = [], array $overrides = [])
     {
         if (!count($params = $this->getParam('adjustable', []))) {
             return '';
@@ -306,51 +309,59 @@ abstract class Indicator //implements \JsonSerializable
             ARRAY_FILTER_USE_KEY
         );
         $param_str = '';
-        if (is_array($params)) {
-            if (count($params)) {
-                $delimiter = '';
-                foreach ($params as $key => $value) {
-                    if (strlen($param_str)) {
-                        $delimiter = ', ';
-                    }
-                    if (isset($value['type'])) {
-                        if ('select' === $value['type']) {
-                            if (isset($value['options'])) {
-                                if ($selected = Arr::get($value, 'options.'.$this->getParam('indicator.'.$key, 0))) {
-                                    $param_str .= $delimiter.$selected;
-                                    continue;
-                                }
-                            }
-                        }
-                        if ('bool' === $value['type']) {
-                            $param_str .=  ($this->getParam('indicator.'.$key)) ? $delimiter.$value['name'] : '';
-                            continue;
-                        }
-                        if ('source' === $value['type']) {
-                            $sig = $this->getParam('indicator.'.$key, '');
-                            if ($indicator = $this->getOwner()->getOrAddIndicator($sig)) {
-                                $output = '';
-                                if (is_array($sig)) {
-                                    $output = Arr::get($sig, 'output');
-                                } else {
-                                    $output = Indicator::getOutputFromSignature($sig);
-                                }
-                                $param_str .= $delimiter.$indicator->getDisplaySignature(
-                                    'short',
-                                    $output
-                                );
-                                continue;
-                            }
-                        }
-                    }
-                    $param = $this->getParam('indicator.'.$key);
-                    if (is_array($param)) {
-                        dd($this);
-                    }
-                    //$param_str .= $delimiter.ucfirst(explode('', $this->getParam('indicator.'.$key))[0]);
-                    $param_str .= $delimiter.ucfirst($param);
+        if (!is_array($params)) {
+            return $param_str;
+        }
+        if (!count($params)) {
+            return $param_str;
+        }
+        $delimiter = '';
+        foreach ($params as $key => $value) {
+            if (strlen($param_str)) {
+                $delimiter = ', ';
+            }
+            if (isset($overrides[$key])) {
+                $param_str .= $delimiter.strval($overrides[$key]);
+                continue;
+            }
+            if (!isset($value['type'])) {
+                continue;
+            }
+            if ('select' === $value['type']) {
+                if (!isset($value['options'])) {
+                    continue;
+                }
+                if ($selected = Arr::get($value['options'], $this->getParam('indicator.'.$key, 0))) {
+                    $param_str .= $delimiter.$selected;
+                    continue;
                 }
             }
+            if ('bool' === $value['type']) {
+                $param_str .=  ($this->getParam('indicator.'.$key)) ? $delimiter.$value['name'] : '';
+                continue;
+            }
+            if ('source' === $value['type']) {
+                $sig = $this->getParam('indicator.'.$key, '');
+                if (!$indicator = $this->getOwner()->getOrAddIndicator($sig)) {
+                    continue;
+                }
+                $output = is_array($sig) ?
+                    Arr::get($sig, 'output') :
+                    Indicator::getOutputFromSignature($sig);
+                $param_str .= $delimiter.$indicator->getDisplaySignature(
+                    'short',
+                    $output
+                );
+                continue;
+            }
+            $param = $this->getParam('indicator.'.$key);
+            if (is_array($param)) {
+                error_log('Indicator::getParamString() indicator.'.$key.' is an array');
+                return '';
+                //dd($this);
+            }
+            //$param_str .= $delimiter.ucfirst(explode('', $this->getParam('indicator.'.$key))[0]);
+            $param_str .= $delimiter.ucfirst($param);
         }
         return $param_str;
     }

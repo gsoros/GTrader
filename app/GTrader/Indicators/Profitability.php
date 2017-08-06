@@ -40,9 +40,7 @@ class Profitability extends HasInputs
 
         if (!($balance_ind = $this->getOwner()->getOrAddIndicator(
             'Balance',
-            [
-            'input_signal' => $this->getParam('indicator.input_signal'),
-            ]
+            ['input_signal' => $this->getParam('indicator.input_signal')]
         ))) {
             error_log('Profitability::calculate() balance indicator not found.');
             return $this;

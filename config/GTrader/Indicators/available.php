@@ -9,7 +9,7 @@ return [
     'Balance'           => ['allow_multiple' => true],
     'Ma'                => ['allow_multiple' => true],
     'Ema'               => ['allow_multiple' => true],
-    'FannPrediction'    => ['allow_multiple' => false],
+    'FannPrediction'    => ['allow_multiple' => true],
     'Signals'           => ['allow_multiple' => true],
     'Profitability'     => ['allow_multiple' => false],
     'Sampler'           => ['allow_multiple' => false],

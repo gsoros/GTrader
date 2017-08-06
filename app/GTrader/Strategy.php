@@ -16,7 +16,7 @@ abstract class Strategy
     //protected static $stat_cache_log = 'all';
 
 
-    abstract public function getSignalsIndicator();
+    abstract public function getSignalsIndicator(array $options = []);
 
 
     public function setCandles(Series $candles)

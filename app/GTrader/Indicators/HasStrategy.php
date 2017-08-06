@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use Illuminate\Support\Arr;
+
 trait HasStrategy
 {
     use \GTrader\HasStrategy;
@@ -15,20 +17,18 @@ trait HasStrategy
         return $owner;
     }
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getParamString(array $except_keys = [], array $overrides = [])
     {
-        $s = $this->getParam('display.name');
-        if ('short' === $format) {
-            return $s;
-        }
-        if ($strategy = $this->getStrategy()) {
-            if ($n = $strategy->getParam('name')) {
-                if ($p = $this->getParamString()) {
-                    $n .= ', '.$p;
-                }
-                return $s.' ('.$n.')';
+        if (!$strategy_name = Arr::get($overrides, 'strategy_id')) {
+            $strategy_name = 'Could not load strategy';
+            if ($strategy = $this->getStrategy()) {
+                $strategy_name = $strategy->getParam('name', 'Unknown Strategy');
             }
         }
-        return parent::getDisplaySignature($format, $output);
+        if (-1 == $this->getParam('indicator.strategy_id')) {
+            $strategy_name = 'Auto: '.$strategy_name;
+        }
+        $overrides = array_replace_recursive($overrides, ['strategy_id' => $strategy_name]);
+        return parent::getParamString($except_keys, $overrides);
     }
 }

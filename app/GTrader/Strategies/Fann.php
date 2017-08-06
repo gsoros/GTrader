@@ -1400,18 +1400,25 @@ class Fann extends Strategy
 
     /**
      * Creates and returns the prediction indicator
+     * @param bool $set_id
      * @return Indicator
      */
-    public function getPredictionIndicator()
+    public function getPredictionIndicator(bool $set_id = false)
     {
-        if ($i = $this->cached('prediction_indicator')) {
+        $cache_key = 'prediction_indicator';
+        if ($set_id) {
+            $cache_key .= '_set_id';
+        }
+        if ($i = $this->cached($cache_key)) {
             return $i;
         }
 
         $candles = $this->getCandles();
 
+        $params = $set_id ? ['strategy_id' => $this->getParam('id')] : [];
         $pred = $candles->getOrAddIndicator(
-            $this->getParam('prediction_indicator_class')
+            $this->getParam('prediction_indicator_class'),
+            $params
         );
         $pred->setStrategy($this);
         $pred->addRef('root');
@@ -1427,25 +1434,30 @@ class Fann extends Strategy
             $ema->addRef('root');
             $pred = $ema;
         }
-        $this->cache('prediction_indicator', $pred);
+        $this->cache($cache_key, $pred);
         return $pred;
     }
 
 
     /**
      * Creates and returns the signals indicator
+     * @param array $options
      * @return Indicator|null
      */
-    public function getSignalsIndicator()
+    public function getSignalsIndicator(array $options = [])
     {
-        if ($i = $this->cached('signals_indicator')) {
+        $cache_key = 'signals_indicator';
+        if ($set_prediction_id = in_array('set_prediction_id', $options)) {
+            $cache_key .= '_set_prediction_id';
+        }
+        if ($i = $this->cached($cache_key)) {
             return $i;
         }
         if (!$candles = $this->getCandles()) {
             error_log('Fann::getSignalsIndicator() no candles');
             return null;
         }
-        if (!$pred = $this->getPredictionIndicator()) {
+        if (!$pred = $this->getPredictionIndicator($set_prediction_id)) {
             error_log('Fann::getSignalsIndicator() could not get Prediction');
             return null;
         }
@@ -1482,7 +1494,7 @@ class Fann extends Strategy
             return null;
         }
         $signals->addRef('root');
-        $this->cache('signals_indicator', $signals);
+        $this->cache($cache_key, $signals);
         return $signals;
     }
 }

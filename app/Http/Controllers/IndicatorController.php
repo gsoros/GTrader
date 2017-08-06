@@ -28,12 +28,12 @@ class IndicatorController extends Controller
     public function form(Request $request)
     {
         if (! $owner = $this->loadOwner($request)) {
-            return response('Could not load owner.', 403);
+            return response('Could not load owner.', 200);
         }
         $sig = urldecode($request->signature);
         if (! $owner->hasIndicator($sig)) {
             error_log('indicatorController::form() indicator not found. Sig: '.$sig);
-            return response('Indicator not found.', 403);
+            return response('Indicator not found.', 200);
         }
         $form = $owner->handleIndicatorFormRequest($request);
         $this->saveOwner($owner);

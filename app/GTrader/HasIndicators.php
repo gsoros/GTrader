@@ -633,10 +633,9 @@ trait HasIndicators
 
     public function purgeIndicators()
     {
-        $this->updateReferences();
-
         $loop = 0;
         while ($loop < 100) {
+            $this->updateReferences();
             $removed = 0;
             foreach ($this->getIndicators() as $ind) {
                 if (!$ind->hasRefRecursive('root') ||

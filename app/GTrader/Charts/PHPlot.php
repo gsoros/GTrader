@@ -160,7 +160,7 @@ class PHPlot extends Chart
 
     public function plot(array $item)
     {
-        //dump('plot '.$item['label']);
+        //dump('plot ', $item);
         if (!is_array($item['values'])) {
             return $this;
         }
@@ -180,6 +180,7 @@ class PHPlot extends Chart
             array_unshift($v, '', $time);
         });
         if ($empty) {
+            //dump('empty');
             return $this;
         }
         $this->setMode($item);
@@ -238,6 +239,7 @@ class PHPlot extends Chart
 
     protected function setMode(array &$item = [])
     {
+        //dump('setMode', $item);
         $item['num_outputs'] = count(reset($item['values'])) - 2;
 
         // Line, linepoints and candlesticks use 'data-data'

@@ -16,7 +16,10 @@ class Vol extends HasInputs
         return 'volume';
     }
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+      string $format = 'long',
+      string $output = null,
+      array $overrides = [])
     {
         // hide params if default input is selected
         return $this->getParam('indicator.input_source') ===

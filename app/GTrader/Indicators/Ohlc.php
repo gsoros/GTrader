@@ -72,7 +72,10 @@ class Ohlc extends HasInputs
     }
 
 
-    public function getDisplaySignature(string $format = 'long', string $output = null)
+    public function getDisplaySignature(
+        string $format = 'long',
+        string $output = null,
+        array $overrides = [])
     {
         $mode = $this->getParam('indicator.mode');
         if ('linepoints' === $mode) {
