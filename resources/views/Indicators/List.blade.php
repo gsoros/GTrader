@@ -115,13 +115,17 @@
 <div class="row editable trans text-right">
     <div class="col-sm-12">
         New indicator:
-        <select class="btn-primary btn btn-mini"
+        <select style="width: 200px"
+                class="btn-primary btn btn-mini"
                 id="new_indicator_{{ $uid }}"
                 title="Select the type of indicator">
             @foreach ($available as $class => $indicator)
             <option value="{{ $class }}">{{ $indicator }}</option>
             @endforeach
         </select>
+        <script>
+            $('#new_indicator_{{ $uid }}').select2();
+        </script>
         <button onClick="window.GTrader.request(
                     'indicator',
                     'new',

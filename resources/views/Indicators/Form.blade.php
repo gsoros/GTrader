@@ -134,6 +134,9 @@
                         @endforeach
                     @endif
                 </select>
+                <script>
+                    $('#{{ $key }}_{{ $uid }}').select2();
+                </script>
 
                 {{-- List --}}
                 @elseif ('list' === $param['type'])
@@ -152,11 +155,9 @@
                         @endforeach
                     @endif
                 </select>
-                {{--
                 <script>
-                    $('#{{ $key }}_{{ $uid }}').select2();
+                    //$('#{{ $key }}_{{ $uid }}').select2();
                 </script>
-                --}}
 
                 {{-- Int, Float --}}
                 @elseif (in_array($param['type'], ['int', 'float']))
