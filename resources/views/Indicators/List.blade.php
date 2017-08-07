@@ -82,10 +82,12 @@
                             onClick="window.GTrader.request(
                                 'indicator',
                                 'delete',
-                                'owner_class={{ $owner_class }}' +
-                                    '&owner_id={{ $owner_id }}' +
-                                    '&name={{ $name }}' +
-                                    '&signature={{ urlencode($sig) }}',
+                                {
+                                    owner_class: '{{ $owner_class }}',
+                                    owner_id: '{{ $owner_id }}',
+                                    name: '{{ $name }}',
+                                    signature: '{{ urlencode($sig) }}'
+                                }
                                 'POST',
                                 '{{ $target_element }}'
                             ); return false">
