@@ -42,6 +42,7 @@ return [
         'input_long_source' => [
             'name' => 'Long Source',
             'type' => 'source',
+            'description' => 'Source for the long signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
         'input_short_a' => [
             'name' => 'Short A',
@@ -64,6 +65,7 @@ return [
         'input_short_source' => [
             'name' => 'Short Source',
             'type' => 'source',
+            'description' => 'Source for the short signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
     ],
     'display' =>  [
