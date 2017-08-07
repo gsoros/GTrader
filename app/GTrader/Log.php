@@ -2,9 +2,9 @@
 
 namespace GTrader;
 
-use Illuminate\Support\Facades\Log as Monolog;
-
 class Log {
+
+    protected static $logger = 'Illuminate\\Support\\Facades\\Log';
 
     /*
     Log::emergency(... $messages);
@@ -19,7 +19,15 @@ class Log {
 
     public static function __callStatic($name, $args)
     {
-        Monolog::{$name}(static::getCaller(), $args);
+        return forward_static_call_array([static::$logger, $name], $args);
+    }
+
+    public static function sparse(... $args)
+    {
+        //return forward_static_call_array([static::$logger, 'info'], $args);
+        return error_log('['.date('Y-m-d H:i:s').'] '.join(', ', array_map(function($v) {
+            return json_encode($v);
+        }, $args)));
     }
 
     protected static function getCaller()

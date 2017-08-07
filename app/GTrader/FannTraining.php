@@ -197,7 +197,7 @@ class FannTraining extends Model
             $this->getProgress('last_reset')
         );
         if ($last < $this->getProgress('epoch') - $this->options['reset_after']) {
-            Log::info('Reset training');
+            Log::sparse('Reset training');
             $this->setProgress('last_reset', $this->getProgress('epoch'))
                 ->brake(100);
             $this->getStrategy('train')->createFann();
@@ -335,20 +335,20 @@ class FannTraining extends Model
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_crosstrain_swap')
         );
-        Log::info('Epoch: '.$current_epoch.' Last: '.$last_epoch);
+        Log::sparse('Epoch: '.$current_epoch.' Last: '.$last_epoch);
 
         if (($this->getProgress('test') > 100 &&
             $this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) ||
             $current_epoch >= $last_epoch + $this->options['crosstrain'] * 10) {
-            Log::info('*** Swap ***');
+            Log::sparse('*** Swap ***');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
 
-            Log::info('Before: '.$this->getProgress('test_before_swap').
+            Log::sparse('Before: '.$this->getProgress('test_before_swap').
                         ' Now: '.$this->getProgress('test'));
             if ($this->getProgress('test') < $this->getProgress('test_before_swap')) {
                 if ($this->reverts < 3) {
-                    Log::info('Reverting fann');
+                    Log::sparse('Reverting fann');
                     if (is_resource($this->saved_fann)) {
                         $this->getStrategy('train')->setFann($this->saved_fann);
                         $this->reverts++;
@@ -417,7 +417,7 @@ class FannTraining extends Model
 
     protected function saveHistory($name, $value)
     {
-        Log::info('saveHistory('.$this->getProgress('epoch').', '.$name.', '.$value.')');
+        Log::sparse('saveHistory('.$this->getProgress('epoch').', '.$name.', '.$value.')');
         $this->getStrategy('train')
             ->saveHistory(
                 $this->getProgress('epoch'),
@@ -435,7 +435,7 @@ class FannTraining extends Model
             return $this;
         }
         if ($this->getStrategy('train')->getHistoryNumRecords() > $limit) {
-            Log::info('Pruning history');
+            Log::sparse('Pruning history');
             $state = $this->getProgress('state');
             $this->setProgress('last_history_prune', $current_epoch)
                 ->setProgress('state', 'pruning history')
@@ -468,7 +468,7 @@ class FannTraining extends Model
     {
         if (!$this->started) {
             $this->started = time();
-            Log::info('Training start: '.date('Y-m-d H:i:s'));
+            Log::sparse('Training start: '.date('Y-m-d H:i:s'));
         }
 
         // check db if we have been stopped or deleted
@@ -477,14 +477,14 @@ class FannTraining extends Model
                 ->where('status', 'training')
                 ->firstOrFail();
         } catch (\Exception $e) {
-            Log::info('Training stopped.');
+            Log::sparse('Training stopped.');
             return false;
         }
         // check if the number of active trainings is greater than the number of slots
         if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
             // check if we have spent too much time
             if ((time() - $this->started) > $this->getParam('max_time_per_session')) {
-                Log::info('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
+                Log::sparse('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
                 return false;
             }
         }
@@ -494,7 +494,7 @@ class FannTraining extends Model
 
     protected function setProgress($key, $value)
     {
-        //Log::info('setProgress('.$key.', '.$value.')');
+        //Log::sparse('setProgress('.$key.', '.$value.')');
         $progress = $this->progress;
         if (!is_array($progress)) {
             $progress = [];
@@ -524,7 +524,7 @@ class FannTraining extends Model
 
     protected function logMemoryUsage()
     {
-        Log::info('Memory used: '.Util::getMemoryUsage());
+        Log::sparse('Memory used: '.Util::getMemoryUsage());
         return $this;
     }
 }
