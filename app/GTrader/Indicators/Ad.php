@@ -13,7 +13,7 @@ class Ad extends Trader
             $values[$this->getInput('input_close')],
             $values[$this->getInput('input_volume')]
         ))) {
-            error_log('trader_ad returned false');
+            Log::error('trader_ad returned false');
             return [];
         }
         return [$values];

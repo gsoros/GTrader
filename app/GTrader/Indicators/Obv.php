@@ -10,7 +10,7 @@ class Obv extends Trader
     public function traderCalc(array $values)
     {
         if (!($values = trader_obv($values['input'], $values['volume']))) {
-            error_log('trader_obv returned false');
+            Log::error('trader_obv returned false');
             return [];
         }
         return [$values];

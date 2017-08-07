@@ -4,6 +4,7 @@ namespace GTrader\Indicators;
 
 use GTrader\Series;
 use GTrader\Indicator;
+use GTrader\Log;
 
 abstract class HasInputs extends Indicator
 {
@@ -29,7 +30,7 @@ abstract class HasInputs extends Indicator
         if (!$this->hasinputs()) {
             return $inputs;
         }
-        //error_log('HasInputs::getInputs() params: '.json_encode($this->getParam('indicator')));
+        //Log::debug('Params: '.json_encode($this->getParam('indicator')));
         foreach ($this->getParam('indicator', []) as $k => $v) {
             if ('input_' === substr($k, 0, 6)) {
                 if (!is_string($v)) {
@@ -77,8 +78,7 @@ abstract class HasInputs extends Indicator
             return true;
         }
         if (!$owner = $this->getOwner()) {
-            error_log('HasInputs::InputFrom('.json_encode($signatures).') could not get owner of '.
-                $this->getShortClass());
+            Log::error('Could not get owner of '.$this->getShortClass());
             return false;
         }
         foreach ($inputs as $input) {
@@ -116,7 +116,7 @@ abstract class HasInputs extends Indicator
         $inds = [];
         foreach ($inputs as $input) {
             if (!($indicator = $owner->getOrAddIndicator($input))) {
-                //error_log(get_class($this).'::getOrAddInputIndicators() could not find indicator '.
+                //Log::error('Could not find indicator '.
                 //    $input.' for '.get_class($owner));
                 continue;
             }
@@ -133,7 +133,7 @@ abstract class HasInputs extends Indicator
             return $this;
         }
         if (!$this->getOrAddInputIndicators()) {
-            //error_log('Could not getOrAdd input indicators for '.get_class($this));
+            //Log::error('Could not getOrAdd input indicators for '.get_class($this));
         }
         return $this;
     }

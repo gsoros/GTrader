@@ -39,7 +39,7 @@ class Ht extends Trader
         // get the selected mode
         $mode = $this->getParam('indicator.mode');
         if (!is_array($sel = $this->getParam('modes.'.$mode))) {
-            error_log('Ht::init() mode not found: '.$mode);
+            Log::error('Mode not found:', $mode);
             return $this;
         }
 
@@ -129,7 +129,7 @@ class Ht extends Trader
 
         $func = 'trader_ht_'.$this->getParam('indicator.mode');
         if (!function_exists($func)) {
-            error_log('Ht::traderCalc() function not found: '.$func);
+            Log::error('Function not found:', $func);
             return [];
         }
 
@@ -140,7 +140,7 @@ class Ht extends Trader
         }
 
         if (!$values = call_user_func_array($func, $args)) {
-            error_log('Ht::traderCalc() '.$func.' returned false');
+            Log::error($func.' returned false');
             return [];
         }
         //dump('Ht: out: '.count($values));

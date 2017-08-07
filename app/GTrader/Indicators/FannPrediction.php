@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use GTrader\Indicator;
 use GTrader\Series;
 use GTrader\Strategy;
+use GTrader\Log;
 
 class FannPrediction extends Indicator
 {
@@ -41,11 +42,11 @@ class FannPrediction extends Indicator
             return $this->hasStrategyGetStrategy();
         }
         if (!$strategy_id) {
-            error_log($this->getShortClass().'::getStrategy() invalid strategy_id: '.json_encode($strategy_id));
+            Log::error('Invalid strategy_id:', $strategy_id);
             return null;
         }
         if (!$strategy = Strategy::load($strategy_id)) {
-            error_log($this->getShortClass().'::getStrategy() could not load strategy '.$strategy_id);
+            Log::error('Could not load strategy:', $strategy_id);
             return null;
         }
         return $strategy;
@@ -73,16 +74,16 @@ class FannPrediction extends Indicator
     public function calculate(bool $force_rerun = false)
     {
         if (!$candles = $this->getCandles()) {
-            error_log('FannPrediction::calculate() no candles');
+            Log::error('No candles');
             return $this;
         }
 
         if (!$strategy = $this->getStrategy()) {
-            error_log('FannPrediction::calculate() no strategy');
+            Log::error('No strategy');
             return $this;
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
-            error_log('FannPrediction::calculate() not a fann strategy');
+            Log::error('Not a fann strategy');
             $candles->setValues($this->getSignature(), [], 'open');
             return $this;
         }
@@ -108,7 +109,7 @@ class FannPrediction extends Indicator
             $prediction[$sample[count($sample)-1]->time] = $pred;
 
             //if ($dumptime == $sample[count($sample)-1]->time) {
-            //    error_log('FannPred calc() input: '.json_encode($input).' pred: '.$pred);
+            //    Log::debug('Input: '.json_encode($input).' pred: '.$pred);
             //}
         }
 
@@ -116,7 +117,7 @@ class FannPrediction extends Indicator
 
         while ($candle = $candles->next()) {
             $val = $prediction[$candle->time] ?? 0;
-            //error_log('P:'.$val);
+            //Log::debug('P:'.$val);
             //$price = series::ohlc4($candle);
             $price = $candle->open;
             $candle->$key = $price + $price * $val * $strategy->getParam('output_scaling') / 100;

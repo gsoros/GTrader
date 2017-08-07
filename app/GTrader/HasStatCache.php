@@ -53,7 +53,7 @@ trait HasStatCache
             return;
         }
 
-        error_log(
+        Log::info(
             'StatCache '.$action.': '.__CLASS__.' '.json_encode($key).' '.(
             is_resource($value) ?
                 get_resource_type($value) : (

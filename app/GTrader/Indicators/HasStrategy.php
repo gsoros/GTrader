@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use Illuminate\Support\Arr;
+use GTrader\Log;
 
 trait HasStrategy
 {
@@ -11,7 +12,7 @@ trait HasStrategy
     public function getStrategyOwner()
     {
         if (!$owner = $this->getOwner()) {
-            error_log($this->getShortClass().'::getStrategyOwner() could not get owner');
+            Log::error('Could not get owner');
             return null;
         }
         return $owner;

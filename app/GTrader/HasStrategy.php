@@ -14,7 +14,7 @@ trait HasStrategy
     public function getStrategy()
     {
         if (!$owner = $this->getStrategyOwner()) {
-            error_log($this->getShortClass().'::getStrategy() could not get owner');
+            Log::error('Could not get owner');
             return null;
         }
         return $owner->strategy;
@@ -23,7 +23,7 @@ trait HasStrategy
     public function setStrategy(Strategy $strategy)
     {
         if (!$owner = $this->getStrategyOwner()) {
-            error_log($this->getShortClass().'::setStrategy() could not get owner');
+            Log::error('Could not get owner');
             return null;
         }
         //dump($this->debugObjId().' setStrategy('.$strategy->debugObjId().') owner: '.$owner->debugObjId()); flush();

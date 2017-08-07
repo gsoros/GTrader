@@ -11,7 +11,7 @@ class Aroonosc extends Trader
             $values[$this->getInput('input_low')],
             $this->getParam('indicator.period')
         ))) {
-            error_log('trader_aroonosc returned false');
+            Log::error('trader_aroonosc returned false');
             return [];
         }
         return [$values];

@@ -9,6 +9,7 @@ use GTrader\Exchange;
 use GTrader\Page;
 //use PHPlot_truecolor;
 use GTrader\Util;
+use GTrader\Log;
 
 class PHPlot extends Chart
 {
@@ -37,14 +38,14 @@ class PHPlot extends Chart
         $candles = $this->getCandles();
         //$this->setParam('width', $this->getParam('width') + 200);
         if (!$this->initPlot()) {
-            error_log('PHPlot::getImage() could not init plot');
+            Log::error('Could not init plot');
             return '';
         }
         $this->setParam('density_cutoff', $this->getParam('width'));
         $this->setParam('image_map_active', false);
 
         if (!$this->createDataArray()) {
-            error_log('PHPlot::getImage() could not create data array');
+            Log::error('Could not create data array');
             return '';
         }
         //dd($this->data);
@@ -92,7 +93,7 @@ class PHPlot extends Chart
         // Map
         list($map, $map_str) = $this->getImageMapStrings();
 
-        //error_log('PHPlot::getImage() memory used: '.Util::getMemoryUsage());
+        //Log::info('Memory used: '.Util::getMemoryUsage());
         //return $map.'<img class="img-responsive" src="'.
         return $map.'<img class="PHPlot-img" src="'.
                 $this->PHPlot->EncodeImage().'"'.$map_str.'>'.
@@ -170,7 +171,7 @@ class PHPlot extends Chart
         $empty = 'imagemap' !== $item['mode'];
         array_walk($item['values'], function (&$v, $k) use ($t, &$empty) {
             if (!$time = Arr::get($t, $k)) {
-                error_log('plot() time not found for index '.$k);
+                Log::error('Time not found for index '.$k);
             }
             if ($empty) {
                 array_walk($v, function ($v, $k) use (&$empty) {
@@ -379,7 +380,7 @@ class PHPlot extends Chart
                     } elseif ('short' === $s) {
                         return (0 === $extra) ? 1 : 0;
                     }
-                    error_log('data_color callback: unknown signal '.$s);
+                    Log::error('Unknown signal '.$s);
                 }
             );
             //dd($item);
@@ -406,7 +407,8 @@ class PHPlot extends Chart
     protected function mode_annotation(array &$item)
     {
         if (!function_exists('imagettftext')) {
-            error_log('Plot::initPlot(): function imagettftext is missing');
+            Log::error('Function imagettftext is missing, is PHP compiled with '.
+                'freetype support (--with-freetype-dir=DIR)?');
             return $this;
         }
 
@@ -619,12 +621,12 @@ class PHPlot extends Chart
     {
         $candles = $this->getCandles();
         if (!$candles->size(true)) {
-            error_log('PHPlot::createDataArray() no candles');
+            Log::error('no candles');
             return $this;
         }
 
         if (!count($times = $candles->extract('time', 'sequential', true, $this->getParam('density_cutoff')))) {
-            error_log('PHPlot::createDataArray() could not extract times');
+            Log::error('Could not extract times');
             return false;
         }
 
@@ -869,7 +871,7 @@ class PHPlot extends Chart
 
     protected function handleCommand(string $command, array $args = [])
     {
-        //error_log('Command: '.$command.' args: '.serialize($args));
+        //Log::error('Command: '.$command.' args: ', $args);
         $candles = $this->getCandles();
         $end = $candles->getParam('end');
         $limit = $candles->getParam('limit');
@@ -884,7 +886,7 @@ class PHPlot extends Chart
                 config('GTrader.Exchange.schedule_frequency', 1) * 30
             );
         }
-        //error_log('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
+        //Log::error('handleCommand live: '.$live.' end: '.$end.' limit: '.$limit);
         switch ($command) {
             case 'ESR':
                 foreach (['exchange', 'symbol', 'resolution'] as $arg) {

@@ -72,11 +72,11 @@ abstract class Strategy
     public function save()
     {
         if (!($id = $this->getParam('id'))) {
-            error_log('tried to save strategy without id');
+            Log::error('tried to save strategy without id');
             return $this;
         }
         if (!($user_id = $this->getParam('user_id'))) {
-            error_log('tried to save strategy without user_id');
+            Log::error('tried to save strategy without user_id');
             return $this;
         }
 
@@ -219,11 +219,11 @@ abstract class Strategy
     public function getBalanceIndicator()
     {
         if (!$candles = $this->getCandles()) {
-            error_log('Strategy::getBalanceIndicator() could not get candles');
+            Log::error('Could not get candles');
             return null;
         }
         if (!$signals = $this->getSignalsIndicator()) {
-            error_log('Strategy::getBalanceIndicator() could not get Signals');
+            Log::error('Could not get Signals');
             return null;
         }
         return $candles->getOrAddIndicator('Balance', [
@@ -235,7 +235,7 @@ abstract class Strategy
     public function getLastBalance(bool $force_rerun = false)
     {
         if (!$b = $this->getBalanceIndicator()) {
-            error_log('Strategy::getLastBalance() could not get balance ind');
+            Log::error('Could not get balance ind');
             return 0;
         }
         return $b->getLastValue($force_rerun);
@@ -245,7 +245,7 @@ abstract class Strategy
     public function getLastProfitability(bool $force_rerun = false)
     {
         if (!$signals = $this->getSignalsIndicator()) {
-            error_log('Strategy::getLastProfitability() could not get Signals');
+            Log::error('Could not get Signals');
             return 0;
         }
         return $this->getIndicatorLastValue('Profitability', [

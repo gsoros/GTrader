@@ -44,7 +44,7 @@ abstract class Exchange
                         ->where('exchange_id', $this->getId())
                         ->first();
         if (null === $config) {
-            error_log('Exchange has not yet been configured by the user.');
+            Log::error('Exchange has not yet been configured by the user.');
             return [];
         }
         $this->setParam('user_options_cached', $config->options);
@@ -199,7 +199,7 @@ abstract class Exchange
         string $symbol,
         int $resolution
     ) {
-        //error_log('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
+        //Log::info('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
         //return '';
         try {
             $exchange = self::make($exchange);

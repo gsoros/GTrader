@@ -24,7 +24,7 @@ class StochRsi extends Trader
             $this->getParam('indicator.fastd'),
             $this->getParam('indicator.matype')
         ))) {
-            error_log('trader_stochrsi returned false');
+            Log::error('trader_stochrsi returned false');
             return [];
         }
 

@@ -135,7 +135,7 @@ class Bot extends Model
 
         // Check for a signal
         $signals = $strategy->getSignals();
-        //error_log('bot:run() signals: '.json_encode($signals));
+        //Log::debug('signals:', $signals);
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
         if (! $last_signal = array_pop($signals)) {
@@ -147,7 +147,7 @@ class Bot extends Model
             $last_signal,
             ['time' => $last_signal_time]
         );
-        //error_log('bot:run() last_signal: '.json_encode($last_signal));
+        //Log::debug('last_signal:', $last_signal);
 
         // See if signal is recent enough
         if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution) {
@@ -189,7 +189,7 @@ class Bot extends Model
 
     public function handleSaveRequest(Request $request)
     {
-        //error_log(var_export($request->all(), true));
+        //Log::debug($request->all());
 
         $ex = 'exchange_bot_'.$this->id;
         if (isset($request->$ex)) {
@@ -232,7 +232,7 @@ class Bot extends Model
                         // TODO send error msg to UI
                         $this->status = 'disabled';
                         $exchange_name = Exchange::getNameById($this->exchange_id);
-                        error_log('Tried to activate bot ID '.$this->id.' for '.$exchange_name.
+                        Log::error('Tried to activate bot ID '.$this->id.' for '.$exchange_name.
                                     ' but there are other active bots on this exchange.');
                     }
                 }

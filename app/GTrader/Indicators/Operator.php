@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 class Operator extends HasInputs
 {
     public function getDisplaySignature(
@@ -54,7 +56,7 @@ class Operator extends HasInputs
                     floatval($candle->$key_a),
                     floatval($candle->$key_b)
                 );
-                //error_log($candle->$key_a.' '.$this->getParam('indicator.operation').' '.$candle->$key_b.' = '.$val);
+                //Log::debug($candle->$key_a.' '.$this->getParam('indicator.operation').' '.$candle->$key_b.' = '.$val);
             }
             $candle->$key_out = $val;
             //dd($candle->$key_out);

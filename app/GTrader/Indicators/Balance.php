@@ -5,6 +5,7 @@ namespace GTrader\Indicators;
 use Illuminate\Support\Facades\Auth;
 use GTrader\Exchange;
 use GTrader\UserExchangeConfig;
+use GTrader\Log;
 
 class Balance extends HasInputs
 {
@@ -36,7 +37,7 @@ class Balance extends HasInputs
 
         $mode = $this->getParam('indicator.mode');
         if (!in_array($mode, ['dynamic', 'fixed'])) {
-            error_log('Balance::calculate() mode must be either dynamic or fixed.');
+            Log::error('Mode must be either dynamic or fixed.');
             return $this;
         }
 
@@ -63,7 +64,7 @@ class Balance extends HasInputs
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
             $this->getParam('indicator.input_signal')
         ))) {
-            error_log('Balance::calculate() signal indicator not found.');
+            Log::error('Signal indicator not found.');
             return $this;
         }
         $signal_key = $candles->key($signal_ind->getSignature('signal'));

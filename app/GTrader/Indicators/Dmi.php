@@ -20,12 +20,12 @@ class Dmi extends Trader
             $func = 'trader_'.$key;
 
             if (!function_exists($func)) {
-                error_log('Dmi::traderCalc() function not found: '.$func);
+                Log::error('Function not found: '.$func);
                 return [];
             }
 
             if (!$values[] = call_user_func_array($func, $args)) {
-                error_log('Dmi::traderCalc() '.$func.' returned false');
+                Log::error($func.' returned false');
                 return [];
             }
         }

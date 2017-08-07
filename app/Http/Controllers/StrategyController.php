@@ -12,6 +12,7 @@ use GTrader\Exchange;
 use GTrader\FannTraining;
 use GTrader\Chart;
 use GTrader\Plot;
+use GTrader\Log;
 
 class StrategyController extends Controller
 {
@@ -69,11 +70,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Failed to load strategy.', 403);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Failed to load strategy.', 403);
         }
         //dd($strategy);
@@ -86,11 +87,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response(Strategy::getListOfUser(Auth::id()), 200);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response(Strategy::getListOfUser(Auth::id()), 200);
         }
         $strategy->delete();
@@ -102,11 +103,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $strategy->handleSaveRequest($request);
@@ -119,11 +120,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
@@ -163,36 +164,36 @@ class StrategyController extends Controller
 
     public function trainStart(Request $request)
     {
-        error_log('trainStart '.var_export($request->all(), true));
+        Log::debug($request->all());
 
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $exchange = $request->exchange;
         if (!($exchange_id = Exchange::getIdByName($exchange))) {
-            error_log('Exchange not found ');
+            Log::error('Exchange not found ');
             return response('Exchange not found.', 403);
         }
         $symbol = $request->symbol;
         if (!($symbol_id = Exchange::getSymbolIdByExchangeSymbolName($exchange, $symbol))) {
-            error_log('Symbol not found ');
+            Log::error('Symbol not found ');
             return response('Symbol not found.', 403);
         }
         if (!($resolution = $request->resolution)) {
-            error_log('Resolution not found ');
+            Log::error('Resolution not found ');
             return response('Resolution not found.', 403);
         }
 
         $training = FannTraining::where('strategy_id', $strategy_id)
                         ->where('status', 'training')->first();
         if (is_object($training)) {
-            error_log('Strategy id('.$strategy_id.') is already being trained.');
+            Log::error('Strategy id('.$strategy_id.') is already being trained.');
             $html = view('Strategies/FannTrainProgress', [
                 'strategy' => $strategy,
                 'training' => $training
@@ -205,7 +206,7 @@ class StrategyController extends Controller
             ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
             ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
             if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
-                error_log('Start or end not found for '.$item);
+                Log::error('Start or end not found for '.$item);
                 return response('Input error.', 403);
             }
             $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
@@ -294,14 +295,14 @@ class StrategyController extends Controller
         }
 
         if ($from_scratch) {
-            error_log('Training from scratch.');
+            Log::info('Training from scratch.');
             $strategy->destroyFann();
             $strategy->deleteFiles();
             $strategy->loadOrCreateFann();
             $strategy->deleteHistory();
         } else {
             $last_epoch = $strategy->getLastTrainingEpoch();
-            error_log('Continuing training from epoch '.$last_epoch);
+            Log::info('Continuing training from epoch '.$last_epoch);
             //$training->setProgress('epoch', $last_epoch);
             $training->progress = ['epoch' => $last_epoch];
         }
@@ -321,11 +322,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response(Strategy::getListOfUser(Auth::id()), 200);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response(Strategy::getListOfUser(Auth::id()), 200);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
@@ -349,17 +350,17 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 404);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
                                 ->where('status', 'training')->first();
         if (!is_object($training)) {
-            error_log('Training not found for strategy '.$strategy_id);
+            Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
         $progress = $training->progress;
@@ -378,11 +379,11 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 404);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
 
@@ -394,17 +395,17 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 404);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
                                 ->where('status', 'training')->first();
         if (!is_object($training)) {
-            error_log('Training not found for strategy '.$strategy_id);
+            Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
         $training->status = 'paused';
@@ -421,17 +422,17 @@ class StrategyController extends Controller
     {
         $strategy_id = intval($request->id);
         if (!($strategy = Strategy::load($strategy_id))) {
-            error_log('Failed to load strategy ID '.$strategy_id);
+            Log::error('Failed to load strategy ID '.$strategy_id);
             return response('Strategy not found.', 404);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('That strategy belongs to someone else: ID '.$strategy_id);
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
             return response('Strategy not found.', 403);
         }
         $training = FannTraining::where('strategy_id', $strategy_id)
                                 ->where('status', 'paused')->first();
         if (!is_object($training)) {
-            error_log('Training not found for strategy '.$strategy_id);
+            Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
         $training->status = 'training';
@@ -447,19 +448,19 @@ class StrategyController extends Controller
     public function sample(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->chart)) {
-            error_log('sample: no chart in session');
+            Log::error('No chart in session');
             return response('Chart not found.', 200);
         }
         if (!($strategy = $chart->getStrategy())) {
-            error_log('Failed to get strategy ');
+            Log::error('Failed to get strategy ');
             return response('Select a FANN strategy first.', 200);
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
-            error_log('sample() not a fann strategy');
+            Log::error('Not a fann strategy');
             return response('Select a FANN strategy first.', 200);
         }
         if (!($candles = $chart->getCandles())) {
-            error_log('Failed to get the series ');
+            Log::error('Failed to get the series ');
             return response('Could not get the series.', 200);
         }
 

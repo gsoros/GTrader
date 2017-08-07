@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Bot;
+use GTrader\Log;
 
 class BotController extends Controller
 {
@@ -56,11 +57,11 @@ class BotController extends Controller
     public function idCheck(Request $request)
     {
         if (!($bot = Bot::find($request->id))) {
-            error_log('Failed to load bot ID '.$request->id);
+            Log::error('Failed to load bot ID '.$request->id);
             return response('Failed to load bot.', 404);
         }
         if ($bot->user_id !== Auth::id()) {
-            error_log('That bot belongs to someone else: ID '.$request->id);
+            Log::error('That bot belongs to someone else: ID '.$request->id);
             return response('Failed to load bot.', 403);
         }
         return $bot;

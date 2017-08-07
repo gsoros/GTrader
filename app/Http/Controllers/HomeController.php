@@ -17,6 +17,7 @@ use GTrader\Strategy;
 //use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Bot;
+use GTrader\Log;
 
 class HomeController extends Controller
 {

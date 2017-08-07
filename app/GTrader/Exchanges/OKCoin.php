@@ -4,6 +4,7 @@ namespace GTrader\Exchanges;
 
 use GTrader\Exchange;
 use GTrader\Trade;
+use GTrader\Log;
 use GuzzleHttp\Client as HttpClient;
 use OKCoinWrapper;
 
@@ -18,7 +19,7 @@ class OKCoin extends Exchange
         try {
             return call_user_func_array([$okcoin, $method], $params);
         } catch (\Exception $e) {
-            error_log('OKCoin::request() Exception msg: '.$e->getMessage().
+            Log::error('Exception msg: '.$e->getMessage().
                 ' call: '.get_class($okcoin).'->'.$method.'('.json_encode($params).')');
             return null;
         }

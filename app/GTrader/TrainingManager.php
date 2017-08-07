@@ -41,7 +41,7 @@ class TrainingManager
         try {
             $trainings = Training::where('status', 'training')->get();
         } catch (\Exception $e) {
-            error_log('TrainingManager::main() Could not fetch trainings from the database.');
+            Log::error('Could not fetch trainings from the database.');
             return $this;
         }
         foreach ($trainings as $training) {
@@ -85,7 +85,7 @@ class TrainingManager
 
     protected function assign(int $slot, Training $training)
     {
-        error_log('Assigning training '.$training->id.' to slot '.$slot);
+        Log::info('Assigning training '.$training->id.' to slot '.$slot);
 
         $command = $this->getParam('php_command').' '.
                     base_path('artisan').' training:run '.
@@ -102,7 +102,7 @@ class TrainingManager
                 chmod($log_file, 0664);
             }
             $command = $command.' >> '.$log_file.' 2>&1 &';
-            error_log('command: '.$command);
+            Log::info('command: '.$command);
             exec($command);
         }
 

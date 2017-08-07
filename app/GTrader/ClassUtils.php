@@ -6,7 +6,7 @@ trait ClassUtils
 {
     protected static function getClassConf(string $class, $key = null)
     {
-        //error_log('getClassConf('.$class.', '.$key.')');
+        //Log::info('getClassConf('.$class.', '.$key.')');
         if (!is_null($key)) {
             $key = '.'.$key;
         }

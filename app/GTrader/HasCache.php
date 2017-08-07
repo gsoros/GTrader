@@ -53,7 +53,7 @@ trait HasCache
             return $this;
         }
 
-        error_log(
+        Log::info(
             'Cache '.$action.': '.$this->debugObjId().' '.json_encode($key).' '.(
             is_resource($value) ?
                 get_resource_type($value) : (

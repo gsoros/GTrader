@@ -10,6 +10,7 @@ use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Chart;
 use GTrader\Indicator;
+use GTrader\Log;
 
 class IndicatorController extends Controller
 {
@@ -32,7 +33,7 @@ class IndicatorController extends Controller
         }
         $sig = urldecode($request->signature);
         if (! $owner->hasIndicator($sig)) {
-            error_log('indicatorController::form() indicator not found. Sig: '.$sig);
+            Log::error('Indicator not found. Sig: '.$sig);
             return response('Indicator not found.', 200);
         }
         $form = $owner->handleIndicatorFormRequest($request);
@@ -61,7 +62,7 @@ class IndicatorController extends Controller
         }
         $sig = urldecode($request->signature);
         if (! $owner->hasIndicator($sig)) {
-            error_log('indicatorDelete: indicator '.$sig.' not found');
+            Log::error('Indicator '.$sig.' not found');
             return response('Indicator not found.', 403);
         }
         $form = $owner->handleIndicatorDeleteRequest($request);
@@ -95,37 +96,36 @@ class IndicatorController extends Controller
     protected function loadOwner(Request $request)
     {
         if (!isset($request->owner_class)) {
-            error_log('IndicatorController::load() owner_class is not set');
+            Log::error('Owner_class is not set');
             return false;
         }
         if ('Chart' === $request->owner_class) {
             if (!isset($request->name)) {
-                error_log('IndicatorController::load() name is not set');
+                Log::error('Name is not set');
                 return false;
             }
             if (! $chart = Chart::loadFromSession($request->name)) {
-                error_log('IndicatorController::load() no chart in session. '.json_encode($request->all()));
+                Log::error('No chart in session. '.json_encode($request->all()));
                 return false;
             }
             return $chart;
         }
         if ('Strategy' === $request->owner_class) {
             if (!isset($request->owner_id)) {
-                error_log('IndicatorController::load() owner_id is not set');
+                Log::error('Owner_id is not set');
                 return false;
             }
             if (! $strategy = Strategy::load($request->owner_id)) {
-                error_log('IndicatorController::load() strategy not found');
+                Log::error('Strategy not found');
                 return false;
             }
             if ($strategy->getParam('user_id') !== Auth::id()) {
-                error_log('IndicatorController::load() strategy not owned by this user');
+                Log::error('Strategy not owned by this user');
                 return false;
             }
             return $strategy;
         }
-        error_log('IndicatorController::load() owner_class '.
-            $request->owner_class.' not implemented');
+        Log::error('Owner_class not implemented:', $request->owner_class);
         return false;
     }
 

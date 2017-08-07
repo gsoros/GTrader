@@ -21,11 +21,11 @@ class Plot
     {
         $data = $this->getParam('data');
         if (!is_array($data)) {
-            error_log('Plot::getImage(): data is not an array.');
+            Log::error('Data is not an array.');
             return '';
         }
         if (!count($data)) {
-            error_log('Plot::getImage(): data is empty.');
+            Log::error('Data is empty.');
             return '';
         }
 
@@ -42,11 +42,11 @@ class Plot
         $width = intval($this->getParam('width'));
         $height = intval($this->getParam('height'));
         if ($width <= 1 || $height <= 1) {
-            error_log('Plot::initPlot(): Missing width or height.');
+            Log::error('Missing width or height.');
             return null;
         }
         if (!function_exists('imagecreatetruecolor')) {
-            error_log('Plot::initPlot(): function imagecreatetruecolor is missing');
+            Log::error('Function imagecreatetruecolor is missing');
             dump('Plot::initPlot(): function imagecreatetruecolor is missing. GD support is required by PHPlot.');
             return null;
         }
@@ -128,7 +128,7 @@ class Plot
             //dump($out);
 
             foreach ($out[$dir]['values'] as $label => $values) {
-                //error_log($dir.' label: '.$label);
+                //Log::debug($dir.' label: '.$label);
                 if (!count($values)) {
                     continue;
                 }
@@ -191,7 +191,7 @@ class Plot
 
         $world = array_replace($world, $new_world);
 
-        //error_log('setWorld() axes: '.$set_axes.' world: '.json_encode($world));
+        //Log::debug('axes: '.$set_axes.' world: '.json_encode($world));
 
         if ('none' == $set_axes || !$set_axes) {
             return $this;
@@ -210,7 +210,7 @@ class Plot
             $xmax = $xmin + 1;
         }
         if ($ymin >= $ymax) {
-            //error_log('setWorld() axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
+            //Log::debug('axes: '.$set_axes.' ymin: '.$ymin.' ymax: '.$ymax.' world: '.json_encode($world));
             $ymax = $ymin + 1;
         }
         $this->PHPlot->setPlotAreaWorld(

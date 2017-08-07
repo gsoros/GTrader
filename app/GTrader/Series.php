@@ -97,7 +97,7 @@ class Series extends Collection
     public function next($advance_iterator = true)
     {
         $this->_load();
-        //error_log('Series::next() '.$this->_iter);
+        //Log::debug($this->_iter);
         $ret = $this->items[$this->_iter] ?? null;
         if ($advance_iterator) {
             $this->_iter++;
@@ -317,7 +317,7 @@ class Series extends Collection
         $total = $this->count();
         $padding = intval($this->getParam('left_padding'));
         $key = 0 < $total - $padding ? $total - $limit : 0;
-        //error_log('total: '.$total.' padding: '.$padding.' limit: '.$limit.' key: '.$key);
+        //Log::error('total: '.$total.' padding: '.$padding.' limit: '.$limit.' key: '.$key);
         return $key;
     }
 
@@ -362,12 +362,12 @@ class Series extends Collection
             'open', 'high', 'low', 'close', 'volume'];
 
         if (! $vars = get_object_vars($candle)) {
-            error_log('Series::saveCandle() could not get object vars for '.json_encode($candle));
+            Log::error('Could not get object vars for', $candle);
             return null;
         }
         foreach ($vars as $k => $v) {
             if (!in_array($k, $attributes)) {
-                error_log('Series::saveCandle() not saving attribute '.$k.' = '.$v);
+                Log::info('Not saving attribute '.$k.' = '.$v);
                 unset($candle->$k);
             }
         }
@@ -376,7 +376,7 @@ class Series extends Collection
 
         foreach (['time', 'exchange_id', 'symbol_id', 'resolution'] as $k) {
             if (!isset($candle->$k)) {
-                error_log('Series::saveCandle() Cannot save without '.$k);
+                Log::error('Cannot save without '.$k);
                 return null;
             }
             $query->where($k, $candle->$k);
@@ -467,14 +467,14 @@ class Series extends Collection
         int $density_cutoff = null
     ) {
         if (! $key = $this->key($field)) {
-            error_log('Series::extract() got no key for '.$field);
+            Log::error('Got no key for '.$field);
             return [];
         }
         $nth = 1;
         if (1 < $density_cutoff) {
             $total = $this->count($respect_padding);
             $nth = 1 < ($nth = floor($total / $density_cutoff)) ? $nth : 1;
-            //error_log('Series::extract() total: '.$total.' density: '.$density_cutoff.' nth: '.$nth);
+            //Log::debug('total: '.$total.' density: '.$density_cutoff.' nth: '.$nth);
         }
         $this->reset($respect_padding);
         $ret = [];
@@ -593,7 +593,7 @@ class Series extends Collection
     public static function normalize($in, $in_min, $in_max, $out_min = -1, $out_max = 1)
     {
         if (0 == $in_max - $in_min) {
-            //error_log('Series::normalize() division by zero: '.$in.' '.$in_min.' '.$in_max.' '.$out_min.' '.$out_max);
+            //Log::error('division by zero: '.$in.' '.$in_min.' '.$in_max.' '.$out_min.' '.$out_max);
             return ($out_min + $out_max) / 2;
         }
         return ($out_max - $out_min) / ($in_max - $in_min) * ($in - $in_max) + $out_max;

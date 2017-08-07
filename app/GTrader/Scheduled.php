@@ -11,7 +11,7 @@ trait Scheduled
         if (is_file($file)) {
             return true;
         }
-        error_log($class.' schedule disabled, file not present: '.$file);
+        Log::info($class.' schedule disabled, file not present: '.$file);
         return false;
     }
 }

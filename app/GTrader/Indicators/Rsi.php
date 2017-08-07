@@ -12,7 +12,7 @@ class Rsi extends Trader
             $this->getParam('indicator.period')
         ))
             ) {
-            error_log('trader_rsi returned false');
+            Log::error('trader_rsi returned false');
             return [];
         }
         return [$values];

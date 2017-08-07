@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Strategy;
 use GTrader\Util;
+use GTrader\Log;
 
 class Signals extends HasInputs
 {
@@ -38,23 +39,23 @@ class Signals extends HasInputs
         }
 
         if (!$owner = $this->getOwner()) {
-            error_log('Signals::calculate() could not get owner');
+            Log::error('could not get owner');
             return $this;
         }
         // Get Strategy from Parent
         if (0 > $strategy_id) {
             if (!$strategy = $owner->getStrategy()) {
-                error_log('Signals::calculate() could not get strat from owner');
+                Log::error('could not get strat from owner');
                 return $this;
             }
         } else { // Selected Strategy
             if (!$strategy = Strategy::load($strategy_id)) {
-                error_log('Signals::calculate() could not load strategy');
+                Log::error('could not load strategy');
                 return $this;
             }
         }
         if (!$i = $strategy->getSignalsIndicator(['set_prediction_id'])) {
-            error_log('Signals::calculate() could not load signals ind from strat');
+            Log::error('could not load signals ind from strat');
             return $this;
         }
         // Copy params from strategy's signal ind
@@ -120,11 +121,11 @@ class Signals extends HasInputs
         }
         // Get Strategy from Parent
         if (!$owner = $this->getOwner()) {
-            error_log('Signals::getSignature() could not get owner');
+            Log::error('Signals::getSignature() could not get owner');
             return json_encode($a);
         }
         if (!$strategy = $owner->getStrategy()) {
-            //error_log('Signals::getSignature() could not get strategy from owner');
+            //Log::error('Signals::getSignature() could not get strategy from owner');
             //dd('Signals::getSignature() could not get strategy from owner:', $this, $owner);
             return json_encode($a);
         }
@@ -181,7 +182,7 @@ class Signals extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        //dump('Signals::calculate() 1 '.$this->debugObjId());
+        //dump('1 '.$this->debugObjId());
         $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);
         $candles = $this->getCandles();
@@ -228,7 +229,7 @@ class Signals extends HasInputs
                 if (!isset($candle->{$input_keys['input_'.$signal.'_a']}) ||
                     !isset($candle->{$input_keys['input_'.$signal.'_b']}) ||
                     !isset($candle->{$input_keys['input_'.$signal.'_source']})) {
-                    error_log('Signals::calculate() missing input');
+                    Log::error('Missing input');
                     //dd($this);
                     return $this;
                 }
@@ -238,7 +239,7 @@ class Signals extends HasInputs
                     $candle->{$input_keys['input_'.$signal.'_b']}
                 ) && $previous['signal'] !== $signal) {
                     if ($previous['time'] === $candle->time) {
-                        error_log('Signals::calculate() multiple conditions met for '.$candle->time);
+                        Log::error('Multiple conditions met for '.$candle->time);
                         continue;
                     }
                     $candle->{$output_keys['signal']} = $signal;

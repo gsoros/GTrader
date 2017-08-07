@@ -27,7 +27,7 @@ trait HasIndicators
 
         if (!is_object($indicator)) {
             if (!$indicator) {
-                error_log('addIndicator() tried to make ind without class');
+                Log::error('tried to make ind without class');
                 return null;
             }
             $ind_str = $indicator;
@@ -35,13 +35,12 @@ trait HasIndicators
                 $indicator,
                 ['indicator' => $params]
             ))) {
-                error_log('addIndicator() could not make('.$ind_str.')');
+                Log::error('could not make', $ind_str);
                 return null;
             }
         }
         if (!$indicator->canBeOwnedBy($owner)) {
-            error_log('addIndicator() '.$indicator->getShortClass().
-                ' cannot be owned by '.$owner->getShortClass());
+            Log::error($indicator->getShortClass().' cannot be owned by '.$owner->getShortClass());
             return null;
         }
         $indicator->setOwner($owner);
@@ -100,7 +99,7 @@ trait HasIndicators
 
         if (!is_string($signature)) {
             $signature = json_encode($signature, true);
-            //error_log('HasIndicators::getOrAddIndicator() warning, converted to string: '.$signature);
+            //Log::warning('warning, converted to string: '.$signature);
         }
         if (!strlen($signature)) {
             return null;
@@ -161,7 +160,7 @@ trait HasIndicators
         }
         $sig = $indicator->getSignature();
         if (!($indicator = $this->getIndicator($sig))) {
-            error_log('getIndicatorLastValue: '.$sig.' not found.');
+            Log::error($sig.' not found.');
             return 0;
         }
         return $indicator->getLastValue($force_rerun);
@@ -179,14 +178,14 @@ trait HasIndicators
             }
         }
         if (is_null($target)) {
-            //error_log('unsetIndicator() not found: '.$sig);
+            //Log::error('not found: '.$sig);
             return $this;
         }
         // if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
-        //     error_log('unsetIndicator() warning: refcount is non-zero for sig: '.$sig.
+        //     Log::error('warning: refcount is non-zero for sig: '.$sig.
         //         ' refs: '.json_encode($target->getRefs()));
         // }
-        // error_log('unsetIndicator() '.$target->debugObjId());
+        // Log::error($target->debugObjId());
         unset($this->getIndicatorOwner()->indicators[$key]);
         return $this;
     }
@@ -360,7 +359,7 @@ trait HasIndicators
             $exists = $owner->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple'])) {
                 if (!$indicator = Indicator::make($class)) {
-                    error_log('getIndicatorsAvailable() could not make '.$class);
+                    Log::error('Could not make '.$class);
                     continue;
                 }
                 if ($indicator->canBeOwnedBy($owner)) {
@@ -415,7 +414,7 @@ trait HasIndicators
         }
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
-            error_log('HasIndicators::handleIndicatorFormRequest() could not find indicator '.$sig);
+            Log::error('Could not find indicator '.$sig);
         }
         return $indicator->getForm($pass_params);
     }
@@ -424,7 +423,7 @@ trait HasIndicators
     public function handleIndicatorNewRequest(Request $request)
     {
         if (!$sig = urldecode($request->signature)) {
-            error_log('handleIndicatorNewRequest without signature');
+            Log::error('No signature');
             return $this->viewIndicatorsList($request);
         }
         if ($indicator = $this->addIndicatorBySignature($sig)) {
@@ -444,11 +443,11 @@ trait HasIndicators
     public function handleIndicatorDeleteRequest(Request $request)
     {
         $sig = urldecode($request->signature);
-        error_log('handleIndicatorDeleteRequest() '.$sig);
+        Log::debug($sig);
         $indicator = $this->getIndicator($sig);
         $this->updateReferences();
         if ($indicator->refCount()) {
-            error_log('handleIndicatorDeleteRequest() has refCount, hiding');
+            Log::warning('^^^^ has refCount, hiding');
             $indicator->visible(false);
         } else {
             $this->unsetIndicators($sig);
@@ -462,7 +461,7 @@ trait HasIndicators
         //dump($request->all());
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
-            error_log('handleIndicatorSaveRequest() cannot find indicator '.$sig);
+            Log::error('cannot find indicator', $sig);
             return $this->viewIndicatorsList($request);
         }
         $indicator = clone $indicator;
@@ -470,7 +469,7 @@ trait HasIndicators
         try {
             $jso = json_decode($request->params);
         } catch (\Exception $e) {
-            error_log('handleIndicatorSaveRequest() couléd not decode json: '.json_encode($request->params));
+            Log::error('cannot decode json', $request->params);
             return $this->viewIndicatorsList($request);
         }
         $suffix = '';
@@ -524,7 +523,7 @@ trait HasIndicators
         $indicator->init();
         $this->unsetIndicators($sig);
         if (!$indicator = $this->addIndicator($indicator)) {
-            error_log('HasIndicators::handleIndicatorSaveRequest() could not save');
+            Log::error('could not save');
             $this->viewIndicatorsList($request);
         }
         $indicator->visible(true);

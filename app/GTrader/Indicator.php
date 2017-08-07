@@ -149,7 +149,7 @@ abstract class Indicator //implements \JsonSerializable
             return true;
         }
         if (!$owner = $this->getOwner()) {
-            error_log('Indicator::hasRefRecursive() could not getOwner() for '.$this->getShortClass());
+            Log::error('Could not getOwner() for '.$this->getShortClass());
             return false;
         }
         foreach ($this->getRefs() as $ref) {
@@ -166,21 +166,21 @@ abstract class Indicator //implements \JsonSerializable
     public function getSignature(string $output = null)
     {
         if (! $class = $this->getShortClass()) {
-            error_log('getSignature() class not found for '.$this->debugObjId());
+            Log::error('Class not found for '.$this->debugObjId());
             return null;
         }
         if ($output) {
             if (!in_array($output, $this->getOutputs())) {
-                error_log('Indicator::getSignature() invalid output '.$output.' for '.$this->getShortClass());
+                Log::error('Invalid output '.$output.' for '.$this->getShortClass());
             }
         } else {
             $output = $this->getOutputs()[0];
-            //error_log('Indicator::getSignature() null output requested for '.$this->getShortClass());
+            //Log::error('Null output requested for '.$this->getShortClass());
         }
 
         $params = $this->getParam('indicator', []);
         if (!is_array($params)) {
-            //error_log('getSignatureObject() not array in '.$this->debugObjId().' params: '.serialize($params));
+            //Log::error('Not array in '.$this->debugObjId().' params: '.serialize($params));
             $params = (array)$params;
         }
         $out_params = [];
@@ -219,7 +219,7 @@ abstract class Indicator //implements \JsonSerializable
         ];
         $sig = json_encode($a);
 
-        //error_log('getSignature() '.$sig);
+        //Log::info('getSignature() '.$sig);
 
         return $sig;
     }
@@ -230,7 +230,7 @@ abstract class Indicator //implements \JsonSerializable
         static $cache = [];
 
         if (isset($cache[$sig])) {
-            //error_log('Indicator::decodeSignature() cache hit for '.$sig);
+            //Log::info('Cache hit for '.$sig);
             return $cache[$sig];
         }
         if (!strlen($sig) ||
@@ -242,7 +242,7 @@ abstract class Indicator //implements \JsonSerializable
         //dump('decodeSignature() '.$sig);
         if (is_null($a = json_decode($sig, true)) || json_last_error()) {
             $cache[$sig] = false;
-            //error_log('Indicator::decodeSignature() could not decode sig: '.$sig
+            //Log::error('Could not decode sig: '.$sig
             //    .' en: '.json_last_error().' em: '.json_last_error_msg());
             return false;
         }
@@ -251,7 +251,7 @@ abstract class Indicator //implements \JsonSerializable
             'params' => Arr::get($a, 'params', []),
             'output' => Arr::get($a, 'output', ''),
         ];
-        //error_log('Indicator::decodeSignature() uncached: '.json_encode($cache[$sig]));
+        //Log::info('Uncached: '.json_encode($cache[$sig]));
         return $cache[$sig];
     }
 
@@ -356,7 +356,7 @@ abstract class Indicator //implements \JsonSerializable
             }
             $param = $this->getParam('indicator.'.$key);
             if (is_array($param)) {
-                error_log('Indicator::getParamString() indicator.'.$key.' is an array');
+                Log::error('Indicator.'.$key.' is an array');
                 return '';
                 //dd($this);
             }
@@ -450,7 +450,7 @@ abstract class Indicator //implements \JsonSerializable
             return $this;
         }
         if (! $owner = $this->getOwner()) {
-            error_log('Indicator::updateReferences() no owner');
+            Log::error('No owner');
             return $this;
         }
         /*** // References are reset by HasIndicators::updateReferences
@@ -471,7 +471,7 @@ abstract class Indicator //implements \JsonSerializable
                 continue;
             }
             if (! $ind = $owner->getOrAddIndicator($input_sig)) {
-                //error_log('Indicator::updateReferences() coild not getOrAdd '.$input_sig);
+                //Log::error('Could not getOrAdd '.$input_sig);
                 continue;
             }
             $ind->addRef($this);
@@ -519,12 +519,12 @@ abstract class Indicator //implements \JsonSerializable
         }
         if (($ca = self::getClassFromSignature($sig_a))
             !== ($cb = self::getClassFromSignature($sig_b))) {
-            //error_log('signatureSame() '.$ca.' != '.$cb);
+            //Log::debug('signatureSame() '.$ca.' != '.$cb);
             return false;
         }
         if (($pa = self::getParamsFromSignature($sig_a))
             !== ($pb = self::getParamsFromSignature($sig_b))) {
-            //error_log('signatureSame() '.json_encode($pa).' != '.json_encode($pb));
+            //Log::error('signatureSame() '.json_encode($pa).' != '.json_encode($pb));
             return false;
         }
 
@@ -567,7 +567,7 @@ abstract class Indicator //implements \JsonSerializable
         int $density_cutoff = null
     ) {
         if (!$candles = $this->getCandles()) {
-            error_log('Indicator::getOutputArray() could not get candles');
+            Log::error('Could not get candles');
             return [];
         }
         $this->checkAndRun();

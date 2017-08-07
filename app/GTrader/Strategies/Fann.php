@@ -14,6 +14,7 @@ use GTrader\Chart;
 use GTrader\Exchange;
 use GTrader\FannTraining;
 use GTrader\Plot;
+use GTrader\Log;
 
 if (!extension_loaded('fann')) {
     throw new \Exception('FANN extension not loaded');
@@ -91,11 +92,11 @@ class Fann extends Strategy
     {
         parent::__wakeup();
         if (defined('FANN_WAKEUP_PREFERRED_SUFFX')) {
-            //error_log('Fann::__wakeup() Hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
+            //Log::debug('hacked path: '.$this->path().FANN_WAKEUP_PREFERRED_SUFFX);
             $this->loadOrCreateFann(FANN_WAKEUP_PREFERRED_SUFFX);
             return;
         }
-        //error_log('Fann::__wakeup() path: '.$this->path());
+        //Log::debug('path: '.$this->path());
         $this->loadOrCreateFann();
     }
 
@@ -348,7 +349,7 @@ class Fann extends Strategy
         $inputs = count($inputs) ? $inputs : $default_inputs;
         foreach ($inputs as $k => $input) {
             if (!is_string($input)) {
-                error_log('Fann::handleSaveRequest() input not a string: '.json_encode($input));
+                Log::error('Input not a string:', $input);
                 $inputs[$k] = strval($input);
             }
             $inputs[$k] = stripslashes($input);
@@ -356,7 +357,7 @@ class Fann extends Strategy
         if ($this->getParam('inputs', []) !== $inputs) {
             $topology_changed = true;
             $this->setParam('inputs', $inputs);
-            error_log('Fann::handleSaveRequest() new inputs: '.json_encode($this->getParam('inputs')));
+            Log::debug('new inputs: ', $this->getParam('inputs'));
         }
 
 
@@ -391,7 +392,7 @@ class Fann extends Strategy
         }
 
         if ($topology_changed) {
-            error_log('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
+            Log::error('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
             $this->destroyFann();
             $this->deleteFiles();
         }
@@ -445,7 +446,7 @@ class Fann extends Strategy
                 ]
             );
         } catch (\Exception $e) {
-            error_log('Fann::listItem() failed for id '.$this->getParam('id'));
+            Log::error('Failed for id '.$this->getParam('id'));
             $html = '[Failed to display FannListItem]';
         }
         return $html;
@@ -481,10 +482,10 @@ class Fann extends Strategy
     public function loadFann($path)
     {
         if (!is_file($path) || !is_readable($path)) {
-            //error_log('loadFann() cannot read '.$path);
+            //Log::error('cannot read '.$path);
             return $this;
         }
-        //error_log('creating fann from '.$path);
+        //Log::info('creating fann from '.$path);
         $this->fannResource = fann_create_from_file($path);
         return $this;
     }
@@ -496,7 +497,7 @@ class Fann extends Strategy
      */
     public function createFann()
     {
-        //error_log('Fann::createFann() Input: '.$this->getNumInput());
+        //Log::error('Fann::createFann() Input: '.$this->getNumInput());
         if ($this->getParam('fann_type') === 'fixed') {
             $params = array_merge(
                 [$this->getNumLayers()],
@@ -504,7 +505,7 @@ class Fann extends Strategy
                 $this->getParam('hidden_array'),
                 [$this->getParam('num_output')]
             );
-            //error_log('calling fann_create_shortcut('.join(', ', $params).')');
+            //Log::debug('calling fann_create_shortcut('.join(', ', $params).')');
             //$this->fannResource = call_user_func_array('fann_create_standard', $params);
             $this->fannResource = call_user_func_array('fann_create_shortcut', $params);
         } elseif ($this->getParam('fann_type') === 'cascade') {
@@ -600,7 +601,7 @@ class Fann extends Strategy
         if ('fann' !== strtolower(get_resource_type($fann))) {
             throw new \Exception('Supplied resource is not a fann resource');
         }
-        //error_log('setFann('.get_resource_type($fann).')');
+        //Log::error('setFann('.get_resource_type($fann).')');
         //var_dump(debug_backtrace());
         //if (is_resource($this->fannResource)) $this->destroyFann(); // do not destroy, it may have a reference
         $this->fannResource = $fann;
@@ -618,11 +619,11 @@ class Fann extends Strategy
     {
         $fn = $this->path().$suffix;
         if (!fann_save($this->getFann(), $fn)) {
-            error_log('Fann::saveFann() saving to '.$fn.' failed');
+            Log::error('Saving to '.$fn.' failed');
             return $this;
         }
         if (!chmod($fn, 0664)) {
-            error_log('Fann::saveFann() chmod of '.$fn.' failed');
+            Log::error('Chmod of '.$fn.' failed');
         }
         return $this;
     }
@@ -654,7 +655,7 @@ class Fann extends Strategy
         $affected = DB::table('fann_history')
             ->where('strategy_id', $this->getParam('id'))
             ->delete();
-        error_log('Fann::deleteHistory() '.$affected.' records deleted.');
+        Log::info($affected.' records deleted.');
         return $this;
     }
 
@@ -717,7 +718,7 @@ class Fann extends Strategy
                 $count = 1;
             }
         }
-        error_log($deleted.' history records deleted.');
+        Log::error($deleted.' history records deleted.');
         return $this;
     }
 
@@ -747,10 +748,10 @@ class Fann extends Strategy
             $fann.'.train',
             storage_path('logs/'.$this->getParam('training_log_prefix').$this->getParam('id').'.log')
         ] as $file) {
-            error_log('Checking to delete '.$file);
+            Log::error('Checking to delete '.$file);
             if (is_file($file)) {
                 if (!is_writable($file)) {
-                    error_log($file.' not writable');
+                    Log::error($file.' not writable');
                     continue;
                 }
                 unlink($file);
@@ -767,7 +768,7 @@ class Fann extends Strategy
     {
         if (is_resource($this->fannResource)) {
             if (!fann_destroy($this->fannResource)) {
-                error_log('Fann::destroyFann() could not destroy resource.');
+                Log::error('Could not destroy resource.');
             }
         }
         return $this;
@@ -789,7 +790,7 @@ class Fann extends Strategy
             }
             return $output[0];
         } catch (\Exception $e) {
-            error_log('fann_run error: '.$e->getMessage().
+            Log::error('fann_run error: '.$e->getMessage().
                 ' Input layer size: '.$this->getNumInput().
                 ' Inputs received: '.count($input));
             return null;
@@ -809,7 +810,7 @@ class Fann extends Strategy
             return $this->fannBias * $comp;
         }
         $this->fannBias = fann_run($this->getFann(), array_fill(0, $this->getNumInput(), 0))[0];
-        //error_log('bias: '.$this->fannBias);
+        //Log::error('bias: '.$this->fannBias);
         return $this->fannBias * $comp;
     }
 
@@ -885,7 +886,7 @@ class Fann extends Strategy
         foreach ($inputs as $sig) {
             //dump('Fann::runInputIndicators() sig: '.$sig); flush();
             if (! $indicator = $candles->getOrAddIndicator($sig)) {
-                //error_log('runInputIndicators() could not getOrAddIndicator() '.$sig);
+                //Log::error('Could not getOrAddIndicator() '.$sig);
                 continue;
             }
             $indicator->addRef('root');
@@ -922,24 +923,24 @@ class Fann extends Strategy
             $norm_mode = $indicator = null;
             $norm_params = ['mode' => 'ohlc', 'to' => null, 'range' => ['min' => null, 'max' => null]];
             if (in_array($sig, ['open', 'high', 'low', 'close'])) {
-                //error_log('Fann::getInputGroups() '.$sig.' is ohlc');
+                //Log::debug($sig.' is ohlc');
                 $norm_mode = 'ohlc';
             } elseif ('volume' === $sig) {
                 $norm_mode = 'individual';
                 $norm_params['to'] = 0;
             } elseif (! $indicator = $this->getCandles()->getOrAddIndicator($sig)) {
-                error_log('Fann::getInputGroups() could not getOrAddIndicator() '.$sig);
+                Log::error('Could not getOrAddIndicator() '.$sig);
                 continue;
             }
             if (!is_null($indicator)) {
                 if (! Indicator::signatureSame($sig, $indicator->getSignature())) {
                     //$m = 'Fann::getInputGroups() fatal: wanted sig '.$sig.' got '.$indicator->getSignature();
-                    //error_log($m);
+                    //Log::error($m);
                     //dd($m);
                 }
                 $indicator->addRef('root');
                 if (!($norm_params = $indicator->getNormalizeParams())) {
-                    error_log('Fann::getInputGroups() could not getNormalizeParams() for '.$sig);
+                    Log::error('Could not getNormalizeParams() for '.$sig);
                     continue;
                 }
                 $norm_mode = $norm_params['mode'];
@@ -953,13 +954,13 @@ class Fann extends Strategy
             } elseif ('range' === $norm_mode) {
                 if (is_null($min = $norm_params['range']['min']) ||
                     is_null($max = $norm_params['range']['max'])) {
-                    error_log('Fann::getInputGroups() min or max range not set for '.$sig);
+                    Log::error('Min or max range not set for '.$sig);
                     continue;
                 }
                 $groups['range'][$sig] = ['min' => $min, 'max' => $max];
                 continue;
             }
-            error_log('Fann::getInputGroups() unknown mode in '.json_encode($norm_params).' for '.$sig);
+            Log::error('Unknown mode in '.json_encode($norm_params).' for '.$sig);
         }
         Util::ksortR($groups);
         //dump($groups);
@@ -977,7 +978,7 @@ class Fann extends Strategy
     public function sample2io(array $sample, bool $input_only = false)
     {
         $groups = $this->getInputGroups();
-        //error_log('Fann::sample2io() inputs: '.json_encode($this->getParam('inputs'))); exit;
+        //Log::debug('Inputs: ', $this->getParam('inputs')); exit;
 
         //$num_input = $this->getNumInput(); // unused
 
@@ -989,21 +990,21 @@ class Fann extends Strategy
         }
 
         if ($in_sample_size !== ($actual_size = count($sample))) {
-            error_log('Fann::sample2io() wrong sample size ('.$actual_size.' vs. '.$in_sample_size.')');
+            Log::error('Wrong sample size ('.$actual_size.' vs. '.$in_sample_size.')');
         }
 
         //$dumptime = strtotime('2017-06-11 10:00:00');
         for ($i = 0; $i < $out_sample_size; $i++) {
             reset($groups);
             foreach ($groups as $group_name => $group) {
-                //error_log('sample2io() group_name: '.$group_name);
+                //Log::debug('group_name: '.$group_name);
                 reset($group);
                 foreach ($group as $sig => $params) {
                     $key = $this->getCandles()->key($sig);
                     if (isset($sample[$i]->$key)) {
                         $value = floatval($sample[$i]->$key);
                     } else {
-                        error_log('Fann::sample2io() value not set for key:'.$key.' sig:'.$sig);
+                        Log::error('Value not set for key:'.$key.' sig:'.$sig);
                         $value = 0;
                     }
 
@@ -1011,7 +1012,7 @@ class Fann extends Strategy
                         // for the last input candle, we only include fields which are based on "open",
                         // i.e. not based on any of: high, low, close or volume
                         if ($this->indicatorOutputDependsOn($sig, ['high', 'low', 'close', 'volume'])) {
-                            //error_log('Fann::sample2io() last candle excludes '.$sig);
+                            //Log::debug('Last candle excludes '.$sig);
                             continue;
                         }
                     }
@@ -1031,7 +1032,7 @@ class Fann extends Strategy
                         $input[$group_name][$sig]['normalize_to'] = $params['normalize_to'];
                     }
                     if (!$value) {
-                        //error_log('sample2io() zero value for sig: '.$sig.' '.json_encode($sample[$i]));
+                        //Log::error('Zero value for sig: '.$sig.' '.json_encode($sample[$i]));
                         //exit();
                     }
                     $input[$group_name][$sig]['values'][] = $value;
@@ -1073,7 +1074,7 @@ class Fann extends Strategy
                     $min = $params['min'] ?? null;
                     $max = $params['max'] ?? null;
                     if (is_null($min) || is_null($max)) {
-                        error_log('Fann::normalizeInput() warning: min or max range is null for '.
+                        Log::warning('Min or max range is null for '.
                             $group_name.': '.$sig);
                     }
                 }
@@ -1127,39 +1128,39 @@ class Fann extends Strategy
         //$sample_size = $this->getParam('sample_size'); // unused
 
         //$groups = $this->getInputGroups(); // unused
-        //error_log('candlesToData() groups:'.json_encode($groups));
+        //Log::debug('groups:'.json_encode($groups));
 
         $this->resetSample();
         while ($sample = $this->nextSample()) {
-            //error_log('candlesToData S: '.json_encode($sample));
+            //Log::debug('S:         '.json_encode($sample));
             list($input, $last_ohlc4, $output) = $this->sample2io($sample);
 
-            //error_log('candlesToData() input:      '.json_encode($input));
-            //error_log('candlesToData() last_ohlc4: '.json_encode($last_ohlc4));
-            //error_log('candlesToData() output: '.json_encode($output));
+            //Log::debug('input:      '.json_encode($input));
+            //Log::debug('last_ohlc4: '.json_encode($last_ohlc4));
+            //Log::debug('output:     '.json_encode($output));
             //exit();
 
             $input = $this->normalizeInput($input);
             //if (array_diff($input, [-1,0,1]))
-            //    error_log('candlesToData() norm_input: '.json_encode($input));
+            //    Log::debug('norm_input:', $input);
 
 
             // output is delta of last input and output scaled
             $delta = $output - $last_ohlc4;
-            //error_log($delta);
+            //Log::debug($delta);
             $output = $delta * 100 / $last_ohlc4 / $this->getParam('output_scaling');
             if ($output > 1) {
                 $output = 1;
             } elseif ($output < -1) {
                 $output = -1;
             }
-            //error_log('candlesToData() output: '.$output);
+            //Log::debug($output);
 
             $data[] = ['input'  => $input, 'output' => [$output]];
         }
 
         $this->fannData[$name] = $data;
-        //error_log('candlesToData() '.json_encode($data));
+        //Log::debug('candlesToData() ', $data);
         return $this;
     }
 
@@ -1209,7 +1210,7 @@ class Fann extends Strategy
                     [$this, 'createCallback']
                 );
             } catch (\Exception $e) {
-                error_log('Fann::train() Exception: '.$e->getMessage());
+                Log::error('Exception: '.$e->getMessage());
                 exit;
             }
             $this->cache('training_data', $training_data);
@@ -1253,7 +1254,7 @@ class Fann extends Strategy
         }
 
         if (!$res) {
-            error_log('Fann::train() training failed');
+            Log::error('Training failed');
         }
         $this->fannBias = null;
 
@@ -1279,7 +1280,7 @@ class Fann extends Strategy
             $this->fannData[$this->callbackType][$this->callbackIterator-1] :
             false;
         if (!$ret) {
-            error_log('Fann::createCallback() no data for '.$this->callbackType.' '.
+            Log::error('No data for '.$this->callbackType.' '.
                 ($this->callbackIterator-1));
         }
         return $ret;
@@ -1295,7 +1296,7 @@ class Fann extends Strategy
     public function getMSER()
     {
         $mse = fann_get_MSE($this->getFann());
-        //error_log('MSE: '.$mse);
+        //Log::debug('MSE: '.$mse);
         if ($mse) {
             return 1 / $mse;
         }
@@ -1346,7 +1347,7 @@ class Fann extends Strategy
         if ($n < 1) {
             $n = 1;
         }
-        //error_log('Fann::getNumInput() based on open: '.json_encode($sigs_based_on_open));
+        //Log::debug('Based on open: '.json_encode($sigs_based_on_open));
         $this->cache('num_input', $n);
         return $n;
     }
@@ -1454,11 +1455,11 @@ class Fann extends Strategy
             return $i;
         }
         if (!$candles = $this->getCandles()) {
-            error_log('Fann::getSignalsIndicator() no candles');
+            Log::error('No candles');
             return null;
         }
         if (!$pred = $this->getPredictionIndicator($set_prediction_id)) {
-            error_log('Fann::getSignalsIndicator() could not get Prediction');
+            Log::error('Could not get Prediction');
             return null;
         }
         $pred_sig = $pred->getSignature();
@@ -1490,7 +1491,7 @@ class Fann extends Strategy
                 'input_short_b' => $pred_sig,
                 'input_short_source' =>  $this->getParam('short_source', 'open'),
             ])) {
-            error_log('Fann::getSignalsIndicator() could not add Signals');
+            Log::error('Could not add Signals');
             return null;
         }
         $signals->addRef('root');

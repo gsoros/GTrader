@@ -47,7 +47,7 @@ class Util
     public static function logTrace()
     {
         $e = new \Exception;
-        error_log("-----Backtrace:\n".
+        Log::error("-----Backtrace:\n".
                     var_export($e->getTraceAsString(), true).
                     "\n----End Backtrace");
     }
@@ -106,7 +106,7 @@ class Util
             case 'gte':
                 return $a >= $b;
         }
-        error_log('Util::conditionMet() unknown condition: '. $cond);
+        Log::error('Unknown condition: '. $cond);
         return null;
     }
 }

@@ -27,10 +27,10 @@ class Macd extends Trader
             $this->getParam('indicator.signalperiod'),
             $this->getParam('indicator.signalmatype')
         ))) {
-            error_log('trader_macdext returned false');
+            Log::error('trader_macdext returned false');
             return [];
         }
-        //error_log('Macd: '.json_encode($values[0]));
+        //Log::debug('Macd: '.json_encode($values[0]));
         return $values;
     }
 }

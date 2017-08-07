@@ -21,7 +21,7 @@ class Tsf extends Trader
             $values[$this->getInput()],
             $this->getParam('indicator.period')
         ))) {
-            error_log('trader_tsf returned false');
+            Log::error('trader_tsf returned false');
             return [];
         }
         return [$values];

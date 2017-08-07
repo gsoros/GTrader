@@ -32,7 +32,7 @@ class Profitability extends HasInputs
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
             $this->getParam('indicator.input_signal')
         ))) {
-            error_log('Profitability::calculate() signal indicator not found.');
+            Log::error('Signal indicator not found.');
             return $this;
         }
         $signal_key = $candles->key($signal_ind->getSignature('signal'));
@@ -42,7 +42,7 @@ class Profitability extends HasInputs
             'Balance',
             ['input_signal' => $this->getParam('indicator.input_signal')]
         ))) {
-            error_log('Profitability::calculate() balance indicator not found.');
+            Log::error('Balance indicator not found.');
             return $this;
         }
         $balance_ind->checkAndRun($force_rerun);

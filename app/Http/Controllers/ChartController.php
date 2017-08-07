@@ -10,6 +10,7 @@ use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Chart;
 use GTrader\Indicator;
+use GTrader\Log;
 
 class ChartController extends Controller
 {
@@ -27,9 +28,9 @@ class ChartController extends Controller
 
     public function JSON(Request $request)
     {
-        error_log('ChartController::JSON()');
+        Log::debug('.');
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('JSON: no chart in session');
+            Log::error('No chart in session');
             return response('No such chart in session.', 403);
         }
 
@@ -42,9 +43,9 @@ class ChartController extends Controller
 
     public function image(Request $request)
     {
-        //error_log('ChartController::image()');
+        //Log::debug('.');
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('image: no chart in session');
+            Log::error('No chart in session');
             return response('No such chart in session.', 403);
         }
 
@@ -79,19 +80,19 @@ class ChartController extends Controller
     public function strategySelect(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('strategySelect: no chart in session');
+            Log::error('No chart in session');
             return response('No such chart in session.', 403);
         }
         if (! ($strategy = Strategy::load($request->strategy))) {
-            error_log('strategySelect: could not load strategy');
+            Log::error('Could not load strategy');
             return response('Strategy not found.', 403);
         }
         if ($strategy->getParam('user_id') !== Auth::id()) {
-            error_log('strategySelect: strategy owner mismatch');
+            Log::error('Strategy owner mismatch');
             return response('Strategy not found.', 403);
         }
         /*
-        //error_log('strategySelect() copying indicators');
+        //Log::debug('strategySelect() copying indicators');
         if ($old_strategy = $chart->getStrategy()) {
             foreach ($old_strategy->getIndicators() as $indicator) {
                 $strategy->addIndicator($indicator);
@@ -108,7 +109,7 @@ class ChartController extends Controller
     public function settingsForm(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('settingsForm: no chart in session');
+            Log::error('No chart in session');
             return response('No such chart in session.', 403);
         }
         $form = $chart->viewIndicatorsList($request);
@@ -121,9 +122,9 @@ class ChartController extends Controller
     public function delete(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('no chart in session');
+            Log::error('no chart in session');
             if (! $chart = Chart::loadFromDB(Auth::id(), $request->name)) {
-                error_log('no chart in db');
+                Log::error('no chart in db');
                 return response('No such chart.', 403);
             }
         }
@@ -136,9 +137,9 @@ class ChartController extends Controller
     public function dump(Request $request)
     {
         if (! $chart = Chart::loadFromSession($request->name)) {
-            error_log('no chart in session');
+            Log::error('no chart in session');
             if (! $chart = Chart::loadFromDB(Auth::id(), $request->name)) {
-                error_log('no chart in db');
+                Log::error('no chart in db');
                 return response('No such chart.', 403);
             }
         }

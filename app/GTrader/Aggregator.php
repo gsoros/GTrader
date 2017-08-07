@@ -24,17 +24,17 @@ class Aggregator
 
         $lock = str_replace('::', '_', str_replace('\\', '_', __METHOD__));
         if (!Lock::obtain($lock)) {
-            error_log('Another aggregator process is running.');
+            Log::info('Another aggregator process is running.');
             return $this;
         }
 
         try {
             if (!count(DB::select(DB::raw('show tables like "exchanges"')))) {
-                error_log('Aggregator::aggregate() Exchanges table does not (yet) exist in the database.');
+                Log::error('Exchanges table does not (yet) exist in the database.');
                 return $this;
             }
         } catch (\Exception $e) {
-            error_log('Aggregator::aggregate() Database is not ready (yet).');
+            Log::error('Database is not ready (yet).');
             return $this;
         }
 

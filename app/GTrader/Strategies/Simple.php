@@ -5,6 +5,7 @@ namespace GTrader\Strategies;
 use Illuminate\Http\Request;
 use GTrader\Strategy;
 use GTrader\Indicator;
+use GTrader\Log;
 
 class Simple extends Strategy
 {
@@ -58,7 +59,7 @@ class Simple extends Strategy
 
         //dump($request->all());
         if (!$signals = $this->getSignalsIndicator()) {
-            error_log($this->getShortClass().'::handleSaveRequest() could not get signals ind');
+            Log::error('Could not get signals ind');
             return $reply;
         }
         $uid = $this->getParam('uid');
@@ -118,7 +119,7 @@ class Simple extends Strategy
             return $ind;
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
-            error_log($this->getShortClass().'::getSignalsIndicator() could not find Signals');
+            Log::error('Could not find Signals');
             return null;
         }
         $this->cache('signals_indicator', $ind);
@@ -129,7 +130,7 @@ class Simple extends Strategy
     public function viewSignalForm()
     {
         if (!$signals = $this->getSignalsIndicator()) {
-            error_log($this->getShortClass().'::viewSignalForm() Could not load signal Indicator');
+            Log::error('Could not load signal Indicator');
             return null;
         }
         $signals->unsetParam('adjustable.strategy_id');

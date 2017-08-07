@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use GTrader\Exchange;
+use GTrader\Log;
 
 class ExchangeController extends Controller
 {
@@ -65,7 +66,7 @@ class ExchangeController extends Controller
         $exchange = $config = $class = $error = null;
         $exchange_id = (int)$request->id;
         if (!($class = Exchange::getNameById($exchange_id))) {
-            error_log('Failed to load exchange ID '.$exchange_id);
+            Log::error('Failed to load exchange ID '.$exchange_id);
             $error = response('Failed to load exchange.', 404);
         } else {
             $exchange = Exchange::make($class);

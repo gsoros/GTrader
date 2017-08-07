@@ -15,7 +15,7 @@ class Adosc extends Trader
             $this->getParam('indicator.fastperiod'),
             $this->getParam('indicator.slowperiod')
         ))) {
-            error_log('trader_adosc returned false');
+            Log::error('trader_adosc returned false');
             return [];
         }
         return [$values];

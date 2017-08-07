@@ -37,7 +37,7 @@ class Stoch extends Trader
             $this->getParam('indicator.slowdperiod'),
             $this->getParam('indicator.slowdmatype')
         ))) {
-            error_log('trader_stoch returned false');
+            Log::error('trader_stoch returned false');
             return [];
         }
 

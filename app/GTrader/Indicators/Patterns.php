@@ -62,7 +62,7 @@ class Patterns extends Trader
         $annot_ind = clone $this;
         $annot_ind->setParam('outputs', ['annotation']);
         $annot_sig = $annot_ind->getSignature();
-        //error_log('Patterns::getAnnotationSig() annot_sig: '.$annot_sig);
+        //Log::debug('annot_sig: '.$annot_sig);
 
         $this->cache('annot_sig', $annot_sig);
         return $annot_sig;

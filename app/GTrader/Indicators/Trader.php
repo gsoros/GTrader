@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use GTrader\Series;
+use GTrader\Log;
 
 if (!extension_loaded('trader')) {
     throw new \Exception('Trader extension not loaded');
@@ -21,7 +22,7 @@ abstract class Trader extends HasInputs
     public function calculate(bool $force_rerun = false)
     {
         if (!($candles = $this->getCandles())) {
-            error_log('Trader::calculate() could not getCandles()');
+            Log::error('Trader::calculate() could not getCandles()');
             return $this;
         }
 
@@ -43,7 +44,7 @@ abstract class Trader extends HasInputs
             if (!isset($values[$output_index])) {
                 continue;
             }
-            //error_log(json_encode($values[$output_index]));
+            //Log::error(json_encode($values[$output_index]));
             //dump('Trader::calc() sig: '.$this->getSignature($output_name));
             $candles->setValues(
                 $this->getSignature($output_name),

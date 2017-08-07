@@ -24,7 +24,7 @@ class Bbands extends Trader
             $this->getParam('indicator.devdown'),
             $this->getParam('indicator.matype')
         ))) {
-            error_log('trader_bbands returned false');
+            Log::error('trader_bbands returned false');
             return [];
         }
 

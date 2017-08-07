@@ -13,7 +13,7 @@ class Bop extends Trader
             $values[$this->getInput('input_low')],
             $values[$this->getInput('input_close')]
         ))) {
-            error_log('trader_bop returned false');
+            Log::error('trader_bop returned false');
             return [];
         }
         return [$values];

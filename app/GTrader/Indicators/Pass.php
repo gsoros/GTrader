@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 class Pass extends HasInputs
 {
     protected function getInputIndicator($signature)
@@ -19,7 +21,7 @@ class Pass extends HasInputs
         if (!$indicator = $this->getInputIndicator($input)) {
             return array_replace_recursive($norm, ['mode' => 'individual']);
         }
-        //error_log('Pass::getInputNormParams() return norm from ind: '.json_encode($indicator->getNormalizeParams()));
+        //Log::debug('Pass::getInputNormParams() return norm from ind: '.json_encode($indicator->getNormalizeParams()));
         return $indicator->getNormalizeParams();
     }
 
@@ -142,12 +144,12 @@ class Pass extends HasInputs
             }
             $val = floatval($val);
             if ('high' === $mode) {
-                //error_log('IS: '.$input.' V: '.$val.' HR: '.$candle->$high_ref); //continue;
+                //Log::debug('IS: '.$input.' V: '.$val.' HR: '.$candle->$high_ref); //continue;
                 if (!is_null($candle->$high_ref)) {
                     $val = $this->pass($mode, $val, $candle->$high_ref, $inc);
                 }
             } elseif ('low' === $mode) {
-                //error_log('IS: '.$input.' V: '.$val.' LR: '.$candle->$low_ref); continue;
+                //Log::debug('IS: '.$input.' V: '.$val.' LR: '.$candle->$low_ref); continue;
                 if (!is_null($candle->$low_ref)) {
                     $val = $this->pass($mode, $val, $candle->$low_ref, $inc);
                 }

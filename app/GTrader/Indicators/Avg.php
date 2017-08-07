@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Average */
 class Avg extends HasInputs
 {
@@ -22,7 +24,7 @@ class Avg extends HasInputs
         $candles->reset();
         while ($candle = $candles->next()) {
             if (!isset($candle->$input)) {
-                error_log('Avg::calculate() candle->'.$input.' is not set');
+                Log::error('candle->'.$input.' is not set');
                 break;
             }
             $total += $candle->$input;

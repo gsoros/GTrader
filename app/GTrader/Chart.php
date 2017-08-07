@@ -30,7 +30,7 @@ abstract class Chart extends Plot
         if ($candles = $this->getCandles()) {
             if ($strategy = $this->getStrategy()) {
                 if ($candles !== $strategy->getCandles()) {
-                    error_log('Chart->getCandles() !== $strategy->getCandles()');
+                    Log::error('Chart->getCandles() !== $strategy->getCandles()');
                     $strategy->setCandles($candles);
                 }
             }
@@ -47,7 +47,7 @@ abstract class Chart extends Plot
 
     public function __sleep()
     {
-        //error_log('Chart::__sleep()');
+        //Log::debug('.');
         if ($strategy = $this->getStrategy()) {
             if ($strategy_id = $strategy->getParam('id')) {
                 $this->setParam('strategy_id', $strategy_id);
@@ -142,11 +142,11 @@ abstract class Chart extends Plot
     public function save()
     {
         if (! $name = $this->getParam('name')) {
-            error_log('Chart::save() called but we have no name.');
+            Log::error('We have no name.');
             return $this;
         }
         if (! $user_id = $this->getParam('user_id')) {
-            error_log('Chart::save() called but we have no user_id.');
+            Log::error('We have no user_id.');
             return $this;
         }
         // save strategy
@@ -185,7 +185,7 @@ abstract class Chart extends Plot
     public function saveToSession()
     {
         if (! $name = $this->getParam('name')) {
-            error_log('Chart::saveToSession() called but we have no name.');
+            Log::error('We have no name.');
             return this;
         }
         //dump('chart::saveToSession()', $this);
@@ -197,7 +197,7 @@ abstract class Chart extends Plot
     public function delete()
     {
         if (! $name = $this->getParam('name')) {
-            error_log('Chart::delete() called but we have no name.');
+            Log::error('We have no name.');
             return this;
         }
         $aff = DB::table('charts')
@@ -210,7 +210,7 @@ abstract class Chart extends Plot
     public function deleteFromSession()
     {
         if (! $name = $this->getParam('name')) {
-            error_log('Chart::deleteFromSession() called but we have no name.');
+            Log::error('We have no name.');
             return this;
         }
         session([$name => null]);

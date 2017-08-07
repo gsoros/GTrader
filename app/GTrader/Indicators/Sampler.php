@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use GTrader\Indicator;
+use GTrader\Log;
 
 class Sampler extends Indicator
 {
@@ -12,7 +13,7 @@ class Sampler extends Indicator
     {
         parent::__construct($params);
         $this->setAllowedOwners(['GTrader\\Series']);
-        //error_log($this->getSignature());
+        //Log::debug($this->getSignature());
     }
 
     public function getStrategyOwner()

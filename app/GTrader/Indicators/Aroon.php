@@ -11,7 +11,7 @@ class Aroon extends Trader
             $values[$this->getInput('input_low')],
             $this->getParam('indicator.period')
         ))) {
-            error_log('trader_aroon returned false');
+            Log::error('trader_aroon returned false');
             return [];
         }
         return $values;
