@@ -87,7 +87,7 @@
                                     owner_id: '{{ $owner_id }}',
                                     name: '{{ $name }}',
                                     signature: '{{ urlencode($sig) }}'
-                                }
+                                },
                                 'POST',
                                 '{{ $target_element }}'
                             ); return false">
