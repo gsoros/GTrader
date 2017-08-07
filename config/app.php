@@ -120,8 +120,8 @@ return [
     |
     */
 
-    //'log' => env('APP_LOG', 'single'),
-    'log' => env('APP_LOG', 'errorlog'), // STDERR
+    'log' => env('APP_LOG', 'single'),
+    //'log' => env('APP_LOG', 'errorlog'), // STDERR
 
     'log_level' => env('APP_LOG_LEVEL', 'debug'),
 
