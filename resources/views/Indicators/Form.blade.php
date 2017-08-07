@@ -1,27 +1,27 @@
 @php
-    if (!$uid = $indicator->getParam('uid')) {
-        $uid = uniqid();
-    }
-    if (!isset($disabled)) {
-        $disabled = [];
-    }
-    $sig = $indicator->getSignature();
-    foreach ([
-        'name' => '',
-        'owner_class' => 'Chart',
-        'owner_id' => 0,
-        'target_element' => 'settings_content',
-    ] as $varname => $default) {
-        $$varname = isset($$varname) ? $$varname : $default;
-    };
+if (!$uid = $indicator->getParam('uid')) {
+    $uid = uniqid();
+}
+if (!isset($disabled)) {
+    $disabled = [];
+}
+$sig = $indicator->getSignature();
+foreach ([
+    'name' => '',
+    'owner_class' => 'Chart',
+    'owner_id' => 0,
+    'target_element' => 'settings_content',
+] as $varname => $default) {
+    $$varname = isset($$varname) ? $$varname : $default;
+};
 @endphp
 
-@if (!Arr::get($disabled, 'title'))
+@if (!in_array('title', $disabled))
 <h5 title="{{ $indicator->getParam('display.description') }}">
     {{ $indicator->getParam('display.name') }}
 </h5>
 @endif
-@if (!Arr::get($disabled, 'form'))
+@if (!in_array('form', $disabled))
 <form id="form_{{ $uid }}" class="form-horizontal row">
 @endif
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
@@ -162,19 +162,19 @@
                 {{-- Int, Float --}}
                 @elseif (in_array($param['type'], ['int', 'float']))
                     @php
-                        $opts = $title = '';
-                        foreach (['min', 'max', 'step'] as $field) {
-                            if (isset($param[$field])) {
-                                if (strlen($opts)) {
-                                    $opts .= ' ';
-                                }
-                                $opts .= $field.'="'.$param[$field].'"';
-                                if (strlen($title)) {
-                                    $title .= ',';
-                                }
-                                $title .= ' '.$field.': '.$param[$field];
+                    $opts = $title = '';
+                    foreach (['min', 'max', 'step'] as $field) {
+                        if (isset($param[$field])) {
+                            if (strlen($opts)) {
+                                $opts .= ' ';
                             }
+                            $opts .= $field.'="'.$param[$field].'"';
+                            if (strlen($title)) {
+                                $title .= ',';
+                            }
+                            $title .= ' '.$field.': '.$param[$field];
                         }
+                    }
                     @endphp
                     <input type="number"
                         class="btn-primary btn btn-mini form-control form-control-sm"
@@ -187,7 +187,7 @@
             </div>
         </div>
     @endforeach
-    @if (!Arr::get($disabled, 'savebutton'))
+    @if (!in_array('savebutton', $disabled))
     <div class="col-sm-2">
         <button id="save_{{ $uid }}"
                 class="btn btn-primary btn-sm trans"
@@ -197,11 +197,11 @@
         </button>
     </div>
     @endif
-@if (!Arr::get($disabled, 'form'))
+@if (!in_array('form', $disabled))
 </form>
 @endif
 
-@if (!Arr::get($disabled, 'save'))
+@if (!in_array('save', $disabled))
 <script>
     window.save_indicator{{ $uid }} = function(){
         var params = {
@@ -218,11 +218,11 @@
             'save',
             {
                 @php
-                    if (isset($pass_vars)) {
-                        foreach ($pass_vars as $k => $v) {
-                            echo $k.": '".$v."',\n";
-                        }
+                if (isset($pass_vars)) {
+                    foreach ($pass_vars as $k => $v) {
+                        echo $k.": '".$v."',\n";
                     }
+                }
                 @endphp
                 name: '{{ $name }}',
                 owner_class: '{{ $owner_class }}',
