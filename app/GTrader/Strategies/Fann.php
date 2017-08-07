@@ -392,7 +392,7 @@ class Fann extends Strategy
         }
 
         if ($topology_changed) {
-            Log::error('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
+            Log::info('Strategy '.$this->getParam('id').': topology changed, deleting fann.');
             $this->destroyFann();
             $this->deleteFiles();
         }
@@ -748,7 +748,7 @@ class Fann extends Strategy
             $fann.'.train',
             storage_path('logs/'.$this->getParam('training_log_prefix').$this->getParam('id').'.log')
         ] as $file) {
-            Log::error('Checking to delete '.$file);
+            Log::info('Checking to delete '.$file);
             if (is_file($file)) {
                 if (!is_writable($file)) {
                     Log::error($file.' not writable');
@@ -1001,11 +1001,16 @@ class Fann extends Strategy
                 reset($group);
                 foreach ($group as $sig => $params) {
                     $key = $this->getCandles()->key($sig);
-                    if (isset($sample[$i]->$key)) {
-                        $value = floatval($sample[$i]->$key);
-                    } else {
-                        Log::error('Value not set for key:'.$key.' sig:'.$sig);
+                    if (!isset($sample[$i]->$key)) {
+                        $series_sigs = [];
+                        foreach ($this->getCandles()->getIndicators() as $ind) {
+                            $series_sigs[] = $ind->getSignature();
+                        }
+                        Log::error('Value not set for key: '.$key, 'Requested sig: '.$sig, 'Series sigs:', $series_sigs, $sample[$i]);
+                        exit;
                         $value = 0;
+                    } else {
+                        $value = floatval($sample[$i]->$key);
                     }
 
                     if ($i == $out_sample_size - 1) {

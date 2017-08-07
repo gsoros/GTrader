@@ -73,6 +73,11 @@ class Series extends Collection
     }
 
 
+    public function getMap()
+    {
+        return $this->_map;
+    }
+
     public function getCandles()
     {
         $this->_load();

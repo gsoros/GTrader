@@ -188,14 +188,18 @@ abstract class Indicator //implements \JsonSerializable
             $type = $this->getParam('adjustable.'.$key.'.type');
             if ('bool' === $type) {
                 $value = intval($value);
-            }
-            if ('string' === $type) {
+            } elseif ('string' === $type) {
                 $value = strval($value);
             } elseif ('source' === $type) {
                 if (!in_array($value, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
                     if (!is_array($value)) {
                         $value = self::decodeSignature($value);
                     }
+                }
+            } elseif ('list' === $type) {
+                if (is_array($value)) {
+                    // convert assoc arr to indexed
+                    $value = array_values($value);
                 }
             }
             /*

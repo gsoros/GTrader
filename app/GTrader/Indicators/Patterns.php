@@ -2,6 +2,7 @@
 
 namespace GTrader\Indicators;
 
+use Illuminate\Support\Arr;
 use GTrader\HasCache;
 
 /** CDL_* family of patterns from TA-Lib */
@@ -12,6 +13,10 @@ class Patterns extends Trader
     public function __construct(array $params = [])
     {
         parent::__construct($params);
+
+        if (!is_array(Arr::get($params, 'indicator.use_functions'))) {
+            Arr::set($params, 'indicator.use_functions', []);
+        }
 
         $f = get_defined_functions();
         $functions = $selected = [];
@@ -37,7 +42,9 @@ class Patterns extends Trader
             }
             $func = substr($func, $prefix_length);
             $functions[$func] = $this->getParam('map.'.$func, $func);
-            $selected[] = $func;
+            if (in_array($func, $params['indicator']['use_functions'])) {
+                $selected[] = $func;
+            }
         }
         $this->setParam('indicator.use_functions', $selected);
         $this->setParam('adjustable.use_functions.items', $functions);
@@ -137,11 +144,13 @@ class Patterns extends Trader
             });
         }
 
-        $this->getCandles()->setValues(
-            $this->getAnnotationSig(),
-            $annotation,
-            null
-        );
+        if ($this->getParam('indicator.show_annotation')) {
+            $this->getCandles()->setValues(
+                $this->getAnnotationSig(),
+                $annotation,
+                null
+            );
+        }
 
         return [$line];
     }
