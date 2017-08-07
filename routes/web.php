@@ -38,8 +38,10 @@ Route::get('/strategy.selectorOptions', 'ChartController@strategySelectorOptions
 Route::get('/strategy.select',          'ChartController@strategySelect');
 
 Route::get('/indicator.form',           'IndicatorController@form');
+Route::post('/indicator.form',          'IndicatorController@form');
 Route::get('/indicator.new',            'IndicatorController@create');
 Route::get('/indicator.delete',         'IndicatorController@delete');
+Route::post('/indicator.delete',        'IndicatorController@delete');
 Route::post('/indicator.save',          'IndicatorController@save');
 Route::get('/indicator.sources',        'IndicatorController@sources');
 

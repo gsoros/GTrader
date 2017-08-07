@@ -71,7 +71,7 @@
                                         signature: '{{ urlencode($sig) }}',
                                         target_element: '{{ $target_element }}'
                                     },
-                                    'GET',
+                                    'POST',
                                     'form_{{ $uid }}'
                                 ); return false">
                             <span class="glyphicon glyphicon-wrench"></span>
@@ -86,7 +86,7 @@
                                     '&owner_id={{ $owner_id }}' +
                                     '&name={{ $name }}' +
                                     '&signature={{ urlencode($sig) }}',
-                                'GET',
+                                'POST',
                                 '{{ $target_element }}'
                             ); return false">
                         <span class="glyphicon glyphicon-trash"></span>
