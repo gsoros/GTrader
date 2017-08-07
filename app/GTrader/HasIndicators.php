@@ -367,6 +367,7 @@ trait HasIndicators
                 }
             }
         }
+        asort($available);
         if ($cache_enabled) {
             $this->cache('indicators_available', $available);
         }
@@ -561,6 +562,7 @@ trait HasIndicators
                 $sources[$sig] = $label;
             }
         }
+        asort($sources);
         return $sources;
     }
 
