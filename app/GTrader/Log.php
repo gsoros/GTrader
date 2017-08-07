@@ -4,8 +4,6 @@ namespace GTrader;
 
 class Log {
 
-    protected static $logger = 'Illuminate\\Support\\Facades\\Log';
-
     /*
     Log::emergency(... $messages);
     Log::alert();
@@ -17,17 +15,21 @@ class Log {
     Log::debug();
     */
 
-    public static function __callStatic($name, $args)
+    public static function __callStatic($severity, $args)
     {
-        return forward_static_call_array([static::$logger, $name], $args);
+        return error_log('['.date('Y-m-d H:i:s').'] '.
+            config('app.env').'.'.strtoupper($severity).' '.
+            static::getCaller().' '.
+            join(', ', array_map(function($v) {
+                return json_encode($v);
+            }, $args)));
     }
 
     public static function sparse(... $args)
     {
-        //return forward_static_call_array([static::$logger, 'info'], $args);
         return error_log('['.date('Y-m-d H:i:s').'] '.join(', ', array_map(function($v) {
-            return json_encode($v);
-        }, $args)));
+                return json_encode($v);
+            }, $args)));
     }
 
     protected static function getCaller()
