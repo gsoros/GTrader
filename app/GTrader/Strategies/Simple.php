@@ -136,10 +136,7 @@ class Simple extends Strategy
         $signals->unsetParam('adjustable.strategy_id');
         $signals->setParam('uid', $this->getParam('uid'));
         return $signals->getForm(['disabled' => [
-            'title' => true,
-            'form' => true,
-            'savebutton' => true,
-            'save' => true,
+            'title', 'form', 'savebutton', 'save'
         ]]);
     }
 
@@ -171,7 +168,7 @@ class Simple extends Strategy
                 ],
             ]
         );
-        $signals->addAllowedOwner(get_class($this));
+        $signals->addAllowedOwner($this);
         $signals = $this->addIndicator($signals);
         $signals->addRef('root');
 

@@ -45,8 +45,11 @@ trait HasOwner
     }
 
 
-    public function addAllowedOwner(string $owner)
+    public function addAllowedOwner($owner)
     {
+        if (is_object($owner)) {
+            $owner = get_class($owner);
+        }
         if (in_array($owner, $owners = $this->getAllowedOwners())) {
             return $this;
         }
