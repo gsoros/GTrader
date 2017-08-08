@@ -4,6 +4,7 @@ namespace GTrader\Indicators;
 
 use Illuminate\Support\Arr;
 use GTrader\HasCache;
+use GTrader\Log;
 
 /** CDL_* family of patterns from TA-Lib */
 class Patterns extends Trader
@@ -14,14 +15,59 @@ class Patterns extends Trader
     {
         parent::__construct($params);
 
-        if (!is_array(Arr::get($params, 'indicator.use_functions'))) {
-            Arr::set($params, 'indicator.use_functions', []);
+        $this->setAvailableFunctions();
+
+        $selected = Arr::get($params, 'indicator.use_functions', []);
+        if (!is_array($selected)) {
+            $selected = [];
+        }
+        $this->setSelectedFunctions($selected);
+    }
+
+
+    public function update(array $params = [], string $suffix = '')
+    {
+        parent::update($params, $suffix);
+        $this->setSelectedFunctions($this->getParam('indicator.use_functions'), []);
+        return $this;
+    }
+
+
+    public function setSelectedFunctions(array $selected = [])
+    {
+        if (!is_array($available = $this->getParam('adjustable.use_functions.items', []))) {
+            $available = [];
+        }
+        $available = array_keys($available);
+
+        $valid = [];
+        foreach ($selected as $func) {
+            if (in_array($func, $available)) {
+                $valid[] = $func;
+            }
         }
 
+        // select all if none are selected
+        if (!$valid_count = count($valid)) {
+            $valid = $available;
+        }
+        //Log::debug('selecting '.($valid_count ?? 'all').' of '.count($available).' available funcs');
+        $this->setParam('indicator.use_functions', $valid);
+
+        return $this;
+    }
+
+    public function setAvailableFunctions()
+    {
+        if ($this->cached('available_set')) {
+            return $this;
+        }
         $f = get_defined_functions();
-        $functions = $selected = [];
+        $funcs = [];
         $prefix = $this->getParam('trader_func_prefix');
         $prefix_length = strlen($prefix);
+
+        //Log::debug('setting up available funcs');
 
         foreach ($f['internal'] as $func) {
             if ($prefix !== substr($func, 0, $prefix_length)) {
@@ -41,13 +87,12 @@ class Patterns extends Trader
                 continue;
             }
             $func = substr($func, $prefix_length);
-            $functions[$func] = $this->getParam('map.'.$func, $func);
-            if (in_array($func, $params['indicator']['use_functions'])) {
-                $selected[] = $func;
-            }
+            $funcs[$func] = $this->getParam('map.'.$func, $func);
         }
-        $this->setParam('indicator.use_functions', $selected);
-        $this->setParam('adjustable.use_functions.items', $functions);
+        $this->setParam('adjustable.use_functions.items', $funcs);
+
+        $this->cache('available_set', true);
+        return $this;
     }
 
 
@@ -56,7 +101,14 @@ class Patterns extends Trader
       string $output = null,
       array $overrides = [])
     {
-        return $this->getParam('display.name');
+        $name = $this->getParam('display.name');
+        if ('short' == $format) {
+            return $name;
+        }
+        $selected = count($this->getParam('indicator.use_functions', []));
+        return $name.' ('.
+            ($selected == count($this->getParam('adjustable.use_functions.items', [])) ?
+            'all' : $selected).')';
     }
 
 

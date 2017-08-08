@@ -4,6 +4,7 @@ namespace GTrader;
 
 use Illuminate\Support\Arr;
 use GTrader\Series;
+use GTrader\Log;
 
 abstract class Indicator //implements \JsonSerializable
 {
@@ -77,6 +78,70 @@ abstract class Indicator //implements \JsonSerializable
             ];
         }
     */
+
+
+    public function update(array $params = [], string $suffix = '')
+    {
+        foreach ($this->getParam('adjustable', []) as $key => $param) {
+            $val = null;
+            if (isset($params[$key.$suffix])) {
+                $val = $params[$key.$suffix];
+            }
+            switch ($type = Arr::get($param, 'type')) {
+
+                case 'bool':
+                    $val = boolval($val);
+                    break;
+                case 'string':
+                    $val = strval($val);
+                    break;
+                case 'int':
+                    $val = intval($val);
+                    break;
+                case 'float':
+                    $val = floatval($val);
+                    break;
+                case 'select':
+                    $options = Arr::get($param, 'options');
+                    if (is_array($options)) {
+                        if (!array_key_exists($val, $options)) {
+                            $val = null;
+                        }
+                    }
+                    break;
+                case 'list':
+                    $tmpval = $val;
+                    $val = null;
+                    $available = Arr::get($param, 'items');
+                    if (is_array($available)) {
+                        if (!is_array($tmpval)) {
+                            $tmpval = [$tmpval];
+                        }
+                        $val = array_values(array_intersect(array_keys($available), $tmpval));
+                    }
+                    break;
+                case 'source':
+                    if (!isset($owner)) {
+                        if (!$owner = $this->getOwner()) {
+                            Log::error('Could not get owner', $this);
+                            return $this;
+                        }
+                    }
+                    $val = stripslashes(urldecode($val));
+                    $dependency = $owner->getOrAddIndicator($val);
+                    if (is_object($dependency)) {
+                        //$dependency->addRef('root');
+                        $val = $dependency->getSignature(Indicator::getOutputFromSignature($val));
+                    }
+                    break;
+                default:
+                    Log::error('unknown param type: ', $type);
+
+            }
+            $this->setParam('indicator.'.$key, $val);
+        }
+        return $this;
+    }
 
 
     public function addRef($ind_or_sig)

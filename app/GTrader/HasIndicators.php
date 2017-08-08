@@ -468,7 +468,7 @@ trait HasIndicators
         $indicator = clone $indicator;
         $sig = $indicator->getSignature();
         try {
-            $jso = json_decode($request->params);
+            $params = json_decode($request->params, true);
         } catch (\Exception $e) {
             Log::error('cannot decode json', $request->params);
             return $this->viewIndicatorsList($request);
@@ -479,48 +479,7 @@ trait HasIndicators
                 $suffix = $request->suffix;
             }
         }
-        foreach ($indicator->getParam('adjustable') as $key => $param) {
-            $val = null;
-            if (isset($jso->{$key.$suffix})) {
-                $val = $jso->{$key.$suffix};
-            }
-            if ('bool' === ($type = $param['type'])) {
-                $val = boolval($val);
-            } elseif ('string' === $type) {
-                $val = strval($val);
-            } elseif ('int' === $type) {
-                $val = intval($val);
-            } elseif ('float' === $type) {
-                $val = floatval($val);
-            } elseif ('select' === $type) {
-                if (isset($param['options'])) {
-                    if (is_array($param['options'])) {
-                        if (!array_key_exists($val, $param['options'])) {
-                            $val = null;
-                        }
-                    }
-                }
-            } elseif ('list' === $type) {
-                $items = [];
-                if (isset($param['items'])) {
-                    if (is_array($param['items'])) {
-                        $items = $param['items'];
-                    }
-                }
-                if (!is_array($val)) {
-                    $val = [$val];
-                }
-                $val = array_intersect(array_keys($items), $val);
-            } elseif ('source' === $type) {
-                $val = stripslashes(urldecode($val));
-                $dependency = $this->getOrAddIndicator($val);
-                if (is_object($dependency)) {
-                    //$dependency->addRef('root');
-                    $val = $dependency->getSignature(Indicator::getOutputFromSignature($val));
-                }
-            }
-            $indicator->setParam('indicator.'.$key, $val);
-        }
+        $indicator->update($params, $suffix);
         $indicator->init();
         $this->unsetIndicators($sig);
         if (!$indicator = $this->addIndicator($indicator)) {
