@@ -117,10 +117,14 @@ class HomeController extends Controller
     {
         $user = Auth::user();
 
+        ob_start();
         echo 'Charts:';
-        dump($user->charts());
+        foreach ($user->charts() as $chart) {
+            dump($chart);
+            echo '<a class="btn btn-primary btn-mini" href="/chart.delete?name='.$chart->getParam('name').'">Delete</a><br>';
+        }
 
-        echo 'Strategies:';
+        echo '<hr>Strategies:';
         dump(array_map(function($strategy) {
             return $strategy->setParam(
                 'trainings',
@@ -130,19 +134,21 @@ class HomeController extends Controller
             );
         }, $user->strategies()));
 
-        echo 'Bots:';
+        echo '<hr>Bots:';
         dump($user->bots);
 
-        echo 'Trades:';
+        echo '<hr>Trades:';
         dump($user->trades->toArray());
 
-        echo 'ExchangeConfigs:';
+        echo '<hr>ExchangeConfigs:';
         dump($user->exchangeConfigs->toArray());
 
-        echo 'Session:';
+        echo '<hr>Session:';
         dump($request->session()->all());
 
-        return new Response('', 200);
+        return view('basic')->with([
+            'content' => ob_get_clean(),
+        ]);
     }
 
 

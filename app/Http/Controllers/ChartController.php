@@ -129,24 +129,9 @@ class ChartController extends Controller
             }
         }
 
-        $chart->deleteFromSession()->delete();
-        return response('OK', 200);
-    }
-
-
-    public function dump(Request $request)
-    {
-        if (! $chart = Chart::loadFromSession($request->name)) {
-            Log::error('no chart in session');
-            if (! $chart = Chart::loadFromDB(Auth::id(), $request->name)) {
-                Log::error('no chart in db');
-                return response('No such chart.', 403);
-            }
-        }
-
-        foreach ($chart->getIndicators() as $i) {
-            dump($i);
-        }
-        return response('OK', 200);
+        $result = $chart->deleteFromSession()->delete();
+        return view('basic')->with([
+            'content' => ($result ? 'Deleted.' : 'Error.'),
+        ]);
     }
 }

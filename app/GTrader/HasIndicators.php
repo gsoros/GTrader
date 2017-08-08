@@ -435,11 +435,6 @@ trait HasIndicators
     }
 
 
-    public function createIndicator(string $signature)
-    {
-        return Indicator::make($signature);
-    }
-
 
     public function handleIndicatorDeleteRequest(Request $request)
     {

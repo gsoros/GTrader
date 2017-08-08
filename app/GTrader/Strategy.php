@@ -10,7 +10,6 @@ abstract class Strategy
     use Skeleton, HasCandles, HasIndicators, HasCache
     {
         HasCandles::setCandles as private __hasCandlesSetCandles;
-        HasIndicators::getSourcesAvailable as public __HasIndicatorsGetSourcesAvailable;
     }
 
     //protected static $stat_cache_log = 'all';
@@ -279,18 +278,5 @@ abstract class Strategy
     public function getNumSignals(bool $force_rerun = false)
     {
         return count($this->getSignals($force_rerun));
-    }
-
-
-
-    public function createIndicator(string $signature)
-    {
-        $ind = Indicator::make($signature);
-        if ($ind->hasInputs()) {
-            foreach ($ind->getInputs() as $input) {
-                $ind->setParam('indicator.'.$input, 'open');
-            }
-        }
-        return $ind;
     }
 }
