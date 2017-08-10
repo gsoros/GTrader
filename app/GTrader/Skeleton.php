@@ -24,21 +24,10 @@ trait Skeleton
 {
     use HasParams, HasStatCache, ClassUtils;
 
-    protected static $stat_cache = [];
-
-    public function __construct(array $params = [])
+    public function skeletonConstruct(array $params = [])
     {
         $this->setParams(self::loadConfRecursive(get_class($this)));
         $this->setParams($params);
-    }
-
-    public function __destruct()
-    {
-        //dump('Skeleton::__destruct() ', $this);
-    }
-
-    public function __wakeup()
-    {
     }
 
 
@@ -63,10 +52,6 @@ trait Skeleton
         return new $class($params);
     }
 
-
-    public function kill()
-    {
-    }
 
 
     /**

@@ -5,13 +5,8 @@ namespace GTrader;
 use PHPlot_truecolor;
 use Illuminate\Support\Arr;
 
-class Plot
+class Plot extends Base
 {
-    use Skeleton
-    {
-        Skeleton::__construct as protected __skeletonConstruct;
-    }
-
     protected $PHPlot;
     protected static $colorIndex = 0;
     protected static $legendIndex = 0;
@@ -22,7 +17,7 @@ class Plot
         static::$colorIndex = 0;
         static::$legendIndex = 0;
 
-        $this->__skeletonConstruct($params);
+        parent::__construct($params);
     }
 
 

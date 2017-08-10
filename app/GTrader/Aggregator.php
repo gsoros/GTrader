@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * Fetches new candles from all available exchanes and stores them in the DB
  */
-class Aggregator
+class Aggregator extends Base
 {
-    use Skeleton, Scheduled;
+    use Scheduled;
 
     /**
      * Main method

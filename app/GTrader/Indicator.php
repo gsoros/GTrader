@@ -4,12 +4,9 @@ namespace GTrader;
 
 use Illuminate\Support\Arr;
 
-abstract class Indicator implements Gene
+abstract class Indicator extends Base implements Gene
 {
-    use Skeleton, HasOwner, HasCache
-    {
-        Skeleton::__construct as private __skeletonConstruct;
-    }
+    use HasOwner, HasCache;
 
     protected $calculated = false;
     protected $refs = [];
@@ -18,7 +15,7 @@ abstract class Indicator implements Gene
 
     public function __construct(array $params = [])
     {
-        $this->__skeletonConstruct($params);
+        parent::__construct($params);
 
         $this->setAllowedOwners(['GTrader\\Series', 'GTrader\\Strategy']);
 

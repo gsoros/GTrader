@@ -4,10 +4,9 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 
-abstract class Exchange
+abstract class Exchange extends Base
 {
-    use Skeleton;
-
+    
     abstract public function form(array $options = []);
     abstract public function getTicker(string $symbol);
     abstract public function getCandles(

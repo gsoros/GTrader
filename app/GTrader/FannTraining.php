@@ -52,6 +52,12 @@ class FannTraining extends Model
     protected $started;
 
 
+    public function __construct(array $params = [])
+    {
+        $this->skeletonConstruct($params);
+    }
+
+
     public function run()
     {
         $this->init()

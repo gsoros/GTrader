@@ -5,9 +5,9 @@ namespace GTrader;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-abstract class Strategy
+abstract class Strategy extends Base
 {
-    use Skeleton, HasCandles, HasIndicators, HasCache
+    use HasCandles, HasIndicators, HasCache
     {
         HasCandles::setCandles as private __hasCandlesSetCandles;
     }

@@ -2,12 +2,11 @@
 
 namespace GTrader;
 
-class Page
+class Page extends Base
 {
-    use Skeleton;
-
     public function __construct()
     {
+        parent::__construct();
         $this->setParam('scripts_top', [])
             ->setParam('scripts_bottom', [])
             ->setParam('stylesheets', []);

@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 
 abstract class Chart extends Plot
 {
-    use Skeleton, HasCandles, HasIndicators, HasStrategy
+    use HasCandles, HasIndicators, HasStrategy
     {
-        HasStrategy::setStrategy as private __hasStrategySetStrategy;
+        HasStrategy::setStrategy as protected __hasStrategySetStrategy;
     }
 
 

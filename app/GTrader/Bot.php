@@ -46,6 +46,14 @@ class Bot extends Model
         'options' => 'array',
     ];
 
+
+    public function __construct(array $params = [])
+    {
+        parent::__construct();
+        $this->skeletonConstruct($params);
+    }
+
+
     /**
      * Get the trades of the bot.
      * @return GTrader\Trade

@@ -13,6 +13,7 @@ class Log {
     Log::notice();
     Log::info();
     Log::debug();
+    Log::sparse();
     */
 
     public static function __callStatic($severity, $args)

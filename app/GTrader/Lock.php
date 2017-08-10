@@ -2,10 +2,8 @@
 
 namespace GTrader;
 
-class Lock
+class Lock extends Base
 {
-    use Skeleton;
-
     protected $locks = [];
 
     public static function obtain(string $lock)

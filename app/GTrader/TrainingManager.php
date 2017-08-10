@@ -4,10 +4,9 @@ namespace GTrader;
 
 use GTrader\FannTraining as Training;
 
-class TrainingManager
+class TrainingManager extends Base
 {
-    use Skeleton, Scheduled;
-
+    use Scheduled;
 
     public function run()
     {
