@@ -40,7 +40,7 @@ abstract class Chart extends Plot
             uniqid($this->getShortClass());
         $this->setParam('name', $name);
         $this->indicators[] = 'this array should not be used';
-        $parent::__construct($params);
+        parent::__construct($params);
     }
 
 
