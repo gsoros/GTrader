@@ -43,6 +43,12 @@ class Series extends Collection
         //dd('wakeup', $this);
     }
 
+    public function kill()
+    {
+        $this->unsetIndicators();
+        $this->unsetStrategy();
+    }
+
 
     public function key(string $sig = null, string $prefix = 'key_')
     {

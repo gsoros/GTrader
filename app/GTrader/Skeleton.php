@@ -34,6 +34,7 @@ trait Skeleton
 
     public function __destruct()
     {
+        //dump('Skeleton::__destruct() ', $this);
     }
 
     public function __wakeup()
@@ -60,6 +61,11 @@ trait Skeleton
             return null;
         }
         return new $class($params);
+    }
+
+
+    public function kill()
+    {
     }
 
 

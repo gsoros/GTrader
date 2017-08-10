@@ -62,21 +62,16 @@ abstract class Indicator implements Gene
             $this->calculated = false;
         }
     */
+
     public function __wakeup()
     {
         $this->calculated = false;
     }
-    /*
-        public function jsonSerialize()
-        {
-            //return get_object_vars($this);
-            return [
-                'class' => get_class($this),
-                'params' => $this->getParam('indicator'),
-            ];
-        }
-    */
 
+    public function kill()
+    {
+        $this->unsetOwner();
+    }
 
     public function update(array $params = [], string $suffix = '')
     {

@@ -18,6 +18,13 @@ abstract class Strategy
     abstract public function getSignalsIndicator(array $options = []);
 
 
+    public function kill()
+    {
+        $this->unsetCandles();
+        $this->unsetIndicators();
+    }
+
+
     public function setCandles(Series $candles)
     {
         $this->__hasCandlesSetCandles($candles);

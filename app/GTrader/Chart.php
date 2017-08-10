@@ -77,6 +77,14 @@ abstract class Chart extends Plot
     }
 
 
+    public function kill()
+    {
+        $this->unsetCandles();
+        $this->unsetIndicators();
+        $this->unsetStrategy();
+    }
+
+
     public function setStrategy(Strategy $strategy)
     {
         $candles = $this->getCandles();

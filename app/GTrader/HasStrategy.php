@@ -36,4 +36,15 @@ trait HasStrategy
         $owner->strategy = $strategy;
         return $this;
     }
+
+
+    public function unsetStrategy()
+    {
+        if (!$owner = $this->getStrategyOwner()) {
+            Log::error('Could not get owner');
+            return null;
+        }
+        $owner->strategy = null;
+        return $this;
+    }
 }

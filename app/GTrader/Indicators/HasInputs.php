@@ -20,6 +20,13 @@ abstract class HasInputs extends Indicator
         }
     }
 
+    public function kill()
+    {
+        if (!$this->getParam('temporary')) {
+            $this->subscribeEvents(false);
+        }
+        parent::kill();
+    }
 
     public function __wakeup()
     {
@@ -28,9 +35,10 @@ abstract class HasInputs extends Indicator
     }
 
 
-    protected function subscribeEvents()
+    protected function subscribeEvents(bool $subscribe = true)
     {
-        Event::subscribe('indicator.change', [$this, 'handleIndicatorChange']);
+        $func = $subscribe ? 'subscribe' : 'unsubscribe';
+        Event::$func('indicator.change', [$this, 'handleIndicatorChange']);
         return $this;
     }
 

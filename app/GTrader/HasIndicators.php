@@ -191,13 +191,20 @@ trait HasIndicators
     }
 
 
-    public function unsetIndicators(string $sig)
+    public function unsetIndicatorBySig(string $sig)
     {
         foreach ($this->getIndicators() as $existing_ind) {
             if ($sig === $existing_ind->getSignature()) {
                 $this->unsetIndicator($existing_ind);
             }
         }
+        return $this;
+    }
+
+
+    public function unsetIndicators()
+    {
+        $this->getIndicatorOwner()->indicators = [];
         return $this;
     }
 
@@ -316,13 +323,6 @@ trait HasIndicators
     }
 
 
-    public function unsetAllIndicators()
-    {
-        $this->getIndicatorOwner()->indicators = [];
-        return $this;
-    }
-
-
     public function calculateIndicators()
     {
         foreach ($this->getIndicators() as $indicator) {
@@ -365,6 +365,8 @@ trait HasIndicators
                 if ($indicator->canBeOwnedBy($owner)) {
                     $available[$class] = $indicator->getParam('display.name');
                 }
+                $indicator->kill();
+                unset($indicator);
             }
         }
         asort($available);
@@ -446,7 +448,7 @@ trait HasIndicators
             Log::warning('^^^^ has refCount, hiding');
             $indicator->visible(false);
         } else {
-            $this->unsetIndicators($sig);
+            $this->unsetIndicatorBySig($sig);
         }
         return $this->viewIndicatorsList($request);
     }
@@ -476,7 +478,7 @@ trait HasIndicators
         }
         $indicator->update($params, $suffix);
         $indicator->init();
-        $this->unsetIndicators($sig);
+        $this->unsetIndicatorBySig($sig);
         if (!$indicator = $this->addIndicator($indicator)) {
             Log::error('could not save');
             $this->viewIndicatorsList($request);

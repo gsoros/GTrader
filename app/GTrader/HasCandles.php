@@ -27,7 +27,7 @@ trait HasCandles
 
     public function unsetCandles()
     {
-        unset($this->candles);
+        $this->candles = null;
         return $this;
     }
 }

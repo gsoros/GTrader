@@ -22,6 +22,12 @@ trait HasOwner
     }
 
 
+    public function unsetOwner()
+    {
+        $this->owner = null;
+    }
+
+
     public function canBeOwnedBy($owner)
     {
         foreach ($this->getAllowedOwners() as $allowed) {

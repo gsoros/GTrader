@@ -126,11 +126,12 @@ class HomeController extends Controller
 
         echo '<hr>Strategies:';
         dump(array_map(function($strategy) {
+            $trainings = \GTrader\FannTraining::where('strategy_id', $strategy->getParam('id'))
+                ->get()
+                ->toArray();
             return $strategy->setParam(
                 'trainings',
-                \GTrader\FannTraining::where('strategy_id', $strategy->getParam('id'))
-                    ->get()
-                    ->toArray()
+                $trainings
             );
         }, $user->strategies()));
 
