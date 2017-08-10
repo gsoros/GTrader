@@ -42,7 +42,7 @@ class Simple extends Strategy
             [
                 'owner' => $this,
                 'indicators' => $indicators,
-                'available' => $this->getIndicatorsAvailable(),
+                'available' => $this->getAvailableIndicators(),
                 'name' => 'strategy_'.$this->getParam('id'),
                 'owner_class' => 'Strategy',
                 'owner_id' => $this->getParam('id'),
@@ -104,14 +104,14 @@ class Simple extends Strategy
     }
 
 
-    public function getSourcesAvailable(
+    public function getAvailableSources(
         $except_signatures = null,
         array $sources = [],
         array $filters = [],
         array $disabled = []
     ):array {
         $filters = array_merge_recursive($filters, ['class' => ['not', 'Signals']]);
-        return parent::getSourcesAvailable(
+        return parent::getAvailableSources(
             $except_signatures,
             $sources,
             $filters,

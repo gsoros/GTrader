@@ -182,7 +182,7 @@ abstract class HasInputs extends Indicator
 
     public function inputFromIndicator()
     {
-        $available = $this->getOwner()->getIndicatorsAvailable();
+        $available = $this->getOwner()->getAvailableIndicators();
         foreach ($this->getInputs() as $input) {
             $class = Indicator::getClassFromSignature($input);
             if (array_key_exists($class, $available)) {

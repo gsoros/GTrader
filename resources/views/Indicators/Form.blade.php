@@ -54,7 +54,7 @@ foreach ([
                         name="{{ $key }}_{{ $uid }}"
                         title="{{ $param['description'] or 'Select the source' }}">
                     @php
-                    $sources = $indicator->getOwner()->getSourcesAvailable(
+                    $sources = $indicator->getOwner()->getAvailableSources(
                         $indicator->getSignature(),
                         [],
                         Arr::get($param, 'filters', []),

@@ -71,7 +71,7 @@ class Series extends Collection
             }
         }
         if (!$key) {
-            $key = $prefix.Util::uniqidReal();
+            $key = $prefix.Rand::uniqId();
         }
         $this->_map[$sig] = $key;
         //dump($sig.' --> '.$key);

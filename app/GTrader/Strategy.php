@@ -137,7 +137,7 @@ abstract class Strategy extends Base
             [
                 'owner' => $this,
                 'indicators' => $indicators,
-                'available' => $this->getIndicatorsAvailable(),
+                'available' => $this->getAvailableIndicators(),
                 'name' => 'strategy_'.$this->getParam('id'),
                 'owner_class' => 'Strategy',
                 'owner_id' => $this->getParam('id'),

@@ -17,6 +17,7 @@ use GTrader\Strategy;
 //use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Bot;
+use GTrader\Rand;
 use GTrader\Log;
 
 class HomeController extends Controller
@@ -160,12 +161,12 @@ class HomeController extends Controller
     public function test()
     {
         function tester($arr) {
-            $max_tries = 5000;
+            $samples = 5000;
             $start = microtime(true);
             $min = $max = $sum = null;
             $vals = [];
-            for ($i = 1; $i <= $max_tries; $i++) {
-                $val = Util::randomFloatWeighted($arr[0], $arr[1], $arr[2], $arr[3]);
+            for ($i = 1; $i <= $samples; $i++) {
+                $val = Rand::weightedFloat($arr[0], $arr[1], $arr[2], $arr[3]);
                 $min = is_null($min) ? $val : min($min, $val);
                 $max = is_null($max) ? $val : max($max, $val);
                 $sum += $val;
@@ -173,7 +174,7 @@ class HomeController extends Controller
                 $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
             }
             dump([
-                'params' => 'tries: '.$max_tries.', input: '.join(', ', $arr),
+                'params' => 'samples: '.$samples.', input: '.join(', ', $arr),
                 't' => microtime(true) - $start,
                 'min' => number_format($min, 2),
                 'max' => number_format($max, 2),

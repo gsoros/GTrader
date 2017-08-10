@@ -90,7 +90,7 @@ class IndicatorController extends Controller
         if (! $owner = $this->loadOwner($request)) {
             return response('Could not load owner.', 403);
         }
-        return response(json_encode($owner->getSourcesAvailable()), 200);
+        return response(json_encode($owner->getAvailableSources()), 200);
     }
 
     protected function loadOwner(Request $request)

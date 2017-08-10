@@ -344,7 +344,7 @@ trait HasIndicators
     }
 
 
-    public function getIndicatorsAvailable()
+    public function getAvailableIndicators()
     {
         if ($cache_enabled = method_exists($this, 'cached')) {
             if ($available = $this->cached('indicators_available')) {
@@ -399,7 +399,7 @@ trait HasIndicators
             [
                 'owner' => $this,
                 'indicators' => $this->getIndicatorsVisibleSorted(),
-                'available' => $this->getIndicatorsAvailable(),
+                'available' => $this->getAvailableIndicators(),
                 'name' => $this->getParam('name'),
                 'format' => $format,
             ]
@@ -492,7 +492,7 @@ trait HasIndicators
     }
 
 
-    public function getSourcesAvailable(
+    public function getAvailableSources(
         $except_signatures = null,
         array $sources = [],
         array $filters = [],

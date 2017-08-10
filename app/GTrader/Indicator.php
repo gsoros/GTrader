@@ -131,18 +131,10 @@ abstract class Indicator extends Base implements Gene
             }
             $this->setParam('indicator.'.$key, $val);
         }
-        if ($before !== ($after = $this->getSignature())) {
-            Event::dispatch(
-                $this,
-                'indicator.change',
-                [
-                    'signature' => [
-                        'old' => $before,
-                        'new' => $after,
-                    ],
-                ]
-            );
-        }
+        $this->dispatchEventIfSigsDiffer(
+            $before,
+            $this->getSignature()
+        );
         return $this;
     }
 
@@ -720,12 +712,31 @@ abstract class Indicator extends Base implements Gene
     }
 
 
+    protected function dispatchEventIfSigsDiffer(string $before, string $after)
+    {
+        if ($before !== $after) {
+            Event::dispatch(
+                $this,
+                'indicator.change',
+                [
+                    'signature' => [
+                    'old' => $before,
+                    'new' => $after,
+                    ],
+                ]
+            );
+        }
+        return $this;
+    }
+
+
     public function crossover(Gene $other, float $weight = .5): Gene
     {
         if (!$other instanceof $this) {
             Log::error('Hybrid speciation not allowed.');
             return $this;
         }
+        $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $params) {
             $this->setParam(
                 'indicator.'.$key,
@@ -737,7 +748,10 @@ abstract class Indicator extends Base implements Gene
                 )
             );
         }
-        // TODO dispatch change event
+        $this->dispatchEventIfSigsDiffer(
+            $before,
+            $this->getSignature()
+        );
         return $this;
     }
 
@@ -758,11 +772,11 @@ abstract class Indicator extends Base implements Gene
             case 'source':
             case 'select':
             case 'list':
-                return (.5 > Util::randomFloatWeighted(0, 1, 1, $weight)) ? $par1 : $par2;
+                return (.5 > Rand::weightedFloat(0, 1, 1, $weight)) ? $par1 : $par2;
             case 'int':
             case 'float':
             case 'bool':
-                $new = Util::randomFloatWeighted($par1, $par2, $par2, $weight);
+                $new = Rand::weightedFloat($par1, $par2, $par2, $weight);
                 if ('bool' === $type) {
                     return boolval(round($new));
                 }
@@ -778,13 +792,14 @@ abstract class Indicator extends Base implements Gene
                 return $new;
             default:
                 Log::error('Unknown type', $type);
-                return .5 > Util::randomFloatWeighted(0, 1, 1, $weight) ? $par1 : $par2;
+                return .5 > Rand::weightedFloat(0, 1, 1, $weight) ? $par1 : $par2;
         }
     }
 
 
     public function mutate(float $rate): Gene
     {
+        $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $params) {
             $this->mutateParam(
                 $this->getParam('indicator.'.$key),
@@ -792,7 +807,10 @@ abstract class Indicator extends Base implements Gene
                 $rate
             );
         }
-        // TODO dispatch change event
+        $this->dispatchEventIfSigsDiffer(
+            $before,
+            $this->getSignature()
+        );
         return $this;
     }
 
@@ -802,13 +820,13 @@ abstract class Indicator extends Base implements Gene
         if (!$rate) {
             return $param;
         }
-        $chance = Util::randomFloatWeighted(0, 1, 1, $rate);
+        $chance = Rand::weightedFloat(0, 1, 1, $rate);
 
         switch ($type = Arr::get($params, 'type')) {
             case 'int':
             case 'float':
             case 'bool':
-                $new = Util::randomFloatWeighted(
+                $new = Rand::weightedFloat(
                     $min = Arr::get($params, 'min', 0),
                     $max = Arr::get($params, 'max', 1),
                     $param,
@@ -830,26 +848,34 @@ abstract class Indicator extends Base implements Gene
             case 'string':
                 return $param;
             case 'source':
-                if (.5 > Util::randomFloatWeighted(0, 1, 1, $rate)) {
+                if (.5 > Rand::weightedFloat(0, 1, 1, $rate)) {
                     return $param;
                 }
                 if (!$owner = $this->getOwner()) {
                     return $param;
                 }
-                $sources = $owner->getSourcesAvailable([
-                    $this->getSignature()
-                ]);
-                if (1 >= count($sources)) {
+                $sources = array_keys($owner->getAvailableSources([
+                    $this->getSignature(),
+                    $param,
+                ]));
+                if (1 > count($sources)) {
                     return $param;
                 }
-                // TODO select source
+                shuffle($sources);
+                array_unshift($sources, $param);
+                $index = round(Rand::weightedFloat(0, count($sources - 1), 0, $rate));
+                if (!isset($sources[$index])) {
+                    Log::error('wrong random index');
+                    return $param;
+                }
+                return $sources[$index];
             case 'select':
                 // TODO
             case 'list':
                 // TODO
             default:
                 Log::error('Unknown type', $type);
-                return $$param;
+                return $param;
         }
     }
 }
