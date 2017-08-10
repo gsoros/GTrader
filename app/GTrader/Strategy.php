@@ -121,7 +121,6 @@ abstract class Strategy
     {
         return view('StrategyForm', [
             'strategy' => $this,
-            'child_settings' => $content
         ]);
     }
 
@@ -213,9 +212,7 @@ abstract class Strategy
     {
         $this->purgeIndicators();
         foreach (['name', 'description'] as $param) {
-            if (isset($request->$param)) {
-                $this->setParam($param, $request->$param);
-            }
+            $this->setParam($param, $request->$param);
         }
         return $this;
     }

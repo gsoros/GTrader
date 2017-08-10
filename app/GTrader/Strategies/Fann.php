@@ -101,18 +101,6 @@ class Fann extends Strategy
     }
 
     /**
-     * Returns the HTML form representation.
-     * @param  string $content not used
-     * @return string
-     */
-    public function toHTML(string $content = null)
-    {
-        return parent::toHTML(
-            view('Strategies/'.$this->getShortClass().'Form', ['strategy' => $this])
-        );
-    }
-
-    /**
      * Training chart for selecting the ranges.
      * @return Chart
      */

@@ -26,7 +26,9 @@
             </div>
         </div>
     </div>
-    {!! $child_settings !!}
+
+    @includeIf('Strategies/'.$strategy->getShortClass().'Form')
+    
     <div class="row bdr-rad editable">
         <div class="col-sm-12">
             <span class="pull-right">

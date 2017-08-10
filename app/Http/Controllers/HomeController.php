@@ -126,6 +126,9 @@ class HomeController extends Controller
 
         echo '<hr>Strategies:';
         dump(array_map(function($strategy) {
+            if ('Fann' !== $strategy->getShortClass()) {
+                return $strategy;
+            }
             $trainings = \GTrader\FannTraining::where('strategy_id', $strategy->getParam('id'))
                 ->get()
                 ->toArray();
