@@ -358,7 +358,7 @@ trait HasIndicators
         foreach (config('GTrader.Indicators.available', []) as $class => $params) {
             $exists = $owner->hasIndicatorClass($class, ['display.visible' => true]);
             if (!$exists || ($exists && true === $params['allow_multiple'])) {
-                if (!$indicator = Indicator::make($class)) {
+                if (!$indicator = Indicator::make($class, ['temporary' => true])) {
                     Log::error('Could not make '.$class);
                     continue;
                 }

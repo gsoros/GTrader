@@ -146,15 +146,14 @@ abstract class Strategy
     public static function getListOfUser(int $user_id, bool $return_array = false)
     {
         $strategies_db = DB::table('strategies')
-            ->select('id', 'strategy')
+            ->select('id')
             ->where('user_id', $user_id)
             ->orderBy('name')
             ->get();
 
         $strategies = [];
         foreach ($strategies_db as $strategy_db) {
-            $strategy = unserialize($strategy_db->strategy);
-            $strategy->setParam('id', $strategy_db->id);
+            $strategy = self::load($strategy_db->id);
             $strategies[] = $strategy;
         }
 

@@ -11,6 +11,7 @@ class Event
 
     public static function subscribe(string $key, callable $func): int
     {
+        //dump('subscribe '.$key.' '.$func[0]->debugObjId());
         if (static::subscribed($key, $func)) {
             return 0;
         }
@@ -21,6 +22,7 @@ class Event
 
     public static function unsubscribe(string $key, callable $func): int
     {
+        //dump('unsubscribe '.$key.' '.$func[0]->debugObjId());
         if (!static::subscribed($key, $func)) {
             return 0;
         }
@@ -53,6 +55,7 @@ class Event
 
     protected static function subscribed(string $key, callable $func): bool
     {
+        //dump('Subscribed? '.$func[0]->debugObjId());
         if (!count($subs = static::subscriptions($key))) {
             return false;
         }

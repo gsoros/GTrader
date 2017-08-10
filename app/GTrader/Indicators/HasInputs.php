@@ -15,7 +15,9 @@ abstract class HasInputs extends Indicator
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->subscribeEvents();
+        if (!Arr::get($params, 'temporary')) {
+            $this->subscribeEvents();
+        }
     }
 
 

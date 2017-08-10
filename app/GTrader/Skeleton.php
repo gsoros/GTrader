@@ -32,6 +32,9 @@ trait Skeleton
         $this->setParams($params);
     }
 
+    public function __destruct()
+    {
+    }
 
     public function __wakeup()
     {
