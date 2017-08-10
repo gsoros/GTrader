@@ -486,4 +486,25 @@ class StrategyController extends Controller
 
         return response($html, 200);
     }
+
+
+    public function simpleSignalsForm(Request $request)
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id))) {
+            Log::error('Failed to load strategy ID '.$strategy_id);
+            return response('Failed to load strategy.', 403);
+        }
+        if ($strategy->getParam('user_id') !== Auth::id()) {
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
+            return response('Failed to load strategy.', 403);
+        }
+        if (!$strategy->isClass('GTrader\\Strategies\\Simple')) {
+            Log::error('Not a Simple strategy '.$strategy_id);
+            return response('Failed to load strategy.', 403);
+        }
+        $form = $strategy->viewSignalForm();
+        return response($form, 200);
+    }
+
 }

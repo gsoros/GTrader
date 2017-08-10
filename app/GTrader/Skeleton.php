@@ -54,7 +54,7 @@ trait Skeleton
         }
         if (!class_exists($class)) {
             Log::error($called.'::make() Class '.$class.' does not exist');
-            return false;
+            return null;
         }
         return new $class($params);
     }

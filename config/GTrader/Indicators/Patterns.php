@@ -30,10 +30,12 @@ return [
         'show_line' => [
             'name' => 'Display Sum Line',
             'type' => 'bool',
+            'evolvable' => false,
         ],
         'show_annotation' => [
             'name' => 'Display Annotation',
             'type' => 'bool',
+            'evolvable' => false,
         ],
         'use_functions' => [
             'name' => 'Search for',

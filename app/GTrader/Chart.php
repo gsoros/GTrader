@@ -11,7 +11,6 @@ abstract class Chart extends Plot
 {
     use Skeleton, HasCandles, HasIndicators, HasStrategy
     {
-        Skeleton::__construct as private __skeletonConstruct;
         HasStrategy::setStrategy as private __hasStrategySetStrategy;
     }
 
@@ -41,7 +40,7 @@ abstract class Chart extends Plot
             uniqid($this->getShortClass());
         $this->setParam('name', $name);
         $this->indicators[] = 'this array should not be used';
-        $this->__skeletonConstruct($params);
+        $parent::__construct($params);
     }
 
 

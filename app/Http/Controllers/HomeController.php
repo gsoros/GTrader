@@ -155,137 +155,52 @@ class HomeController extends Controller
 
     public function test()
     {
-        $chart = Chart::load(Auth::id(), 'mainchart');
-        foreach ($chart->getIndicators() as $i) {
-            $r = $i->getRefs();
-            array_walk($r, function (&$v) {
-                if ($c = \GTrader\Indicator::getClassFromSignature($v)) {
-                    $v = $c;
-                }
-            });
-            dump(join(', ', $r).' <-- '.$i->getSignature(), $i);
-            //dump($i->getRefs());
+        function tester($arr) {
+            $max_tries = 5000;
+            $start = microtime(true);
+            $min = $max = $sum = null;
+            $vals = [];
+            for ($i = 1; $i <= $max_tries; $i++) {
+                $val = Util::randomFloatWeighted($arr[0], $arr[1], $arr[2], $arr[3]);
+                $min = is_null($min) ? $val : min($min, $val);
+                $max = is_null($max) ? $val : max($max, $val);
+                $sum += $val;
+                $int = round($val);
+                $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
+            }
+            dump([
+                'params' => 'tries: '.$max_tries.', input: '.join(', ', $arr),
+                't' => microtime(true) - $start,
+                'min' => number_format($min, 2),
+                'max' => number_format($max, 2),
+                'avg' => number_format($sum / ($i - 1), 2),
+                'vals' => $vals,
+            ]);
+            ksort($vals);
+            $plot = new \GTrader\Plot ([
+                'name' => 'Plot',
+                'width' => 1200,
+                'height' => 200,
+                'data' => ['distribution' => ['values' => $vals]],
+            ]);
+            echo $plot->toHtml();
+
+        }
+        foreach ([
+            // min, max, peak, weight
+            [0, 1000, 500, .5],
+            [0, 1000, 200, 1],
+            [0, 1000, 200, .9],
+            [0, 1000, 200, 0],
+            [0, 1000, 200, .01],
+            [0, 1000, 800, .3],
+            [1000, 0, 200, .6],
+            [0, 1000, 1000, .75],
+            [0, 1000, 1000, .0001],
+            [0, 1, 1, 0.01],
+        ] as $arr) {
+            tester($arr);
         }
         exit;
-        /*
-                $t0 = time();
-                $m0 = memory_get_usage();
-                $candlesOl = new Series([
-                    'start' => 1,
-                    'end' => $t0,
-                    'limit' => 0,
-                    'resolution' => 300,
-                ]);
-
-                $candlesOl->reset();
-                dump($candlesOl->next());
-                echo 'CandlesOl: '.$candlesOl->size().
-                    ' Mem: '.Util::humanBytes(memory_get_usage() - $m0).
-                    ' Time: '.(time() - $t0).'s';
-                //dump($candlesOl->getParams());
-        */
-        /*
-                DB::listen(function ($query) {
-
-                    $replace = function ($sql, $bindings) {
-                        $needle = '?';
-                        foreach ($bindings as $replace) {
-                            $pos = strpos($sql, $needle);
-                            if ($pos !== false) {
-                                $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
-                            }
-                        }
-                        return $sql;
-                    };
-                    $sql = $replace($query->sql, $query->bindings);
-                    dump($sql);
-                });
-        */
-
-        $t1 = time();
-        $m1 = memory_get_usage();
-        $candles = new Series([
-            'start' => 1,
-            'end' => $t1,
-            'limit' => 0,
-            'resolution' => 300,
-        ]);
-
-        $candles->reset();
-        dump($candles->next());
-        return 'Candles: '.$candles->size().
-            ' Mem: '.Util::humanBytes(memory_get_usage() - $m1).
-            ' Time: '.(time() - $t1).'s';
-
-
-
-
-        $functions = get_defined_functions();
-        $functions_list = [];
-        foreach ($functions['internal'] as $func) {
-            if (!strstr($func, 'trader_')) {
-                continue;
-            }
-            $f = new \ReflectionFunction($func);
-            $args = [];
-            foreach ($f->getParameters() as $param) {
-                $tmparg = '';
-                if ($param->isOptional()) {
-                    $tmparg .= '[';
-                }
-                if ($param->isPassedByReference()) {
-                    $tmparg .= '&';
-                }
-                $tmparg .= '$'.$param->getName();
-                if ($param->isDefaultValueAvailable()) {
-                    $tmparg .= ' = '.$param->getDefaultValue();
-                }
-                if ($param->isOptional()) {
-                    $tmparg .= ']';
-                }
-                $args[] = $tmparg;
-            }
-            $functions_list[] = $func.' ('.implode(', ', $args).')';
-        }
-        dd($functions_list);
-
-
-
-        $arr = [
-            'a' => [
-                'b' => [
-                    'c' => [
-                        'v1',
-                        ['d' => 'i1'],
-                        ['1' => 's1'],
-                    ]
-                ]
-            ]
-        ];
-
-        $list = ['a', 'b', 'c', 1, 'd'];
-
-        $key = 'a.b.c.1';
-        $res = Arr::get($arr, $key);
-
-        return view('basic')->with([
-            'content' => json_encode($res),
-        ]);
-
-        $count = 100000;
-        $baseline = memory_get_usage();
-
-        for ($i=0; $i<$count; $i++) {
-            $key = bin2hex(random_bytes(50));
-            $max = getrandmax();
-            $val = (rand(0, $max) - ($max / 2)) / $max / 2 ;
-            $a[] = [$key => $val];
-        }
-        return view('basic')->with([
-            'content' =>
-                $count.' pieces of random key-value pairs like <code>["'.
-                $key.'" => '.$val.']</code> use approx. '.
-                Util::humanBytes(memory_get_usage() - $baseline)
-        ]);
     }
 }

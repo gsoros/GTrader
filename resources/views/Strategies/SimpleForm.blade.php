@@ -39,31 +39,16 @@
     </div>
 </div>
 <script>
-    /* Update the list of sources if the pool changes */
-    window.refresh_{{ $uid }} = function() {
-        $.ajax({
-            url: 'indicator.sources?owner_class=Strategy&owner_id={{ $strategy->getParam('id')}}',
-            dataType: 'json',
-            success: function(reply) {
-                var sigs = [];
-                for (var sig in reply) {
-                    sigs[encodeURIComponent(sig)] = reply[sig];
-                }
-                $('#strategy_signals select').each(function() {
-                    if (0 != $(this).attr('id').indexOf('input_')) {
-                        return;
-                    }
-                    var selected = $(this).val();
-                    $('#' + $(this).attr('id') + ' option').remove();
-                    for (var sig in sigs) {
-                        $(this).append($('<option>', {
-                            selected: (selected == sig),
-                            value: sig,
-                            text: sigs[sig]
-                        }));
-                    }
-                });
-            }
-        });
+    /* Reload the signals form */
+    window.refreshSignals_{{ $uid }} = function() {
+        window.GTrader.request(
+            'strategy.Simple',
+            'signalsForm',
+            {
+                id: {{ $strategy->getParam('id') }}
+            },
+            'GET',
+            'strategy_signals'
+        );
     }
 </script>

@@ -21,6 +21,7 @@ class Simple extends Strategy
         $this->setParam('uid', uniqid());
     }
 
+
     public function toHTML(string $content = null)
     {
         $content = view('Strategies/'.$this->getShortClass().'Form', [
@@ -29,6 +30,7 @@ class Simple extends Strategy
         ]);
         return parent::toHTML($content);
     }
+
 
     public function viewIndicatorsList(Request $request = null)
     {
@@ -75,11 +77,13 @@ class Simple extends Strategy
         return $reply;
     }
 
+
     public function handleIndicatorNewRequest(Request $request)
     {
         return parent::handleIndicatorNewRequest($request).
             $this->getRefreshSignalsScript();
     }
+
 
     public function handleIndicatorSaveRequest(Request $request)
     {
@@ -87,31 +91,35 @@ class Simple extends Strategy
             $this->getRefreshSignalsScript();
     }
 
+
     public function handleIndicatorDeleteRequest(Request $request)
     {
         return parent::handleIndicatorDeleteRequest($request).
             $this->getRefreshSignalsScript();
     }
 
+
     protected function getRefreshSignalsScript()
     {
-        return '<script>window.refresh_'.$this->getParam('uid').'();</script>';
+        return '<script>window.refreshSignals_'.$this->getParam('uid').'();</script>';
     }
 
+
     public function getSourcesAvailable(
-        string $except_signature = null,
+        $except_signatures = null,
         array $sources = [],
         array $filters = [],
         array $disabled = []
-    ) {
+    ):array {
         $filters = array_merge_recursive($filters, ['class' => ['not', 'Signals']]);
         return parent::getSourcesAvailable(
-            $except_signature,
+            $except_signatures,
             $sources,
             $filters,
             $disabled
         );
     }
+
 
     public function getSignalsIndicator(array $options = [])
     {
@@ -139,6 +147,7 @@ class Simple extends Strategy
             'title', 'form', 'savebutton', 'save'
         ]]);
     }
+
 
     protected function createDefaultIndicators()
     {

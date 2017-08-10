@@ -6,7 +6,7 @@ trait ClassUtils
 {
     protected static function getClassConf(string $class, $key = null)
     {
-        //Log::info('getClassConf('.$class.', '.$key.')');
+        //Log::debug('getClassConf('.$class.', '.$key.')');
         if (!is_null($key)) {
             $key = '.'.$key;
         }
@@ -40,9 +40,9 @@ trait ClassUtils
 
     public function isClass(string $class)
     {
-        return $class === get_class($this) || is_subclass_of($this, $class);
+        //return $class === get_class($this) || is_subclass_of($this, $class);
+        return $this instanceof $class;
     }
-
 
     public function debugObjId()
     {

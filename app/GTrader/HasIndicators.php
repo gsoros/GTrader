@@ -491,17 +491,25 @@ trait HasIndicators
 
 
     public function getSourcesAvailable(
-        string $except_signature = null,
+        $except_signatures = null,
         array $sources = [],
         array $filters = [],
         array $disabled = []
-    ) {
+    ):array {
+        if (!is_array($except_signatures)) {
+            $except_signatures = [$except_signatures];
+        }
         foreach ($this->getIndicatorsFilteredSorted($filters, ['display.name']) as $ind) {
             if ($ind->getParam('display.top_level')) {
                 continue;
             }
-            if (Indicator::signatureSame($except_signature, $ind->getSignature())) {
-                continue;
+            foreach ($except_signatures as $sig) {
+                if (!$sig) {
+                    continue;
+                }
+                if (Indicator::signatureSame($sig, $ind->getSignature())) {
+                    continue 2;
+                }
             }
             if (in_array('outputs', $disabled)) {
                 $sources[$ind->getSignature()] = $ind->getDisplaySignature();

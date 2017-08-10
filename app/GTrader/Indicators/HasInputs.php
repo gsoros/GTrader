@@ -2,12 +2,37 @@
 
 namespace GTrader\Indicators;
 
+use Illuminate\Support\Arr;
+
 use GTrader\Series;
 use GTrader\Indicator;
+use GTrader\Event;
 use GTrader\Log;
 
 abstract class HasInputs extends Indicator
 {
+
+    public function __construct(array $params = [])
+    {
+        parent::__construct($params);
+        $this->subscribeEvents();
+    }
+
+
+    public function __wakeup()
+    {
+        parent::__wakeup();
+        $this->subscribeEvents();
+    }
+
+
+    protected function subscribeEvents()
+    {
+        Event::subscribe('indicator.change', [$this, 'handleIndicatorChange']);
+        return $this;
+    }
+
+
     public function init()
     {
         if (!$owner = $this->getOwner()) {
@@ -23,6 +48,52 @@ abstract class HasInputs extends Indicator
         }
         return parent::init();
     }
+
+
+    public function handleIndicatorChange($object, $event)
+    {
+        if ($object === $this) {
+            return true;
+        }
+        if (!$old_sig = Arr::get($event, 'signature.old')) {
+            return true;
+        }
+        if (!$new_sig = Arr::get($event, 'signature.new')) {
+            return true;
+        }
+        if (Indicator::signatureSame($old_sig, $new_sig)) {
+            return true;
+        }
+        $changed = null;
+        foreach ($this->getInputs() as $input_key => $input_sig) {
+            if (!$owner = $this->getOwner()) {
+                return true;
+            }
+            if (Indicator::signatureSame($input_sig, $old_sig)) {
+                if (is_null($changed)) {
+                    $changed = $this->getSignature();
+                }
+                $output = Indicator::getOutputFromSignature($input_sig);
+                $ind = $owner->getOrAddIndicator($new_sig);
+                $this->setParam('indicator.'.$input_key, $ind->getSignature($output));
+            }
+        }
+        if (!is_null($changed)
+            && ($changed !== ($after = $this->getSignature()))) {
+            Event::dispatch(
+                $this,
+                'indicator.change',
+                [
+                    'signature' => [
+                        'old' => $changed,
+                        'new' => $after,
+                    ],
+                ]
+            );
+        }
+        return true;
+    }
+
 
     public function getInputs()
     {
@@ -44,6 +115,7 @@ abstract class HasInputs extends Indicator
         return $inputs;
     }
 
+
     public function getInput(string $name = null)
     {
         if (!$this->hasinputs()) {
@@ -60,10 +132,12 @@ abstract class HasInputs extends Indicator
         return array_shift($inputs);
     }
 
+
     public function hasInputs()
     {
         return true;
     }
+
 
     public function inputFrom($signatures)
     {
@@ -95,6 +169,7 @@ abstract class HasInputs extends Indicator
         return false;
     }
 
+
     public function inputFromIndicator()
     {
         $available = $this->getOwner()->getIndicatorsAvailable();
@@ -106,6 +181,7 @@ abstract class HasInputs extends Indicator
         }
         return false;
     }
+
 
     public function getOrAddInputIndicators()
     {
@@ -125,6 +201,7 @@ abstract class HasInputs extends Indicator
         }
         return count($inds) ? $inds : null;
     }
+
 
 
     public function createDependencies()
@@ -151,6 +228,7 @@ abstract class HasInputs extends Indicator
         }
         return $this;
     }
+
 
     public function extract(Series $candles, string $index_type = 'sequential')
     {

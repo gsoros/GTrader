@@ -7,9 +7,24 @@ use Illuminate\Support\Arr;
 
 class Plot
 {
-    use Skeleton;
+    use Skeleton
+    {
+        Skeleton::__construct as protected __skeletonConstruct;
+    }
 
     protected $PHPlot;
+    protected static $colorIndex = 0;
+    protected static $legendIndex = 0;
+    protected $world = [];
+
+    public function __construct(array $params = [])
+    {
+        static::$colorIndex = 0;
+        static::$legendIndex = 0;
+
+        $this->__skeletonConstruct($params);
+    }
+
 
     public function toHTML(string $content = '')
     {
@@ -157,7 +172,6 @@ class Plot
 
     public static function nextColor()
     {
-        static $index = 0;
         $colors = [
             'orange:80',
             'yellow:110',
@@ -168,28 +182,24 @@ class Plot
             'cyan:100',
             'blue:90',
         ];
-        $color = $colors[$index];
-        $index ++;
-        if ($index >= count($colors)) {
-            $index = 0;
+        $color = $colors[static::$colorIndex];
+        static::$colorIndex ++;
+        if (static::$colorIndex >= count($colors)) {
+            static::$colorIndex = 0;
         }
         return $color;
     }
 
     public static function nextLegendY(int $step = 1)
     {
-        static $y = 0;
-
-        $ret = $y;
-        $y += (1 < $step ? 25 : 35) * $step;
+        $ret = static::$legendIndex;
+        static::$legendIndex += (1 < $step ? 25 : 35) * $step;
         return $ret;
     }
 
     protected function setWorld(array $new_world = [], $set_axes = 'xy')
     {
-        static $world = [];
-
-        $world = array_replace($world, $new_world);
+        $this->world = array_replace($this->world, $new_world);
 
         //Log::debug('axes: '.$set_axes.' world: '.json_encode($world));
 
@@ -199,12 +209,12 @@ class Plot
 
         $xmin = $ymin = $xmax = $ymax = null;
         if (strstr($set_axes, 'x')) {
-            $xmin = Arr::get($world, 'xmin');
-            $xmax = Arr::get($world, 'xmax');
+            $xmin = Arr::get($this->world, 'xmin');
+            $xmax = Arr::get($this->world, 'xmax');
         }
         if (strstr($set_axes, 'y')) {
-            $ymin = Arr::get($world, 'ymin');
-            $ymax = Arr::get($world, 'ymax');
+            $ymin = Arr::get($this->world, 'ymin');
+            $ymax = Arr::get($this->world, 'ymax');
         }
         if ($xmin >= $xmax) {
             $xmax = $xmin + 1;

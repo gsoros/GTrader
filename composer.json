@@ -8,6 +8,7 @@
         "php": ">=5.6.4",
         "davefx/phplot": "^6.2",
         "doublebit/okcoin": "master@dev",
+        "gburtini/distributions": "dev-master",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0"
     },

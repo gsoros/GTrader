@@ -3,10 +3,8 @@
 namespace GTrader;
 
 use Illuminate\Support\Arr;
-use GTrader\Series;
-use GTrader\Log;
 
-abstract class Indicator //implements \JsonSerializable
+abstract class Indicator implements Gene
 {
     use Skeleton, HasOwner, HasCache
     {
@@ -82,6 +80,7 @@ abstract class Indicator //implements \JsonSerializable
 
     public function update(array $params = [], string $suffix = '')
     {
+        $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $param) {
             $val = null;
             if (isset($params[$key.$suffix])) {
@@ -139,6 +138,18 @@ abstract class Indicator //implements \JsonSerializable
 
             }
             $this->setParam('indicator.'.$key, $val);
+        }
+        if ($before !== ($after = $this->getSignature())) {
+            Event::dispatch(
+                $this,
+                'indicator.change',
+                [
+                    'signature' => [
+                        'old' => $before,
+                        'new' => $after,
+                    ],
+                ]
+            );
         }
         return $this;
     }
@@ -251,7 +262,12 @@ abstract class Indicator //implements \JsonSerializable
         $out_params = [];
         foreach ($params as $key => $value) {
             $type = $this->getParam('adjustable.'.$key.'.type');
-            if ('bool' === $type) {
+            // TODO convert to switch for readibility
+            if ('int' === $type) {
+                $value = intval($value);
+            } elseif ('float' === $type) {
+                $value = floatval($value);
+            } elseif ('bool' === $type) {
                 $value = intval($value);
             } elseif ('string' === $type) {
                 $value = strval($value);
@@ -266,16 +282,12 @@ abstract class Indicator //implements \JsonSerializable
                     // convert assoc arr to indexed
                     $value = array_values($value);
                 }
+            } elseif ('select' === $type) {
+                // select needs no transformation
             }
             /*
             else { // unknown type
-                if ($temp_value = self::decodeSignature($value)) {
-                    if (Arr::get($temp_value, 'class') &&
-                        Arr::get($temp_value, 'params') &&
-                        Arr::get($temp_value, 'output')) {
-                        $value = $temp_value;
-                    }
-                }
+                Log::debug('unhandled type: '.$type);
             }
             */
             //dump($key, $value);
@@ -713,5 +725,139 @@ abstract class Indicator //implements \JsonSerializable
         }
         $this->setParam('display.visible', $set);
         return $this;
+    }
+
+
+    public function crossover(Gene $other, float $weight = .5): Gene
+    {
+        if (!$other instanceof $this) {
+            Log::error('Hybrid speciation not allowed.');
+            return $this;
+        }
+        foreach ($this->getParam('adjustable', []) as $key => $params) {
+            $this->setParam(
+                'indicator.'.$key,
+                $this->mixParam(
+                    $this->getParam('indicator.'.$key),
+                    $other->getParam('indicator.'.$key),
+                    $params,
+                    $weight
+                )
+            );
+        }
+        // TODO dispatch change event
+        return $this;
+    }
+
+
+    protected function mixParam($par1, $par2, array $params, float $weight = .5)
+    {
+        if ($par1 === $par2
+            || 0 >= $weight
+            || false === Arr::get($params, 'evolvable')
+        ) {
+            return $par1;
+        }
+        if (1 <= $weight) {
+            return $par2;
+        }
+        switch ($type = Arr::get($params, 'type')) {
+            case 'string':
+            case 'source':
+            case 'select':
+            case 'list':
+                return (.5 > Util::randomFloatWeighted(0, 1, 1, $weight)) ? $par1 : $par2;
+            case 'int':
+            case 'float':
+            case 'bool':
+                $new = Util::randomFloatWeighted($par1, $par2, $par2, $weight);
+                if ('bool' === $type) {
+                    return boolval(round($new));
+                }
+                if ('int' === $type) {
+                    $new = intval($new);
+                }
+                if ($min = Arr::get($params, 'min')) {
+                    $new = max($new, $min);
+                }
+                if ($max = Arr::get($params, 'max')) {
+                    $new = min($new, $max);
+                }
+                return $new;
+            default:
+                Log::error('Unknown type', $type);
+                return .5 > Util::randomFloatWeighted(0, 1, 1, $weight) ? $par1 : $par2;
+        }
+    }
+
+
+    public function mutate(float $rate): Gene
+    {
+        foreach ($this->getParam('adjustable', []) as $key => $params) {
+            $this->mutateParam(
+                $this->getParam('indicator.'.$key),
+                $params,
+                $rate
+            );
+        }
+        // TODO dispatch change event
+        return $this;
+    }
+
+
+    protected function mutateParam($param, array $params = [], float $rate = 0)
+    {
+        if (!$rate) {
+            return $param;
+        }
+        $chance = Util::randomFloatWeighted(0, 1, 1, $rate);
+
+        switch ($type = Arr::get($params, 'type')) {
+            case 'int':
+            case 'float':
+            case 'bool':
+                $new = Util::randomFloatWeighted(
+                    $min = Arr::get($params, 'min', 0),
+                    $max = Arr::get($params, 'max', 1),
+                    $param,
+                    $rate
+                );
+                if ('bool' === $type) {
+                    return boolval(round($new));
+                }
+                if ('int' === $type) {
+                    $new = intval($new);
+                }
+                if ($min) {
+                    $new = max($new, $min);
+                }
+                if ($max) {
+                    $new = min($new, $max);
+                }
+                return $new;
+            case 'string':
+                return $param;
+            case 'source':
+                if (.5 > Util::randomFloatWeighted(0, 1, 1, $rate)) {
+                    return $param;
+                }
+                if (!$owner = $this->getOwner()) {
+                    return $param;
+                }
+                $sources = $owner->getSourcesAvailable([
+                    $this->getSignature()
+                ]);
+                if (1 >= count($sources)) {
+                    return $param;
+                }
+                // TODO select source
+            case 'select':
+                // TODO
+            case 'list':
+                // TODO
+            default:
+                Log::error('Unknown type', $type);
+                return $$param;
+        }
     }
 }
