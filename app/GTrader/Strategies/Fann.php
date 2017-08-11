@@ -16,20 +16,24 @@ use GTrader\FannTraining;
 use GTrader\Plot;
 use GTrader\Log;
 
+
 if (!extension_loaded('fann')) {
     throw new \Exception('FANN extension not loaded');
 }
+
 
 /**
  * Strategy using the PHP-FANN extension.
  */
 class Fann extends Strategy
 {
+
     /**
      * Fann resource
      * @var resource
      */
     protected $fannResource = null;
+
 
     /**
      * Training data
@@ -37,11 +41,13 @@ class Fann extends Strategy
      */
     protected $fannData = [];
 
+
     /**
      * Current sample index
      * @var int
      */
     protected $sampleIterator = 0;
+
 
     /**
      * Callback type
@@ -49,17 +55,20 @@ class Fann extends Strategy
      */
     protected $callbackType;
 
+
     /**
      * Current callback index
      * @var int
      */
     protected $callbackIterator = 0;
 
+
     /**
      * Fann output on the null sample
      * @var float
      */
     protected $fannBias = null;
+
 
     /**
      * Adds an initial OHLC indicator and an input.
@@ -76,6 +85,7 @@ class Fann extends Strategy
         $ohlc->addRef('root');
     }
 
+
     /**
      * @return array
      */
@@ -84,6 +94,7 @@ class Fann extends Strategy
         $this->destroyFann();
         return ['params', 'indicators'];
     }
+
 
     /**
      * Re-creates the strategy.
@@ -99,6 +110,21 @@ class Fann extends Strategy
         //Log::debug('path: '.$this->path());
         $this->loadOrCreateFann();
     }
+
+
+    public function toHTML(string $content = null)
+    {
+        return parent::toHTML(
+            view(
+                'Strategies/'.$this->getShortClass().'Form',
+                [
+                    'strategy' => $this,
+                    'injected' => $content,
+                ]
+            )
+        );
+    }
+
 
     /**
      * Training chart for selecting the ranges.
@@ -133,6 +159,7 @@ class Fann extends Strategy
         $chart->saveToSession();
         return $chart;
     }
+
 
     /**
      * Training progress chart.
@@ -196,6 +223,7 @@ class Fann extends Strategy
         return $chart;
     }
 
+
     /**
      * Returns a plot of the training history.
      * @param  int    $width    Plot width
@@ -234,6 +262,7 @@ class Fann extends Strategy
         ]);
         return $plot->toHTML();
     }
+
 
     /**
      * Returns a plot of a sample.
@@ -321,6 +350,7 @@ class Fann extends Strategy
         ]);
     }
 
+
     /**
      * Update strategy with parameters supplied by the user.
      * @param  Request $request
@@ -407,6 +437,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Display strategy as list item.
      * @return string
@@ -462,6 +493,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Load an existing fann network from file.
      * @param  string   $prefer_suffix  Filename suffix for loading the network from an alternate file.
@@ -477,6 +509,7 @@ class Fann extends Strategy
         $this->fannResource = fann_create_from_file($path);
         return $this;
     }
+
 
     /**
      * Create new fann network.
@@ -554,6 +587,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Returns the fann resource.
      * @return resource Fann resource.
@@ -566,6 +600,7 @@ class Fann extends Strategy
         return $this->fannResource;
     }
 
+
     /**
      * Returns a copy of the fann resource.
      * @return resource Fann resource.
@@ -574,6 +609,7 @@ class Fann extends Strategy
     {
         return fann_copy($this->getFann());
     }
+
 
     /**
      * Set the fann resource.
@@ -596,6 +632,7 @@ class Fann extends Strategy
         $this->initFann();
         return $this;
     }
+
 
     /**
      * Save the fann network to a file.
@@ -647,6 +684,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Save training history item.
      * @param  int    $epoch Training epoch
@@ -666,6 +704,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Get number of history records.
      * @return int Number of records
@@ -676,6 +715,7 @@ class Fann extends Strategy
             ->where('strategy_id', $this->getParam('id'))
             ->count();
     }
+
 
     /**
      * Remove every nth training history record.
@@ -710,6 +750,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * @return int Epoch
      */
@@ -723,6 +764,7 @@ class Fann extends Strategy
             ->first();
         return is_object($res) ? intval($res->epoch) : 0;
     }
+
 
     /**
      * Delete files associated with the strategy.
@@ -748,6 +790,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Destroy the fann resource.
      * @return $this
@@ -761,6 +804,7 @@ class Fann extends Strategy
         }
         return $this;
     }
+
 
     /**
      * Run the neural network.
@@ -784,6 +828,7 @@ class Fann extends Strategy
             return null;
         }
     }
+
 
     /**
      * Get the network bias by running on the null sample
@@ -813,6 +858,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Reset sample iterator to a specific time
      * @param int $time UTS
@@ -833,6 +879,7 @@ class Fann extends Strategy
         //dump('warning, could not reset sample to '.$time, $this);
         return $this;
     }
+
 
     /**
      * Get the next sample
@@ -862,6 +909,7 @@ class Fann extends Strategy
         return $sample;
     }
 
+
     /**
      * Runs input indicators
      * @param bool $force_rerun Run even if already run
@@ -883,6 +931,7 @@ class Fann extends Strategy
         }
         return $this;
     }
+
 
     /**
      * Get input indicator signatures in groups
@@ -956,6 +1005,7 @@ class Fann extends Strategy
         return $groups;
     }
 
+
     /**
      * Convert a sample array to input and output array
      * @param  array  $sample
@@ -981,7 +1031,6 @@ class Fann extends Strategy
             Log::error('Wrong sample size ('.$actual_size.' vs. '.$in_sample_size.')');
         }
 
-        //$dumptime = strtotime('2017-06-11 10:00:00');
         for ($i = 0; $i < $out_sample_size; $i++) {
             reset($groups);
             foreach ($groups as $group_name => $group) {
@@ -996,7 +1045,7 @@ class Fann extends Strategy
                         }
                         Log::error('Value not set for key: '.$key, 'Requested sig: '.$sig, 'Series sigs:', $series_sigs, $sample[$i]);
                         exit;
-                        $value = 0;
+                        //$value = 0;
                     } else {
                         $value = floatval($sample[$i]->$key);
                     }
@@ -1013,10 +1062,25 @@ class Fann extends Strategy
                         $input[$group_name][$sig] = ['values' => []];
                     }
                     if ('ohlc' === $group_name) {
-                        $input['ohlc']['_dim']['min'] = ($min = Arr::get($input, 'ohlc._dim.min')) ?
-                            min($value, $min) : $value;
-                        $input['ohlc']['_dim']['max'] = ($max = Arr::get($input, 'ohlc._dim.max')) ?
-                            max($value, $max) : $value;
+
+                        // Ugly, but somewhat faster without Arr::get
+                        $input['ohlc']['_dim']['min'] =
+                            isset($input['ohlc']['_dim']['min']) ?
+                                (($min = $input['ohlc']['_dim']['min']) ?
+                                    min($value, $min) :
+                                    $value) :
+                                $value;
+                        $input['ohlc']['_dim']['max'] =
+                            isset($input['ohlc']['_dim']['max']) ?
+                                (($max = $input['ohlc']['_dim']['max']) ?
+                                    max($value, $max) :
+                                    $value) :
+                                $value;
+
+                        // $input['ohlc']['_dim']['min'] = ($min = Arr::get($input, 'ohlc._dim.min')) ?
+                        //     min($value, $min) : $value;
+                        // $input['ohlc']['_dim']['max'] = ($max = Arr::get($input, 'ohlc._dim.max')) ?
+                        //     max($value, $max) : $value;
                     }
                     if ('range' === $group_name) {
                         $input[$group_name][$sig] = array_merge($input[$group_name][$sig], $params);
@@ -1041,6 +1105,7 @@ class Fann extends Strategy
         }
         return [$input, $last_ohlc4, Series::ohlc4($sample[count($sample)-1])];
     }
+
 
     /**
      * Normalize input array.
@@ -1101,6 +1166,7 @@ class Fann extends Strategy
 
         return $norm_input;
     }
+
 
     /**
      * Create the data array for the network.
@@ -1254,6 +1320,7 @@ class Fann extends Strategy
         return $this;
     }
 
+
     /**
      * Used internally by train() and test()
      * @param  int $num_data
@@ -1280,8 +1347,6 @@ class Fann extends Strategy
     }
 
 
-
-
     /**
      *  Mean Squared Error Reciprocal
      * @return float
@@ -1296,6 +1361,7 @@ class Fann extends Strategy
         return 0;
     }
 
+
     /**
      * Get sample size
      * @return int
@@ -1304,6 +1370,7 @@ class Fann extends Strategy
     {
         return $this->getParam('sample_size');
     }
+
 
     /**
      * Set sample size
@@ -1315,6 +1382,7 @@ class Fann extends Strategy
         $this->setParam('sample_size', $num);
         return $this;
     }
+
 
     /**
      * Get the number of imput neurons

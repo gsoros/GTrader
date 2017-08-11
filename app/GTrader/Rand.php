@@ -40,7 +40,7 @@ class Rand
      * @param  float $weight     0 <= $weight <= 1
      * @return float
      */
-    public static function weightedFloat(
+    public static function floatNormal(
         float $min = 0,
         float $max = 1,
         float $peak = .5,
@@ -100,5 +100,75 @@ class Rand
         //     return $peak + ($max - $peak) * $exp;
         // }
         // return $min + ($peak - $min) * (1 - $exp);
+    }
+
+
+    /**
+     * Pick a random element from $items
+     * @param  array        $items
+     * @return mixed|null on error
+     */
+    public static function pick(array $items = [])
+    {
+        $count = count($items);
+        return $count ?
+            array_values($items)[
+                static::int(0, $count - 1)
+            ] :
+            null;
+    }
+
+
+    /**
+     * Delete a random element from $items
+     * @param  array $items
+     * @return array
+     */
+    public static function delete(array $items = [])
+    {
+        if (empty($items)) {
+            return $items;
+        }
+        $items = array_values($items);
+        unset($items[static::int(0, count($items) - 1)]);
+        return $items;
+    }
+
+
+    /**
+     * Add a random element from $pool to $items
+     * @param  array $items
+     * @param  array $pool
+     * @return array
+     */
+    public static function add(array $items = [], array $pool = [])
+    {
+        if (!$chosen = static::pick($pool)) {
+            return $items;
+        }
+        $items[] = $chosen;
+        return $items;
+    }
+
+
+    /**
+     * Pick a random element from $items using the normal distribution
+     * @param  array   $items
+     * @param  mixed   $default  return value if not picking from $items
+     * @param  float   $weight   0 <= $weight <= 1
+     * @return mixed|null on error
+     */
+    public static function pickNormal(
+        array $items,
+        $default = null,
+        float $weight = .5)
+    {
+        if (.5 > Rand::floatNormal(0, 1, 1, $weight)) {
+            return $default;
+        }
+        if (!count($items)) {
+            return $default;
+        }
+        return static::pick($items);
     }
 }

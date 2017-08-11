@@ -772,11 +772,11 @@ abstract class Indicator extends Base implements Gene
             case 'source':
             case 'select':
             case 'list':
-                return (.5 > Rand::weightedFloat(0, 1, 1, $weight)) ? $par1 : $par2;
+                return (.5 > Rand::floatNormal(0, 1, 1, $weight)) ? $par1 : $par2;
             case 'int':
             case 'float':
             case 'bool':
-                $new = Rand::weightedFloat($par1, $par2, $par2, $weight);
+                $new = Rand::floatNormal($par1, $par2, $par2, $weight);
                 if ('bool' === $type) {
                     return boolval(round($new));
                 }
@@ -792,7 +792,7 @@ abstract class Indicator extends Base implements Gene
                 return $new;
             default:
                 Log::error('Unknown type', $type);
-                return .5 > Rand::weightedFloat(0, 1, 1, $weight) ? $par1 : $par2;
+                return .5 > Rand::floatNormal(0, 1, 1, $weight) ? $par1 : $par2;
         }
     }
 
@@ -820,13 +820,14 @@ abstract class Indicator extends Base implements Gene
         if (!$rate) {
             return $param;
         }
-        $chance = Rand::weightedFloat(0, 1, 1, $rate);
+        $chance = Rand::floatNormal(0, 1, 1, $rate);
 
         switch ($type = Arr::get($params, 'type')) {
+
             case 'int':
             case 'float':
             case 'bool':
-                $new = Rand::weightedFloat(
+                $new = Rand::floatNormal(
                     $min = Arr::get($params, 'min', 0),
                     $max = Arr::get($params, 'max', 1),
                     $param,
@@ -845,34 +846,58 @@ abstract class Indicator extends Base implements Gene
                     $new = min($new, $max);
                 }
                 return $new;
+
             case 'string':
                 return $param;
+
             case 'source':
-                if (.5 > Rand::weightedFloat(0, 1, 1, $rate)) {
-                    return $param;
-                }
-                if (!$owner = $this->getOwner()) {
-                    return $param;
-                }
-                $sources = array_keys($owner->getAvailableSources([
-                    $this->getSignature(),
-                    $param,
-                ]));
-                if (1 > count($sources)) {
-                    return $param;
-                }
-                shuffle($sources);
-                array_unshift($sources, $param);
-                $index = round(Rand::weightedFloat(0, count($sources - 1), 0, $rate));
-                if (!isset($sources[$index])) {
-                    Log::error('wrong random index');
-                    return $param;
-                }
-                return $sources[$index];
             case 'select':
-                // TODO
             case 'list':
-                // TODO
+                if (.5 > Rand::floatNormal(0, 1, 1, $weight)) {
+                    return $param;
+                }
+                if ('source' == $type) {
+                    if (!$owner = $this->getOwner()) {
+                        return $param;
+                    }
+                    if (1 >= count($options = array_keys($owner->getAvailableSources([
+                        $this->getSignature(),
+                    ])))) {
+                        return $default;
+                    }
+                } elseif ('select' == $type) {
+                    $options = Arr::get($params, 'options', []);
+                }
+                if ('list' != $type) {
+                    return Rand::pick($options);
+                }
+                // List
+                if (!is_array($param)) {
+                    return [];
+                }
+                // make sure the indexes are sequential
+                $param = array_values($param);
+                // TODO are we "doubling the unlikeliness" of modifying the list?
+                // And is that bad? E.g. how many tries does it take to work out
+                // an optimal list for trader_cdl?  
+                if (.5 <= Rand::floatNormal(0, 1, 1, $weight)) {
+                    $param = Rand::delete($param);
+                }
+                if (.5 <= Rand::floatNormal(0, 1, 1, $weight)) {
+                    // Add an item
+                    if (!is_array($items = Arr::get($params, 'items', []))) {
+                        return $param;
+                    }
+                    if (!count($items)) {
+                        return $param;
+                    }
+                    if (!count($diff = array_diff($items, $param))) {
+                        return $param;
+                    }
+                    $param[] = Rand::pick($diff);
+                }
+                return $param;
+
             default:
                 Log::error('Unknown type', $type);
                 return $param;

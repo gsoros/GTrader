@@ -121,6 +121,7 @@ abstract class Strategy extends Base
     {
         return view('StrategyForm', [
             'strategy' => $this,
+            'injected' => $content,
         ]);
     }
 

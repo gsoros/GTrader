@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    @includeIf('Strategies/'.$strategy->getShortClass().'Form')
+    {!! $injected !!}
     
     <div class="row bdr-rad editable">
         <div class="col-sm-12">

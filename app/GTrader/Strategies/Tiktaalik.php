@@ -7,6 +7,12 @@ use GTrader\Evolvable;
 class Tiktaalik extends Simple implements Evolvable
 {
 
+    public function toHTML(string $content = null)
+    {
+        return parent::toHTML($content);
+    }
+
+
     public function mate(Evolvable $partner): Evolvable
     {
         return new Tiktaalik();

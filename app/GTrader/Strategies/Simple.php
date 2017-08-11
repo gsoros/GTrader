@@ -24,10 +24,16 @@ class Simple extends Strategy
 
     public function toHTML(string $content = null)
     {
-        return view('StrategyForm', [
-            'strategy' => $this,
-            'uid' => $this->getParam('uid'),
-        ]);
+        return parent::toHTML(
+            view(
+                'Strategies/SimpleForm',
+                [
+                    'strategy' => $this,
+                    'uid' => $this->getParam('uid'),
+                    'injected' => $content,
+                ]
+            )
+        );
     }
 
 

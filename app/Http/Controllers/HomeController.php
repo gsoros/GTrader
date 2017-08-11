@@ -160,52 +160,82 @@ class HomeController extends Controller
 
     public function test()
     {
-        function tester($arr) {
-            $samples = 5000;
+        $tests = [
+            'floatNormal' => [
+                'samples' => 5000,
+                'tests' => [
+                    // min, max, peak, weight
+                    [0, 1000, 500, .5],
+                    [0, 1000, 200, 1],
+                    [0, 1000, 200, .9],
+                    [0, 1000, 200, 0],
+                    [0, 1000, 200, .01],
+                    [0, 1000, 800, .3],
+                    [1000, 0, 200, .6],
+                    [0, 1000, 1000, .75],
+                    [0, 1000, 1000, .0001],
+                    [0, 1, 1, 0.01],
+                ],
+                'callback' => function($input) {
+                    return Rand::floatNormal($input[0], $input[1], $input[2], $input[3]);
+                },
+            ],
+            'pickNormal' => [
+                'samples' => 5000,
+                'tests' => [
+                    // items, default, weight
+                    [range(1, 100), 20, .5],
+                    [range(1, 100), 20, .01],
+                    [range(1, 100), 20, .99],
+                ],
+                'callback' => function($input) {
+                    return Rand::pickNormal($input[0], $input[1], $input[2]);
+                },
+            ],
+        ];
+
+        function test($callback, $input, $samples) {
             $start = microtime(true);
             $min = $max = $sum = null;
-            $vals = [];
+            $result = [];
             for ($i = 1; $i <= $samples; $i++) {
-                $val = Rand::weightedFloat($arr[0], $arr[1], $arr[2], $arr[3]);
+                $val = $callback($input);
                 $min = is_null($min) ? $val : min($min, $val);
                 $max = is_null($max) ? $val : max($max, $val);
                 $sum += $val;
                 $int = round($val);
                 $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
             }
+            ksort($vals);
             dump([
-                'params' => 'samples: '.$samples.', input: '.join(', ', $arr),
-                't' => microtime(true) - $start,
-                'min' => number_format($min, 2),
-                'max' => number_format($max, 2),
-                'avg' => number_format($sum / ($i - 1), 2),
-                'vals' => $vals,
+                'in' => array_merge(['samples' => $samples], $input),
+                'out' => [
+                    't' => microtime(true) - $start,
+                    'min' => number_format($min, 2),
+                    'max' => number_format($max, 2),
+                    'avg' => number_format($sum / ($i - 1), 2),
+                    'dist' => $vals,
+                ],
             ]);
             ksort($vals);
             $plot = new \GTrader\Plot ([
                 'name' => 'Plot',
                 'width' => 1200,
                 'height' => 200,
-                'data' => ['distribution' => ['values' => $vals]],
+                'data' => [
+                    'distribution' => [
+                        'values' => $vals
+                    ]
+                ],
             ]);
             echo $plot->toHtml();
+        }
 
+        foreach ($tests as $name => $test) {
+            dump($name);
+            foreach ($test['tests'] as $inputs) {
+                test($test['callback'], $inputs, $test['samples']);
+            }
         }
-        foreach ([
-            // min, max, peak, weight
-            [0, 1000, 500, .5],
-            [0, 1000, 200, 1],
-            [0, 1000, 200, .9],
-            [0, 1000, 200, 0],
-            [0, 1000, 200, .01],
-            [0, 1000, 800, .3],
-            [1000, 0, 200, .6],
-            [0, 1000, 1000, .75],
-            [0, 1000, 1000, .0001],
-            [0, 1, 1, 0.01],
-        ] as $arr) {
-            tester($arr);
-        }
-        exit;
     }
 }

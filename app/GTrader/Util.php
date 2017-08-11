@@ -4,6 +4,21 @@ namespace GTrader;
 
 class Util
 {
+
+    /**
+     * Time a call.
+     * @param  Closure $closure
+     * @return mixed
+     */
+    public static function time(\Closure $closure)
+    {
+        $start = microtime(true);
+        $return = $closure();
+        dump('t = '.(microtime(true) - $start));
+        return $return;
+    }
+
+
     public static function ksortR(&$array, $sort_flags = SORT_REGULAR)
     {
         if (!is_array($array)) {

@@ -2,7 +2,6 @@
 
 namespace GTrader;
 
-//use GTrader\Strategies\Fann as FannStrategy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
@@ -77,7 +76,11 @@ class FannTraining extends Model
             $this->swapIfCrossTraining()
                 ->resetIfNoImprovement()
                 ->increaseEpoch()
-                ->setProgress('train_mser', number_format($this->getStrategy('train')->getMSER(), 2, '.', ''))
+                ->setProgress(
+                    'train_mser',
+                    number_format(
+                        $this->getStrategy('train')->getMSER(), 2, '.', '')
+                    )
                 ->saveHistory('train_mser', $this->getProgress('train_mser'))
                 ->copyFann('train', 'test')
                 ->pruneHistory();
@@ -86,7 +89,10 @@ class FannTraining extends Model
 
             $this->setProgress('test', $test)
                 ->saveHistory('test', $test)
-                ->setProgress('no_improvement', $this->getProgress('no_improvement') + 1);
+                ->setProgress(
+                    'no_improvement',
+                    $this->getProgress('no_improvement') + 1
+                );
 
             if ($this->acceptable('test', 10)) {
                 $this->copyFann('train', 'verify');
@@ -99,14 +105,20 @@ class FannTraining extends Model
                 if ($this->acceptable('verify')) {
                     $this->setProgress('test_max', $test)
                         ->setProgress('verify_max', $verify)
-                        ->setProgress('last_improvement_epoch', $this->getProgress('epoch'))
+                        ->setProgress(
+                            'last_improvement_epoch',
+                            $this->getProgress('epoch')
+                        )
                         ->setProgress('no_improvement', 0)
                         ->setProgress('epoch_jump', 1)
                         ->saveProgress()
                         ->saveFann();
                 }
             }
-            $this->setProgress('signals', $this->getStrategy('test')->getNumSignals(true))
+            $this->setProgress(
+                    'signals',
+                    $this->getStrategy('test')->getNumSignals(true)
+                )
                 ->saveProgress()
                 ->increaseJump()
                 ->logMemoryUsage()
@@ -131,7 +143,7 @@ class FannTraining extends Model
             'test_start', 'test_end',
             'verify_start', 'verify_end'
         ] as $field) {
-            if (!isset($this->options[$field]) || !$this->options[$field]) {
+            if (!Arr::get($this->options, $field)) {
                 throw new \Exception('Missing option: '.$field);
             }
         }
@@ -191,10 +203,7 @@ class FannTraining extends Model
 
     protected function resetIfNoImprovement()
     {
-        if (!isset($this->options['reset_after'])) {
-            return $this;
-        }
-        if (!$this->options['reset_after']) {
+        if (!$reset = Arr::get($this->options, 'reset_after')) {
             return $this;
         }
 
@@ -202,7 +211,7 @@ class FannTraining extends Model
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_reset')
         );
-        if ($last < $this->getProgress('epoch') - $this->options['reset_after']) {
+        if ($last < $this->getProgress('epoch') - $reset) {
             Log::sparse('Reset training');
             $this->setProgress('last_reset', $this->getProgress('epoch'))
                 ->brake(100);
