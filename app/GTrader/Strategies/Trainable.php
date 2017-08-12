@@ -12,7 +12,11 @@ trait Trainable
 {
     public function getTrainingClass()
     {
-        return 'GTrader\\Strategies\\'.$this->getParam('training_class');
+        if (!$class = $this->getParam('training_class')) {
+            Log::error('no training class', $this->getparam('id'));
+            return null;
+        }
+        return 'GTrader\\Strategies\\'.$class;
     }
 
     /**
