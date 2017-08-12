@@ -43,7 +43,9 @@
                     id="new_strategy_class"
                     title="Select type of strategy">
                 @foreach ($available as $name)
-                    <option value="{{ $name }}">{{ $name }}</option>
+                    <option
+                        {{ (($default ?? null) == $name) ? 'selected' : '' }}
+                        value="{{ $name }}">{{ $name }}</option>
                 @endforeach
             </select>
 

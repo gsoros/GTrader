@@ -1,16 +1,20 @@
 <?php
 
-namespace GTrader;
+namespace GTrader\Strategies;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Arr;
+
+use GTrader\Exchange;
+use GTrader\Series;
+use GTrader\Training;
+use GTrader\Strategy;
+use GTrader\Util;
+use GTrader\Log;
+use GTrader\TrainingManager;
 use GTrader\Strategies\Fann as FannStrategy;
 
-class FannTraining extends Model
+class FannTraining extends Training
 {
-    use Skeleton, HasCache;
-
 
     /**
      * The table associated with the model.
@@ -18,20 +22,6 @@ class FannTraining extends Model
      * @var string
      */
     protected $table = 'fann_training';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
-
-    /**
-     * The attributes that aren't mass assignable.
-     *
-     * @var array
-     */
-    protected $guarded = [];
 
     /**
      * The attributes that should be cast to native types.
@@ -44,17 +34,11 @@ class FannTraining extends Model
         'history' => 'array',
     ];
 
-    protected $lock;
     protected $strategies = [];
     protected $saved_fann;
     protected $reverts = 0;
     protected $started;
 
-
-    public function __construct(array $params = [])
-    {
-        $this->skeletonConstruct($params);
-    }
 
 
     public function run()
@@ -143,7 +127,7 @@ class FannTraining extends Model
             'test_start', 'test_end',
             'verify_start', 'verify_end'
         ] as $field) {
-            if (!Arr::get($this->options, $field)) {
+            if (!isset($this->options[$field])) {
                 throw new \Exception('Missing option: '.$field);
             }
         }
@@ -203,7 +187,7 @@ class FannTraining extends Model
 
     protected function resetIfNoImprovement()
     {
-        if (!$reset = Arr::get($this->options, 'reset_after')) {
+        if (!$reset = ($this->options['reset_after'] ?? false)) {
             return $this;
         }
 
@@ -271,11 +255,8 @@ class FannTraining extends Model
         if ($sig = $strategy->cached('maximize_sig')) {
             return $sig;
         }
-        $maximize = Arr::get(
-            $this->options,
-            'maximize',
-            array_keys($this->getParam('maximize'))[0]
-        );
+        $maximize = $this->options['maximize'] ??
+            array_keys($this->getParam('maximize'))[0];
 
         switch ($maximize) {
             case 'balance_fixed':
@@ -396,25 +377,6 @@ class FannTraining extends Model
             // Save fann for reverting
             $this->saved_fann = $this->getStrategy('train')->copyFann();
         }
-        return $this;
-    }
-
-
-
-
-    protected function obtainLock()
-    {
-        $this->lock = 'training_'.$this->id;
-        if (!Lock::obtain($this->lock)) {
-            throw new \Exception('Could not obtain training lock for '.$this->id);
-        }
-        return $this;
-    }
-
-
-    protected function releaseLock()
-    {
-        Lock::release($this->lock);
         return $this;
     }
 

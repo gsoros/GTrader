@@ -6,6 +6,8 @@ use GTrader\Evolvable;
 
 class Tiktaalik extends Simple implements Evolvable
 {
+    use Trainable;
+    
 
     public function toHTML(string $content = null)
     {

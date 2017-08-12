@@ -164,10 +164,12 @@ abstract class Strategy extends Base
             $strategies[] = $strategy;
         }
 
+        $default = self::singleton();
         return $return_array ?
             $strategies :
             view('StrategyList', [
-                'available' => self::singleton()->getParam('available'),
+                'available' => $default->getParam('available'),
+                'default' => config('GTrader.Strategy.default_child'),
                 'strategies' => $strategies,
             ]);
     }

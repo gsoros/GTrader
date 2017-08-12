@@ -2,8 +2,6 @@
 
 namespace GTrader;
 
-use GTrader\FannTraining as Training;
-
 class TrainingManager extends Base
 {
     use Scheduled;
@@ -17,14 +15,14 @@ class TrainingManager extends Base
         if (!Lock::obtain($lock)) {
             return false;
         }
-        echo "TrainingManager:run()\n";
+        //echo "TrainingManager:run()\n";
 
         while ($this->scheduleEnabled()) {
             $this->main();
             $this->sleep();
         }
         Lock::release($lock);
-        return this;
+        return $this;
     }
 
 
@@ -36,14 +34,24 @@ class TrainingManager extends Base
 
     protected function main()
     {
+        $active_trainings = [];
         // Check for any trainings
         try {
-            $trainings = Training::where('status', 'training')->get();
+            foreach ($this->getParam('classes') as $class) {
+                $trainings = $class::where('status', 'training')->get();
+                $trainings->merge($active_trainings);
+                $active_trainings = $trainings;
+            }
         } catch (\Exception $e) {
-            Log::error('Could not fetch trainings from the database.');
+            Log::error(
+                'Could not fetch trainings from the database.',
+                $e->getMessage(),
+                $active_trainings,
+                $trainings
+            );
             return $this;
         }
-        foreach ($trainings as $training) {
+        foreach ($active_trainings as $training) {
             // Check if we have a free trainer slot
             while (is_null($slot = $this->getSlot())) {
                 echo "No free slot\n";
@@ -54,7 +62,7 @@ class TrainingManager extends Base
             if (Lock::obtain($training_lock)) {
                 // This training can be assigned to a worker
                 Lock::release($training_lock);
-                $this->assign($slot, $training);
+                $this->assign($slot, get_class($training), $training);
             }
         }
         return $this;
@@ -82,13 +90,13 @@ class TrainingManager extends Base
     }
 
 
-    protected function assign(int $slot, Training $training)
+    protected function assign(int $slot, string $class, Training $training)
     {
         Log::info('Assigning training '.$training->id.' to slot '.$slot);
 
         $command = $this->getParam('php_command').' '.
                     base_path('artisan').' training:run '.
-                    $slot.' '.$training->id;
+                    $slot.' "'.addslashes($class).'" '.$training->id;
 
 
         if (substr(php_uname(), 0, 7) === "Windows") {
@@ -106,5 +114,6 @@ class TrainingManager extends Base
         }
 
         sleep(2); // allow child process some time to obtain lock
+        return $this;
     }
 }

@@ -140,7 +140,7 @@ class Simple extends Strategy
     }
 
 
-    public function viewSignalForm()
+    public function viewSignalsForm()
     {
         if (!$signals = $this->getSignalsIndicator()) {
             Log::error('Could not load signal Indicator');

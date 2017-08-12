@@ -19,6 +19,7 @@ use GTrader\Util;
 use GTrader\Bot;
 use GTrader\Rand;
 use GTrader\Log;
+use GTrader\Form;
 
 class HomeController extends Controller
 {
@@ -105,7 +106,7 @@ class HomeController extends Controller
             'stylesheets'       => Page::get('stylesheets'),
             'scripts_top'       => Page::get('scripts_top'),
             'scripts_bottom'    => Page::get('scripts_bottom'),
-            'debug'             => var_export($chart->getCandles()->getParams(), true)
+            'debug'             => null, //var_export($chart->getCandles()->getParams(), true),
         ];
 
         $chart->saveToSession()->save();
@@ -127,17 +128,20 @@ class HomeController extends Controller
 
         echo '<hr>Strategies:';
         dump(array_map(function($strategy) {
-            if ('Fann' !== $strategy->getShortClass()) {
+            if (!method_exists($strategy, 'getTrainingClass')) {
                 return $strategy;
             }
-            $trainings = \GTrader\FannTraining::where('strategy_id', $strategy->getParam('id'))
-                ->get()
-                ->toArray();
             return $strategy->setParam(
                 'trainings',
-                $trainings
+                $strategy->getTrainingClass()::where(
+                    'strategy_id',
+                    $strategy->getParam('id')
+                )->get()->toArray()
             );
         }, $user->strategies()));
+
+        echo '<hr>User:';
+        dump($user);
 
         echo '<hr>Bots:';
         dump($user->bots);
@@ -160,6 +164,23 @@ class HomeController extends Controller
 
     public function test()
     {
+        /*
+        $f = new Form([
+            'some_select' => [
+                'type' => 'select',
+                'options' => [
+                    'opt_a_k' => 'opt_a_v',
+                    'opt_b_k' => 'opt_b_v',
+                ],
+                'class' => 'aclass',
+            ],
+        ], [
+            'some_select' => 'opt_b_k',
+        ]);
+        dump($f->toHtml());
+        exit();
+        */
+
         $tests = [
             'floatNormal' => [
                 'samples' => 5000,

@@ -68,16 +68,10 @@ class StrategyController extends Controller
 
     public function form(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Failed to load strategy.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Failed to load strategy.', 403);
-        }
-        //dd($strategy);
         $form = $strategy->toHTML();
         return response($form, 200);
     }
@@ -85,14 +79,9 @@ class StrategyController extends Controller
 
     public function delete(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response(Strategy::getListOfUser(Auth::id()), 200);
-        }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response(Strategy::getListOfUser(Auth::id()), 200);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
         $strategy->delete();
         return response(Strategy::getListOfUser(Auth::id()), 200);
@@ -101,14 +90,9 @@ class StrategyController extends Controller
 
     public function save(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
         $strategy->handleSaveRequest($request);
         $strategy->save();
@@ -118,45 +102,45 @@ class StrategyController extends Controller
 
     public function train(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        $training = FannTraining::where('strategy_id', $strategy_id)
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
             ->where(function ($query) {
                 $query->where('status', 'training')
                         ->orWhere('status', 'paused');
             })
             ->first();
         if (is_object($training)) {
-            $html = view('Strategies/FannTrainProgress', [
+            $html = view('Strategies/'.$training_class.'Progress', [
                 'strategy' => $strategy,
                 'training' => $training
             ]);
             return response($html, 200);
         }
 
+        $default_training = $training_class::make();
         $default_prefs = [];
-        foreach (['train', 'test', 'verify'] as $item) {
+        foreach (array_keys($default_training->getParam('ranges')) as $item) {
             $default_prefs[$item.'_start_percent'] =
-                config('GTrader.FannTraining.'.$item.'_range.start_percent');
+                $default_training->getParam('ranges.'.$item.'.start_percent');
             $default_prefs[$item.'_end_percent'] =
-                config('GTrader.FannTraining.'.$item.'_range.end_percent');
+                $default_training->getParam('ranges.'.$item.'.end_percent');
         }
         foreach (['crosstrain', 'reset_after'] as $item) {
-            $default_prefs[$item] = config('GTrader.FannTraining.'.$item);
+            $default_prefs[$item] = $default_training->getParam($item);
         }
-        $conf_maximize = config('GTrader.FannTraining.maximize');
+        $conf_maximize = $default_training->getParam('maximize');
         $default_prefs['maximize'] = array_keys($conf_maximize)[0];
 
-        $html = view('Strategies/FannTrainForm', [
+        $html = view('Strategies/'.$strategy->getParam('training_class').'Form', [
             'strategy' => $strategy,
-            'preferences' => Auth::user()->getPreference('fann_training', $default_prefs),
+            'preferences' => Auth::user()->getPreference(
+                $strategy->getParam('training_class'),
+                $default_prefs
+            ),
         ]);
         return response($html, 200);
     }
@@ -166,14 +150,9 @@ class StrategyController extends Controller
     {
         Log::debug($request->all());
 
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
         $exchange = $request->exchange;
         if (!($exchange_id = Exchange::getIdByName($exchange))) {
@@ -190,19 +169,21 @@ class StrategyController extends Controller
             return response('Resolution not found.', 403);
         }
 
-        $training = FannTraining::where('strategy_id', $strategy_id)
-                        ->where('status', 'training')->first();
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
+            ->where('status', 'training')->first();
         if (is_object($training)) {
             Log::error('Strategy id('.$strategy_id.') is already being trained.');
-            $html = view('Strategies/FannTrainProgress', [
+            $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
                 'strategy' => $strategy,
                 'training' => $training
             ]);
             return response($html, 200);
         }
 
+        $default_training = $training_class::make();
         $prefs = [];
-        foreach (['train', 'test', 'verify'] as $item) {
+        foreach (array_keys($default_training->getParam('ranges')) as $item) {
             ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
             ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
             if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
@@ -217,7 +198,7 @@ class StrategyController extends Controller
                 $prefs[$item] = $request->$item;
             }
         }
-        Auth::user()->setPreference('fann_training', $prefs)->save();
+        Auth::user()->setPreference($strategy->getParam('training_class'), $prefs)->save();
 
         $candles = new Series([
             'exchange' => $exchange,
@@ -229,7 +210,7 @@ class StrategyController extends Controller
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
         $options = [];
-        foreach (['train', 'test', 'verify'] as $item) {
+        foreach (array_keys($default_training->getParam('ranges')) as $item) {
             $options[$item.'_start'] = floor($epoch + $total / 100 * ${$item.'_start_percent'});
             $options[$item.'_end']   = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
         }
@@ -256,7 +237,7 @@ class StrategyController extends Controller
             $options['reset_after'] = 10000;
         }
 
-        $conf_maximize = config('GTrader.FannTraining.maximize');
+        $conf_maximize = config('GTrader.Strategies.'.$strategy->getParam('training_class').'.maximize');
         $options['maximize'] = array_keys($conf_maximize)[0];
         if (isset($request->maximize)) {
             if (array_key_exists($request->maximize, $conf_maximize)) {
@@ -271,10 +252,9 @@ class StrategyController extends Controller
                 'symbol' => $symbol,
                 'resolution' => $resolution,
             ], $options)
-        )
-            ->save();
+        )->save();
 
-        $training = FannTraining::firstOrNew([
+        $training = $training_class::firstOrNew([
             'strategy_id'   => $strategy_id,
             'status'        => 'training'
         ]);
@@ -309,7 +289,7 @@ class StrategyController extends Controller
 
         $training->save();
 
-        $html = view('Strategies/FannTrainProgress', [
+        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
@@ -320,21 +300,16 @@ class StrategyController extends Controller
 
     public function trainStop(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response(Strategy::getListOfUser(Auth::id()), 200);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response(Strategy::getListOfUser(Auth::id()), 200);
-        }
-        $training = FannTraining::where('strategy_id', $strategy_id)
-                         ->where(function ($query) {
-                             $query->where('status', 'training')
-                                    ->orWhere('status', 'paused');
-                         })
-                        ->first();
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
+            ->where(function ($query) {
+                $query->where('status', 'training')
+                    ->orWhere('status', 'paused');
+            })->first();
         if (is_object($training)) {
             //$training->status = 'stopped';
             //$training->save();
@@ -348,17 +323,13 @@ class StrategyController extends Controller
 
     public function trainProgress(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 404);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where('status', 'training')->first();
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
+            ->where('status', 'training')->first();
         if (!is_object($training)) {
             Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
@@ -377,40 +348,34 @@ class StrategyController extends Controller
 
     public function trainHistory(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 404);
-        }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
 
-        return response($strategy->getHistoryPlot($request->width, $request->height), 200);
+        return response(
+            $strategy->getHistoryPlot($request->width, $request->height),
+            200
+        );
     }
 
 
     public function trainPause(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 404);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where('status', 'training')->first();
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
+            ->where('status', 'training')->first();
         if (!is_object($training)) {
             Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
         $training->status = 'paused';
         $training->save();
-        $html = view('Strategies/FannTrainProgress', [
+        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
@@ -420,24 +385,20 @@ class StrategyController extends Controller
 
     public function trainResume(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Strategy not found.', 404);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Strategy not found.', 403);
-        }
-        $training = FannTraining::where('strategy_id', $strategy_id)
-                                ->where('status', 'paused')->first();
+        $training_class = $strategy->getTrainingClass();
+        $training = $training_class::where('strategy_id', $strategy_id)
+            ->where('status', 'paused')->first();
         if (!is_object($training)) {
             Log::error('Training not found for strategy '.$strategy_id);
             return response('Training not found.', 404);
         }
         $training->status = 'training';
         $training->save();
-        $html = view('Strategies/FannTrainProgress', [
+        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
@@ -490,21 +451,35 @@ class StrategyController extends Controller
 
     public function simpleSignalsForm(Request $request)
     {
-        $strategy_id = intval($request->id);
-        if (!($strategy = Strategy::load($strategy_id))) {
-            Log::error('Failed to load strategy ID '.$strategy_id);
-            return response('Failed to load strategy.', 403);
-        }
-        if ($strategy->getParam('user_id') !== Auth::id()) {
-            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
-            return response('Failed to load strategy.', 403);
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Simple')) {
             Log::error('Not a Simple strategy '.$strategy_id);
             return response('Failed to load strategy.', 403);
         }
-        $form = $strategy->viewSignalForm();
+        $form = $strategy->viewSignalsForm();
         return response($form, 200);
     }
 
+
+    /**
+     * Get strategy from the request
+     * @param  Request $request
+     * @return array   [Response error, null, null] | [null, int strategy_id, Strategy]
+     */
+    protected function getStrategy(Request $request): array
+    {
+        $strategy_id = intval($request->id);
+        if (!($strategy = Strategy::load($strategy_id))) {
+            Log::error('Failed to load strategy ID '.$strategy_id);
+            return [response('Strategy not found.', 404), null, null];
+        }
+        if ($strategy->getParam('user_id') !== Auth::id()) {
+            Log::error('That strategy belongs to someone else: ID '.$strategy_id);
+            return [response('Strategy not found.', 403), null, null];
+        }
+        return [null, $strategy_id, $strategy];
+    }
 }

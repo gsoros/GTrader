@@ -88,7 +88,7 @@
         <label for="maximize">Maximise Strategy For</label>
         <select class="btn-primary btn btn-mini form-control form-control-sm"
                 id="maximize">
-            @foreach (\Config::get('GTrader.FannTraining.maximize') as $val => $label)
+            @foreach (\Config::get('GTrader.Strategies.FannTraining.maximize', []) as $val => $label)
                 <option value="{{ $val }}"
                 @if ($val == $preferences['maximize'])
                     selected
@@ -122,24 +122,24 @@
     <div class="col-sm-12">
         <span class="pull-right">
             <button onClick="window.GTrader.request(
-                                'strategy',
-                                'trainStart',
-                                $.extend(
-                                    window.GTrader.charts.trainingChart.getSelectedESR(),
-                                    {
-                                        id: {{ $strategy->getParam('id') }},
-                                        train_start_percent: train_slider.noUiSlider.get()[0],
-                                        train_end_percent: train_slider.noUiSlider.get()[1],
-                                        test_start_percent: test_slider.noUiSlider.get()[0],
-                                        test_end_percent: test_slider.noUiSlider.get()[1],
-                                        verify_start_percent: verify_slider.noUiSlider.get()[0],
-                                        verify_end_percent: verify_slider.noUiSlider.get()[1],
-                                        from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
-                                        crosstrain: $('#crosstrain').val(),
-                                        reset_after: $('#reset_after').val(),
-                                        maximize: $('#maximize').val()
-                                    }
-                                ))"
+                        'strategy',
+                        'trainStart',
+                        $.extend(
+                            window.GTrader.charts.trainingChart.getSelectedESR(),
+                            {
+                                id: {{ $strategy->getParam('id') }},
+                                train_start_percent: train_slider.noUiSlider.get()[0],
+                                train_end_percent: train_slider.noUiSlider.get()[1],
+                                test_start_percent: test_slider.noUiSlider.get()[0],
+                                test_end_percent: test_slider.noUiSlider.get()[1],
+                                verify_start_percent: verify_slider.noUiSlider.get()[0],
+                                verify_end_percent: verify_slider.noUiSlider.get()[1],
+                                from_scratch: $('#from_scratch').prop('checked') ? 1 : 0,
+                                crosstrain: $('#crosstrain').val(),
+                                reset_after: $('#reset_after').val(),
+                                maximize: $('#maximize').val()
+                            }
+                        ))"
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Start Training">

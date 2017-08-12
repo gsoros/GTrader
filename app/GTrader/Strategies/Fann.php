@@ -12,7 +12,7 @@ use GTrader\Indicator;
 use GTrader\Util;
 use GTrader\Chart;
 use GTrader\Exchange;
-use GTrader\FannTraining;
+//use GTrader\Strategies\FannTraining;
 use GTrader\Plot;
 use GTrader\Log;
 
@@ -27,6 +27,8 @@ if (!extension_loaded('fann')) {
  */
 class Fann extends Strategy
 {
+    use Trainable;
+
 
     /**
      * Fann resource
@@ -156,69 +158,6 @@ class Fann extends Strategy
         $ind = $chart->addIndicator('Ohlc', ['mode' => 'linepoints']);
         $ind->visible(true);
         $ind->addRef('root');
-        $chart->saveToSession();
-        return $chart;
-    }
-
-
-    /**
-     * Training progress chart.
-     * @param FannTraining  $training
-     * @return Chart
-     */
-    public function getTrainingProgressChart(FannTraining $training)
-    {
-        $candles = new Series([
-            'limit' => 0,
-            'exchange' => Exchange::getNameById($training->exchange_id),
-            'symbol' => Exchange::getSymbolNameById($training->symbol_id),
-            'resolution' => $training->resolution,
-        ]);
-
-        $highlights = [];
-        foreach (['train', 'test', 'verify'] as $range) {
-            if (isset($training->options[$range.'_start']) && isset($training->options[$range.'_end'])) {
-                $highlights[] = [
-                    'start' => $training->options[$range.'_start'],
-                    'end' => $training->options[$range.'_end']
-                ];
-            }
-        }
-
-        $chart = Chart::make(null, [
-            'candles' => $candles,
-            'strategy' => $this,
-            'name' => 'trainingProgressChart',
-            'height' => 200,
-            'disabled' => ['title', 'strategy', 'map', 'settings', 'fullscreen'],
-            'readonly' => ['esr'],
-            'highlight' => $highlights,
-            'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
-        ]);
-        $ind = $chart->getOrAddIndicator('Ohlc', ['mode' => 'linepoints']);
-        $ind->visible(true);
-        $ind->addRef('root');
-
-        $sig = $training->getMaximizeSig($this);
-        $ind = $chart->getOrAddIndicator($sig);
-        $ind->visible(true);
-        $ind->addRef('root');
-
-        if (!$ind = $chart->getFirstIndicatorByClass('Balance')) {
-            $ind = $chart->getOrAddIndicator('Balance');
-        }
-        $ind->visible(true);
-        $ind->addRef('root');
-
-        $signal_sig = $this->getSignalsIndicator()->getSignature();
-        if (!$chart->hasIndicatorClass('Profitability')) {
-            $ind = $chart->getOrAddIndicator('Profitability', [
-                'input_signal' => $signal_sig,
-            ]);
-            $ind->visible(true);
-            $ind->addRef('root');
-        }
-
         $chart->saveToSession();
         return $chart;
     }
@@ -439,40 +378,6 @@ class Fann extends Strategy
 
 
     /**
-     * Display strategy as list item.
-     * @return string
-     */
-    public function listItem()
-    {
-        try {
-            $training = FannTraining::select('status')
-                ->where('strategy_id', $this->getParam('id'))
-                ->where(function ($query) {
-                    $query->where('status', 'training')
-                        ->orWhere('status', 'paused');
-                })
-                ->first();
-            $training_status = null;
-            if (is_object($training)) {
-                $training_status = $training->status;
-            }
-
-            $html = view(
-                'Strategies/FannListItem',
-                [
-                    'strategy' => $this,
-                    'training_status' => $training_status
-                ]
-            );
-        } catch (\Exception $e) {
-            Log::error('Failed for id '.$this->getParam('id'));
-            $html = '[Failed to display FannListItem]';
-        }
-        return $html;
-    }
-
-
-    /**
      * Load an existing fann network from file or create new fann network.
      * @param  string   $prefer_suffix  Filename suffix for loading the network from an alternate file.
      * @throws
@@ -661,7 +566,7 @@ class Fann extends Strategy
     public function delete()
     {
         // delete trainings
-        FannTraining::where('strategy_id', $this->getParam('id'))->delete();
+        $this->deleteTrainings();
         // delete files
         $this->deleteFiles();
         // delete training history

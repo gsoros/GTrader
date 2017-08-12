@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use GTrader\Lock;
-use GTrader\FannTraining as Training;
+use GTrader\Training;
 
 class RunTraining extends Command
 {
@@ -13,7 +13,7 @@ class RunTraining extends Command
      *
      * @var string
      */
-    protected $signature = 'training:run {slot} {training_id}';
+    protected $signature = 'training:run {slot} {class} {training_id}';
 
     /**
      * The console command description.
@@ -39,8 +39,7 @@ class RunTraining extends Command
      */
     public function handle()
     {
-        $training = Training::findOrFail($this->argument('training_id'));
-
+        $training = $this->argument('class')::findOrFail($this->argument('training_id'));
 
         $slot_lock = 'training_slot_'.$this->argument('slot');
         if (!Lock::obtain($slot_lock)) {

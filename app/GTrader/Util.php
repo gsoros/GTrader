@@ -25,8 +25,10 @@ class Util
             return false;
         }
         ksort($array, $sort_flags);
-        foreach ($array as &$arr) {
-            self::ksortR($arr, $sort_flags);
+        foreach ($array as &$val) {
+            if (is_array($val)) {
+                static::ksortR($val, $sort_flags);
+            }
         }
         return true;
     }

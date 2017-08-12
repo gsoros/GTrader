@@ -33,7 +33,7 @@
         </label>
         <div class="col-sm-9" style="padding: 0 25px">
             <div id="strategy_signals">
-                {!! $strategy->viewSignalForm() !!}
+                {!! $strategy->viewSignalsForm() !!}
             </div>
         </div>
     </div>
