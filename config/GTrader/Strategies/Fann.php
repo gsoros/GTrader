@@ -26,4 +26,5 @@ return [
     // compensate for the bias of the null sample
     'bias_compensation'             => 0,
     'training_log_prefix'           => 'fanntraining_',
+    'history_table'                 => 'training_history',
 ];

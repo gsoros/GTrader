@@ -317,6 +317,15 @@ $(function() {
                     $('#errorBubble').remove();
                 }, 1000);
             }, 3000);
-        } // errorBubble
+        }, // errorBubble
+
+
+        serializeObject: function(sel) {
+            var result = {};
+            $.each(sel.serializeArray(), function() {
+                result[this.name] = this.value;
+            });
+            return result;
+        }
     }) // $.extend( window.GTrader
 }); // $(f () {

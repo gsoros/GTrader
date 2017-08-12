@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateFannTrainingTable extends Migration
+class CreateTrainingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateFannTrainingTable extends Migration
      */
     public function up()
     {
-        Schema::create('fann_training', function (Blueprint $table) {
+        Schema::create('trainings', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('strategy_id')->unsigned()->index();
             $table->string('status')->index();
@@ -32,6 +32,6 @@ class CreateFannTrainingTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('fann_training');
+        Schema::dropIfExists('trainings');
     }
 }

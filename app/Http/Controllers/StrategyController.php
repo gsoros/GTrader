@@ -110,38 +110,24 @@ class StrategyController extends Controller
         $training = $training_class::where('strategy_id', $strategy_id)
             ->where(function ($query) {
                 $query->where('status', 'training')
-                        ->orWhere('status', 'paused');
+                    ->orWhere('status', 'paused');
             })
             ->first();
         if (is_object($training)) {
-            $html = view('Strategies/'.$training_class.'Progress', [
+            $html = view('TrainingProgress', [
                 'strategy' => $strategy,
                 'training' => $training
             ]);
             return response($html, 200);
         }
 
-        $default_training = $training_class::make();
-        $default_prefs = [];
-        foreach (array_keys($default_training->getParam('ranges')) as $item) {
-            $default_prefs[$item.'_start_percent'] =
-                $default_training->getParam('ranges.'.$item.'.start_percent');
-            $default_prefs[$item.'_end_percent'] =
-                $default_training->getParam('ranges.'.$item.'.end_percent');
-        }
-        foreach (['crosstrain', 'reset_after'] as $item) {
-            $default_prefs[$item] = $default_training->getParam($item);
-        }
-        $conf_maximize = $default_training->getParam('maximize');
-        $default_prefs['maximize'] = array_keys($conf_maximize)[0];
-
-        $html = view('Strategies/'.$strategy->getParam('training_class').'Form', [
-            'strategy' => $strategy,
-            'preferences' => Auth::user()->getPreference(
-                $strategy->getParam('training_class'),
-                $default_prefs
-            ),
+        $training = $training_class::firstOrNew([
+            'strategy_id' => $strategy_id,
         ]);
+        if (!$html = $training->toHtml()) {
+            Log::error('Could not display training form');
+            return response('Error displaying training form', 400);
+        }
         return response($html, 200);
     }
 
@@ -154,147 +140,12 @@ class StrategyController extends Controller
             $this->getStrategy($request))[0]) {
             return $error;
         }
-        $exchange = $request->exchange;
-        if (!($exchange_id = Exchange::getIdByName($exchange))) {
-            Log::error('Exchange not found ');
-            return response('Exchange not found.', 403);
-        }
-        $symbol = $request->symbol;
-        if (!($symbol_id = Exchange::getSymbolIdByExchangeSymbolName($exchange, $symbol))) {
-            Log::error('Symbol not found ');
-            return response('Symbol not found.', 403);
-        }
-        if (!($resolution = $request->resolution)) {
-            Log::error('Resolution not found ');
-            return response('Resolution not found.', 403);
-        }
 
-        $training_class = $strategy->getTrainingClass();
-        $training = $training_class::where('strategy_id', $strategy_id)
-            ->where('status', 'training')->first();
-        if (is_object($training)) {
-            Log::error('Strategy id('.$strategy_id.') is already being trained.');
-            $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
-                'strategy' => $strategy,
-                'training' => $training
-            ]);
-            return response($html, 200);
-        }
-
-        $default_training = $training_class::make();
-        $prefs = [];
-        foreach (array_keys($default_training->getParam('ranges')) as $item) {
-            ${$item.'_start_percent'} = doubleval($request->{$item.'_start_percent'});
-            ${$item.'_end_percent'} = doubleval($request->{$item.'_end_percent'});
-            if ((${$item.'_start_percent'} >= ${$item.'_end_percent'}) || !${$item.'_end_percent'}) {
-                Log::error('Start or end not found for '.$item);
-                return response('Input error.', 403);
-            }
-            $prefs[$item.'_start_percent'] = ${$item.'_start_percent'};
-            $prefs[$item.'_end_percent'] = ${$item.'_end_percent'};
-        }
-        foreach (['crosstrain', 'reset_after', 'maximize'] as $item) {
-            if (isset($request->$item)) {
-                $prefs[$item] = $request->$item;
-            }
-        }
-        Auth::user()->setPreference($strategy->getParam('training_class'), $prefs)->save();
-
-        $candles = new Series([
-            'exchange' => $exchange,
-            'symbol' => $symbol,
-            'resolution' => $resolution,
-            'limit' => 0
-        ]);
-        $epoch = $candles->getEpoch();
-        $last = $candles->getLastInSeries();
-        $total = $last - $epoch;
-        $options = [];
-        foreach (array_keys($default_training->getParam('ranges')) as $item) {
-            $options[$item.'_start'] = floor($epoch + $total / 100 * ${$item.'_start_percent'});
-            $options[$item.'_end']   = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
-        }
-
-        $options['crosstrain'] = 0;
-        if (isset($request->crosstrain)) {
-            $options['crosstrain'] = intval($request->crosstrain);
-        }
-        if ($options['crosstrain'] < 2) {
-            $options['crosstrain'] = 0;
-        }
-        if ($options['crosstrain'] > 10000) {
-            $options['crosstrain'] = 10000;
-        }
-
-        $options['reset_after'] = 0;
-        if (isset($request->reset_after)) {
-            $options['reset_after'] = intval($request->reset_after);
-        }
-        if ($options['reset_after'] < 100) {
-            $options['reset_after'] = 0;
-        }
-        if ($options['reset_after'] > 10000) {
-            $options['reset_after'] = 10000;
-        }
-
-        $conf_maximize = config('GTrader.Strategies.'.$strategy->getParam('training_class').'.maximize');
-        $options['maximize'] = array_keys($conf_maximize)[0];
-        if (isset($request->maximize)) {
-            if (array_key_exists($request->maximize, $conf_maximize)) {
-                $options['maximize'] = $request->maximize;
-            }
-        }
-
-        $strategy->setParam(
-            'last_training',
-            array_merge([
-                'exchange' => $exchange,
-                'symbol' => $symbol,
-                'resolution' => $resolution,
-            ], $options)
-        )->save();
-
-        $training = $training_class::firstOrNew([
-            'strategy_id'   => $strategy_id,
-            'status'        => 'training'
+        $training = $strategy->getTrainingClass()::firstOrNew([
+            'strategy_id' => $strategy_id
         ]);
 
-        $training->strategy_id = $strategy_id;
-        $training->status = 'training';
-        $training->exchange_id = $exchange_id;
-        $training->symbol_id = $symbol_id;
-        $training->resolution = $resolution;
-        $training->options = $options;
-        $training->progress = [];
-
-        $from_scratch = !$strategy->hasBeenTrained();
-        if (isset($request->from_scratch)) {
-            if (intval($request->from_scratch)) {
-                $from_scratch = true;
-            }
-        }
-
-        if ($from_scratch) {
-            Log::info('Training from scratch.');
-            $strategy->destroyFann();
-            $strategy->deleteFiles();
-            $strategy->loadOrCreateFann();
-            $strategy->deleteHistory();
-        } else {
-            $last_epoch = $strategy->getLastTrainingEpoch();
-            Log::info('Continuing training from epoch '.$last_epoch);
-            //$training->setProgress('epoch', $last_epoch);
-            $training->progress = ['epoch' => $last_epoch];
-        }
-
-        $training->save();
-
-        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
-            'strategy' => $strategy,
-            'training' => $training
-        ]);
-
-        return response($html, 200);
+        return $training->handleStartRequest($request);
     }
 
 
@@ -366,8 +217,7 @@ class StrategyController extends Controller
             $this->getStrategy($request))[0]) {
             return $error;
         }
-        $training_class = $strategy->getTrainingClass();
-        $training = $training_class::where('strategy_id', $strategy_id)
+        $training = $strategy->getTrainingClass()::where('strategy_id', $strategy_id)
             ->where('status', 'training')->first();
         if (!is_object($training)) {
             Log::error('Training not found for strategy '.$strategy_id);
@@ -375,7 +225,7 @@ class StrategyController extends Controller
         }
         $training->status = 'paused';
         $training->save();
-        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
+        $html = view('TrainingProgress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
@@ -389,8 +239,7 @@ class StrategyController extends Controller
             $this->getStrategy($request))[0]) {
             return $error;
         }
-        $training_class = $strategy->getTrainingClass();
-        $training = $training_class::where('strategy_id', $strategy_id)
+        $training = $strategy->getTrainingClass()::where('strategy_id', $strategy_id)
             ->where('status', 'paused')->first();
         if (!is_object($training)) {
             Log::error('Training not found for strategy '.$strategy_id);
@@ -398,7 +247,7 @@ class StrategyController extends Controller
         }
         $training->status = 'training';
         $training->save();
-        $html = view('Strategies/'.$strategy->getParam('training_class').'Progress', [
+        $html = view('TrainingProgress', [
             'strategy' => $strategy,
             'training' => $training
         ]);

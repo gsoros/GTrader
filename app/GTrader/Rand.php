@@ -163,7 +163,7 @@ class Rand
         $default = null,
         float $weight = .5)
     {
-        if (.5 > Rand::floatNormal(0, 1, 1, $weight)) {
+        if (.5 > static::floatNormal(0, 1, 1, 1 - $weight)) {
             return $default;
         }
         if (!count($items)) {

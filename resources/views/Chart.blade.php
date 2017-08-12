@@ -22,44 +22,39 @@
         @if (!in_array('esr', $disabled))
         <!-- Exchange, Symbol, Resolution Selectors -->
         <div class="col-xs-6 npl" id="esr_{{ $name }}">
-            <form class="form-inline">
-                <div class="form-group">
-                    @if (in_array('esr', $readonly))
-                        @php
-                             $candles = $chart->getCandles();
-                        @endphp
-                        <small>
-                        {{ GTrader\Exchange::getESRReadonly(
-                                            $candles->getParam('exchange'),
-                                            $candles->getParam('symbol'),
-                                            $candles->getParam('resolution')) }}
-                        </small>
-                    @else
-                        {!! GTrader\Exchange::getESRSelector($chart->getParam('name')) !!}
-                    @endif
-                </div>
-            </form>
+        <div class="form-group">
+            @if (in_array('esr', $readonly))
+                @php
+                     $candles = $chart->getCandles();
+                @endphp
+                <small>
+                {{ GTrader\Exchange::getESRReadonly(
+                                    $candles->getParam('exchange'),
+                                    $candles->getParam('symbol'),
+                                    $candles->getParam('resolution')) }}
+                </small>
+            @else
+                {!! GTrader\Exchange::getESRSelector($chart->getParam('name')) !!}
+            @endif
+        </div>
         </div>
         @endif
 
         @if (!in_array('strategy', $disabled))
         <!-- Strategy Selector -->
         <div class="col-xs-3 npl">
-            <form class="form-inline">
-                @if (in_array('strategy', $readonly))
-                    <small>[{{ $chart->getStrategy()->getParam('name') }}]</small>
-                @else
-                    <select title="Strategy Selector"
-                            class="btn-primary btn btn-mini"
-                            id="strategy_select_{{ $name }}"></select>
-                    <script>
-                        $(function() {
-                            window.GTrader.registerStrategySelector('{{ $name }}');
-                        });
-                    </script>
-                @endif
-
-            </form>
+        @if (in_array('strategy', $readonly))
+            <small>[{{ $chart->getStrategy()->getParam('name') }}]</small>
+        @else
+            <select title="Strategy Selector"
+                    class="btn-primary btn btn-mini"
+                    id="strategy_select_{{ $name }}"></select>
+            <script>
+                $(function() {
+                    window.GTrader.registerStrategySelector('{{ $name }}');
+                });
+            </script>
+        @endif
         </div>
         @endif
 

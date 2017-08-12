@@ -285,4 +285,11 @@ abstract class Strategy extends Base
     {
         return count($this->getSignals($force_rerun));
     }
+
+
+    public function fromScratch()
+    {
+        Log::debug('.');
+        return $this;
+    }
 }

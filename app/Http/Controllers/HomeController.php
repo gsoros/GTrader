@@ -214,38 +214,93 @@ class HomeController extends Controller
                 },
             ],
         ];
+        // $tests = [
+        //     'floatNormal' => [
+        //         'samples' => 50,
+        //         'tests' => [
+        //             // min, max, peak, weight
+        //             [0, 10, 5, .5],
+        //             [0, 10, 2, 1],
+        //             [0, 10, 2, .9],
+        //             [0, 10, 2, 0],
+        //             [0, 10, 2, .01],
+        //             [0, 1, .8, .3],
+        //             [10, 0, 2, .6],
+        //             [0, 10, 1, .75],
+        //             [0, 10, 1, .0001],
+        //             [0, 1, 1, 0.01],
+        //         ],
+        //         'callback' => function($input) {
+        //             return Rand::floatNormal($input[0], $input[1], $input[2], $input[3]);
+        //         },
+        //     ],
+        //     'pickNormal' => [
+        //         'samples' => 50,
+        //         'tests' => [
+        //             // items, default, weight
+        //             [range(1, 10), 2, .5],
+        //             [range(1, 10), 2, .01],
+        //             [range(1, 10), 2, .99],
+        //         ],
+        //         'callback' => function($input) {
+        //             return Rand::pickNormal($input[0], $input[1], $input[2]);
+        //         },
+        //     ],
+        // ];
+        $width = 1200;
 
-        function test($callback, $input, $samples) {
+        function test($callback, $input, $samples, $width) {
             $start = microtime(true);
-            $min = $max = $sum = null;
-            $result = [];
+            $sum = null;
+            $vals = [];
+            //$step = ($) $width / 2;
             for ($i = 1; $i <= $samples; $i++) {
                 $val = $callback($input);
-                $min = is_null($min) ? $val : min($min, $val);
-                $max = is_null($max) ? $val : max($max, $val);
+                // $min = is_null($min) ? $val : min($min, $val);
+                // $max = is_null($max) ? $val : max($max, $val);
                 $sum += $val;
-                $int = round($val);
-                $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
+                // $int = round($val);
+                // $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
+                $vals[] = $val;
             }
-            ksort($vals);
+            sort($vals);
+            $raw = $vals;
+            $min = min($vals);
+            $max = max($vals);
+            $step = ($max - $min) / $width * 2;
+            $dist = [];
+            $key = $min;
+            $dist_key = strval(round($key, 2));
+            while ($val = array_shift($vals)) {
+                if ($val >= $key + $step) {
+                    while ($key < $val) {
+                        $key += $step;
+                    }
+                    $dist_key = strval(round($key, 2));
+                }
+                if (!isset($dist[$dist_key])) {
+                    $dist[$dist_key] = 0;
+                }
+                $dist[$dist_key]++;
+            }
             dump([
                 'in' => array_merge(['samples' => $samples], $input),
                 'out' => [
                     't' => microtime(true) - $start,
                     'min' => number_format($min, 2),
                     'max' => number_format($max, 2),
-                    'avg' => number_format($sum / ($i - 1), 2),
-                    'dist' => $vals,
+                    'avg' => number_format($sum / $samples, 2),
+                    //'raw' => $raw,
+                    'dist' => $dist,
                 ],
             ]);
-            ksort($vals);
             $plot = new \GTrader\Plot ([
                 'name' => 'Plot',
-                'width' => 1200,
+                'width' => $width,
                 'height' => 200,
                 'data' => [
                     'distribution' => [
-                        'values' => $vals
+                        'values' => $dist
                     ]
                 ],
             ]);
@@ -255,7 +310,7 @@ class HomeController extends Controller
         foreach ($tests as $name => $test) {
             dump($name);
             foreach ($test['tests'] as $inputs) {
-                test($test['callback'], $inputs, $test['samples']);
+                test($test['callback'], $inputs, $test['samples'], $width);
             }
         }
     }

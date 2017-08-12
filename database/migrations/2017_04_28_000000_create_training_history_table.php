@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateFannHistoryTable extends Migration
+class CreateTrainingHistoryTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateFannHistoryTable extends Migration
      */
     public function up()
     {
-        Schema::create('fann_history', function (Blueprint $table) {
+        Schema::create('training_history', function (Blueprint $table) {
             $table->integer('strategy_id')->unsigned()->index();
             $table->integer('epoch')->unsigned()->index();
             $table->string('name')->index();
@@ -28,6 +28,6 @@ class CreateFannHistoryTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('fann_history');
+        Schema::dropIfExists('training_history');
     }
 }

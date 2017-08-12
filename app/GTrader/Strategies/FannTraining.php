@@ -2,7 +2,10 @@
 
 namespace GTrader\Strategies;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 use GTrader\Exchange;
 use GTrader\Series;
@@ -16,12 +19,6 @@ use GTrader\Strategies\Fann as FannStrategy;
 class FannTraining extends Training
 {
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'fann_training';
 
     /**
      * The attributes that should be cast to native types.
@@ -39,6 +36,18 @@ class FannTraining extends Training
     protected $reverts = 0;
     protected $started;
 
+
+    public function getPreferences()
+    {
+        $prefs = [];
+        foreach (['crosstrain', 'reset_after'] as $item) {
+            $prefs[$item] = $this->getParam($item);
+        }
+        return array_replace_recursive(
+            parent::getPreferences(),
+            $prefs
+        );
+    }
 
 
     public function run()
@@ -503,5 +512,47 @@ class FannTraining extends Training
     {
         Log::sparse('Memory used: '.Util::getMemoryUsage());
         return $this;
+    }
+
+
+    public function handleStartRequest(Request $request)
+    {
+        if (!$strategy = $this->loadStrategy()) {
+            Log::error('Could not load strategy');
+            return response('Strategy not found', 403);
+        }
+
+        $options = [];
+
+        foreach (['crosstrain', 'reset_after'] as $item) {
+            $prefs[$item] = $options[$item] = $request->$item ?? 0;
+        }
+
+        if ($options['crosstrain'] < 2) {
+            $options['crosstrain'] = 0;
+        }
+        if ($options['crosstrain'] > 10000) {
+            $options['crosstrain'] = 10000;
+        }
+
+        $options['reset_after'] = $request->reset_after ?? 0;
+        if ($options['reset_after'] < 100) {
+            $options['reset_after'] = 0;
+        }
+        if ($options['reset_after'] > 10000) {
+            $options['reset_after'] = 10000;
+        }
+
+        Auth::user()->setPreference(
+            $strategy->getParam('training_class'),
+            $prefs
+        )->save();
+
+        $strategy->setParam(
+            'last_training',
+            array_merge($strategy->getParam('last_training', []), $options)
+        )->save();
+
+        return parent::handleStartRequest($request);
     }
 }
