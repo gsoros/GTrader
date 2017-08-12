@@ -193,7 +193,7 @@ abstract class Chart extends Plot
     {
         if (! $name = $this->getParam('name')) {
             Log::error('We have no name.');
-            return this;
+            return $this;
         }
         //dump('chart::saveToSession()', $this);
         session([$name => $this]);
@@ -205,7 +205,7 @@ abstract class Chart extends Plot
     {
         if (! $name = $this->getParam('name')) {
             Log::error('We have no name.');
-            return this;
+            return $this;
         }
         $aff = DB::table('charts')
                         ->where('user_id', Auth::id())
@@ -218,7 +218,7 @@ abstract class Chart extends Plot
     {
         if (! $name = $this->getParam('name')) {
             Log::error('We have no name.');
-            return this;
+            return $this;
         }
         session([$name => null]);
 
