@@ -121,7 +121,11 @@ trait Trainable
 
     public function deleteTrainings()
     {
-        $this->getTrainingClass()::where(
+        if (!$class = $this->getTrainingClass()) {
+            Log::error('no training class', $this->getparam('id'));
+            return $this;
+        }
+        $class::where(
             'strategy_id',
             $this->getParam('id')
         )->delete();
