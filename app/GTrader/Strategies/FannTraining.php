@@ -522,7 +522,7 @@ class FannTraining extends Training
             return response('Strategy not found', 403);
         }
 
-        $options = [];
+        $options = $this->options ?? [];
 
         foreach (['crosstrain', 'reset_after'] as $item) {
             $prefs[$item] = $options[$item] = $request->$item ?? 0;
@@ -542,6 +542,8 @@ class FannTraining extends Training
         if ($options['reset_after'] > 10000) {
             $options['reset_after'] = 10000;
         }
+
+        $this->options = $options;
 
         Auth::user()->setPreference(
             $strategy->getParam('training_class'),

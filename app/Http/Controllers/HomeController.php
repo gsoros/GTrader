@@ -214,39 +214,6 @@ class HomeController extends Controller
                 },
             ],
         ];
-        // $tests = [
-        //     'floatNormal' => [
-        //         'samples' => 50,
-        //         'tests' => [
-        //             // min, max, peak, weight
-        //             [0, 10, 5, .5],
-        //             [0, 10, 2, 1],
-        //             [0, 10, 2, .9],
-        //             [0, 10, 2, 0],
-        //             [0, 10, 2, .01],
-        //             [0, 1, .8, .3],
-        //             [10, 0, 2, .6],
-        //             [0, 10, 1, .75],
-        //             [0, 10, 1, .0001],
-        //             [0, 1, 1, 0.01],
-        //         ],
-        //         'callback' => function($input) {
-        //             return Rand::floatNormal($input[0], $input[1], $input[2], $input[3]);
-        //         },
-        //     ],
-        //     'pickNormal' => [
-        //         'samples' => 50,
-        //         'tests' => [
-        //             // items, default, weight
-        //             [range(1, 10), 2, .5],
-        //             [range(1, 10), 2, .01],
-        //             [range(1, 10), 2, .99],
-        //         ],
-        //         'callback' => function($input) {
-        //             return Rand::pickNormal($input[0], $input[1], $input[2]);
-        //         },
-        //     ],
-        // ];
         $width = 1200;
 
         function test($callback, $input, $samples, $width) {

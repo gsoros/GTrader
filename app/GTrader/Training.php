@@ -149,7 +149,7 @@ abstract class Training extends Model
         $epoch = $candles->getEpoch();
         $last = $candles->getLastInSeries();
         $total = $last - $epoch;
-        $options = [];
+        $options = $this->options ?? [];
         foreach (array_keys($this->getParam('ranges')) as $item) {
             $options[$item.'_start'] = floor($epoch + $total / 100 * ${$item.'_start_percent'});
             $options[$item.'_end']   = ceil($epoch + $total / 100 * ${$item.'_end_percent'});
