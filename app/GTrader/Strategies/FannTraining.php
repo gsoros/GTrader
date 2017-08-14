@@ -19,35 +19,10 @@ use GTrader\Strategies\Fann as FannStrategy;
 class FannTraining extends Training
 {
 
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'options' => 'array',
-        'progress' => 'array',
-        'history' => 'array',
-    ];
-
     protected $strategies = [];
     protected $saved_fann;
     protected $reverts = 0;
     protected $started;
-
-
-    public function getPreferences()
-    {
-        $prefs = [];
-        foreach (['crosstrain', 'reset_after'] as $item) {
-            $prefs[$item] = $this->getParam($item);
-        }
-        return array_replace_recursive(
-            parent::getPreferences(),
-            $prefs
-        );
-    }
 
 
     public function run()
@@ -515,6 +490,19 @@ class FannTraining extends Training
     }
 
 
+    public function getPreferences()
+    {
+        $prefs = [];
+        foreach (['crosstrain', 'reset_after'] as $item) {
+            $prefs[$item] = $this->getParam($item);
+        }
+        return array_replace_recursive(
+            parent::getPreferences(),
+            $prefs
+        );
+    }
+
+
     public function handleStartRequest(Request $request)
     {
         if (!$strategy = $this->loadStrategy()) {
@@ -546,9 +534,22 @@ class FannTraining extends Training
         $this->options = $options;
 
         Auth::user()->setPreference(
-            $strategy->getParam('training_class'),
+            $this->getShortClass(),
             $prefs
         )->save();
+
+        $from_scratch = true;
+        if ($strategy->hasBeenTrained()) {
+            $from_scratch = intval($request->from_scratch ?? 0);
+        }
+        if ($from_scratch) {
+            Log::info('Training from scratch.');
+            $strategy->fromScratch();
+        } else {
+            $last_epoch = $strategy->getLastTrainingEpoch();
+            Log::info('Continuing training from epoch '.$last_epoch);
+            $this->progress = ['epoch' => $last_epoch];
+        }
 
         $strategy->setParam(
             'last_training',

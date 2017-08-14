@@ -1,4 +1,5 @@
 <div class="row bdr-rad">
+
     <div class="col-sm-6 editable"
         title="Swap training and test ranges after this number of epochs without improvement">
         <label for="crosstrain">Cross-train</label>
@@ -23,6 +24,7 @@
             @endforeach
         </select>
     </div>
+
     <div class="col-sm-6 editable"
         title="Restart training from scratch after this number of epochs without improvement">
         <label for="reset_after">Reset</label>
@@ -47,4 +49,27 @@
             @endforeach
         </select>
     </div>
+
+    <div class="col-sm-6 editable">
+        @php
+            if ($strategy->hasBeenTrained()) {
+                $disabled = '';
+                $checked = '';
+            }
+            else {
+                $disabled = ' disabled';
+                $checked = ' checked';
+            }
+        @endphp
+        <div class="form-check form-check-inline {{ $disabled }}">
+            <label class="form-check-label">
+                <input class="form-check-input"
+                        type="checkbox"
+                        id="from_scratch"
+                        name="from_scratch"
+                        value="1"{{ $checked }}{{ $disabled }}> Train From Scratch
+            </label>
+        </div>
+    </div>
+
 </div>

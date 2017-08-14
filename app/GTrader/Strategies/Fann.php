@@ -491,13 +491,7 @@ class Fann extends Strategy
      */
     public function delete()
     {
-        // delete trainings
-        $this->deleteTrainings();
-        // delete files
         $this->deleteFiles();
-        // delete training history
-        $this->deleteHistory();
-        // delete strategy
         return parent::delete();
     }
 

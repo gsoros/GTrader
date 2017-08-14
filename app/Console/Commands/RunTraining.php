@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use GTrader\Lock;
+use GTrader\Log;
 use GTrader\Training;
 
 class RunTraining extends Command
@@ -20,7 +21,7 @@ class RunTraining extends Command
      *
      * @var string
      */
-    protected $description = 'Runs the Fann Training.';
+    protected $description = 'Runs the Training.';
 
     /**
      * Create a new command instance.
@@ -39,6 +40,7 @@ class RunTraining extends Command
      */
     public function handle()
     {
+        Log::debug($this->argument('class'));
         $training = $this->argument('class')::findOrFail($this->argument('training_id'));
 
         $slot_lock = 'training_slot_'.$this->argument('slot');

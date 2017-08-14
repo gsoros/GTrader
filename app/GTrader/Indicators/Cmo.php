@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 class Cmo extends Trader
 {
     public function traderCalc(array $values)

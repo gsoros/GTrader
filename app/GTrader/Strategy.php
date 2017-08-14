@@ -68,10 +68,20 @@ abstract class Strategy extends Base
 
     public function __clone()
     {
-        foreach ($this->getIndicators() as $indicator) {
-            $new_indicator = clone $indicator;
-            $this->addIndicator($new_indicator);
+        $this->cleanCache();
+
+        $inds = $this->getIndicators();
+        $this->unsetIndicators();
+        foreach ($inds as $ind) {
+            $new_ind = clone $ind;
+            $this->addIndicator($new_ind);
+            $new_ind->setParams($ind->getParams());
         }
+
+        $candles = clone $this->getCandles();
+        $this->setCandles($candles);
+
+        parent::__clone();
     }
 
 
@@ -255,7 +265,7 @@ abstract class Strategy extends Base
         }
         return $this->getIndicatorLastValue('Profitability', [
             'input_signal' => $signals->getSignature(),
-            ], $force_rerun);
+        ], $force_rerun);
     }
 
 

@@ -161,6 +161,13 @@ trait Trainable
         return $chart;
     }
 
+    public function delete()
+    {
+        $this->deleteTrainings();
+        $this->deleteHistory();
+        return parent::delete();
+    }
+
 
     public function deleteTrainings()
     {

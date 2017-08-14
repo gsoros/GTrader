@@ -10,11 +10,13 @@ use GTrader\Log;
 
 class Signals extends HasInputs
 {
+
     public function __construct(array $params = [])
     {
         parent::__construct($params);
         $this->setAllowedOwners(['GTrader\\Series']);
     }
+
 
     public function init()
     {
@@ -25,11 +27,13 @@ class Signals extends HasInputs
         return parent::init();
     }
 
+
     public function createDependencies()
     {
         $this->copyParamsFromStrategy();
         return parent::createDependencies();
     }
+
 
     protected function copyParamsFromStrategy()
     {
@@ -70,6 +74,7 @@ class Signals extends HasInputs
         return $this;
     }
 
+
     public function getForm(array $params = [])
     {
         $key = 'adjustable.strategy_id.options';
@@ -93,10 +98,12 @@ class Signals extends HasInputs
         return null;
     }
 
+
     public function max(array $values)
     {
         return null;
     }
+
 
     public function getSignature(string $output = null)
     {
@@ -133,6 +140,7 @@ class Signals extends HasInputs
         */
         return json_encode($a);
     }
+
 
     public function getDisplaySignature(
       string $format = 'long',
@@ -179,6 +187,7 @@ class Signals extends HasInputs
         }
         return $name.' ('.($strategy_name ? $strategy_name : 'No Strategy').')';
     }
+
 
     public function calculate(bool $force_rerun = false)
     {
@@ -239,7 +248,7 @@ class Signals extends HasInputs
                     $candle->{$input_keys['input_'.$signal.'_b']}
                 ) && $previous['signal'] !== $signal) {
                     if ($previous['time'] === $candle->time) {
-                        Log::error('Multiple conditions met for '.$candle->time);
+                        //Log::debug('Multiple conditions met for '.$candle->time);
                         continue;
                     }
                     $candle->{$output_keys['signal']} = $signal;

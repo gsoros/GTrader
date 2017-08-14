@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Balance Of Power */
 class Bop extends Trader
 {

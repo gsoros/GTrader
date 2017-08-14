@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Rate of change */
 class Roc extends Trader
 {

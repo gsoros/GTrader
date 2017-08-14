@@ -1,10 +1,10 @@
 @php
     $train = $training_status ?
         (('paused' === $training_status) ?
-            'Training Paused' :
-            'Now Training'
+            'Evolution Paused' :
+            'Now Evolving'
         ) :
-        'Train';
+        'Evolve';
 @endphp
 <button onClick="
         window.GTrader.request(

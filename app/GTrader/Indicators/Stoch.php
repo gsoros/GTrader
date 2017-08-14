@@ -4,6 +4,8 @@ namespace GTrader\Indicators;
 
 use GTrader\Series;
 
+use GTrader\Log;
+
 /** Stochastic Oscillator */
 class Stoch extends Trader
 {

@@ -36,6 +36,7 @@ trait HasIndicators
                 ['indicator' => $params]
             ))) {
                 Log::error('could not make', $ind_str);
+                //dd(debug_backtrace());
                 return null;
             }
         }
@@ -205,6 +206,17 @@ trait HasIndicators
     public function unsetIndicators()
     {
         $this->getIndicatorOwner()->indicators = [];
+        return $this;
+    }
+
+
+    public function killIndicators()
+    {
+        foreach ($this->getIndicators() as $ind) {
+            //dump('HasIndicators::killIndicators() '.$ind->debugObjId());
+            $ind->kill();
+        }
+        $this->unsetIndicators();
         return $this;
     }
 
@@ -511,6 +523,16 @@ trait HasIndicators
                 }
                 if (Indicator::signatureSame($sig, $ind->getSignature())) {
                     continue 2;
+                }
+                if (method_exists($ind, 'getInputs')) {
+                    if (in_array($sig, $ind->getInputs())) {
+                        continue 2;
+                    }
+                }
+                if (method_exists($ind, 'inputFrom')) {
+                    if ($ind->inputFrom($sig)) {
+                        continue 2;
+                    }
                 }
             }
             if (in_array('outputs', $disabled)) {

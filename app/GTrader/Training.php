@@ -40,6 +40,16 @@ abstract class Training extends Model
      */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'options' => 'array',
+        'progress' => 'array',
+        'history' => 'array',
+    ];
 
     protected $lock;
 
@@ -54,13 +64,22 @@ abstract class Training extends Model
     }
 
 
+    public function isValid(): bool
+    {
+        if (!$strategy = $this->loadStrategy()) {
+            return false;
+        }
+        return ($this->getShortClass() == $strategy->getParam('training_class'));
+    }
+
+
     public function toHtml($content = null)
     {
         $prefs = $this->getPreferences();
         if ($class = $this->loadStrategy()->getParam('training_class')) {
             $prefs = Auth::user()->getPreference($class, $prefs);
         }
-        if (!$strategy = Strategy::load($this->strategy_id)) {
+        if (!$strategy = $this->loadStrategy()) {
             Log::error('Could not load strategy');
             return null;
         }
@@ -108,7 +127,7 @@ abstract class Training extends Model
             return response('Resolution not found.', 403);
         }
 
-        $training = static::where('strategy_id', $this->getParam('strategy_id'))
+        $training = static::where('strategy_id', $this->strategy_id)
             ->where('status', 'training')->first();
         if (is_object($training)) {
             Log::info('Strategy id('.$strategy->getParam('id').') is already being trained.');
@@ -179,20 +198,6 @@ abstract class Training extends Model
         $this->options = $options;
         $this->progress = [];
 
-        $from_scratch = true;
-        if ($strategy->hasBeenTrained()) {
-            $from_scratch = intval($request->from_scratch ?? 0);
-        }
-
-        if ($from_scratch) {
-            Log::info('Training from scratch.');
-            $strategy->fromScratch();
-        } else {
-            $last_epoch = $strategy->getLastTrainingEpoch();
-            Log::info('Continuing training from epoch '.$last_epoch);
-            $this->progress = ['epoch' => $last_epoch];
-        }
-
         $this->save();
 
         return response(
@@ -204,6 +209,20 @@ abstract class Training extends Model
         );
     }
 
+
+    public function loadStrategy()
+    {
+        if (!$strategy_id = $this->strategy_id) {
+            Log::error('Strategy id not set');
+            return null;
+        }
+        if (!$strategy = Strategy::load($strategy_id)) {
+            Log::error('Could not load strategy', $strategy_id);
+            return null;
+        }
+        return $strategy;
+    }
+    
 
     protected function obtainLock()
     {
@@ -219,19 +238,5 @@ abstract class Training extends Model
     {
         Lock::release($this->lock);
         return $this;
-    }
-
-
-    protected function loadStrategy()
-    {
-        if (!$strategy_id = $this->getParam('strategy_id')) {
-            Log::error('Strategy id not set');
-            return null;
-        }
-        if (!$strategy = Strategy::load($strategy_id)) {
-            Log::error('Could not load strategy', $strategy_id);
-            return null;
-        }
-        return $strategy;
     }
 }

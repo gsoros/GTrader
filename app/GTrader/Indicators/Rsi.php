@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Relative Stregnth Index */
 class Rsi extends Trader
 {

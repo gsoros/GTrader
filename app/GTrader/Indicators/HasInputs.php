@@ -35,7 +35,7 @@ abstract class HasInputs extends Indicator
     }
 
 
-    protected function subscribeEvents(bool $subscribe = true)
+    public function subscribeEvents(bool $subscribe = true)
     {
         $func = $subscribe ? 'subscribe' : 'unsubscribe';
         Event::$func('indicator.change', [$this, 'handleIndicatorChange']);
@@ -63,21 +63,27 @@ abstract class HasInputs extends Indicator
     public function handleIndicatorChange($object, $event)
     {
         if ($object === $this) {
-            return true;
+            return $this;
+        }
+        if ($object->getOwner() !== $this->getOwner()) {
+            return $this;
         }
         if (!$old_sig = Arr::get($event, 'signature.old')) {
-            return true;
+            return $this;
         }
         if (!$new_sig = Arr::get($event, 'signature.new')) {
-            return true;
+            return $this;
         }
         if (Indicator::signatureSame($old_sig, $new_sig)) {
-            return true;
+            return $this;
         }
         $changed = null;
         foreach ($this->getInputs() as $input_key => $input_sig) {
+            if ($this->getParam('adjustable.'.$input_key.'.immutable')) {
+                continue;
+            }
             if (!$owner = $this->getOwner()) {
-                return true;
+                return $this;
             }
             if (Indicator::signatureSame($input_sig, $old_sig)) {
                 if (is_null($changed)) {
@@ -101,7 +107,7 @@ abstract class HasInputs extends Indicator
                 ]
             );
         }
-        return true;
+        return $this;
     }
 
 
@@ -113,13 +119,14 @@ abstract class HasInputs extends Indicator
         }
         //Log::debug('Params: '.json_encode($this->getParam('indicator')));
         foreach ($this->getParam('indicator', []) as $k => $v) {
-            if ('input_' === substr($k, 0, 6)) {
-                if (!is_string($v)) {
-                    $v = json_encode($v);
-                    //dd('HasInputs::getInputs() val is not a str: '.$v, debug_backtrace());
-                }
-                $inputs[$k] = $v;
+            if ('input_' !== substr($k, 0, 6)) {
+                continue;
             }
+            if (!is_string($v)) {
+                $v = json_encode($v);
+                //dd('HasInputs::getInputs() val is not a str: '.$v, debug_backtrace());
+            }
+            $inputs[$k] = $v;
         }
         //dump('HasInputs::getInputs() '.$this->debugObjId(), $inputs);
         return $inputs;
@@ -175,6 +182,11 @@ abstract class HasInputs extends Indicator
             if ($input_ind->inputFrom($signatures)) {
                 return true;
             }
+            // foreach ($signatures as $sig) {
+            //     if (Indicator::signatureSame($input, $sig)) {
+            //         return true;
+            //     }
+            // }
         }
         return false;
     }

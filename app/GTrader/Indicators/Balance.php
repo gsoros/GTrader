@@ -6,14 +6,24 @@ use Illuminate\Support\Facades\Auth;
 use GTrader\Exchange;
 use GTrader\UserExchangeConfig;
 use GTrader\Log;
+use GTrader\Gene;
 
 class Balance extends HasInputs
 {
+
     public function __construct(array $params = [])
     {
+        //dump('Balance::__construct() '.$this->debugObjId());
         parent::__construct($params);
         $this->setAllowedOwners(['GTrader\\Series']);
     }
+
+
+    public function init()
+    {
+        //dump('Balance::init() '.$this->debugObjId());
+    }
+
 
     public function createDependencies()
     {
@@ -29,8 +39,22 @@ class Balance extends HasInputs
         return $this;
     }
 
+
+    public function crossover(Gene $other, float $weight = .5): Gene
+    {
+        return $this;
+    }
+
+
+    public function mutate(float $rate): Gene
+    {
+        return $this;
+    }
+
+
     public function calculate(bool $force_rerun = false)
     {
+        //dump('Balance::calculate() '.$this->debugObjId());
         $this->runInputIndicators($force_rerun);
 
         $candles = $this->getCandles();

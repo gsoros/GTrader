@@ -131,10 +131,8 @@ abstract class Indicator extends Base implements Gene
             }
             $this->setParam('indicator.'.$key, $val);
         }
-        $this->dispatchEventIfSigsDiffer(
-            $before,
-            $this->getSignature()
-        );
+        $after = $this->getSignature();
+        $this->dispatchEventIfSigsDiffer($before, $after);
         return $this;
     }
 
@@ -748,10 +746,8 @@ abstract class Indicator extends Base implements Gene
                 )
             );
         }
-        $this->dispatchEventIfSigsDiffer(
-            $before,
-            $this->getSignature()
-        );
+        $after = $this->getSignature();
+        $this->dispatchEventIfSigsDiffer($before, $after);
         return $this;
     }
 
@@ -801,16 +797,16 @@ abstract class Indicator extends Base implements Gene
     {
         $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $params) {
-            $this->mutateParam(
-                $this->getParam('indicator.'.$key),
-                $params,
-                $rate
+            $this->setParam('indicator.'.$key,
+                $this->mutateParam(
+                    $this->getParam('indicator.'.$key),
+                    $params,
+                    $rate
+                )
             );
         }
-        $this->dispatchEventIfSigsDiffer(
-            $before,
-            $this->getSignature()
-        );
+        $after = $this->getSignature();
+        $this->dispatchEventIfSigsDiffer($before, $after);
         return $this;
     }
 
@@ -820,7 +816,20 @@ abstract class Indicator extends Base implements Gene
         if (!$rate) {
             return $param;
         }
-        $chance = Rand::floatNormal(0, 1, 1, $rate);
+
+        if (isset($params['immutable'])) {
+            return $param;
+        }
+
+        // Weight of the current value
+        $weight = 1 - $rate;
+
+        // TODO move hardcoded factor to GUI
+        if (.5 > Rand::floatNormal(0, 1, 0, $weight / 200)) {
+            return $param;
+        }
+
+        //dump('Indicator::mutateParam() '.$this->getShortClass().' mutating ', $param);
 
         switch ($type = Arr::get($params, 'type')) {
 
@@ -831,7 +840,7 @@ abstract class Indicator extends Base implements Gene
                     $min = Arr::get($params, 'min', 0),
                     $max = Arr::get($params, 'max', 1),
                     $param,
-                    $rate
+                    $weight
                 );
                 if ('bool' === $type) {
                     return boolval(round($new));
@@ -853,9 +862,9 @@ abstract class Indicator extends Base implements Gene
             case 'source':
             case 'select':
             case 'list':
-                if (.5 > Rand::floatNormal(0, 1, 1, $weight)) {
-                    return $param;
-                }
+                // if (.5 < Rand::floatNormal(0, 1, 1, $weight)) {
+                //     return $param;
+                // }
                 if ('source' == $type) {
                     if (!$owner = $this->getOwner()) {
                         return $param;
@@ -863,13 +872,15 @@ abstract class Indicator extends Base implements Gene
                     if (1 >= count($options = array_keys($owner->getAvailableSources([
                         $this->getSignature(),
                     ])))) {
-                        return $default;
+                        return $param;
                     }
                 } elseif ('select' == $type) {
-                    $options = Arr::get($params, 'options', []);
+                    $options = array_keys(Arr::get($params, 'options', []));
                 }
                 if ('list' != $type) {
-                    return Rand::pick($options);
+                    $new = Rand::pick($options);
+                    //dump($new, $options);
+                    return $new;
                 }
                 // List
                 if (!is_array($param)) {
@@ -879,8 +890,8 @@ abstract class Indicator extends Base implements Gene
                 $param = array_values($param);
                 // TODO are we "doubling the unlikeliness" of modifying the list?
                 // And is that bad? E.g. how many tries does it take to work out
-                // an optimal list for trader_cdl?  
-                if (.5 <= Rand::floatNormal(0, 1, 1, $weight)) {
+                // an optimal list for trader_cdl?
+                if (.5 < Rand::floatNormal(0, 1, 1, $weight)) {
                     $param = Rand::delete($param);
                 }
                 if (.5 <= Rand::floatNormal(0, 1, 1, $weight)) {

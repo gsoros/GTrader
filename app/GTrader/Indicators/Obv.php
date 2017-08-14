@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use GTrader\Series;
+use GTrader\Log;
 
 /** On Balance Volume */
 class Obv extends Trader

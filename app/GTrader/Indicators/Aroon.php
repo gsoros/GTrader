@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 class Aroon extends Trader
 {
     public function traderCalc(array $values)

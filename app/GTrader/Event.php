@@ -28,7 +28,7 @@ class Event
         }
         foreach (static::$subscriptions[$key] as $sub_k => $sub_f) {
             if ($func === $sub_f) {
-                unset(static::$subscriptions[$sub_k]);
+                unset(static::$subscriptions[$key][$sub_k]);
                 return 1;
             }
         }
@@ -72,5 +72,17 @@ class Event
             return [];
         }
         return $subs;
+    }
+
+
+    public static function subscriptionCount(): int
+    {
+        return count(static::$subscriptions, COUNT_RECURSIVE);
+    }
+
+
+    public static function dumpSubscriptions()
+    {
+        dump(static::$subscriptions);
     }
 }

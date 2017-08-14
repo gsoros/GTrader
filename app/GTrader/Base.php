@@ -41,6 +41,9 @@ class Base
     {
     }
 
+    public function __clone()
+    {
+    }
 
     public function kill()
     {

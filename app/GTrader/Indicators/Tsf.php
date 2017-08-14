@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Time Series Forecast */
 class Tsf extends Trader
 {

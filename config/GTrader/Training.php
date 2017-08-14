@@ -9,17 +9,9 @@ return [
         'avg_balance' => 'Average Balance',
     ],
     'ranges' => [
-        'train' => [
-            'start_percent' => 0,
-            'end_percent' => 30
-        ],
         'test' => [
-            'start_percent' => 30,
+            'start_percent' => 0,
             'end_percent' => 60
-        ],
-        'verify' => [
-            'start_percent' => 60,
-            'end_percent' => 80
         ],
     ],
 ];

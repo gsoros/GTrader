@@ -22,14 +22,14 @@ class Log {
             config('app.env').'.'.strtoupper($severity).' '.
             static::getCaller().' '.
             join(', ', array_map(function($v) {
-                return json_encode($v);
+                return stripslashes(json_encode($v));
             }, $args)));
     }
 
     public static function sparse(... $args)
     {
         return error_log('['.date('Y-m-d H:i:s').'] '.join(', ', array_map(function($v) {
-                return json_encode($v);
+                return stripslashes(json_encode($v));
             }, $args)));
     }
 

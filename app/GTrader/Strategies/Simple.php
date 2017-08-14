@@ -22,6 +22,13 @@ class Simple extends Strategy
     }
 
 
+    public function __clone()
+    {
+        $this->setParam('uid', uniqid());
+        parent::__clone();
+    }
+
+
     public function toHTML(string $content = null)
     {
         return parent::toHTML(
@@ -132,8 +139,11 @@ class Simple extends Strategy
             return $ind;
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
-            Log::error('Could not find Signals');
-            return null;
+            Log::error('Could not find Signals, creating default');
+            $this->createDefaultIndicators();
+            if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
+                return null;
+            }
         }
         $this->cache('signals_indicator', $ind);
         return $ind;
@@ -143,7 +153,7 @@ class Simple extends Strategy
     public function viewSignalsForm()
     {
         if (!$signals = $this->getSignalsIndicator()) {
-            Log::error('Could not load signal Indicator');
+            Log::error('Could not load signals Indicator');
             return null;
         }
         $signals->unsetParam('adjustable.strategy_id');
@@ -159,6 +169,7 @@ class Simple extends Strategy
 
         $ohlc = $this->getOrAddIndicator('Ohlc');
         $ohlc_open = $ohlc->getSignature('open');
+        $ohlc_close = $ohlc->getSignature('close');
 
         $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length' => 20]);
         $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length' => 50]);
@@ -174,11 +185,11 @@ class Simple extends Strategy
                     'input_long_a' => $ema1_sig,
                     'long_cond' => '>=',
                     'input_long_b' => $ema2_sig,
-                    'input_long_source' => $ohlc_open,
+                    'input_long_source' => $ohlc_close,
                     'input_short_a' => $ema1_sig,
                     'short_cond' => '<',
                     'input_short_b' => $ema2_sig,
-                    'input_short_source' => $ohlc_open,
+                    'input_short_source' => $ohlc_close,
                 ],
             ]
         );

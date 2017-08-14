@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Chaikin A/D Line */
 class Ad extends Trader
 {

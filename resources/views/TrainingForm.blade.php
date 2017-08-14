@@ -11,11 +11,16 @@
             $default;
     }
     $range_keys = array_keys($ranges);
+    foreach ($ranges as $range_key => $range) {
+        ${$range_key.'_start_percent'} = ${$range_key.'_start_percent'} ?? $range['start_percent'];
+        ${$range_key.'_end_percent'} = ${$range_key.'_end_percent'} ?? $range['end_percent'];
+    }
 @endphp
 <form id="training_form">
+
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <h3>Select ranges for {{ $strategy->getParam('name') }}</h3>
+            <h3>Select range{{ (1 < count($ranges)) ? 's' : '' }} for {{ $strategy->getParam('name') }}</h3>
             @php
                 $height = floor(184 / count($ranges));
                 $displayed = 0;
@@ -76,28 +81,6 @@
                     >{{ $label }}</option>
                 @endforeach
             </select>
-        </div>
-    </div>
-
-    <div class="col-sm-6 editable">
-        @php
-            if ($strategy->hasBeenTrained()) {
-                $disabled = '';
-                $checked = '';
-            }
-            else {
-                $disabled = ' disabled';
-                $checked = ' checked';
-            }
-        @endphp
-        <div class="form-check form-check-inline {{ $disabled }}">
-            <label class="form-check-label">
-                <input class="form-check-input"
-                        type="checkbox"
-                        id="from_scratch"
-                        name="from_scratch"
-                        value="1"{{ $checked }}{{ $disabled }}> Train From Scratch
-            </label>
         </div>
     </div>
 

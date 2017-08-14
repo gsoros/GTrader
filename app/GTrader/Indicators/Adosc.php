@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Chaikin A/D Oscillator */
 class Adosc extends Trader
 {

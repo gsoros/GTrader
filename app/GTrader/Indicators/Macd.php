@@ -2,7 +2,9 @@
 
 namespace GTrader\Indicators;
 
-/** Stochastic Relative Stregnth Index */
+use GTrader\Log;
+
+/** Moving Average Convergence/Divergence */
 class Macd extends Trader
 {
     public function __construct(array $params = [])

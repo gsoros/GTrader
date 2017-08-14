@@ -17,5 +17,6 @@ return [
     // The managed classes
     'classes' => [
         GTrader\Strategies\FannTraining::class,
+        GTrader\Strategies\Beagle::class,
     ],
 ];

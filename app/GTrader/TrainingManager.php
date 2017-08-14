@@ -39,8 +39,11 @@ class TrainingManager extends Base
         try {
             foreach ($this->getParam('classes') as $class) {
                 $trainings = $class::where('status', 'training')->get();
-                $trainings->merge($active_trainings);
-                $active_trainings = $trainings;
+                foreach ($trainings as $training) {
+                    if ($training->isValid()) {
+                        $active_trainings[] = $training;
+                    }
+                }
             }
         } catch (\Exception $e) {
             Log::error(
@@ -103,7 +106,7 @@ class TrainingManager extends Base
             pclose(popen('start /B '. $command, 'r'));
         } else {
             $strategy = Strategy::load($training->strategy_id);
-            $prefix = $strategy->getParam('training_log_prefix', 'fanntraining_');
+            $prefix = $strategy->getParam('training_log_prefix', 'training_');
             $log_file = $prefix ? storage_path('logs/'.$prefix.$training->strategy_id.'.log') : '/dev/null';
             if (touch($log_file)) {
                 @chmod($log_file, 0664);

@@ -20,6 +20,7 @@ return [
                 -1 => 'Automatic From Parent',
                 0 => 'Custom Settings',
             ],
+            'immutable' => true,                // do not mutate this setting
         ],
         'input_long_a' => [
             'name' => 'Long A',
@@ -42,6 +43,7 @@ return [
         'input_long_source' => [
             'name' => 'Long Source',
             'type' => 'source',
+            'immutable' => true,                // do not mutate this setting
             'description' => 'Source for the long signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
         'input_short_a' => [
@@ -65,6 +67,7 @@ return [
         'input_short_source' => [
             'name' => 'Short Source',
             'type' => 'source',
+            'immutable' => true,                // do not mutate this setting
             'description' => 'Source for the short signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
     ],

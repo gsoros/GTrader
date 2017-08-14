@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /** Stochastic Relative Stregnth Index */
 class StochRsi extends Trader
 {

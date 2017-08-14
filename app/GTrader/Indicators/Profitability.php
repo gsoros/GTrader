@@ -2,6 +2,8 @@
 
 namespace GTrader\Indicators;
 
+use GTrader\Log;
+
 /* Winners vs. losers */
 class Profitability extends HasInputs
 {
