@@ -16,7 +16,7 @@ return [
             'type' => 'int',
             'min' => 2,
             'step' => 1,
-            'max' => 1000,
+            'max' => 100,
         ],
         'type' => [
             'name' => 'Type',

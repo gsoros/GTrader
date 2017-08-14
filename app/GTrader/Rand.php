@@ -79,7 +79,7 @@ class Rand
         $squared_scale = log(1 / $weight);
         $max_deviations = 4;
         $term = ($max - $min) / $max_deviations;
-        $max_tries = 10;
+        $max_tries = 100;
         $tries = 0;
         $found = false;
         do {
@@ -87,7 +87,7 @@ class Rand
             $found = $min <= $rnd && $rnd <= $max;
         } while ($tries++ < $max_tries && !$found);
         if (!$found) {
-            Log::debug('Not found');
+            Log::debug('Not found', func_get_args());
             return static::float($min, $max);
         }
         return $rnd;

@@ -39,7 +39,7 @@ class Ma extends Trader
             $this->getParam('indicator.length', 1),
             $this->getMaType()
         ))) {
-            Log::error('trader_ma returned false');
+            Log::error('trader_ma returned false', $this->getInput(), $this->getParam('indicator.length'));
             return [];
         }
         return [$values];

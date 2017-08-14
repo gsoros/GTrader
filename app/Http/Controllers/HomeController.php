@@ -174,10 +174,23 @@ class HomeController extends Controller
                 if (!$father = $beagle->loadStrategy()) {
                     dd('No Strat');
                 }
+
+                $test = function ($strat) use ($beagle)
+                {
+                    $candles = $strat->getCandles();
+                    $sig = $beagle->getMaximizeSig($strat);
+                    if (!($ind = $candles->getOrAddIndicator($sig))) {
+                        Log::error('Could not getOrAddIndicator() for '.$type);
+                        return 0;
+                    }
+                    $ind->addRef('root');
+                    return $ind->getLastValue(true);
+                };
+
                 // $s->setMutationRate($beagle->options['mutation_rate']);
-                $father->setMutationRate(.0001);
+                $father->setMutationRate(.9999);
                 dump($father->getSignalsIndicator()->getParam('indicator'),
-                    ($father_bal = $father->getLastBalance()));
+                    ($father_bal = $test($father)));
 
                 \GTrader\Event::subscribe('indicator.change', function($o, $e) {
                     // static $events = 0;
@@ -222,6 +235,8 @@ class HomeController extends Controller
 
                     $generation[$uid]->mutate();
 
+                    //dd($generation[$uid]->getSignalsIndicator()->getParam('indicator'));
+
                     //$generation[$uid]->setParam('id', 'new');
                     //$generation[$uid]->setParam('name', 'evolving_'.$beagle->id.'_'.$uid);
 
@@ -232,7 +247,7 @@ class HomeController extends Controller
                     //     dump('Sig in: '.$sig);
                     // }
 
-                    $bal = $generation[$uid]->getLastBalance();
+                    $bal = $test($generation[$uid]);
                     //dump('Bal: '.$bal);
                     $generation[$uid]->setFitness($bal);
                     $balances[$uid] = $bal;
@@ -242,6 +257,7 @@ class HomeController extends Controller
                     // unset($c);
                     //echo 'EvSubs: '.\GTrader\Event::subscriptionCount().'<br/>';
                 }
+                dump(\GTrader\Util::getMemoryUsage());
                 arsort($balances);
                 dump($balances);
                 reset($balances);
@@ -253,6 +269,7 @@ class HomeController extends Controller
                         ->setParam('fitness', $fitness)
                         ->save();
                 }
+                ?><script>setTimeout(function() { window.location.reload(); }, 0);</script><?php
                 break;
 
             case 'form':

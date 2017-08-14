@@ -229,7 +229,7 @@ abstract class Indicator extends Base implements Gene
         }
         if ($output) {
             if (!in_array($output, $this->getOutputs())) {
-                Log::error('Invalid output '.$output.' for '.$this->getShortClass());
+                Log::error('Invalid output '.$output.' for '.$this->getShortClass(), $this->getOutputs());
             }
         } else {
             $output = $this->getOutputs()[0];
@@ -818,7 +818,10 @@ abstract class Indicator extends Base implements Gene
         }
 
         if (isset($params['immutable'])) {
-            return $param;
+            if ($params['immutable']) {
+                //Log::debug('Immutable', $this->debugObjId(), $param, $params);
+                return $param;
+            }
         }
 
         // Weight of the current value

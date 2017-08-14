@@ -222,6 +222,48 @@ abstract class Training extends Model
         }
         return $strategy;
     }
+
+
+    public function getMaximizeSig(Strategy $strategy)
+    {
+        if ($sig = $strategy->cached('maximize_sig')) {
+            return $sig;
+        }
+        $maximize = $this->options['maximize_for'] ??
+            array_keys($this->getParam('maximize'))[0];
+
+        switch ($maximize) {
+            case 'balance_fixed':
+                $indicator = $strategy->getBalanceIndicator();
+                break;
+
+            case 'balance_dynamic':
+                $indicator = $strategy->getBalanceIndicator();
+                $indicator->setParam('indicator.mode', 'dynamic');
+                break;
+
+            case 'profitability':
+                $signals = $strategy->getSignalsIndicator();
+                $indicator = $signals->getOwner()->getOrAddIndicator('Profitability', [
+                    'input_signal' => $signals->getSignature(),
+                ]);
+                break;
+
+            case 'avg_balance':
+                $bal = $strategy->getBalanceIndicator();
+                $indicator = $bal->getOwner()->getOrAddIndicator('Avg', [
+                    'input_source' => $bal->getSignature(),
+                ]);
+                break;
+
+            default:
+                Log::error('Unknown maximize target');
+                return null;
+        }
+        $sig = $indicator->getSignature();
+        $strategy->cache('maximize_sig', $sig);
+        return $sig;
+    }
     
 
     protected function obtainLock()

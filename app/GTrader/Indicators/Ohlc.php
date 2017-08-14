@@ -43,17 +43,17 @@ class Ohlc extends HasInputs
 
     public function getInputs()
     {
-        if ('linepoints' === $this->getParam('indicator.mode')) {
-            return [$this->getInput()];
-        }
+        // if ('linepoints' === $this->getParam('indicator.mode')) {
+        //     return [$this->getInput()];
+        // }
         return parent::getInputs();
     }
 
     public function getOutputs()
     {
-        if ('linepoints' === $this->getParam('indicator.mode')) {
-            return ['open'];
-        }
+        // if ('linepoints' === $this->getParam('indicator.mode')) {
+        //     return ['open'];
+        // }
         return parent::getOutputs();
     }
 
