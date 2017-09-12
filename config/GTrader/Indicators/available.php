@@ -33,4 +33,5 @@ return [
     'Cmo'               => ['allow_multiple' => true],
     'Dmi'               => ['allow_multiple' => true],
     'Tsf'               => ['allow_multiple' => true],
+    'Mvwap'             => ['allow_multiple' => true],
 ];
