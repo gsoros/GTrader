@@ -11,7 +11,7 @@
     "webpack": "node_modules/laravel-mix/setup/webpack.config.js"
   },
   "devDependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.15.2",
     "bootstrap-sass": "^3.3.7",
     "jquery": "^3.4.0",
     "laravel-mix": "^0.10.0",
