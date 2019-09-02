@@ -12,10 +12,11 @@ ENV CACHE /tmp/cache
 
 RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common dirmngr gnupg locales \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C \
-    && add-apt-repository ppa:ondrej/php \
+    software-properties-common dirmngr gnupg locales wget apt-transport-https lsb-release ca-certificates \
+    && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
+    && sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
     && apt-get update && apt-get install -y --no-install-recommends \
+                                                build-essential \
                                             php-dev \
                                         php-cli \
                                     php-fpm \
@@ -28,7 +29,7 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
         php-pear \
             curl \
                 openssl \
-                    ca-certificates \
+                    libpng-dev \
                         git \
                             unzip \
                                 mysql-client \
@@ -56,15 +57,8 @@ RUN set -eux; \
     \
     \
     && echo "############### GET NODE ######################" \
-    && curl -sL https://deb.nodesource.com/setup_7.x | bash - \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs \
-    \
-    \
-    && echo "############### CLEAN UP ######################" \
-    && apt-get -y remove libfann-dev make php-dev software-properties-common \
-    dirmngr gnupg locales \
-    && apt-get -y autoremove && apt-get clean \
-    && rm -rfv /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
+    && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
 COPY . /gtrader
 
@@ -74,11 +68,12 @@ RUN    echo "############### FILES #########################" \
     && for file in laravel schedule trainingManager bots; \
         do touch /gtrader/storage/logs/$file.log; \
     done \
-    && chown -Rc gtrader:gtrader /gtrader \
+    && find /gtrader -type d -name .git -exec rm -r {} + \
+    && chown -R gtrader:gtrader /gtrader \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
-            chgrp -Rc www-data $dir; \
-            find $dir -type d -exec chmod -c 775 {} \;; \
-            find $dir -type f -exec chmod -c 664 {} \;; \
+            chgrp -R www-data $dir; \
+            find $dir -type d -exec chmod 775 {} \;; \
+            find $dir -type f -exec chmod 664 {} \;; \
         done \
     && phpenmod pdo_mysql trader fann \
     \
@@ -109,7 +104,14 @@ RUN    echo "############### FILES #########################" \
     \
     \
     && echo "############### CRONTAB #######################" \
-    && $SUG "crontab -u gtrader crontab"
+    && $SUG "crontab -u gtrader crontab" \
+    \
+    \
+    && echo "############### CLEAN UP ######################" \
+    && apt-get -y remove libfann-dev make php-dev software-properties-common \
+    dirmngr gnupg locales \
+    && apt-get -y autoremove && apt-get clean \
+    && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /tmp/pear*
 
 EXPOSE 9000
 
