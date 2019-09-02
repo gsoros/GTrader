@@ -769,6 +769,7 @@ class Fann extends Strategy
                 reset($group);
                 foreach ($group as $sig => $params) {
                     $key = $this->getCandles()->key($sig);
+                    //dump($sig.' --> '.$key);
                     if (!isset($sample[$i]->$key)) {
                         $series_sigs = [];
                         foreach ($this->getCandles()->getIndicators() as $ind) {

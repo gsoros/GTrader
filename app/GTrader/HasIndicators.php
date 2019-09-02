@@ -638,5 +638,6 @@ trait HasIndicators
             }
             $loop++;
         }
+        return $this;
     }
 }

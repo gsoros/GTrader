@@ -14,7 +14,7 @@ class Signals extends HasInputs
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->setAllowedOwners(['GTrader\\Series']);
+        $this->setAllowedOwners(['GTrader\\Series', 'GTrader\\Strategy']);
     }
 
 
@@ -218,6 +218,8 @@ class Signals extends HasInputs
 
         $first_display_time = $candles->byKey($candles->getFirstKeyForDisplay())->time;
 
+        // $dumptime = strtotime('2017-09-18 06:00:00');
+
         $candles->reset();
         while ($candle = $candles->next()) {
             if ($force_rerun) {
@@ -234,29 +236,36 @@ class Signals extends HasInputs
                 continue;
             }
 
-            foreach (['long', 'short'] as $signal) {
-                if (!isset($candle->{$input_keys['input_'.$signal.'_a']}) ||
-                    !isset($candle->{$input_keys['input_'.$signal.'_b']}) ||
-                    !isset($candle->{$input_keys['input_'.$signal.'_source']})) {
-                    Log::error('Missing input');
-                    //dd($this);
-                    return $this;
+            foreach (['long', 'short'] as $action) {
+                foreach (['a', 'b', 'source'] as $component) {
+                    if (!isset($candle->{$input_keys['input_'.$action.'_'.$component]})) {
+                        Log::error('Missing input', $action, $component, $this->getParam('indicator'));
+                        //dd($this);
+                        return $this;
+                    }
                 }
+                // if ($dumptime == $candle->time) {
+                //     dump(
+                //         $candle->{$input_keys['input_'.$action.'_a']}.' '.
+                //         $conditions[$action].' '.
+                //         $candle->{$input_keys['input_'.$action.'_b']}
+                //     );
+                // }
                 if (Util::conditionMet(
-                    $candle->{$input_keys['input_'.$signal.'_a']},
-                    $conditions[$signal],
-                    $candle->{$input_keys['input_'.$signal.'_b']}
-                ) && $previous['signal'] !== $signal) {
+                    $candle->{$input_keys['input_'.$action.'_a']},
+                    $conditions[$action],
+                    $candle->{$input_keys['input_'.$action.'_b']}
+                ) && $previous['signal'] !== $action) {
                     if ($previous['time'] === $candle->time) {
                         //Log::debug('Multiple conditions met for '.$candle->time);
                         continue;
                     }
-                    $candle->{$output_keys['signal']} = $signal;
-                    $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$signal.'_source']};
+                    $candle->{$output_keys['signal']} = $action;
+                    $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
 
                     $previous = [
                         'time' => $candle->time,
-                        'signal' => $signal,
+                        'signal' => $action,
                     ];
                 }
             }

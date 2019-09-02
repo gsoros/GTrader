@@ -49,7 +49,7 @@ class Tiktaalik extends Simple implements Evolvable
             $sig = $ind->getSignature();
             $anc = $this->getIndicatorAncestor($sig);
             //dump('Tiktaalik::mutate() mutating '.$sig);
-            $ind->mutate(floatval($this->getMutationRate()));
+            $ind->mutate($this->getMutationRate());
             $new_sig = $ind->getSignature();
             if ($new_sig !== $sig) {
                 $this->setIndicatorAncestor($new_sig, $anc);
@@ -77,7 +77,7 @@ class Tiktaalik extends Simple implements Evolvable
 
     public function getMutationRate(): float
     {
-        return floatval($this->getParam('mutation_rate'));
+        return $this->getParam('mutation_rate');
     }
 
 

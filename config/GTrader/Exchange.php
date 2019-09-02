@@ -7,7 +7,7 @@ return [
     'default_child'         => env('EXCHANGE_DEFAULT', 'OKEX_BTC_Futures'),
     'available_exchanges'   => [                                            // list of installed exchange classes
         'OKEX_BTC_Futures',
-        'OKCoin_ETH_Spot',
+        //'OKCoin_ETH_Spot',
         //'OKEX_BCC_Spot',
     ],
 

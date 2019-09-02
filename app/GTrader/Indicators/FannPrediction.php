@@ -15,11 +15,13 @@ class FannPrediction extends Indicator
         getParamString as public hasStrategyGetParamString;
     }
 
+
     public function __construct(array $params = [])
     {
         parent::__construct($params);
         $this->setAllowedOwners(['GTrader\\Series']);
     }
+
 
     public function getParamString(array $except_keys = [], array $overrides = [])
     {
@@ -34,6 +36,7 @@ class FannPrediction extends Indicator
         $overrides = array_replace_recursive($overrides, ['strategy_id' => $strategy_name]);
         return $this->hasStrategyGetParamString($except_keys, $overrides);
     }
+
 
     public function getStrategy()
     {
@@ -51,6 +54,7 @@ class FannPrediction extends Indicator
         }
         return $strategy;
     }
+
 
     public function getForm(array $params = [])
     {
@@ -70,6 +74,7 @@ class FannPrediction extends Indicator
         }
         return parent::getForm($params);
     }
+
 
     public function calculate(bool $force_rerun = false)
     {
@@ -97,7 +102,7 @@ class FannPrediction extends Indicator
 
         $prediction = [];
 
-        //$dumptime = strtotime('2017-06-11 10:00:00');
+        // $dumptime = strtotime('2017-09-18 06:00:00');
 
         $strategy->resetSample();
         while ($sample = $strategy->nextSample($sample_size)) {
@@ -108,9 +113,10 @@ class FannPrediction extends Indicator
             $pred = $strategy->run($norm_input);
             $prediction[$sample[count($sample)-1]->time] = $pred;
 
-            //if ($dumptime == $sample[count($sample)-1]->time) {
-            //    Log::debug('Input: '.json_encode($input).' pred: '.$pred);
-            //}
+            // if ($dumptime == $sample[count($sample)-1]->time) {
+                // Log::debug('Input: '.json_encode($input).' pred: '.$pred);
+            //    dump('Input: '.json_encode($input).' pred: '.$pred);
+            // }
         }
 
         $candles->reset();

@@ -10,7 +10,7 @@ class Profitability extends HasInputs
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        $this->setAllowedOwners(['GTrader\\Series']);
+        $this->setAllowedOwners(['GTrader\\Series', 'GTrader\\Strategy']);
     }
 
 

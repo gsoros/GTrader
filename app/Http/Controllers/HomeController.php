@@ -167,10 +167,13 @@ class HomeController extends Controller
 
             case 'mutate':
                 DB::table('strategies')->where('name', 'like', 'evolving_%')->delete();
-                if (!$beagle = \GTrader\Strategies\Beagle::first()->get()[0]) {
+                if (!$beagle = \GTrader\Strategies\Beagle::first()) {
                     dd('No Beagle');
                 }
-                //dump($b);
+                if (!$beagle = $beagle->get()[0]) {
+                    dd('No Beagle');
+                }
+                //dd($beagle);
                 if (!$father = $beagle->loadStrategy()) {
                     dd('No Strat');
                 }
@@ -219,10 +222,10 @@ class HomeController extends Controller
 
                 $generation = $balances = [];
 
-                for ($i = 0; $i < 100; $i++) {
+                for ($i = 0; $i < 20; $i++) {
                     $uid = \GTrader\Rand::uniqId();
                     //echo $i.' '.$uid.' '.(\GTrader\Util::getMemoryUsage()).' '; flush();
-                    set_time_limit(15);
+                    set_time_limit(25);
 
                     $generation[$uid] = clone $father;
 
@@ -235,7 +238,7 @@ class HomeController extends Controller
 
                     $generation[$uid]->mutate();
 
-                    //dd($generation[$uid]->getSignalsIndicator()->getParam('indicator'));
+                    //dump($generation[$uid]->getSignalsIndicator()->getParam('indicator'));
 
                     //$generation[$uid]->setParam('id', 'new');
                     //$generation[$uid]->setParam('name', 'evolving_'.$beagle->id.'_'.$uid);
@@ -267,6 +270,7 @@ class HomeController extends Controller
                     $generation[$fittest]
                         ->setParams($father->getParams())
                         ->setParam('fitness', $fitness)
+                        //->purgeIndicators()
                         ->save();
                 }
                 ?><script>setTimeout(function() { window.location.reload(); }, 0);</script><?php
