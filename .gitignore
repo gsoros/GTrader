@@ -17,3 +17,5 @@ resources/assets/bower/
 storage/fann/
 storage/locks/
 */GTrader/Strategies/Unreleased
+.bash*
+.config

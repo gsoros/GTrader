@@ -87,7 +87,7 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM INSTALL ###################" \
     && $PAX_NODE \
     && $SUG "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
-    && rm -rfv $CACHE \
+    && rm -rf $CACHE \
     \
     \
     && echo "############### ARTISAN #######################" \
@@ -101,7 +101,7 @@ RUN    echo "############### FILES #########################" \
     && echo "############### NPM RUN DEV ###################" \
     && $PAX_NODE \
     && $SUG "HOME=/tmp npm run dev" \
-    && rm -rfv /tmp/npm* \
+    && rm -rf /tmp/npm* \
     \
     \
     && echo "############### CRONTAB #######################" \
