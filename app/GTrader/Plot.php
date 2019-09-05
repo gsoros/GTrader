@@ -81,8 +81,8 @@ class Plot extends Base
         $this->PHPlot->SetLegendColorboxBorders('none');
 
         $out = ['left' => [], 'right' => []];
-        reset($data);
-        while (list($label, $item) = each($data)) {
+
+        foreach ($data as $label => $item) {
             if (!is_array($item)) {
                 continue;
             }
@@ -115,8 +115,8 @@ class Plot extends Base
             ];
 
             $out[$dir]['values'][$label] = [];
-            reset($values);
-            while (list($xvalue, $yvalue) = each($values)) {
+
+            foreach ($values as $xvalue => $yvalue) {
                 $out[$dir]['values'][$label][] = ['', $xvalue, $yvalue];
             }
         }
