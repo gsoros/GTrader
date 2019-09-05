@@ -62,8 +62,9 @@ RUN set -eux; \
 
 COPY . /gtrader
 
+RUN cp -Rv /gtrader/docker-fs/etc /
+
 RUN    echo "############### FILES #########################" \
-    && cp -Rv /gtrader/docker-fs/* / \
     && useradd -G www-data -d /gtrader -s /bin/bash -M gtrader \
     && for file in laravel schedule trainingManager bots; \
         do touch /gtrader/storage/logs/$file.log; \
