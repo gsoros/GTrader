@@ -86,7 +86,7 @@ RUN    echo "############### FILES #########################" \
     \
     && echo "############### NPM INSTALL ###################" \
     && $PAX_NODE \
-    && $SUG "mkdir $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
+    && $SUG "mkdir -p $CACHE/npm && npm_config_cache=$CACHE/npm npm install" \
     && rm -rf $CACHE \
     \
     \

@@ -19,3 +19,4 @@ storage/locks/
 */GTrader/Strategies/Unreleased
 .bash*
 .config
+.npm
