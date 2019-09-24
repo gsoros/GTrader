@@ -22,7 +22,7 @@ $(function() {
 
 
         setLoading: function(element, loading) {
-            console.log('setLoading(' + element + ')');
+            console.log('setLoading(' + element + ', ' + (true === loading ? 'true' : 'false') + ')');
             if (true === loading) {
                 var container = $('#' + element);
                 if (0 === $('#loading-' + element).length)
@@ -35,6 +35,7 @@ $(function() {
             } else
                 $('#loading-' + element).remove();
         },
+
 
         request: function(request, method, params, type, target) {
 

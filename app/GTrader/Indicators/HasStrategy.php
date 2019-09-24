@@ -12,13 +12,16 @@ trait HasStrategy
     public function getStrategyOwner()
     {
         if (!$owner = $this->getOwner()) {
-            Log::error('Could not get owner');
+            //Log::error('Could not get owner (in Indicators\HasStrategy) for '.$this->oid());
             return null;
         }
         return $owner;
     }
 
-    public function getParamString(array $except_keys = [], array $overrides = [])
+    public function getParamString(
+        array $except_keys = [],
+        array $overrides = [],
+        string $format = 'long')
     {
         if (!$strategy_name = Arr::get($overrides, 'strategy_id')) {
             $strategy_name = 'Could not load strategy';
@@ -30,6 +33,6 @@ trait HasStrategy
             $strategy_name = 'Auto: '.$strategy_name;
         }
         $overrides = array_replace_recursive($overrides, ['strategy_id' => $strategy_name]);
-        return parent::getParamString($except_keys, $overrides);
+        return parent::getParamString($except_keys, $overrides, $format);
     }
 }

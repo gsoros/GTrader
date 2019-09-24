@@ -66,11 +66,11 @@ RUN cp -Rv /gtrader/docker-fs/etc /
 
 RUN    echo "############### FILES #########################" \
     && useradd -u 1001 -G www-data -d /gtrader -s /bin/bash -M gtrader \
-    && for file in laravel schedule trainingManager bots; \
+    && for file in GTrader laravel schedule trainingManager bots; \
         do touch /gtrader/storage/logs/$file.log; \
     done \
-    && find /gtrader -type d -name .git -exec rm -r {} + \
     && chown -R gtrader:gtrader /gtrader \
+    && find /gtrader -type d -name .git -exec rm -rf {} + \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
             chgrp -R www-data $dir; \
             find $dir -type d -exec chmod 775 {} \;; \

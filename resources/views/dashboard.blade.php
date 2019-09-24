@@ -15,11 +15,15 @@
             </div>
             <div role="tabpanel" class="tab-pane fade" id="settingsTab">
                 {!! $exchanges !!}
-                <!--Debug: <pre class="debug">{{ $debug }}</pre>-->
             </div>
             <div role="tabpanel" class="tab-pane fade" id="botTab">
                 {!! $bots !!}
             </div>
+            @env('local')
+            <div role="tabpanel" class="tab-pane fade" id="devTab">
+                {!! $dev !!}
+            </div>
+            @endenv
         </div>
 
     </div>

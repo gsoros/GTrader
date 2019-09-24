@@ -93,7 +93,7 @@ class Ht extends Trader
                 $active_inputs[$input_key] = $input_val;
             }
         }
-        //dump('HT::getInputs() '.$this->debugObjId(), $active_inputs);
+        //dump('HT::getInputs() '.$this->oid(), $active_inputs);
         return $active_inputs;
     }
 
@@ -124,7 +124,7 @@ class Ht extends Trader
 
     public function traderCalc(array $values)
     {
-        //dump('Ht: candles: '.$this->getCandles()->debugObjId());
+        //dump('Ht: candles: '.$this->getCandles()->oid());
         $this->setup(true);
 
         $func = 'trader_ht_'.$this->getParam('indicator.mode');
@@ -136,7 +136,7 @@ class Ht extends Trader
         $args = [];
         foreach ($this->getInputs() as $input) {
             $args[] = $values[$input];
-            //dump('Ht: in: '.count($values[$input]));
+            //dd('Ht: in: ', $values[$input]);
         }
 
         if (!$values = call_user_func_array($func, $args)) {

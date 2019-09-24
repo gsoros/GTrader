@@ -9,7 +9,7 @@
                 min="3"
                 max="1000"
                 step="1"
-                value="{{ $preferences['population'] or 100 }}">
+                value="{{ $preferences['population'] ?? 100 }}">
     </div>
     <div class="col-sm-6 editable"
         title="Number of strategies that survive into the new generation">
@@ -21,7 +21,7 @@
                 min="1"
                 max="500"
                 step="1"
-                value="{{ $preferences['survivors'] or 4 }}">
+                value="{{ $preferences['survivors'] ?? 4 }}">
         </select>
     </div>
     <div class="col-sm-6 editable"
@@ -34,7 +34,7 @@
                 min=".01"
                 max="100"
                 step=".01"
-                value="{{ $preferences['mutation_rate'] or '1.00' }}">
+                value="{{ $preferences['mutation_rate'] ?? '1.00' }}">
         </select>
     </div>
 </div>

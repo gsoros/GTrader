@@ -21,3 +21,6 @@ storage/locks/
 .config
 .npm
 .composer
+.nano
+.bash*
+.*_history

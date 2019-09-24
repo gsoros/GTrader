@@ -11,6 +11,7 @@ return [
         'y-axis' => 'right',
         'z-index' => -2, // below ohlc
     ],
+    'outputs' => ['volume'],
     'normalize' => [
         'mode' => 'individual',
         'to' => 0,

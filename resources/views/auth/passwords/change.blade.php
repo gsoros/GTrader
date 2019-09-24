@@ -9,7 +9,7 @@
                     type="password"
                     class="btn-primary form-control"
                     name="password"
-                    value="{{ $password or '' }}">
+                    value="{{ $password ?? '' }}">
                 @if ($errors->has('password'))
                     <span class="help-block">
                         <strong>{{ $errors->first('password') }}</strong>
@@ -25,7 +25,7 @@
                     type="password"
                     class="btn-primary form-control"
                     name="new_password"
-                    value="{{ $new_password or '' }}">
+                    value="{{ $new_password ?? '' }}">
                 @if ($errors->has('new_password'))
                     <span class="help-block">
                     <strong>{{ $errors->first('new_password') }}</strong>
@@ -41,7 +41,7 @@
                     type="password"
                     class="btn-primary form-control"
                     name="new_password_confirmation"
-                    value="{{ $new_password_confirmation or '' }}">
+                    value="{{ $new_password_confirmation ?? '' }}">
                 @if ($errors->has('new_password_confirmation'))
                     <span class="help-block">
                     <strong>{{ $errors->first('new_password_confirmation') }}</strong>

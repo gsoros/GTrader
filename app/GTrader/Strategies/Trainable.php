@@ -36,15 +36,16 @@ trait Trainable
         $class = $this->getShortClass();
         try {
             $training =
-                $training_class::select('status')
+                $training_class::select('id', 'status')
                 ->where('strategy_id', $this->getParam('id'))
                 ->where(function ($query) {
                     $query->where('status', 'training')
                         ->orWhere('status', 'paused');
                 })
                 ->first();
-            $training_status = null;
+            $training_id = $training_status = null;
             if (is_object($training)) {
+                $training_id = $training->id;
                 $training_status = $training->status;
             }
 
@@ -52,7 +53,8 @@ trait Trainable
                 'Strategies/'.$class.'ListItem',
                 [
                     'strategy' => $this,
-                    'training_status' => $training_status
+                    'training_id' => $training_id,
+                    'training_status' => $training_status,
                 ]
             );
         } catch (\Exception $e) {
@@ -132,6 +134,7 @@ trait Trainable
             'readonly' => ['esr'],
             'highlight' => $highlights,
             'visible_indicators' => ['Ohlc', 'Balance', 'Profitability'],
+            'labels' => ['format' => 'short'],
         ]);
         $ind = $chart->getOrAddIndicator('Ohlc', ['mode' => 'linepoints']);
         $ind->visible(true);

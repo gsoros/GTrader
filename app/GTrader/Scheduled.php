@@ -13,7 +13,7 @@ trait Scheduled
             //Log::debug('file exists', $file);
             return true;
         }
-        Log::info($class.' schedule disabled, file not present: '.$file);
+        //Log::info($class.' schedule disabled, file not present: '.$file);
         return false;
     }
 }

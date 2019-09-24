@@ -44,7 +44,7 @@ trait ClassUtils
         return $this instanceof $class;
     }
 
-    public function debugObjId()
+    public function oid()
     {
         return $this->getShortClass().'('.md5(spl_object_hash($this)).')';
     }

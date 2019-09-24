@@ -4,7 +4,6 @@ namespace GTrader;
 
 class Util
 {
-
     /**
      * Time a call.
      * @param  Closure $closure
@@ -55,6 +54,17 @@ class Util
         return self::humanBytes(memory_get_usage($real_usage));
     }
 
+
+    public static function iterate(array $array, callable $callback)
+    {
+        reset($array);
+        foreach ($array as $index => $value) {
+            $callback($index, $value);
+        }
+        return;
+    }
+
+
     /**
      * Returns the result of comparing $a to $b, using $cond
      * @param  mixed $a
@@ -100,5 +110,11 @@ class Util
         }
         Log::error('Unknown condition: '. $cond);
         return null;
+    }
+
+
+    public static function toRGB($in): string
+    {
+        return '#'.substr(md5(strval($in)), 0, 6);
     }
 }

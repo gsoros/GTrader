@@ -72,6 +72,14 @@
                                 role="tab"
                                 data-toggle="tab">Bots</a>
                         </li>
+                        @env('local')
+                        <li role="presentation">
+                            <a href="#devTab"
+                                aria-controls="devTab"
+                                role="tab"
+                                data-toggle="tab">Development Tools</a>
+                        </li>
+                        @endenv
                     </ul>
 
 

@@ -4,17 +4,17 @@ namespace GTrader;
 
 interface Evolution
 {
-    public function introduce(Evolvable $organism);
+    public function introduce(Evolvable $organism): Evolution;
 
     public function raiseGeneration(int $size): Evolution;
 
-    public function evaluateGeneration(): Evolution;
+    public function evaluate(Evolvable $organism): Evolution;
 
-    public function generationEvaluated(): bool;
+    public function killIndividual($index): Evolution;
 
-    public function killGeneration(int $num_survivors = 2): Evolution;
+    public function killGeneration(): Evolution;
 
-    public function fittest(int $num = 1);
+    public function selection(int $survivors = 2): Evolution;
 
-    public function numPastGenerations(): int;
+    public function generation(): array;
 }

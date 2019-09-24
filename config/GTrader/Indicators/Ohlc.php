@@ -18,6 +18,7 @@ return [
                 'ha' => 'Heikin Ashi',
                 'linepoints' => 'Line',
             ],
+            'immutable' => true,
         ],
     ],
     'outputs' => ['open', 'high', 'low', 'close'],

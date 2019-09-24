@@ -12,12 +12,13 @@ use Illuminate\Support\Arr;
 use GTrader\Exchange;
 use GTrader\Skeleton;
 use GTrader\HasCache;
-use GTrader\Strategies\Fann as FannStrategy;
 
 abstract class Training extends Model
 {
     use Skeleton, HasCache;
 
+    protected $strategies = [];
+    protected $default_strategy = 'default';
 
     /**
      * The table associated with the model.
@@ -76,12 +77,12 @@ abstract class Training extends Model
     public function toHtml($content = null)
     {
         $prefs = $this->getPreferences();
-        if ($class = $this->loadStrategy()->getParam('training_class')) {
-            $prefs = Auth::user()->getPreference($class, $prefs);
-        }
         if (!$strategy = $this->loadStrategy()) {
             Log::error('Could not load strategy');
             return null;
+        }
+        if ($class = $strategy->getParam('training_class')) {
+            $prefs = Auth::user()->getPreference($class, $prefs);
         }
         return view('TrainingForm', [
             'training' => $this,
@@ -210,6 +211,21 @@ abstract class Training extends Model
     }
 
 
+    public function getStrategy($type = null)
+    {
+        $type = ($type = strval($type)) ?? $this->default_strategy;
+        return $this->strategies[$type] ?? null;
+    }
+
+
+    public function setStrategy($type = null, Strategy $strategy)
+    {
+        $type = ($type = strval($type)) ?? $this->default_strategy;
+        $this->strategies[$type] = $strategy;
+        return $this;
+    }
+
+
     public function loadStrategy()
     {
         if (!$strategy_id = $this->strategy_id) {
@@ -226,6 +242,7 @@ abstract class Training extends Model
 
     public function getMaximizeSig(Strategy $strategy)
     {
+        //dump('maxi sig for '.$strategy->oid());
         if ($sig = $strategy->cached('maximize_sig')) {
             return $sig;
         }
@@ -264,7 +281,127 @@ abstract class Training extends Model
         $strategy->cache('maximize_sig', $sig);
         return $sig;
     }
-    
+
+
+    protected function setProgress($key, $value)
+    {
+        if (is_numeric($value)) {
+            $value = number_format($value, 2, '.', '');
+        }
+        $progress = $this->progress;
+        if (!is_array($progress)) {
+            $progress = [];
+        }
+        $this->progress = array_replace_recursive($progress, [$key => $value]);
+        return $this;
+    }
+
+
+    protected function getProgress($key)
+    {
+        if (!is_array($this->progress)) {
+            return 0;
+        }
+        return $this->progress[$key] ?? 0;
+    }
+
+
+    protected function saveProgress()
+    {
+        DB::table($this->table)
+            ->where('id', $this->id)
+            ->update(['progress' => json_encode($this->progress)]);
+        return $this;
+    }
+
+
+
+    protected function saveHistory(
+        string $name,
+        $value,
+        string $strat_name = 'default')
+    {
+        Log::sparse('saveHistory('.$this->getProgress('epoch').', '.$name.', '.$value.')');
+        $this->getStrategy($strat_name)
+            ->saveHistory(
+                $this->getProgress('epoch'),
+                $name,
+                $value
+            );
+        return $this;
+    }
+
+
+    protected function pruneHistory(
+        int $limit = 0,
+        int $epochs = 0,
+        int $nth = 0,
+        string $strat_name = 'default')
+    {
+
+        if (!$limit)  $limit = 15000;
+        if (!$epochs) $epochs = 1000;
+        if (!$nth)    $nth = 2;
+
+        $current_epoch = $this->getProgress('epoch');
+        if ($current_epoch <= $this->getProgress('last_history_prune') + $epochs) {
+            return $this;
+        }
+        if ($this->getStrategy($strat_name)->getHistoryNumRecords() > $limit) {
+            Log::sparse('Pruning history');
+            $state = $this->getProgress('state');
+            $this->setProgress('last_history_prune', $current_epoch)
+                ->setProgress('state', 'pruning history')
+                ->saveProgress();
+            $this->getStrategy($strat_name)->pruneHistory($nth);
+            $this->setProgress('state', $state)->saveProgress();
+        }
+        return $this;
+    }
+
+
+    protected function logMemoryUsage()
+    {
+        Log::sparse('Memory used: '.Util::getMemoryUsage());
+        return $this;
+    }
+
+
+    protected function shouldRun()
+    {
+        if (!$this->started) {
+            $this->started = time();
+            Log::sparse('Training start: '.date('Y-m-d H:i:s'));
+        }
+
+        // check db if we have been stopped or deleted
+        try {
+            self::where('id', $this->id)
+                ->where('status', 'training')
+                ->firstOrFail();
+        } catch (\Exception $e) {
+            Log::sparse('Training stopped.');
+            return false;
+        }
+        // check if the number of active trainings is greater than the number of slots
+        if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
+            // check if we have spent too much time
+            if ((time() - $this->started) > $this->getParam('max_time_per_session')) {
+                Log::sparse('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected function increaseEpoch()
+    {
+        $this->setProgress(
+            'epoch',
+            $this->getProgress('epoch') + 1
+        );
+        return $this;
+    }
 
     protected function obtainLock()
     {

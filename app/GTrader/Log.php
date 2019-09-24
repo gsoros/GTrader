@@ -16,21 +16,33 @@ class Log {
     Log::sparse();
     */
 
+    static $message_type = 3; // append to file
+    static $destination = 'logs/GTrader.log';
+
     public static function __callStatic($severity, $args)
     {
-        return error_log('['.date('Y-m-d H:i:s').'] '.
-            config('app.env').'.'.strtoupper($severity).' '.
-            static::getCaller().' '.
-            join(', ', array_map(function($v) {
-                return stripslashes(json_encode($v));
-            }, $args)));
+        return error_log(
+            '['.date('Y-m-d H:i:s').'] '.
+                config('app.env').'.'.strtoupper($severity).' '.
+                static::getCaller().' '.
+                join(', ', array_map(function($v) {
+                    return stripslashes(json_encode($v));
+                }, $args))."\n",
+            self::$message_type,
+            storage_path(self::$destination)
+        );
     }
 
     public static function sparse(... $args)
     {
-        return error_log('['.date('Y-m-d H:i:s').'] '.join(', ', array_map(function($v) {
-                return stripslashes(json_encode($v));
-            }, $args)));
+        return error_log(
+            '['.date('Y-m-d H:i:s').'] '.
+                join(', ', array_map(function($v) {
+                    return stripslashes(json_encode($v));
+                }, $args))."\n",
+            self::$message_type,
+            storage_path(self::$destination)
+        );
     }
 
     protected static function getCaller()

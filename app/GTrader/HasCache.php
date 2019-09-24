@@ -7,6 +7,13 @@ use Illuminate\Support\Arr;
 trait HasCache
 {
     protected $cache = [];
+    protected $cache_max_size = 100;
+
+    public function __clone()
+    {
+        $this->cleanCache();
+    }
+
 
     public function cached(string $key, $default = null)
     {
@@ -18,6 +25,12 @@ trait HasCache
 
     public function cache(string $key, $value = null)
     {
+        if (0 < $this->cache_max_size) {
+            if (count($this->cache) >= $this->cache_max_size) {
+                $this->logCache('full', $this->cache_max_size);
+                array_shift($this->cache);
+            }
+        }
         Arr::set($this->cache, $key, $value);
         $this->logCache('put', $key, $value);
         return $this;
@@ -40,6 +53,14 @@ trait HasCache
     }
 
 
+    public function cacheSetMaxSize(int $size = 0)
+    {
+        $this->logCache('setMaxSize', $this->cache_max_size, $size);
+        $this->cache_max_size = $size;
+        return $this;
+    }
+
+
     protected function logCache(string $action = null, string $key = null, $value = null)
     {
         if (!$actions = $this->getParam('cache.log')) {
@@ -53,8 +74,8 @@ trait HasCache
             return $this;
         }
 
-        Log::info(
-            'Cache '.$action.': '.$this->debugObjId().' '.json_encode($key).' '.(
+        Log::debug(
+            'Cache '.$action.': '.$this->oid().' '.json_encode($key).' '.(
             is_resource($value) ?
                 get_resource_type($value) : (
                     (75 < strlen($j = json_encode($value))) ?

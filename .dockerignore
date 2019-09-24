@@ -1,1 +1,6 @@
 node_modules
+.composer
+.config
+.nano
+.bash*
+.*_history

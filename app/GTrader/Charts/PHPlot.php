@@ -673,12 +673,13 @@ class PHPlot extends Chart
                 );
             }
 
-            //$sig = $ind->getSignature(); // unused
             $item = [
                 'class' => $ind->getShortClass(),
-                'label' => 380 < $this->getParam('width') ?
-                    $ind->getDisplaySignature() :
-                    $ind->getDisplaySignature('short'),
+                'label' =>
+                    (700 < $this->getParam('width')) &&
+                    ($this->getParam('labels.format') != 'short') ?
+                        $ind->getDisplaySignature() :
+                        $ind->getDisplaySignature('short'),
                 'mode' => $mode,
                 'values' => $values,
             ];

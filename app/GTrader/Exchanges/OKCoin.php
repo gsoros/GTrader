@@ -19,7 +19,7 @@ class OKCoin extends Exchange
         try {
             return call_user_func_array([$okcoin, $method], $params);
         } catch (\Exception $e) {
-            Log::error('Exception msg: '.$e->getMessage().
+            Log::error('Exception '.$e->getCode().': '.$e->getMessage().
                 ' call: '.get_class($okcoin).'->'.$method.'('.json_encode($params).')');
             return null;
         }

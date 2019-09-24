@@ -28,13 +28,7 @@ class Aggregator extends Base
             return $this;
         }
 
-        try {
-            if (!count(DB::select(DB::raw('show tables like "exchanges"')))) {
-                Log::error('Exchanges table does not (yet) exist in the database.');
-                return $this;
-            }
-        } catch (\Exception $e) {
-            Log::error('Database is not ready (yet).');
+        if (!$this->tableExists()) {
             return $this;
         }
 
@@ -46,6 +40,7 @@ class Aggregator extends Base
             if (!is_array($symbols)) {
                 continue;
             }
+            $delay = $exchange->getParam('aggregator_delay', 0);
             echo $exchange->getParam('short_name').': ';
 
             foreach ($symbols as $symbol_local => $symbol) {
@@ -92,6 +87,7 @@ class Aggregator extends Base
                         Series::saveCandle($candle);
                     }
                     echo count($candles).', ';
+                    usleep($delay);
                 }
             }
         }
@@ -101,6 +97,45 @@ class Aggregator extends Base
 
         return $this;
     }
+
+
+    /**
+     * Deletes candles older than the # of days specified in config: exchange.delete_candle_age
+     * @return $this
+     */
+    public function deleteOld()
+    {
+        if (!$this->tableExists()) {
+            return $this;
+        }
+        foreach ($this->getExchanges() as $exchange_class) {
+            $exchange = $this->getExchange($exchange_class);
+            dump($exchange->getParam('long_name').': '.
+                $exchange->getParam('delete_candle_age')
+            );
+        }
+        return $this;
+    }
+
+
+    /**
+     * Checks if the DB is ready and exchanges table exists
+     * @return bool
+     */
+    protected function tableExists()
+    {
+        try {
+            if (!count(DB::select(DB::raw('show tables like "exchanges"')))) {
+                Log::error('Exchanges table does not (yet) exist in the database.');
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Database is not ready (yet).');
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * Get last candle time

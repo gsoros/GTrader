@@ -7,8 +7,38 @@ use Illuminate\Support\Arr;
 
 trait HasIndicators
 {
+    use Visualizable {
+        visualize as __Visualizable__visualize;
+    }
+
     public $indicators = [];
 
+
+    public function __clone()
+    {
+        $inds = $this->getIndicators();
+        $this->unsetIndicators();
+        foreach ($inds as $ind) {
+            //if ('Vol' == Indicator::decodeSignature($ind->getSignature())['class']) dump('Cloning vol');
+            $new_ind = clone $ind;
+            $this->addIndicator($new_ind);
+            $new_ind->addRef('root');
+            $new_ind->setParams($ind->getParams());
+        }
+    }
+
+
+    public function kill()
+    {
+        //Log::debug('.');
+        foreach ($this->getIndicators() as $i) {
+            if ($this === $i->getOwner()) {
+                $i->kill();
+            }
+        }
+        $this->unsetIndicators();
+        return $this;
+    }
 
     public function getIndicatorOwner()
     {
@@ -23,7 +53,6 @@ trait HasIndicators
     ) {
         //dump('addIndicator() i: '.json_encode($indicator).' p: '.json_encode($params).
         //  ' pin: '.json_encode($params_if_new));
-        $owner = $this->getIndicatorOwner();
 
         if (!is_object($indicator)) {
             if (!$indicator) {
@@ -40,6 +69,9 @@ trait HasIndicators
                 return null;
             }
         }
+
+        $owner = $this->getIndicatorOwner();
+
         if (!$indicator->canBeOwnedBy($owner)) {
             Log::error($indicator->getShortClass().' cannot be owned by '.$owner->getShortClass());
             return null;
@@ -61,6 +93,7 @@ trait HasIndicators
         $indicator->setParams($params_if_new);
         $owner->indicators[] = $indicator;
         $indicator->createDependencies();
+        //Log::debug('Added '.$indicator->oid().' to '.$owner->oid());
         return $indicator;
     }
 
@@ -70,8 +103,8 @@ trait HasIndicators
         array $params = [],
         array $params_if_new = []
     ) {
-        //dump('addIndicatorBySignature() '.$signature);
         $class = Indicator::getClassFromSignature($signature);
+        //dump('addIndicatorBySignature() '.$class);
         $sig_params = Indicator::getParamsFromSignature($signature);
         $i = $this->addIndicator($class, array_replace_recursive($sig_params, $params), $params_if_new);
 
@@ -170,24 +203,34 @@ trait HasIndicators
 
     public function unsetIndicator(Indicator $indicator)
     {
+        if (!$owner = $this->getIndicatorOwner()) {
+            Log::error('no owner');
+            return $this;
+        }
         $sig = $indicator->getSignature();
         $target = null;
-        foreach ($this->getIndicatorOwner()->indicators as $key => $existing) {
+        foreach ($owner->indicators as $key => $existing) {
             if ($indicator === $existing) {
                 $target = $existing;
                 break;
             }
         }
         if (is_null($target)) {
-            //Log::error('not found: '.$sig);
+            Log::error('not found: '.$sig);
             return $this;
         }
         // if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {
         //     Log::error('warning: refcount is non-zero for sig: '.$sig.
         //         ' refs: '.json_encode($target->getRefs()));
         // }
-        // Log::error($target->debugObjId());
-        unset($this->getIndicatorOwner()->indicators[$key]);
+        // Log::error($target->oid());
+        if ($owner === $target->getOwner()) {
+            $target->unsetOwner();
+            $target->kill();
+        }
+        unset($owner->indicators[$key]);
+        //Log::debug('Removed '.$indicator->oid().' from '.$owner->oid());
+        Event::dispatch($indicator, 'indicator.delete', ['signature' => $sig]);
         return $this;
     }
 
@@ -213,7 +256,7 @@ trait HasIndicators
     public function killIndicators()
     {
         foreach ($this->getIndicators() as $ind) {
-            //dump('HasIndicators::killIndicators() '.$ind->debugObjId());
+            //dump('HasIndicators::killIndicators() '.$ind->oid());
             $ind->kill();
         }
         $this->unsetIndicators();
@@ -230,8 +273,8 @@ trait HasIndicators
     /**
      * Get indicators, filtered, sorted
      *
-     * @param  array    $filters    e.g. ['display.visible' => true, 'class' => ['not', 'Ema']]
-     * @param  array    $sort       e.g. ['display.y-axis' => 'left', 'display.name']
+     * @param  array  $filters    e.g. ['display.visible' => true, ['immutable', false], ['class', 'not', 'Ema']]
+     * @param  array  $sort       e.g. ['display.y-axis' => 'left', 'display.name']
      * @return array
      */
     public function getIndicatorsFilteredSorted(array $filters = [], array $sort = [])
@@ -245,7 +288,7 @@ trait HasIndicators
     /**
      * Filters an array of indicators
      * @param  array  $indicators
-     * @param  array  $filters    e.g. ['display.visible' => true, 'class' => ['not', 'Ema']]
+     * @param  array  $filters    e.g. ['display.visible' => true, ['immutable', false], ['class', 'not', 'Ema']]
      * @return array
      */
     protected function filterIndicators(array $indicators = [], array $filters = [])
@@ -257,21 +300,33 @@ trait HasIndicators
             foreach ($filters as $filter_key => $filter_val) {
                 $condition = '==';
                 if  (is_array($filter_val)) {
+                    //dump($filter_val);
                     //dump('HasIndicators::filterIndicators filter is array:', $filter_val);
+
                     if (isset($filter_val[0]) && isset($filter_val[1])) {
-                        $condition = $filter_val[0];
-                        $filter_val = $filter_val[1];
+                        if (isset($filter_val[2])) {
+                            $filter_key = $filter_val[0];
+                            $condition = $filter_val[1];
+                            $filter_val = $filter_val[2];
+                        }
+                        else {
+                            $condition = $filter_val[0];
+                            $filter_val = $filter_val[1];
+                        }
+
                     }
                 }
+                //dump($filter_key, $condition, $filter_val);
                 if ('class' === $filter_key) {
                     if (!Util::conditionMet(
                         $filter_val,
                         $condition,
                         $ind_obj->getShortClass())
                     ) {
+                        //Log::debug($filter_val.' '.$condition.' '.$ind_obj->getShortClass().' is false');
                         unset($indicators[$ind_key]);
                         break;
-                    }
+                    }   //else Log::debug($filter_val.' '.$condition.' '.$ind_obj->getShortClass().' is true');
                     continue;
                 }
                 if (!Util::conditionMet(
@@ -338,7 +393,7 @@ trait HasIndicators
     public function calculateIndicators()
     {
         foreach ($this->getIndicators() as $indicator) {
-            //dump('HasInd::calculateIndicators() '.$indicator->debugObjId());
+            //dump('HasInd::calculateIndicators() '.$indicator->oid());
             $indicator->checkAndRun();
         }
         return $this;
@@ -453,11 +508,11 @@ trait HasIndicators
     public function handleIndicatorDeleteRequest(Request $request)
     {
         $sig = urldecode($request->signature);
-        Log::debug($sig);
+        //Log::debug($sig);
         $indicator = $this->getIndicator($sig);
         $this->updateReferences();
         if ($indicator->refCount()) {
-            Log::warning('^^^^ has refCount, hiding');
+            //Log::debug('^^^^ has refCount, hiding');
             $indicator->visible(false);
         } else {
             $this->unsetIndicatorBySig($sig);
@@ -508,12 +563,16 @@ trait HasIndicators
         $except_signatures = null,
         array $sources = [],
         array $filters = [],
-        array $disabled = []
+        array $disabled = [],
+        int $max_nesting = 10
     ):array {
+
         if (!is_array($except_signatures)) {
             $except_signatures = [$except_signatures];
         }
-        foreach ($this->getIndicatorsFilteredSorted($filters, ['display.name']) as $ind) {
+        foreach (
+            $this->getIndicatorsFilteredSorted($filters, ['display.name']) as $ind
+            ) {
             if ($ind->getParam('display.top_level')) {
                 continue;
             }
@@ -537,6 +596,10 @@ trait HasIndicators
             }
             if (in_array('outputs', $disabled)) {
                 $sources[$ind->getSignature()] = $ind->getDisplaySignature();
+                continue;
+            }
+            if ($ind->nesting() > $max_nesting) {
+                //Log::debug($ind->nesting().' > '.$max_nesting);
                 continue;
             }
             $outputs = $ind->getOutputs();
@@ -588,8 +651,10 @@ trait HasIndicators
         $ret = null;
         if ($indicator = $this->getFirstIndicatorByClass($class)) {
             $outputs = $indicator->getOutputs();
+            //dump('have it: '.$indicator->oid());
         }
         if (!$indicator || !in_array($output, $outputs)) {
+            //dump('making new:', in_array($output, $outputs), $output, $outputs);
             if (!$indicator = $this->getOrAddIndicator($class)) {
                 $ret = $output;
             }
@@ -601,7 +666,7 @@ trait HasIndicators
         if ($cache_enabled) {
             $this->cache('first_indicator_output_'.$output, $ret);
         }
-        //dump($this->debugObjId().' HasInd::getFirstIndicatorOutput('.$output.') : '.$ret);
+        //dump($this->oid().' HasInd::getFirstIndicatorOutput('.$output.') : '.$ret);
         return $ret;
     }
 
@@ -618,19 +683,31 @@ trait HasIndicators
     }
 
 
-    public function purgeIndicators()
+    public function purgeIndicators(array $options = [])
     {
+        $inds = $this->getIndicators();
         $loop = 0;
         while ($loop < 100) {
             $this->updateReferences();
             $removed = 0;
-            foreach ($this->getIndicators() as $ind) {
-                if (!$ind->hasRefRecursive('root') ||
-                    (['root'] == array_merge($ind->getRefs()) && // renumber keys
-                    !$ind->visible())) {
+            foreach ($inds as $key => $ind) {
+                //Log::debug('Checking to remove '.$ind->oid().' from '.$this->oid());
+                if (
+                        (
+                            in_array('root', $options) ||
+                            !$ind->hasRefRecursive('root') ||
+                            (['root'] == array_merge($ind->getRefs())) // renumber keys
+                        ) &&
+                        (
+                            in_array('visible', $options) ||
+                            !$ind->visible()
+                        )
+                    ) {
                     $this->unsetIndicator($ind);
+                    unset($inds[$key]);
                     $removed++;
-                    //dump('purgeIndicators() removed '.$ind->getSignature().' from '.$this->debugObjId(), $ind);
+                    //if ('Balance' == $ind->getShortClass())
+                    //Log::debug('Removed '.$ind->oid().' from '.$this->oid());
                 }
             }
             if (!$removed) {
@@ -638,6 +715,31 @@ trait HasIndicators
             }
             $loop++;
         }
+        //Log::debug('We had '.count($inds).', removed '.$removed.', left '.count($this->getIndicators()));
+        return $this;
+    }
+
+
+    public function visualize(int $depth = 100)
+    {
+        //dump($this->oid().' HasIndicators::visualize depth: '.$depth);
+        $this->__Visualizable__visualize($depth);
+        if (!$depth--) {
+            return $this;
+        }
+        foreach ($this->getIndicators() as $node) {
+            if (!$this->visNodeExists($node)) {
+                if (method_exists($node, 'visualize')) {
+                    $node->visualize($depth);
+                }
+            }
+            $this->visAddEdge($this, $node, [
+                'title' => $this->getShortClass().' has indicator '.$node->getShortClass(),
+                'arrows' => '',
+                'color' => '#ffed00',
+            ]);
+        }
+
         return $this;
     }
 }

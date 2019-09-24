@@ -2,6 +2,7 @@
 
 namespace GTrader\Exchanges;
 
+use GTrader\Log;
 use GTrader\Exchange;
 use GTrader\Trade;
 
@@ -74,11 +75,15 @@ class OKEX_Futures extends OKCoin
 
         $userinfo = $this->getUserInfo();
         //var_export($userinfo);
+        if (!is_object($userinfo)) {
+            throw new \Exception('User info object is not an object: '.json_encode($userinfo));
+        }
 
         $positions = $this->getPositions($symbol);
         //var_export($positions);
 
         $currency = strtolower(substr($remote_symbol, 0, 3));
+
         $position_size = $userinfo->info->$currency->rights *
                             $this->getUserOption('position_size') / 100;
         //if ($position_size > $userinfo->info->$currency->balance) return null;
@@ -327,18 +332,22 @@ class OKEX_Futures extends OKCoin
                 'match_price'   => $market_orders,
             ]
         );
-        if (!is_object($reply)) {
-            throw new \Exception('Exchange->trade('.serialize(func_get_args()).
-                                ') reply not an object: '.serialize($reply));
-        }
-        if (!$reply->result) {
-            throw new \Exception('Exchange->trade('.serialize(func_get_args()).
-                                ') no result: '.serialize($reply));
+
+        $order_id = 0;
+        if (is_object($reply)) {
+            $order_id = $reply->order_id;
+            if (!$reply->result) {
+                Log::error('Exchange->trade('.json_encode(func_get_args()).
+                    ') no result: '.json_encode($reply));
+            }
+        } else {
+            Log::error('Exchange->trade('.json_encode(func_get_args()).
+                ') reply not an object: '.json_encode($reply));
         }
 
         $trade = new Trade();
         $trade->time = time();
-        $trade->remote_id = $reply->order_id;
+        $trade->remote_id = $order_id;
         $trade->exchange_id = $this->getId();
         $trade->symbol_id = self::getSymbolIdByRemoteName($remote_symbol);
         $trade->user_id = $user_id;
@@ -389,11 +398,11 @@ class OKEX_Futures extends OKCoin
         );
 
         if (!is_object($reply)) {
-            throw new \Exception('Exchange->cancelOrder('.serialize(func_get_args()).
+            Log::error('Exchange->cancelOrder('.serialize(func_get_args()).
                                 ') reply not an object: '.serialize($reply));
         }
         if (!$reply->result) {
-            throw new \Exception('Exchange->cancelOrder('.serialize(func_get_args()).
+            Log::error('Exchange->cancelOrder('.serialize(func_get_args()).
                                 ') no result: '.serialize($reply));
         }
         return $this;

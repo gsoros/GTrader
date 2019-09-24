@@ -17,16 +17,14 @@ Auth::routes();
 
 if (\Config::get('app.env') === 'local') {
     Route::get('/chart.delete', 'ChartController@delete');
-    Route::get('/chart.dump', 'ChartController@dump');
-    Route::get('/dump', 'HomeController@dump');
-    Route::get('/test', 'HomeController@test');
-    Route::get('/phpinfo', function() {
-        ob_start();
-        phpinfo();
-        $info = ob_get_contents();
-        ob_end_clean();
-        return $info;
-    });
+    Route::get('/chart.dump',   'ChartController@dump');
+    Route::get('/dev',          'DevController@dev');
+    Route::get('/dev.dev',      'DevController@dev');
+    Route::get('/dev.vis',      'DevController@vis');
+    Route::get('/dev.json',     'DevController@json');
+    Route::get('/dump',         'DevController@dump');
+    Route::get('/test',         'DevController@test');
+    Route::get('/phpinfo',      'DevController@phpinfo');
 }
 
 Route::get('/',                         'HomeController@dashboard');
@@ -48,6 +46,7 @@ Route::get('/indicator.sources',        'IndicatorController@sources');
 Route::get('/strategy.list',            'StrategyController@list');
 Route::get('/strategy.new',             'StrategyController@create');
 Route::get('/strategy.form',            'StrategyController@form');
+Route::get('/strategy.clone',           'StrategyController@clone');
 Route::get('/strategy.delete',          'StrategyController@delete');
 Route::post('/strategy.save',           'StrategyController@save');
 
@@ -72,5 +71,6 @@ Route::get('/exchange.form',            'ExchangeController@form');
 Route::get('/exchange.list',            'ExchangeController@list');
 Route::post('/exchange.save',           'ExchangeController@save');
 
-Route::get('/password.change', function() { return view('auth.passwords.change'); });
+// Route::get('/password.change', function() { return view('auth.passwords.change'); });
+Route::get('/password.change', 'Auth\ChangePasswordController@view');
 Route::post('/password.change', 'Auth\ChangePasswordController@change');

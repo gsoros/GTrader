@@ -77,6 +77,35 @@ class StrategyController extends Controller
     }
 
 
+    public function clone(Request $request)
+    {
+        $user_id = Auth::id();
+        if (([$error, $strategy_id, $strategy] =
+            $this->getStrategy($request))[0]) {
+            return $error;
+        }
+        $name = $strategy->getParam('name').' clone';
+        $i = 2;
+        while (true) {
+            $query = DB::table('strategies')
+                        ->select('id')
+                        ->where('user_id', $user_id)
+                        ->where('name', $name)
+                        ->first();
+            if (!is_object($query)) {
+                break;
+            }
+            $name = $strategy->getParam('name').' clone #'.$i;
+            $i++;
+        }
+        $strategy = clone $strategy;
+        $strategy->setParam('id', 'new');
+        $strategy->setParam('name', $name);
+        $strategy->save();
+        return response(Strategy::getListOfUser(Auth::id()), 200);
+    }
+
+
     public function delete(Request $request)
     {
         if (([$error, $strategy_id, $strategy] =
@@ -121,9 +150,14 @@ class StrategyController extends Controller
             return response($html, 200);
         }
 
-        $training = $training_class::firstOrNew([
-            'strategy_id' => $strategy_id,
-        ]);
+        try {
+            $training = $training_class::firstOrNew([
+                'strategy_id' => $strategy_id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Could not create '.$training_class);
+            return response('Error displaying training form', 400);
+        }
         if (!$html = $training->toHtml()) {
             Log::error('Could not display training form');
             return response('Error displaying training form', 400);
@@ -134,7 +168,7 @@ class StrategyController extends Controller
 
     public function trainStart(Request $request)
     {
-        Log::debug($request->all());
+        //Log::debug($request->all());
 
         if (([$error, $strategy_id, $strategy] =
             $this->getStrategy($request))[0]) {

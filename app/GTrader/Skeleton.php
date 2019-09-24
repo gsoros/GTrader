@@ -20,9 +20,11 @@
 
 namespace GTrader;
 
+use GTrader\Indicator;
+
 trait Skeleton
 {
-    use HasParams, HasStatCache, ClassUtils;
+    use HasParams, ClassUtils;
 
     public function skeletonConstruct(array $params = [])
     {
@@ -42,8 +44,7 @@ trait Skeleton
         }
         if ($class !== $called) {
             $class = __NAMESPACE__.'\\'
-                    .self::getClassConf($called, 'children_ns').'\\'
-                    .$class;
+                .self::getClassConf($called, 'children_ns').'\\'.$class;
         }
         if (!class_exists($class)) {
             Log::error($called.'::make() Class '.$class.' does not exist');
@@ -51,7 +52,6 @@ trait Skeleton
         }
         return new $class($params);
     }
-
 
 
     /**

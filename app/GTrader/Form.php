@@ -45,7 +45,7 @@ class Form extends Base
                     ],
                     $elem
                 )
-            );
+            )->render();
         }
         return $html;
     }

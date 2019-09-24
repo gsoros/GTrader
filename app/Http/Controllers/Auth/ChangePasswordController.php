@@ -24,7 +24,7 @@ class ChangePasswordController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'password' => 'required',
-            'new_password' => 'required|min:6|confirmed',
+            'new_password' => 'confirmed',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -42,5 +42,11 @@ class ChangePasswordController extends Controller
         ])->save();
 
         return response('Password changed.', 200);
+    }
+
+
+    public function view(Request $request)
+    {
+        return view('auth.passwords.change');
     }
 }

@@ -22,6 +22,14 @@
                                 <span class="glyphicon glyphicon-wrench"></span>
                             </button>
                             <button onClick="window.GTrader.request('strategy',
+                                                                    'clone',
+                                                                    'id={{ $id }}')"
+                                    type="button"
+                                    class="btn btn-primary btn-sm editbutton trans"
+                                    title="Clone Strategy">
+                                <span class="glyphicon glyphicon-duplicate"></span>
+                            </button>
+                            <button onClick="window.GTrader.request('strategy',
                                                                     'delete',
                                                                     'id={{ $id }}')"
                                     type="button"

@@ -42,8 +42,8 @@
                 @foreach ($range_keys as $range)
                     {
                         name: '{{ $range }}_slider',
-                        start: '{{ $preferences[$range.'_start_percent'] or '' }}',
-                        end: '{{ $preferences[$range.'_end_percent'] or ''}}'
+                        start: '{{ $preferences[$range.'_start_percent'] ?? '' }}',
+                        end: '{{ $preferences[$range.'_end_percent'] ?? ''}}'
                     }
                     @if (false !== next($range_keys))
                         ,

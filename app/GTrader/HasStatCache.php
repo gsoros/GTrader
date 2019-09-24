@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 trait HasStatCache
 {
     protected static $stat_cache = [];
+    protected static $stat_cache_max_size = 100;
 
     public static function statCached(string $key, $default = null)
     {
@@ -18,6 +19,12 @@ trait HasStatCache
 
     public static function statCache(string $key, $value = null)
     {
+        if (0 < static::$stat_cache_max_size) {
+            if (count(static::$stat_cache) >= static::$stat_cache_max_size) {
+                static::logStatCache('full', static::$stat_cache_max_size);
+                array_shift(static::$stat_cache);
+            }
+        }
         Arr::set(static::$stat_cache, $key, $value);
         static::logStatCache('put', $key, $value);
     }
@@ -37,6 +44,13 @@ trait HasStatCache
     }
 
 
+    public static function statCacheSetMaxSize(int $size = 0)
+    {
+        static::logStatCache('setMaxSize', static::$stat_cache_max_size, $size);
+        static::$stat_cache_max_size = $size;
+    }
+
+
     protected static function logStatCache(string $action = null, string $key = null, $value = null)
     {
         if (!isset(static::$stat_cache_log)) {
@@ -53,7 +67,7 @@ trait HasStatCache
             return;
         }
 
-        Log::info(
+        Log::debug(
             'StatCache '.$action.': '.__CLASS__.' '.json_encode($key).' '.(
             is_resource($value) ?
                 get_resource_type($value) : (

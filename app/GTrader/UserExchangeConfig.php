@@ -3,9 +3,11 @@
 namespace GTrader;
 
 use Illuminate\Database\Eloquent\Model;
+use GTrader\HasStatCache;
 
 class UserExchangeConfig extends Model
 {
+    use HasStatCache;
 
     /**
      * The table associated with the model.

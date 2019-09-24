@@ -121,31 +121,46 @@ class Simple extends Strategy
         $except_signatures = null,
         array $sources = [],
         array $filters = [],
-        array $disabled = []
+        array $disabled = [],
+        int $max_nesting = 0
     ):array {
         $filters = array_merge_recursive($filters, ['class' => ['not', 'Signals']]);
         return parent::getAvailableSources(
             $except_signatures,
             $sources,
             $filters,
-            $disabled
+            $disabled,
+            $max_nesting
         );
     }
 
 
     public function getSignalsIndicator(array $options = [])
     {
-        if ($ind = $this->cached('signals_indicator')) {
-            return $ind;
+        if ($sig = $this->cached('signals_sig')) {
+            return $this->getOrAddIndicator($sig);
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
-            Log::error('Could not find Signals, creating default');
+            //Log::error('Could not find Signals, creating default');
+/*
+            fwrite(
+                $f = fopen('/gtrader/public/test.json', 'w'),
+                json_encode(
+                    $this->toVisArray(),
+                    JSON_PRETTY_PRINT
+                )
+            );
+            fclose($f);
+            echo \GTrader\DevUtil::backtrace();
+            dd('This shoud not have happened.');
+ */
             $this->createDefaultIndicators();
             if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
+                //Log::error('Failed to create default');
                 return null;
             }
         }
-        $this->cache('signals_indicator', $ind);
+        $this->cache('signals_sig', $ind->getSignature());
         return $ind;
     }
 
@@ -167,29 +182,31 @@ class Simple extends Strategy
     protected function createDefaultIndicators()
     {
 
-        $ohlc = $this->getOrAddIndicator('Ohlc');
-        $ohlc_open = $ohlc->getSignature('open');
+        $ohlc       = $this->getOrAddIndicator('Ohlc');
+        $ohlc_open  = $ohlc->getSignature('open');
         $ohlc_close = $ohlc->getSignature('close');
 
-        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length' => 20]);
-        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length' => 50]);
+        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 15]);
+        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 55]);
+        $mid  = $this->getOrAddIndicator('Mid');
 
         $ema1_sig = $ema1->getSignature();
         $ema2_sig = $ema2->getSignature();
+        $mid_sig  = $mid->getSignature();
 
         $signals = Indicator::make(
             'Signals',
             [
                 'indicator' => [
-                    'strategy_id' => 0,                 // Custom Settings
-                    'input_long_a' => $ema1_sig,
-                    'long_cond' => '>=',
-                    'input_long_b' => $ema2_sig,
-                    'input_long_source' => $ohlc_close,
-                    'input_short_a' => $ema1_sig,
-                    'short_cond' => '<',
-                    'input_short_b' => $ema2_sig,
-                    'input_short_source' => $ohlc_close,
+                    'strategy_id'        => 0,                 // Custom Settings
+                    'input_long_a'       => $ema1_sig,
+                    'long_cond'          => '>=',
+                    'input_long_b'       => $ema2_sig,
+                    'input_long_source'  => $mid_sig,
+                    'input_short_a'      => $ema1_sig,
+                    'short_cond'         => '<',
+                    'input_short_b'      => $ema2_sig,
+                    'input_short_source' => $mid_sig,
                 ],
             ]
         );
@@ -200,6 +217,7 @@ class Simple extends Strategy
         $ohlc->visible(true);
         $ema1->visible(true);
         $ema2->visible(true);
+        $mid->visible(true);
         $signals->visible(true);
 
         return $this;

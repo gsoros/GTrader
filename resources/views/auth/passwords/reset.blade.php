@@ -27,7 +27,7 @@
                                         type="email"
                                         class="btn-primary form-control form-control-sm"
                                         name="email"
-                                        value="{{ $email or old('email') }}" required autofocus>
+                                        value="{{ $email ?? old('email') }}" required autofocus>
 
                                 @if ($errors->has('email'))
                                     <span class="help-block">

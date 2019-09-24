@@ -25,10 +25,13 @@ foreach ([
 <form id="form_{{ $uid }}" class="form-horizontal row">
 @endif
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
+        @php
+            $desc = $param['description'] ?? '';
+        @endphp
         <div class="form-group"
             id="form_group_{{ $uid }}_{{ $key }}"
-            @if (isset($param['description']))
-                title="{{ $param['description'] }}"
+            @if ($desc)
+                title="{{ $desc }}"
             @endif
         >
             <label class="col-sm-3 control-label" for="{{ $key }}_{{ $uid }}">
@@ -43,22 +46,23 @@ foreach ([
                 <input class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         name="{{ $key }}_{{ $uid }}"
-                        title="{{ $param['description'] or '' }}"
+                        title="{{ $desc }}"
                         value="{{ $indicator->getParam('indicator.'.$key) }}">
                 </select>
 
                 {{-- Source --}}
-                @elseif ('source' === $param['type'])
+            @elseif ('source' === $param['type'])
                 <select class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         name="{{ $key }}_{{ $uid }}"
-                        title="{{ $param['description'] or 'Select the source' }}">
+                        title="{{ $desc ?? 'Select the source' }}">
                     @php
                     $sources = $indicator->getOwner()->getAvailableSources(
                         $indicator->getSignature(),
                         [],
                         Arr::get($param, 'filters', []),
-                        Arr::get($param, 'disabled', [])
+                        Arr::get($param, 'disabled', []),
+                        20
                     );
                     @endphp
                     @foreach ($sources as $signature => $display_name)
@@ -104,7 +108,7 @@ foreach ([
                 {{-- Bool --}}
                 @elseif ('bool' === $param['type'])
                 <div class="form-check form-check-inline">
-                    <label class="form-check-label" title="{{ $param['description'] or '' }}">
+                    <label class="form-check-label" title="{{ $desc }}">
                         <input class="form-check-input"
                             id="{{ $key }}_{{ $uid }}"
                             name="{{ $key }}_{{ $uid }}"
@@ -123,7 +127,7 @@ foreach ([
                 <select class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         name="{{ $key }}_{{ $uid }}"
-                        title="{{ $param['description'] or '' }}">
+                        title="{{ $desc }}">
                     @if (is_array($param['options']))
                         @foreach ($param['options'] as $opt_k => $opt_v)
                             <option
@@ -144,7 +148,7 @@ foreach ([
                         class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         name="{{ $key }}_{{ $uid }}"
-                        title="{{ $param['description'] or '' }}">
+                        title="{{ $desc }}">
                     @if (is_array($param['items']))
                         @foreach ($param['items'] as $opt_k => $opt_v)
                             <option
@@ -180,7 +184,7 @@ foreach ([
                         class="btn-primary btn btn-mini form-control form-control-sm"
                         id="{{ $key }}_{{ $uid }}"
                         name="{{ $key }}_{{ $uid }}"
-                        title="{{ ucfirst($param['type']) }} {{ $title }} {{ $param['description'] or '' }}"
+                        title="{{ ucfirst($param['type']) }} {{ $title }} {{ $desc }}"
                         {!! $opts !!}
                         value="{{ $indicator->getParam('indicator.'.$key) }}">
                 @endif

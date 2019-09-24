@@ -6,6 +6,14 @@ trait HasStrategy
 {
     public $strategy;
 
+
+    public function kill()
+    {
+        $this->unsetStrategy();
+        return $this;
+    }
+
+
     public function getStrategyOwner()
     {
         return $this;
@@ -14,7 +22,7 @@ trait HasStrategy
     public function getStrategy()
     {
         if (!$owner = $this->getStrategyOwner()) {
-            Log::error('Could not get owner');
+            Log::error('Could not get owner 1');
             return null;
         }
         return $owner->strategy;
@@ -23,10 +31,10 @@ trait HasStrategy
     public function setStrategy(Strategy $strategy)
     {
         if (!$owner = $this->getStrategyOwner()) {
-            Log::error('Could not get owner');
-            return null;
+            Log::error('Could not get owner 2');
+            return $this;
         }
-        //dump($this->debugObjId().' setStrategy('.$strategy->debugObjId().') owner: '.$owner->debugObjId()); flush();
+        //dump($this->oid().' setStrategy('.$strategy->oid().') owner: '.$owner->oid()); flush();
         /*
         if (is_callable([$owner, 'getCandles']) && !$owner->isClass('GTrader\\Series')) {
             $candles = $owner->getCandles();
@@ -40,11 +48,9 @@ trait HasStrategy
 
     public function unsetStrategy()
     {
-        if (!$owner = $this->getStrategyOwner()) {
-            Log::error('Could not get owner');
-            return null;
+        if ($owner = $this->getStrategyOwner()) {
+            $owner->strategy = null;
         }
-        $owner->strategy = null;
         return $this;
     }
 }

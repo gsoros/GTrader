@@ -4,10 +4,17 @@ namespace GTrader;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 
 class Series extends Collection
 {
-    use HasParams, HasIndicators, HasStrategy, HasCache, ClassUtils;
+    use HasParams, HasIndicators, HasStrategy, HasCache, ClassUtils
+    {
+        HasIndicators::__clone as private __HasIndicators__clone;
+        HasCache::__clone as private __HasCache__clone;
+        HasIndicators::kill as protected __HasIndicators__kill;
+        HasStrategy::kill as protected __HasStrategy__kill;
+    }
 
     protected $_loaded;
     protected $_iter = 0;
@@ -29,7 +36,17 @@ class Series extends Collection
         $this->setParam('start', intval($params['start'] ??  0));
         $this->setParam('end', intval($params['end'] ?? 0));
         $this->setParam('resolution', intval($this->getParam('resolution')));
+
+        $this->subscribeEvents();
+
         parent::__construct();
+    }
+
+
+    public function __destruct()
+    {
+        $this->subscribeEvents(false);
+        //parent::__destruct();
     }
 
 
@@ -38,15 +55,106 @@ class Series extends Collection
         return ['params', 'indicators'];
     }
 
+
     public function __wakeup()
     {
-        //dd('wakeup', $this);
+        $this->subscribeEvents();
     }
+
+
+    public function __clone()
+    {
+        $this->__HasCache__clone();
+        $this->__HasIndicators__clone();
+        $this->reset();
+        foreach ($this->items as $k => $v) {
+            $this->items[$k] = clone $v;
+        }
+    }
+
+
+    public function subscribeEvents(bool $subscribe = true)
+    {
+        $func = $subscribe ? 'subscribe' : 'unsubscribe';
+        Event::$func('indicator.change', [$this, 'handleIndicatorChange']);
+        Event::$func('indicator.delete', [$this, 'handleIndicatorDelete']);
+        return $this;
+    }
+
 
     public function kill()
     {
-        $this->unsetIndicators();
-        $this->unsetStrategy();
+        $this->__HasIndicators__kill();
+        $this->__HasStrategy__kill();
+        $this->subscribeEvents(false);
+        return $this;
+    }
+
+
+    public function handleIndicatorChange($object, $event)
+    {
+        if ($object->getOwner() !== $this) {
+            //Log::debug('Not ours, '.$object->oid().' belongs to '.$object->getOwner()->oid());
+            return $this;
+        }
+        if (!$old_sig = Arr::get($event, 'signature.old')) {
+            return $this;
+        }
+        if (!$new_sig = Arr::get($event, 'signature.new')) {
+            return $this;
+        }
+        if (Indicator::signatureSame($old_sig, $new_sig)) {
+            return $this;
+        }
+        $this->unmap($old_sig);
+        return $this;
+    }
+
+
+    public function handleIndicatorDelete($object, $event)
+    {
+        //Log::debug('Delete event received for '.$object->oid());
+        if ($object->getOwner() !== $this) {
+            //Log::debug('Not ours: '.$object->oid());
+            return $this;
+        }
+        if (!$sig = Arr::get($event, 'signature')) {
+            return $this;
+        }
+        //$d = Indicator::decodeSignature($sig);
+        //Log::debug('calling unmap on '.$d['class'].':'.$d['output']);
+        $object->unsetOwner();
+        $this->unmap($sig);
+        return $this;
+    }
+
+
+    protected function unmap(string $sig)
+    {
+
+        $keepers = ['time', 'open', 'high', 'low', 'close', 'volume'];
+        if (in_array($sig, $keepers)) {
+            return $this;
+        }
+        if (!isset($this->_map[$sig])) {
+            return $this;
+        }
+        $key = $this->_map[$sig];
+        if (in_array($key, $keepers)) {
+            return $this;
+        }
+
+        $deleted = 0;
+        $this->reset();
+        while ($candle = $this->next()) {
+            if (isset($candle->$key)) {
+                unset($candle->$key);
+                $deleted++;
+            }
+        }
+        unset($this->_map[$sig]);
+        //Log::debug('Deleted '.$deleted);
+        return $this;
     }
 
 
@@ -218,7 +326,8 @@ class Series extends Collection
     {
         $this->items = [];
         $this->_loaded = false;
-        $this->reset();
+        $this->_iter = 0;
+        $this->_map = [];
         $this->cleanCache();
         //dump('cleaned', $this);
         return $this;
@@ -608,5 +717,59 @@ class Series extends Collection
             return ($out_min + $out_max) / 2;
         }
         return ($out_max - $out_min) / ($in_max - $in_min) * ($in - $in_max) + $out_max;
+    }
+
+
+    public function debug()
+    {
+        $map = $this->getMap();
+        $map_classes = [];
+        array_walk($map, function($k, $sig) use (&$map_classes) {
+            $map_classes[$k] = Indicator::decodeSignature($sig)['class'];
+        });
+
+        $array_freq = function($a) {
+            $count = array_count_values($a);
+            $freq = [];
+            array_walk(
+                $count,
+                function($v, $k) use (&$freq) {
+                    $freq[] = $k.': '.$v;
+                }
+            );
+            return $freq;
+        };
+
+        $map_freq = $array_freq($map_classes);
+        $cv = [];
+        $this->reset();
+        while ($ca = $this->next()) {
+            foreach ((array)$ca as $ck => $cf) {
+                if (!in_array($ck, $cv)) {
+                    $cv[] = $ck;
+                }
+            }
+        }
+        foreach ($cv as $k => $v) {
+            if (isset($map_classes[$v])) {
+                $cv[$k] = $map_classes[$v];
+            }
+        }
+
+        return $this->oid().
+            ' Inds: '.count($this->getIndicators()).
+            ', Map: '.count($map).' ('.count(array_unique($map)).
+            ' unique: ['.join(', ', $map_freq).
+            ']), candle values: '.count($cv).' ('.join(', ', $array_freq($cv)).')';
+    }
+
+
+    protected function visAddMyNode()
+    {
+        //dump($this->oid().' Indicator::visAddMyNode');
+        return $this->visAddNode($this, [
+            'value' => 10,
+            'group' => 'candles',
+        ]);
     }
 }

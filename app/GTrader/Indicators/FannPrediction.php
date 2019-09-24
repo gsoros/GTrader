@@ -10,7 +10,8 @@ use GTrader\Log;
 
 class FannPrediction extends Indicator
 {
-    use HasStrategy {
+    use HasStrategy
+    {
         getStrategy as public hasStrategyGetStrategy;
         getParamString as public hasStrategyGetParamString;
     }
@@ -23,7 +24,10 @@ class FannPrediction extends Indicator
     }
 
 
-    public function getParamString(array $except_keys = [], array $overrides = [])
+    public function getParamString(
+        array $except_keys = [],
+        array $overrides = [],
+        string $format = 'long')
     {
         if (!$strategy = $this->getStrategy()) {
             $strategy_name = 'Could not load strategy';
@@ -34,7 +38,7 @@ class FannPrediction extends Indicator
             $strategy_name = $strategy->getParam('name', 'Unknown Strategy');
         }
         $overrides = array_replace_recursive($overrides, ['strategy_id' => $strategy_name]);
-        return $this->hasStrategyGetParamString($except_keys, $overrides);
+        return $this->hasStrategyGetParamString($except_keys, $overrides, $format);
     }
 
 

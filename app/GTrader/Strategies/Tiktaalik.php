@@ -3,10 +3,19 @@
 namespace GTrader\Strategies;
 
 use GTrader\Evolvable;
+use GTrader\Log;
 
 class Tiktaalik extends Simple implements Evolvable
 {
     use Trainable;
+
+
+    public function __clone()
+    {
+        // do not make a copy of $candles by calling HasCandles::__clone()
+        $this->__HasIndicators__clone();
+        $this->__HasCache__clone();
+    }
 
 
     public function toHTML(string $content = null)
@@ -35,6 +44,8 @@ class Tiktaalik extends Simple implements Evolvable
                 }
             }
         }
+
+        $offspring->setParam('evaluated', false);
         return $offspring;
     }
 
@@ -43,80 +54,33 @@ class Tiktaalik extends Simple implements Evolvable
     {
         // TODO add/remove indicators
 
-        $inds = $this->getIndicators();
-        //dump('Tiktaalik mutate(), inds: '.count($inds));
-        foreach ($inds as $ind) {
-            $sig = $ind->getSignature();
-            $anc = $this->getIndicatorAncestor($sig);
-            //dump('Tiktaalik::mutate() mutating '.$sig);
-            $ind->mutate($this->getMutationRate());
-            $new_sig = $ind->getSignature();
-            if ($new_sig !== $sig) {
-                $this->setIndicatorAncestor($new_sig, $anc);
-            }
+        foreach (
+            array_merge(
+                $this->getIndicatorsFilteredSorted([
+                    ['class', 'not', 'Balance'],
+                    ['class', 'not', 'Signals'],
+                ]),
+                [$this->getSignalsIndicator()]
+            ) as $ind) {
+
+            $ind->mutate(
+                $this->getParam('mutation_rate'),
+                $this->getParam('max_nesting')
+            );
         }
 
-        //TODO purge unused indicators
+        //$this->cleanCache();
 
         return $this;
     }
 
 
-    public function getFitness(): float
+    public function fitness($set = null)
     {
-        return floatval($this->getParam('fitness'));
-    }
-
-
-    public function setFitness(float $fitness): Evolvable
-    {
-        $this->setParam('fitness', $fitness);
-        return $this;
-    }
-
-
-    public function getMutationRate(): float
-    {
-        return $this->getParam('mutation_rate');
-    }
-
-
-    public function setMutationRate(float $rate): Evolvable
-    {
-        $this->setParam('mutation_rate', $rate);
-        return $this;
-    }
-
-
-    protected function getIndicatorAncestor(string $sig)
-    {
-        $ancs = $this->cached('ancestors', []);
-        return ($ancs[$sig] ?? $sig);
-    }
-
-
-    protected function setIndicatorAncestor(string $sig, string $anc)
-    {
-        $ancs = $this->cached('ancestors', []);
-        $ancs[$sig] = $anc;
-        $this->cache('ancestors', $ancs);
-        return $this;
-    }
-
-
-    public function getIndicatorByAncestor(string $anc)
-    {
-        $ancs = $this->cached('ancestors', []);
-        if (false !== ($key = array_search($anc, $ancs))) {
-            return $this->getIndicatorBySignature($key);
+        if (null === $set) {
+            return floatval($this->getParam('fitness'));
         }
-        return $this->getIndicatorBySignature($anc);
-    }
-
-
-    public function clearAncestors()
-    {
-        $this->cache('ancestors', []);
+        $this->setParam('fitness', $set);
         return $this;
     }
 }

@@ -1,18 +1,18 @@
 <?php
 return [
     'Ohlc'              => ['allow_multiple' => true],
-    'Vol'               => ['allow_multiple' => true],
+    'Vol'               => ['allow_multiple' => false],
     'Constant'          => ['allow_multiple' => true],
     'Operator'          => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],
     'Roc'               => ['allow_multiple' => true],
-    'Balance'           => ['allow_multiple' => true],
+    'Balance'           => ['allow_multiple' => false],
     'Ma'                => ['allow_multiple' => true],
     'Ema'               => ['allow_multiple' => true],
     'FannPrediction'    => ['allow_multiple' => true],
     'Signals'           => ['allow_multiple' => true],
     'Profitability'     => ['allow_multiple' => false],
-    'Sampler'           => ['allow_multiple' => false],
+    //'Sampler'           => ['allow_multiple' => false],
     'Patterns'          => ['allow_multiple' => true],
     'Avg'               => ['allow_multiple' => true],
     'Rsi'               => ['allow_multiple' => true],
@@ -34,4 +34,6 @@ return [
     'Dmi'               => ['allow_multiple' => true],
     'Tsf'               => ['allow_multiple' => true],
     'Mvwap'             => ['allow_multiple' => true],
+    'Mid'               => ['allow_multiple' => true],
+    'Abs'               => ['allow_multiple' => true],
 ];

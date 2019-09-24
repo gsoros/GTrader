@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 
 abstract class Strategy extends Base
 {
-    use HasCandles, HasIndicators, HasCache
+    use HasCandles, HasIndicators, HasCache, HasStatCache, Visualizable
     {
-        HasCandles::setCandles as private __hasCandlesSetCandles;
+        HasCandles::setCandles as protected __HasCandles__setCandles;
+        HasCandles::__clone as protected __HasCandles__clone;
+        HasIndicators::__clone as protected __HasIndicators__clone;
+        HasCache::__clone as protected __HasCache__clone;
+        HasCandles::kill as protected __HasCandles__kill;
+        HasIndicators::kill as protected __HasIndicators__kill;
+        Visualizable::visualize as __Visualizable__visualize;
+        HasIndicators::visualize as __HasIndicators__visualize;
+        HasCandles::visualize as __HasCandles__visualize;
     }
 
     //protected static $stat_cache_log = 'all';
@@ -20,15 +28,15 @@ abstract class Strategy extends Base
 
     public function kill()
     {
-        $this->unsetCandles();
-        $this->unsetIndicators();
+        $this->__HasCandles__kill();
+        $this->__HasIndicators__kill();
     }
 
 
     public function setCandles(Series $candles)
     {
-        $this->__hasCandlesSetCandles($candles);
-        //$candles->setStrategy($this);
+        $this->__HasCandles__SetCandles($candles);
+        $candles->setStrategy($this);
         return $this;
     }
 
@@ -68,19 +76,9 @@ abstract class Strategy extends Base
 
     public function __clone()
     {
-        $this->cleanCache();
-
-        $inds = $this->getIndicators();
-        $this->unsetIndicators();
-        foreach ($inds as $ind) {
-            $new_ind = clone $ind;
-            $this->addIndicator($new_ind);
-            $new_ind->setParams($ind->getParams());
-        }
-
-        $candles = clone $this->getCandles();
-        $this->setCandles($candles);
-
+        $this->__HasCache__clone();
+        $this->__HasIndicators__clone();
+        $this->__HasCandles__clone();
         parent::__clone();
     }
 
@@ -300,6 +298,28 @@ abstract class Strategy extends Base
     public function fromScratch()
     {
         Log::debug('.');
+        return $this;
+    }
+
+
+    protected function visAddMyNode()
+    {
+        //dump($this->oid().' Indicator::visAddMyNode');
+        return $this->visAddNode($this, [
+            'label' => $this->getParam('name'),
+            'title' => $this->getParam('description'),
+            'value' => 30,
+            'group' => 'strategies',
+        ]);
+    }
+
+    public function visualize(int $depth = 100)
+    {
+        $this->__Visualizable__visualize($depth);
+        if ($depth--) {
+            $this->__HasIndicators__visualize($depth);
+            $this->__HasCandles__visualize($depth);
+        }
         return $this;
     }
 }

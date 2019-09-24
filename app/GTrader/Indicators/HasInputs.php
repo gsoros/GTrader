@@ -12,6 +12,7 @@ use GTrader\Log;
 abstract class HasInputs extends Indicator
 {
 
+
     public function __construct(array $params = [])
     {
         parent::__construct($params);
@@ -31,12 +32,13 @@ abstract class HasInputs extends Indicator
     public function __wakeup()
     {
         parent::__wakeup();
-        $this->subscribeEvents();
+        //$this->subscribeEvents();
     }
 
 
     public function subscribeEvents(bool $subscribe = true)
     {
+        //dump(($subscribe ? '' : 'un').'subscribing '.$this->oid());
         $func = $subscribe ? 'subscribe' : 'unsubscribe';
         Event::$func('indicator.change', [$this, 'handleIndicatorChange']);
         return $this;
@@ -92,10 +94,12 @@ abstract class HasInputs extends Indicator
                 $output = Indicator::getOutputFromSignature($input_sig);
                 $ind = $owner->getOrAddIndicator($new_sig);
                 $this->setParam('indicator.'.$input_key, $ind->getSignature($output));
+                $ind->addRef($this);
             }
         }
         if (!is_null($changed)
-            && ($changed !== ($after = $this->getSignature()))) {
+            && ($changed !== ($after = $this->getSignature()))
+        ) {
             Event::dispatch(
                 $this,
                 'indicator.change',
@@ -106,6 +110,8 @@ abstract class HasInputs extends Indicator
                     ],
                 ]
             );
+            $this->cleanCache();
+            $this->calculated(false);
         }
         return $this;
     }
@@ -128,7 +134,7 @@ abstract class HasInputs extends Indicator
             }
             $inputs[$k] = $v;
         }
-        //dump('HasInputs::getInputs() '.$this->debugObjId(), $inputs);
+        //dump('HasInputs::getInputs() '.$this->oid(), $inputs);
         return $inputs;
     }
 
@@ -261,5 +267,45 @@ abstract class HasInputs extends Indicator
         }
         //dd($out);
         return $out;
+    }
+
+
+
+    public function visualize(int $depth = 100)
+    {
+        //dump($this->oid().' HasInputs::visualize depth: '.$depth);
+
+        parent::visualize($depth);
+
+        if (!$depth--) {
+            return $this;
+        }
+
+        $o = method_exists($this, 'getOwner') ? $this->getOwner() : null;
+
+        foreach ($this->getInputs() as $k => $v) {
+            $to = $v;
+            $title = 'unknown relationship';
+            if (in_array($v, Indicator::ROOT_INPUT)) {
+                $title = $v.' source'.' -> '.$k.':'.$this->getShortClass();
+            }
+            elseif ($o) {
+                if ($sig = $o->getFirstIndicatorOutput($v)) {
+                    $node = $o->getIndicator($sig);
+                    if (!$this->visNodeExists($node)) {
+                        if (method_exists($node, 'visualize')) {
+                            $node->visualize($depth - 1);
+                        }
+                    }
+                    $to = $node;
+                    $title = $node->getShortClass().':'.
+                        Indicator::decodeSignature($sig)['output'].
+                        ' -> '.$k.':'.$this->getShortClass();
+                }
+            }
+            $this->visAddEdge($this, $to, ['title' => $title, 'color' => '#5a135e']);
+        }
+
+        return $this;
     }
 }

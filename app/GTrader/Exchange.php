@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\DB;
 
 abstract class Exchange extends Base
 {
-    
+    use HasCache, HasStatCache;
+
     abstract public function form(array $options = []);
     abstract public function getTicker(string $symbol);
     abstract public function getCandles(
@@ -35,7 +36,7 @@ abstract class Exchange extends Base
         if (!($user_id = $this->getParam('user_id'))) {
             throw new \Exception('cannot getUserOptions() without user_id');
         }
-        if ($options = $this->getParam('user_options_cached')) {
+        if ($options = $this->cached('user_options')) {
             return $options;
         }
         $config = UserExchangeConfig::select('options')
@@ -46,7 +47,7 @@ abstract class Exchange extends Base
             Log::error('Exchange has not yet been configured by the user.');
             return [];
         }
-        $this->setParam('user_options_cached', $config->options);
+        $this->cache('user_options', $config->options);
         return $config->options;
     }
 
@@ -102,11 +103,15 @@ abstract class Exchange extends Base
 
     public static function getNameById(int $id)
     {
+        if ($name = static::statCached('id_'.$id)) {
+            return $name;
+        }
         $query = DB::table('exchanges')
                     ->select('name')
                     ->where('id', $id)
                     ->first();
         if (is_object($query)) {
+            static::statCache('id_'.$id, $query->name);
             return $query->name;
         }
         return null;
@@ -115,11 +120,15 @@ abstract class Exchange extends Base
 
     public static function getIdByName(string $name)
     {
+        if ($id = static::statCached('name_'.$name)) {
+            return $id;
+        }
         $query = DB::table('exchanges')
             ->select('id')
             ->where('name', $name)
             ->first();
         if (is_object($query)) {
+            static::statCache('name_'.$name, $query->id);
             return $query->id;
         }
         return null;
@@ -127,6 +136,9 @@ abstract class Exchange extends Base
 
     public static function getSymbolIdByExchangeSymbolName(string $exchange_name, string $symbol_name)
     {
+        if ($id = static::statCached('exchange_symbol_'.$exchange_name.'_'.$symbol_name)) {
+            return $id;
+        }
         $query = DB::table('symbols')
                     ->select('symbols.id')
                     ->join('exchanges', function ($join) use ($exchange_name) {
@@ -136,6 +148,7 @@ abstract class Exchange extends Base
                     ->where('symbols.name', $symbol_name)
                     ->first();
         if (is_object($query)) {
+            static::statCache('exchange_symbol_'.$exchange_name.'_'.$symbol_name, $query->id);
             return $query->id;
         }
         return null;
@@ -157,11 +170,15 @@ abstract class Exchange extends Base
 
     public static function getSymbolNameById(int $id)
     {
+        if ($name = static::statCached('symbol_'.$id)) {
+            return $name;
+        }
         $query = DB::table('symbols')
             ->select('name')
             ->where('id', $id)
             ->first();
         if (is_object($query)) {
+            static::statCache('symbol_'.$id, $query->name);
             return $query->name;
         }
         return null;

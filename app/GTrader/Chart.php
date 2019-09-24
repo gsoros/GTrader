@@ -9,9 +9,15 @@ use Illuminate\Http\Request;
 
 abstract class Chart extends Plot
 {
-    use HasCandles, HasIndicators, HasStrategy
+    use HasCandles, HasIndicators, HasStrategy, Visualizable
     {
-        HasStrategy::setStrategy as protected __hasStrategySetStrategy;
+        HasCandles::__clone as protected __HasCandles__clone;
+        HasIndicators::__clone as protected __HasIndicators__clone;
+        HasStrategy::setStrategy as protected __HasStrategy__setStrategy;
+        //HasStrategy::visualize as __HasStrategy__visualize;
+        HasIndicators::visualize as __HasIndicators__visualize;
+        HasCandles::visualize as __HasCandles__visualize;
+        Visualizable::visualize as __Visualizable__visualize;
     }
 
 
@@ -71,6 +77,14 @@ abstract class Chart extends Plot
     }
 
 
+    public function __clone()
+    {
+        $this->__HasIndicators__clone();
+        parent::clone();
+    }
+
+
+
     public function getIndicatorOwner()
     {
         return $this->getCandles();
@@ -89,7 +103,7 @@ abstract class Chart extends Plot
     {
         $candles = $this->getCandles();
         $strategy->setCandles($candles);
-        $this->__hasStrategySetStrategy($strategy);
+        $this->__HasStrategy__setStrategy($strategy);
         $candles->setStrategy($strategy);
         return $this;
     }
@@ -295,7 +309,6 @@ abstract class Chart extends Plot
     }
 
 
-
     public function getIndicatorsVisibleSorted()
     {
         $indicators = $this->getIndicatorsFilteredSorted([
@@ -314,5 +327,26 @@ abstract class Chart extends Plot
             }
         }
         return $indicators;
+    }
+
+
+    protected function visAddMyNode()
+    {
+        return $this->visAddNode($this, [
+            'group' => 'charts',
+        ]);
+    }
+
+
+    public function visualize(int $depth = 100)
+    {
+        $this->__Visualizable__visualize($depth);
+        if ($depth--) {
+            $this->__HasIndicators__visualize($depth)
+                ->__HasCandles__visualize($depth)
+                //->__HasStrategy__visualize($depth)
+                ;
+        }
+        return $this;
     }
 }

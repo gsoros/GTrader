@@ -6,12 +6,20 @@ use Illuminate\Support\Arr;
 
 abstract class Indicator extends Base implements Gene
 {
-    use HasOwner, HasCache;
+    use HasOwner, HasCache, HasStatCache, Visualizable
+    {
+        HasOwner::kill as protected __HasOwner__kill;
+        HasOwner::visualize as __HasOwner__visualize;
+        Visualizable::visualize as __Visualizable__visualize;
+    }
+
+    public const ROOT_INPUT = ['open', 'high', 'low', 'close', 'volume'];
 
     protected $calculated = false;
     protected $refs = [];
     protected $sleepingbag = [];
 
+    //static $stat_cache_log = 'all';
 
     public function __construct(array $params = [])
     {
@@ -22,10 +30,21 @@ abstract class Indicator extends Base implements Gene
         if (!$this->getParam('display.y-axis')) {
             $this->setParam('display.y-axis', 'left');
         }
+
+        $this->cacheSetMaxSize(1000);
+        static::statCacheSetMaxSize(1000);
     }
 
 
     abstract public function calculate(bool $force_rerun = false);
+
+
+    public function calculated($set = null)
+    {
+        if (null === $set) return $this->calculated;
+        $this->calculated = $set;
+        return $this;
+    }
 
 
     public function init()
@@ -36,6 +55,7 @@ abstract class Indicator extends Base implements Gene
 
     public function __clone()
     {
+        //dump('cloned '.$this->oid());
         $this->calculated = false;
         $this->refs = [];
     }
@@ -65,10 +85,13 @@ abstract class Indicator extends Base implements Gene
         $this->calculated = false;
     }
 
+
     public function kill()
     {
-        $this->unsetOwner();
+        $this->__HasOwner__kill();
+        return $this;
     }
+
 
     public function update(array $params = [], string $suffix = '')
     {
@@ -115,6 +138,7 @@ abstract class Indicator extends Base implements Gene
                     if (!isset($owner)) {
                         if (!$owner = $this->getOwner()) {
                             Log::error('Could not get owner', $this);
+                            //dd($this->oid());
                             return $this;
                         }
                     }
@@ -131,15 +155,14 @@ abstract class Indicator extends Base implements Gene
             }
             $this->setParam('indicator.'.$key, $val);
         }
-        $after = $this->getSignature();
-        $this->dispatchEventIfSigsDiffer($before, $after);
+        $this->handleChange($before, $this->getSignature());
         return $this;
     }
 
 
     public function addRef($ind_or_sig)
     {
-        //dump('addRef '.$this->debugObjId(), $ind_or_sig);
+        //dump('addRef '.$this->oid(), $ind_or_sig);
         $sig = null;
         if (is_object($ind_or_sig)) {
             if (method_exists($ind_or_sig, 'getSignature')) {
@@ -154,7 +177,7 @@ abstract class Indicator extends Base implements Gene
             $sig = strval($ind_or_sig);
         }
         if (!in_array($sig, $this->refs)) {
-            //dump($this->debugObjId().' addRef('.$sig.')');
+            //dump($this->oid().' addRef('.$sig.')');
             $this->refs[] = $sig;
         }
         return $this;
@@ -221,10 +244,10 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function getSignature(string $output = null)
+    public function getSignature(string $output = null, int $json_options = 0)
     {
         if (! $class = $this->getShortClass()) {
-            Log::error('Class not found for '.$this->debugObjId());
+            Log::error('Class not found for '.$this->oid());
             return null;
         }
         if ($output) {
@@ -238,7 +261,7 @@ abstract class Indicator extends Base implements Gene
 
         $params = $this->getParam('indicator', []);
         if (!is_array($params)) {
-            //Log::error('Not array in '.$this->debugObjId().' params: '.serialize($params));
+            //Log::error('Not array in '.$this->oid().' params: '.serialize($params));
             $params = (array)$params;
         }
         $out_params = [];
@@ -275,47 +298,42 @@ abstract class Indicator extends Base implements Gene
             //dump($key, $value);
             $out_params[$key] = $value;
         }
-        $a = [
-            'class' => $class,
-            'params' => $out_params,
-            'output' => $output,
-        ];
-        $sig = json_encode($a);
 
-        //Log::info('getSignature() '.$sig);
-
-        return $sig;
+        return json_encode(
+            [
+                'class' => $class,
+                'params' => $out_params,
+                'output' => $output,
+            ],
+            $json_options
+        );
     }
 
 
     public static function decodeSignature(string $sig)
     {
-        static $cache = [];
-
-        if (isset($cache[$sig])) {
-            //Log::info('Cache hit for '.$sig);
-            return $cache[$sig];
+        if ($cached = static::statCached('decoded: '.$sig)) {
+            //Log::debug('Cache hit for '.$sig);
+            return $cached;
         }
         if (!strlen($sig) ||
             in_array($sig, ['open', 'high', 'low', 'close', 'volume']) ||
             config('GTrader.Indicators.available.'.$sig)) {
-            $cache[$sig] = false;
-            return false;
+            return null;
         }
         //dump('decodeSignature() '.$sig);
         if (is_null($a = json_decode($sig, true)) || json_last_error()) {
-            $cache[$sig] = false;
             //Log::error('Could not decode sig: '.$sig
             //    .' en: '.json_last_error().' em: '.json_last_error_msg());
-            return false;
+            return null;
         }
-        $cache[$sig] = [
+        $decoded = [
             'class' => Arr::get($a, 'class', ''),
             'params' => Arr::get($a, 'params', []),
             'output' => Arr::get($a, 'output', ''),
         ];
-        //Log::info('Uncached: '.json_encode($cache[$sig]));
-        return $cache[$sig];
+        static::statCache('decoded: '.$sig, $decoded);
+        return $decoded;
     }
 
 
@@ -351,7 +369,7 @@ abstract class Indicator extends Base implements Gene
             return $name;
         }
 
-        if ($param_str = $this->getParamString([], $overrides)) {
+        if ($param_str = $this->getParamString([], $overrides, $format)) {
             $name .= ' ('.$param_str.')';
         }
 
@@ -359,7 +377,10 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function getParamString(array $except_keys = [], array $overrides = [])
+    public function getParamString(
+        array $except_keys = [],
+        array $overrides = [],
+        string $format = 'long')
     {
         if (!count($params = $this->getParam('adjustable', []))) {
             return '';
@@ -412,7 +433,7 @@ abstract class Indicator extends Base implements Gene
                     Arr::get($sig, 'output') :
                     Indicator::getOutputFromSignature($sig);
                 $param_str .= $delimiter.$indicator->getDisplaySignature(
-                    'short',
+                    $format,
                     $output
                 );
                 continue;
@@ -457,9 +478,9 @@ abstract class Indicator extends Base implements Gene
             return $this;
         }
         /*
-        dump('Indicator::checkAndRun() '.$this->debugObjId().
-            ' C: '.$this->getCandles()->debugObjId().
-            ' CS: '.$this->getCandles()->getStrategy()->debugObjId());
+        dump('Indicator::checkAndRun() '.$this->oid().
+            ' C: '.$this->getCandles()->oid().
+            ' CS: '.$this->getCandles()->getStrategy()->oid());
         */
         $this->calculated = true;
         $ret = $this->calculate($force_rerun);
@@ -710,7 +731,7 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    protected function dispatchEventIfSigsDiffer(string $before, string $after)
+    protected function handleChange(string $before, string $after)
     {
         if ($before !== $after) {
             Event::dispatch(
@@ -718,13 +739,31 @@ abstract class Indicator extends Base implements Gene
                 'indicator.change',
                 [
                     'signature' => [
-                    'old' => $before,
-                    'new' => $after,
+                        'old' => $before,
+                        'new' => $after,
                     ],
                 ]
             );
+            $this->cleanCache();
+            $this->calculated(false);
         }
         return $this;
+    }
+
+
+    public function nesting(int $level = 0): int
+    {
+        if (!$this->hasInputs()) {
+            return $level + 1;
+        }
+        if (!$inds = $this->getOrAddInputIndicators()) {
+            return $level + 1;
+        }
+        $levels = [];
+        foreach ($inds as $ind) {
+            $levels[] = $ind->nesting($level + 1);
+        }
+        return max($levels);
     }
 
 
@@ -746,8 +785,7 @@ abstract class Indicator extends Base implements Gene
                 )
             );
         }
-        $after = $this->getSignature();
-        $this->dispatchEventIfSigsDiffer($before, $after);
+        $this->handleChange($before, $this->getSignature());
         return $this;
     }
 
@@ -793,7 +831,7 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function mutate(float $rate): Gene
+    public function mutate(float $rate, int $max_nesting): Gene
     {
         $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $params) {
@@ -801,17 +839,22 @@ abstract class Indicator extends Base implements Gene
                 $this->mutateParam(
                     $this->getParam('indicator.'.$key),
                     $params,
-                    $rate
+                    $rate,
+                    $max_nesting
                 )
             );
+            //if ('Ema' == $this->getShortClass() && 'length' == $key) Log::sparse('Mutate Ema '.$key.' '.$this->getParam('indicator.'.$key));
         }
-        $after = $this->getSignature();
-        $this->dispatchEventIfSigsDiffer($before, $after);
+        $this->handleChange($before, $this->getSignature());
         return $this;
     }
 
 
-    protected function mutateParam($param, array $params = [], float $rate = 0)
+    protected function mutateParam(
+        $param,
+        array $params = [],
+        float $rate = 0,
+        int $max_nesting)
     {
         if (!$rate) {
             return $param;
@@ -819,7 +862,7 @@ abstract class Indicator extends Base implements Gene
 
         if (isset($params['immutable'])) {
             if ($params['immutable']) {
-                //Log::debug('Immutable', $this->debugObjId(), $param, $params);
+                //Log::debug('Immutable', $this->oid(), $param, $params);
                 return $param;
             }
         }
@@ -872,9 +915,14 @@ abstract class Indicator extends Base implements Gene
                     if (!$owner = $this->getOwner()) {
                         return $param;
                     }
-                    if (1 >= count($options = array_keys($owner->getAvailableSources([
-                        $this->getSignature(),
-                    ])))) {
+                    if (1 >= count($options = array_keys(
+                        $owner->getAvailableSources(
+                            [$this->getSignature()],
+                            [],
+                            [],
+                            [],
+                            ($max_nesting > 1) ? ($max_nesting - 1) : 1
+                        )))) {
                         return $param;
                     }
                 } elseif ('select' == $type) {
@@ -916,5 +964,27 @@ abstract class Indicator extends Base implements Gene
                 Log::error('Unknown type', $type);
                 return $param;
         }
+    }
+
+
+    protected function visAddMyNode()
+    {
+        //dump($this->oid().' Indicator::visAddMyNode');
+        return $this->visAddNode($this, [
+            'label' => $this->getShortClass(),
+            'title' => $this->getDisplaySignature(),
+            'color' => Util::toRGB($this->getSignature()),
+            'group' => 'indicators',
+        ]);
+    }
+
+
+    public function visualize(int $depth = 100)
+    {
+        $this->__Visualizable__visualize($depth);
+        if ($depth--) {
+            $this->__HasOwner__visualize($depth);
+        }
+        return ;
     }
 }

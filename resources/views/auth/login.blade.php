@@ -35,7 +35,7 @@
                                 <input id="password"
                                         type="password"
                                         class="btn-primary form-control form-control-sm"
-                                        name="password" required>
+                                        name="password">
 
                                 @if ($errors->has('password'))
                                     <span class="help-block">

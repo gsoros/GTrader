@@ -40,13 +40,13 @@ return [
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'phasor' => [
-            'sources' => ['input_a', 'input_b'],
+            'sources' => ['input_a'],
             'display' => ['y-axis' => 'right'],
             'outputs' => ['A', 'B'],
             'normalize' => ['mode' => 'individual', 'to' => 0],
         ],
         'sine' => [
-            'sources' => ['input_a', 'input_b'],
+            'sources' => ['input_a'],
             'display' => ['y-axis' => 'right'],
             'outputs' => ['A', 'B'],
             'normalize' => ['mode' => 'individual', 'to' => 0],

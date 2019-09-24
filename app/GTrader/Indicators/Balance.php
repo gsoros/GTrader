@@ -13,7 +13,7 @@ class Balance extends HasInputs
 
     public function __construct(array $params = [])
     {
-        //dump('Balance::__construct() '.$this->debugObjId());
+        //dump('Balance::__construct() '.$this->oid());
         parent::__construct($params);
         $this->setAllowedOwners(['GTrader\\Series']);
     }
@@ -21,7 +21,7 @@ class Balance extends HasInputs
 
     public function init()
     {
-        //dump('Balance::init() '.$this->debugObjId());
+        //dump('Balance::init() '.$this->oid());
     }
 
 
@@ -46,7 +46,7 @@ class Balance extends HasInputs
     }
 
 
-    public function mutate(float $rate): Gene
+    public function mutate(float $rate, int $max_nesting): Gene
     {
         return $this;
     }
@@ -54,10 +54,13 @@ class Balance extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        //dump('Balance::calculate() '.$this->debugObjId());
+        //Log::sparse('Balance::calculate() '.$this->oid());
+
         $this->runInputIndicators($force_rerun);
 
         $candles = $this->getCandles();
+
+        //dump('Balance->calc '.date($f = 'Y-m-d H:i', $candles->first()->time).' - '.date($f, $candles->last()->time));
 
         $mode = $this->getParam('indicator.mode');
         if (!in_array($mode, ['dynamic', 'fixed'])) {
@@ -65,11 +68,17 @@ class Balance extends HasInputs
             return $this;
         }
 
+        $user_id = Auth::id();
         $exchange = Exchange::make($candles->getParam('exchange'));
-        $config = UserExchangeConfig::firstOrNew([
-            'exchange_id' => $exchange->getId(),
-            'user_id' => Auth::id()
-        ]);
+        $exchange_id = $exchange->getId();
+
+        if (!$config = UserExchangeConfig::statCached('user_exchange_config_'.$user_id.'_'.$exchange_id)) {
+            $config = UserExchangeConfig::firstOrNew([
+                'exchange_id' => $exchange_id,
+                'user_id' => $user_id
+            ]);
+            UserExchangeConfig::statCache('user_exchange_config_'.$user_id.'_'.$exchange_id, $config);
+        }
 
         // Get defaults from exchange config file
         $leverage = $exchange->getParam('leverage');
@@ -101,6 +110,7 @@ class Balance extends HasInputs
         $stake = $capital * $position_size / 100;
         $fee_multiplier = $exchange->getParam('fee_multiplier');
         $liquidated = false;
+        $signal = null;
         $prev_signal = null;
 
         $candles->reset();
@@ -176,9 +186,16 @@ class Balance extends HasInputs
                 $liquidated = true;
                 $new_balance = 0;
             }
-            $candle->$output_key = $new_balance;
-        }
 
+            /* if ($signal) {
+                $candle->$output_key = $new_balance;
+            }
+            elseif (!$prev_signal) {
+                $candle->$output_key = $capital;
+            } */
+            $candle->$output_key = $new_balance;
+            $signal = null;
+        }
         return $this;
     }
 }

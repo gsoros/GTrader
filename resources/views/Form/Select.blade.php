@@ -1,4 +1,4 @@
-<select class="{{ $class or '' }}"
+<select class="{{ $class ?? '' }}"
         id="{{ $key }}_{{ $uid }}"
         name="{{ $key }}_{{ $uid }}"
         {{ ($description ?? null) ? 'title="'.$description.'"' : ''}}

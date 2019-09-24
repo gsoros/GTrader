@@ -4,7 +4,19 @@ namespace GTrader;
 
 trait HasOwner
 {
+    use Visualizable {
+        visualize as __Visualizable__visualize;
+    }
+
     protected $owner;
+
+
+    public function kill()
+    {
+        //Log::debug('.');
+        $this->unsetOwner();
+    }
+
 
     public function getOwner()
     {
@@ -60,5 +72,29 @@ trait HasOwner
             return $this;
         }
         return $this->setAllowedOwners(array_merge($owners, [$owner]));
+    }
+
+
+    public function visualize(int $depth = 100)
+    {
+        $this->__Visualizable__visualize($depth);
+        if (!$depth--) {
+            return $this;
+        }
+        if ($node = $this->getOwner()) {
+            /*
+            if (!$this->visNodeExists($node)) {
+                if (method_exists($node, 'visualize')) {
+                    $node->visualize($depth);
+                }
+            }
+            */
+            $this->visAddEdge($this, $node,[
+                'title' => $node->getShortClass().' owns '.$this->getShortClass(),
+                'color' => '#620808',
+                'arrows' => '',
+            ]);
+        }
+        return $this;
     }
 }

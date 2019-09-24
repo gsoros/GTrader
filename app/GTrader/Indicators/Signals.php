@@ -39,6 +39,9 @@ class Signals extends HasInputs
     {
         // Custom Settings
         if (0 == ($strategy_id = $this->getParam('indicator.strategy_id'))) {
+            /* dump('copyParamsFromStrategy $strategy_id is 0',
+                'this: '.$this->oid().
+                ' owner: '.$this->getOwner()->oid()); */
             return $this;
         }
 
@@ -64,7 +67,7 @@ class Signals extends HasInputs
         }
         // Copy params from strategy's signal ind
         $this->setParam('indicator', $i->getParam('indicator'));
-        //dump('Signals::copyParamsFromStrategy() this: '.$this->debugObjId().' from strat: '.$i->debugObjId());
+        //dump('Signals::copyParamsFromStrategy() this: '.$this->oid().' from strat: '.$i->oid());
         // Except for strat_id
         $this->setParam('indicator.strategy_id', $strategy_id);
         // remove strategy's signal ind
@@ -105,40 +108,26 @@ class Signals extends HasInputs
     }
 
 
-    public function getSignature(string $output = null)
+    public function getSignature(string $output = null, int $json_options = 0)
     {
         // Custom Settings
         if (0 == ($strategy_id = $this->getParam('indicator.strategy_id'))) {
-            return parent::getSignature($output);
+            return parent::getSignature($output, $json_options);
         }
         if (!$output) {
             $output = $this->getOutputs()[0];
         }
-        $a = [
-            'class' => $this->getShortClass(),
-            'params' => [
-                'strategy_id' => $strategy_id,
+
+        return json_encode(
+            [
+                'class' => $this->getShortClass(),
+                'params' => [
+                    'strategy_id' => $strategy_id,
+                ],
+                'output' => $output,
             ],
-            'output' => $output,
-        ];
-        /*
-        // Selected Strategy
-        if (0 < $strategy_id) {
-            return json_encode($a);
-        }
-        // Get Strategy from Parent
-        if (!$owner = $this->getOwner()) {
-            Log::error('Signals::getSignature() could not get owner');
-            return json_encode($a);
-        }
-        if (!$strategy = $owner->getStrategy()) {
-            //Log::error('Signals::getSignature() could not get strategy from owner');
-            //dd('Signals::getSignature() could not get strategy from owner:', $this, $owner);
-            return json_encode($a);
-        }
-        $a['params']['strategy_id'] = $strategy->getParam('id');
-        */
-        return json_encode($a);
+            $json_options
+        );
     }
 
 
@@ -191,7 +180,7 @@ class Signals extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
-        //dump('1 '.$this->debugObjId());
+        //dump('sc force '.$force_rerun.' for '.$this->oid());
         $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);
         $candles = $this->getCandles();
@@ -201,9 +190,10 @@ class Signals extends HasInputs
             'price' => $candles->key($this->getSignature('price')),
         ];
 
-        $input_keys = [];
+        $input_keys = $input_sigs = [];
         foreach ($this->getInputs() as $input => $sig) {
             $input_keys[$input] = $candles->key($sig);
+            $input_sigs[$input] = $sig;
         }
 
         $conditions = [
@@ -211,10 +201,12 @@ class Signals extends HasInputs
             'short' => $this->getParam('indicator.short_cond'),
         ];
 
-        $previous = [
+        $previous_signal = [
             'time' => 0,
             'signal' => '',
         ];
+
+        $previous_candle = null;
 
         $first_display_time = $candles->byKey($candles->getFirstKeyForDisplay())->time;
 
@@ -231,18 +223,26 @@ class Signals extends HasInputs
                 }
             }
 
+            if (!$previous_candle) {
+                $previous_candle = $candle;
+                continue;
+            }
             // do not emit signals if they won't be shown
             if ($candle->time < $first_display_time) {
+                $previous_candle = $candle;
                 continue;
             }
 
             foreach (['long', 'short'] as $action) {
                 foreach (['a', 'b', 'source'] as $component) {
-                    if (!isset($candle->{$input_keys['input_'.$action.'_'.$component]})) {
-                        Log::error('Missing input', $action, $component, $this->getParam('indicator'));
-                        //dd($this);
+                    if (!isset($previous_candle->{$input_keys['input_'.$action.'_'.$component]})) {
+                        Log::error('Missing input', $action, $component, $input_sigs['input_'.$action.'_'.$component]);
                         return $this;
                     }
+                }
+                if (!isset($candle->{$input_keys['input_'.$action.'_source']})) {
+                    Log::error('Missing input source', $action, $input_sigs['input_'.$action.'_source']);
+                    return $this;
                 }
                 // if ($dumptime == $candle->time) {
                 //     dump(
@@ -252,22 +252,24 @@ class Signals extends HasInputs
                 //     );
                 // }
                 if (Util::conditionMet(
-                    $candle->{$input_keys['input_'.$action.'_a']},
+                    $previous_candle->{$input_keys['input_'.$action.'_a']},
                     $conditions[$action],
-                    $candle->{$input_keys['input_'.$action.'_b']}
-                ) && $previous['signal'] !== $action) {
-                    if ($previous['time'] === $candle->time) {
+                    $previous_candle->{$input_keys['input_'.$action.'_b']}
+                ) && $previous_signal['signal'] !== $action) {
+                    if ($previous_signal['time'] === $candle->time) {
                         //Log::debug('Multiple conditions met for '.$candle->time);
+                        $previous_candle = $candle;
                         continue;
                     }
                     $candle->{$output_keys['signal']} = $action;
                     $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
 
-                    $previous = [
+                    $previous_signal = [
                         'time' => $candle->time,
                         'signal' => $action,
                     ];
                 }
+                $previous_candle = $candle;
             }
         }
         return $this;

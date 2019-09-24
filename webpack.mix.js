@@ -17,6 +17,7 @@ mix
     .sass('resources/assets/sass/app.scss',     'public/css')
     .sass('resources/assets/sass/Chart.scss',   'public/css')
     .sass('resources/assets/sass/PHPlot.scss',  'public/css')
+    .sass('resources/assets/sass/diff.scss',    'public/css')
 
     .copy('resources/assets/js/PHPlot.js',      'public/js')
     .copy('resources/assets/js/Dummy.js',       'public/js')
@@ -26,6 +27,7 @@ mix
     .copy('node_modules/nouislider/distribute/nouislider.min.js',   'public/js')
     .copy('node_modules/nouislider/distribute/nouislider.min.css',  'public/css')
 
-    //.copy('node_modules/@danielfarrell/bootstrap-combobox/js/bootstrap-combobox.js',    'public/js')
-    //.copy('node_modules/@danielfarrell/bootstrap-combobox/css/bootstrap-combobox.css',  'public/css')
+    .copy('node_modules/vis-network/dist/vis-network.min.js',       'public/js')
+    .copy('node_modules/vis-network/dist/vis-network.min.css',      'public/css')
+    
     ;

@@ -19,7 +19,6 @@ use GTrader\Strategies\Fann as FannStrategy;
 class FannTraining extends Training
 {
 
-    protected $strategies = [];
     protected $saved_fann;
     protected $reverts = 0;
     protected $started;
@@ -49,14 +48,14 @@ class FannTraining extends Training
                     number_format(
                         $this->getStrategy('train')->getMSER(), 2, '.', '')
                     )
-                ->saveHistory('train_mser', $this->getProgress('train_mser'))
+                ->saveHistory('train_mser', $this->getProgress('train_mser'), 'train')
                 ->copyFann('train', 'test')
-                ->pruneHistory();
+                ->pruneHistory(0, 0, 0, 'train');
 
             $test = $this->test('test');
 
             $this->setProgress('test', $test)
-                ->saveHistory('test', $test)
+                ->saveHistory('test', $test, 'train')
                 ->setProgress(
                     'no_improvement',
                     $this->getProgress('no_improvement') + 1
@@ -66,7 +65,7 @@ class FannTraining extends Training
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
-                    ->saveHistory('verify', $verify);
+                    ->saveHistory('verify', $verify, 'train');
                 if ($this->acceptable('verify', 80)) {
                     $this->brake(50);
                 }
@@ -200,19 +199,6 @@ class FannTraining extends Training
     }
 
 
-    protected function getStrategy(string $type)
-    {
-        return $this->strategies[$type] ?? null;
-    }
-
-
-    protected function setStrategy(string $type, FannStrategy $strategy)
-    {
-        $this->strategies[$type] = $strategy;
-        return $this;
-    }
-
-
     protected function train()
     {
         $this->getStrategy('train')->train($this->getProgress('epoch_jump'));
@@ -334,39 +320,6 @@ class FannTraining extends Training
     }
 
 
-    protected function saveHistory($name, $value)
-    {
-        Log::sparse('saveHistory('.$this->getProgress('epoch').', '.$name.', '.$value.')');
-        $this->getStrategy('train')
-            ->saveHistory(
-                $this->getProgress('epoch'),
-                $name,
-                $value
-            );
-        return $this;
-    }
-
-
-    protected function pruneHistory(int $limit = 15000, int $epochs = 1000, int $nth = 2)
-    {
-        $current_epoch = $this->getProgress('epoch');
-        if ($current_epoch <= $this->getProgress('last_history_prune') + $epochs) {
-            return $this;
-        }
-        if ($this->getStrategy('train')->getHistoryNumRecords() > $limit) {
-            Log::sparse('Pruning history');
-            $state = $this->getProgress('state');
-            $this->setProgress('last_history_prune', $current_epoch)
-                ->setProgress('state', 'pruning history')
-                ->saveProgress();
-            $this->getStrategy('train')->pruneHistory($nth);
-            $this->setProgress('state', $state)
-                ->saveProgress();
-        }
-        return $this;
-    }
-
-
     protected function increaseJump()
     {
         if ($this->getProgress('no_improvement') > $this->getParam('max_boredom')) {
@@ -379,71 +332,6 @@ class FannTraining extends Training
             }
             $this->setProgress('no_improvement', 0);
         }
-        return $this;
-    }
-
-
-    protected function shouldRun()
-    {
-        if (!$this->started) {
-            $this->started = time();
-            Log::sparse('Training start: '.date('Y-m-d H:i:s'));
-        }
-
-        // check db if we have been stopped or deleted
-        try {
-            self::where('id', $this->id)
-                ->where('status', 'training')
-                ->firstOrFail();
-        } catch (\Exception $e) {
-            Log::sparse('Training stopped.');
-            return false;
-        }
-        // check if the number of active trainings is greater than the number of slots
-        if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
-            // check if we have spent too much time
-            if ((time() - $this->started) > $this->getParam('max_time_per_session')) {
-                Log::sparse('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    protected function setProgress($key, $value)
-    {
-        //Log::sparse('setProgress('.$key.', '.$value.')');
-        $progress = $this->progress;
-        if (!is_array($progress)) {
-            $progress = [];
-        }
-        $this->progress = array_replace_recursive($progress, [$key => $value]);
-        return $this;
-    }
-
-
-    protected function getProgress($key)
-    {
-        if (!is_array($this->progress)) {
-            return 0;
-        }
-        return $this->progress[$key] ?? 0;
-    }
-
-
-    protected function saveProgress()
-    {
-        DB::table($this->table)
-            ->where('id', $this->id)
-            ->update(['progress' => json_encode($this->progress)]);
-        return $this;
-    }
-
-
-    protected function logMemoryUsage()
-    {
-        Log::sparse('Memory used: '.Util::getMemoryUsage());
         return $this;
     }
 
