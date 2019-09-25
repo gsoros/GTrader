@@ -1,4 +1,4 @@
-const { mix } = require('laravel-mix');
+const mix = require('laravel-mix');
 
 /*
  |--------------------------------------------------------------------------
@@ -29,5 +29,5 @@ mix
 
     .copy('node_modules/vis-network/dist/vis-network.min.js',       'public/js')
     .copy('node_modules/vis-network/dist/vis-network.min.css',      'public/css')
-    
+
     ;
