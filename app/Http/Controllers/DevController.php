@@ -52,10 +52,10 @@ class DevController extends Controller
         if (!($file = isset($request->file) ? $request->file : null)) {
             return response('file not found', 404);
         }
-        if (!file_exists(storage_path($file))) {
+        if (!file_exists(storage_path('dumps/'.$file))) {
             return response('file not found', 404);
         }
-        $file = storage_path($file);
+        $file = storage_path('dumps/'.$file);
         if (!is_readable($file)) {
             return response('file not readable', 403);
         }

@@ -134,7 +134,7 @@ class Debug extends Command
         //$son->setParam('name', 'son')->visualize(15);
         $father->setParam('name', 'father')->visualize(15);
 
-        DevUtil::fdump($father->visGetJSON(), storage_path('debug.json'));
+        DevUtil::fdump($father->visGetJSON(), storage_path('dumps/debug.json'));
 
         //dd(\GTrader\Store::singleton());
 

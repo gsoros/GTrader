@@ -16,6 +16,7 @@ public/mix-manifest.json
 resources/assets/bower/
 storage/fann/
 storage/locks/
+storage/dumps/
 */GTrader/Strategies/Unreleased
 .bash*
 .config
@@ -24,3 +25,4 @@ storage/locks/
 .nano
 .bash*
 .*_history
+php-meminfo-analyzer/
