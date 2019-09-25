@@ -20,6 +20,7 @@ use GTrader\Bot;
 use GTrader\Rand;
 use GTrader\Log;
 use GTrader\Event;
+use GTrader\Plot;
 use GTrader\DevUtil;
 
 class DevController extends Controller
@@ -63,6 +64,141 @@ class DevController extends Controller
         return response(file_get_contents($file), 200);
     }
 
+
+    public function files(Request $request)
+    {
+        if (!($path = isset($request->path) ? $request->path : null)) {
+            return response('path '.$path.' not found', 404);
+        }
+        if (!file_exists(storage_path($path))) {
+            return response('path '.$path.' not found', 404);
+        }
+        $path = storage_path($path);
+        if (!is_readable($path)) {
+            return response('path not readable', 403);
+        }
+        foreach ($files = scandir($path) as $k => $file) {
+            if (is_dir($path.'/'.$file) || !is_readable($path.'/'.$file)) {
+                unset($files[$k]);
+            }
+        }
+        sort($files);
+        return response(json_encode($files), 200);
+    }
+
+
+    public function dist(Request $request)
+    {
+        ob_start();
+        $tests = [
+            'floatNormal 5k samples (min, max, peak, weight)' => [
+                'samples' => 5000,
+                'tests' => [
+                    // min, max, peak, weight
+                    [0, 1000, 500, .5],
+                    [0, 1000, 200, .99],
+                    [0, 1000, 200, .99999],
+                    [0, 1000, 200, 0],
+                    [0, 1000, 200, .01],
+                    [0, 1000, 800, .3],
+                    [1000, 0, 200, .6],
+                    [0, 1000, 1000, .75],
+                    [0, 1000, 1000, .0001],
+                    [0, 1, 1, 0.01],
+                ],
+                'callback' => function($input) {
+                    return Rand::floatNormal($input[0], $input[1], $input[2], $input[3]);
+                },
+            ],
+            'pickNormal 5k samples (items, default, weight)' => [
+                'samples' => 5000,
+                'tests' => [
+                    // items, default, weight
+                    [range(1, 100), 20, .5],
+                    [range(1, 100), 20, .01],
+                    [range(1, 100), 20, .99],
+                ],
+                'callback' => function($input) {
+                    return Rand::pickNormal($input[0], $input[1], $input[2]);
+                },
+            ],
+        ];
+        $width = $request->width ? $request->width - 20 : 1000;
+
+        $flatten = function(array $array)
+        {
+            $return = [];
+            array_walk($array, function($child) use (&$return) {
+                if (is_array($child)) {
+                    if (5 < $count = count($child)) {
+                        $vals = array_values($child);
+                        $child = '('.$count.' items '.min($vals).' - '.max($vals).')';
+                    }
+                }
+                $return[] = $child;
+            });
+            return $return;
+        };
+
+        $test = function($callback, $input, $samples, $width) use ($flatten)
+        {
+            $start = microtime(true);
+            $sum = null;
+            $vals = [];
+            //$step = ($) $width / 2;
+            for ($i = 1; $i <= $samples; $i++) {
+                $val = $callback($input);
+                // $min = is_null($min) ? $val : min($min, $val);
+                // $max = is_null($max) ? $val : max($max, $val);
+                $sum += $val;
+                // $int = round($val);
+                // $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
+                $vals[] = $val;
+            }
+            sort($vals);
+            $raw = $vals;
+            $min = min($vals);
+            $max = max($vals);
+            $step = ($max - $min) / $width * 2;
+            $dist = [];
+            $key = $min;
+            $dist_key = strval(round($key, 2));
+            while ($val = array_shift($vals)) {
+                if ($val >= $key + $step) {
+                    while ($key < $val) {
+                        $key += $step;
+                    }
+                    $dist_key = strval(round($key, 2));
+                }
+                if (!isset($dist[$dist_key])) {
+                    $dist[$dist_key] = 0;
+                }
+                $dist[$dist_key]++;
+            }
+
+            $plot = new Plot ([
+                'name' => 'Plot',
+                'width' => $width,
+                'height' => 200,
+                'data' => [
+                    join(', ', $flatten($input)) => [
+                        'values' => $dist
+                    ]
+                ],
+            ]);
+            echo $plot->toHtml();
+        };
+
+        foreach ($tests as $name => $test_data) {
+            echo '<h3>'.$name.'</h3>';
+            foreach ($test_data['tests'] as $inputs) {
+                $test($test_data['callback'], $inputs, $test_data['samples'], $width);
+            }
+        }
+        $content = ob_get_contents();
+        ob_end_clean();
+        return response($content, 200);
+    }
 
     public function dump(Request $request)
     {
@@ -344,105 +480,7 @@ class DevController extends Controller
                 break;
 
             case 'dist':
-                $tests = [
-                    'floatNormal' => [
-                        'samples' => 5000,
-                        'tests' => [
-                            // min, max, peak, weight
-                            [0, 1000, 500, .5],
-                            [0, 1000, 200, 1],
-                            [0, 1000, 200, .99],
-                            [0, 1000, 200, 0],
-                            [0, 1000, 200, .01],
-                            [0, 1000, 800, .3],
-                            [1000, 0, 200, .6],
-                            [0, 1000, 1000, .75],
-                            [0, 1000, 1000, .0001],
-                            [0, 1, 1, 0.01],
-                        ],
-                        'callback' => function($input) {
-                            return Rand::floatNormal($input[0], $input[1], $input[2], $input[3]);
-                        },
-                    ],
-                    'pickNormal' => [
-                        'samples' => 5000,
-                        'tests' => [
-                            // items, default, weight
-                            [range(1, 100), 20, .5],
-                            [range(1, 100), 20, .01],
-                            [range(1, 100), 20, .99],
-                        ],
-                        'callback' => function($input) {
-                            return Rand::pickNormal($input[0], $input[1], $input[2]);
-                        },
-                    ],
-                ];
-                $width = 1200;
 
-                function test($callback, $input, $samples, $width) {
-                    $start = microtime(true);
-                    $sum = null;
-                    $vals = [];
-                    //$step = ($) $width / 2;
-                    for ($i = 1; $i <= $samples; $i++) {
-                        $val = $callback($input);
-                        // $min = is_null($min) ? $val : min($min, $val);
-                        // $max = is_null($max) ? $val : max($max, $val);
-                        $sum += $val;
-                        // $int = round($val);
-                        // $vals[$int] = isset($vals[$int]) ? $vals[$int] + 1 : 1;
-                        $vals[] = $val;
-                    }
-                    sort($vals);
-                    $raw = $vals;
-                    $min = min($vals);
-                    $max = max($vals);
-                    $step = ($max - $min) / $width * 2;
-                    $dist = [];
-                    $key = $min;
-                    $dist_key = strval(round($key, 2));
-                    while ($val = array_shift($vals)) {
-                        if ($val >= $key + $step) {
-                            while ($key < $val) {
-                                $key += $step;
-                            }
-                            $dist_key = strval(round($key, 2));
-                        }
-                        if (!isset($dist[$dist_key])) {
-                            $dist[$dist_key] = 0;
-                        }
-                        $dist[$dist_key]++;
-                    }
-                    dump([
-                        'in' => array_merge(['samples' => $samples], $input),
-                        'out' => [
-                            't' => microtime(true) - $start,
-                            'min' => number_format($min, 2),
-                            'max' => number_format($max, 2),
-                            'avg' => number_format($sum / $samples, 2),
-                            //'raw' => $raw,
-                            'dist' => $dist,
-                        ],
-                    ]);
-                    $plot = new \GTrader\Plot ([
-                        'name' => 'Plot',
-                        'width' => $width,
-                        'height' => 200,
-                        'data' => [
-                            'distribution' => [
-                                'values' => $dist
-                            ]
-                        ],
-                    ]);
-                    echo $plot->toHtml();
-                }
-
-                foreach ($tests as $name => $test) {
-                    dump($name);
-                    foreach ($test['tests'] as $inputs) {
-                        test($test['callback'], $inputs, $test['samples'], $width);
-                    }
-                }
                 break;
 
             default:

@@ -1,17 +1,34 @@
-<button onClick="window.GTrader.request('dev', 'vis', [], 'GET', 'devArea');"
-        type="button"
-        class="btn btn-primary btn-sm trans"
-        title="Vis">
-    <span class="glyphicon glyphicon-ok"></span> Vis
-</button>
+<ul id="devNav" class="nav navbar nav-pills">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" data-toggle="tab" role="tab" href="#"
+            onClick="window.GTrader.request('dev', 'vis', [], 'GET', 'devArea');">
+            Visualize Dump
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" data-toggle="tab" role="tab" href="#"
+            onClick="window.GTrader.request('dev', 'dist', [], 'GET', 'devArea');">
+            Distributions
+        </a>
+    </li>
+</ul>
 
-<div id="devArea" style="height: 550px;" class="npr npl"></div>
+<div id="devArea" style="height: 550px;" class="np"></div>
 
 <script>
+
+$(function() {
+    $('#devNav li a').on('click', function() {
+        $(this).closest('ul').find('li.active').removeClass('active');
+        $(this).parent().addClass('active');
+    });
+});
+
 $(window).resize(function() {
     window.GTrader.waitForFinalEvent(function() {
         console.log('setDevSize');
         $('#devArea').height($(window).height() - 100);
     }, 500, 'setDevSize');
 });
+
 </script>

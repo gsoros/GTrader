@@ -57,9 +57,10 @@
                 @endforeach
             </select>
 
-            <button onClick="window.GTrader.request('strategy',
-                                                    'new',
-                                                    {strategyClass: $('#new_strategy_class').val()})"
+            <button onClick="window.GTrader.request(
+                            'strategy',
+                            'new',
+                            {strategyClass: $('#new_strategy_class').val()})"
                     type="button"
                     class="btn btn-primary btn-sm trans"
                     title="Create new strategy">

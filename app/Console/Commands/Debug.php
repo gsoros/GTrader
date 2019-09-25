@@ -116,7 +116,7 @@ class Debug extends Command
 
 
         $mem('before');
-        for ($i=0; $i<1; $i++) {
+        for ($i=0; $i<5; $i++) {
             //$sig = Indicator::make('Ema')->mutate(.5, 3)->getSignature();
             //$ind = $father->getOrAddIndicator($sig);
             //Log::debug('before');

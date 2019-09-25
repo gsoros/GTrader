@@ -80,16 +80,21 @@
     min-height: 0;
 }
 
-.navbar-nav li a {
+.navbar-nav li a,
+ .nav-pills li a,
+ .nav li a {
     margin-top: 2px;
     padding-top: 3px;
     padding-bottom: 3px;
     line-height: 21px;
+    color: #858585;
 }
 
-.navbar-nav li.active a {
-    color: #fff !important;
-}
+.nav li a:hover,
+.nav li a:focus,
+.nav li.active a {
+     background-color: #242424;
+ }
 
 .panel-default {
     margin-top: 10px;
@@ -128,11 +133,12 @@ h3 {
     padding: 2px 0 0 15px;
 }
 
-.btn-primary {
+.btn-primary, .btn-group > .btn-secondary {
     border: 1px solid #222;
+    background-color: #0d0c0c;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-group > .btn-secondary:hover {
     background-color: #333;
 }
 

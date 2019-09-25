@@ -1,89 +1,133 @@
-<div id="vis" class="npr npl"></div>
-<button onClick="refreshVis();"
+<select class="btn-primary btn btn-mini"
+        id="visFile"
+        title="Select dump file to load">
+        <option disabled selected>No dump files found</option>
+</select>
+<button onClick="g.vis.loadFile();"
         type="button"
         class="btn btn-primary btn-sm trans"
-        title="Refresh">
-    <span class="glyphicon glyphicon-ok"></span> Refresh
+        title="Reload">
+    <span class="glyphicon glyphicon-ok"></span> Reload
 </button>
-
+<div id="vis" class="npr npl"></div>
 <script>
 
-options = {
-    nodes: {
-        font: {color: 'white'},
-    },
-    edges: {
-        arrows: 'from',
-        'smooth': {
-            //'type': 'dynamic',
-            'type': 'cubicBezier',
-            'roundness': 0.5,
-        }
-    },
-    groups: {
-        root_input: {
-            shape: 'box',
-            color: 'red',
-
-        },
-        strategies: {
-            shape: 'ellipse',
-            color: '#5c5002',
-        },
-        indicators: {
-            shape: 'circle',
-            color: '#2e063e',
-
-        },
-        candles: {
-            shape: 'box',
-            color: '#1f4d00',
-        },
-    },
-    physics: {
-        barnesHut: {
-            gravitationalConstant: -50000,
-            springLength: 100,
-            centralGravity: 10,
-            stabilization: false,
-        }
-    },
-    layout: {
-        randomSeed: 3
-    },
-    //manipulation: true,
-    //configure: true,
-};
-container = $('#vis')[0];
-
 var g = window.GTrader;
-g.visNetwork = new vis.Network(container, {}, options);
 
-var refreshVis = function () {
-    window.GTrader.setLoading('devArea', true);
-    console.log('refreshVis');
-    $.ajax({
-        url: 'dev.json?file=debug.json',
-        dataType: 'json',
-        type: 'GET',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            g.setLoading('devArea', false);
-            g.visNetwork.setData(response);
-        },
-        error: function(response) {
-            g.setLoading('devArea', false);
-            if (0 == response.status && 'abort' === response.statusText) {
-                return;
+g.vis = {
+    getFileList: function () {
+        g.setLoading('visFile', true);
+        //console.log('vis.getFileList()');
+        $.ajax({
+            url: 'dev.files?path=dumps',
+            dataType: 'json',
+            type: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                g.setLoading('visFile', false);
+                if (!response.length) {
+                    return;
+                }
+                var items = '';
+                $.each(response, function(key, value) {
+                    //console.log(value);
+                    items += '<option>' + value + '</option>';
+                });
+                //console.log($('#visFile'));
+                $('#visFile').empty();
+                $('#visFile').append(items);
+                $('#visFile').trigger('change');
+            },
+            error: function(response) {
+                g.setLoading('visFile', false);
+                if (0 == response.status && 'abort' === response.statusText) {
+                    return;
+                }
             }
+        });
+    },
+    loadFile: function () {
+        //console.log('vis.loadFile()');
+        g.setLoading('vis', true);
+        $.ajax({
+            url: 'dev.json?file=' + $('#visFile').find(':selected').text(),
+            dataType: 'json',
+            type: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                g.setLoading('vis', false);
+                g.vis.network.setData(response);
+            },
+            error: function(response) {
+                g.setLoading('vis', false);
+                if (0 == response.status && 'abort' === response.statusText) {
+                    return;
+                }
+            }
+        });
+    },
+    network: new vis.Network(
+        $('#vis')[0],           // element
+        {},                     // data
+        {                       // options
+            nodes: {
+                font: {color: 'white'},
+            },
+            edges: {
+                arrows: 'from',
+                smooth: {
+                    //'type': 'dynamic',
+                    'type': 'cubicBezier',
+                    'roundness': 0.5,
+                }
+            },
+            groups: {
+                root_input: {
+                    shape: 'box',
+                    color: 'red',
+
+                },
+                strategies: {
+                    shape: 'ellipse',
+                    color: '#5c5002',
+                },
+                indicators: {
+                    shape: 'circle',
+                    color: '#2e063e',
+
+                },
+                candles: {
+                    shape: 'box',
+                    color: '#1f4d00',
+                }
+            },
+            physics: {
+                stabilization: false,
+                barnesHut: {
+                    gravitationalConstant: -50000,
+                    springLength: 100,
+                    centralGravity: 10,
+                }
+            },
+            layout: {
+                randomSeed: 3
+            }
+            //manipulation: true,
+            //configure: true,
         }
-    });
+    )
 }
 
+
 $(function() {
-    refreshVis();
+    $('#visFile').on('change', function (e) {
+        g.vis.loadFile();
+    });
+    g.vis.getFileList();
 });
 
 
