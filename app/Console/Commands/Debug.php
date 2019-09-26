@@ -95,7 +95,7 @@ class Debug extends Command
             dd('No Strat');
         }
         //dd($father);
-        $father->setParam('mutation_rate', .99);
+        $father->setParam('mutation_rate', .5);
         $father->setParam('max_nesting', 3);
 
         $candles = new Series([
@@ -112,27 +112,62 @@ class Debug extends Command
         $beagle->father($father);
         $beagle->evaluate($father);
 
+        //Event::dumpSubscriptions();
+        //$s = [];
+        //foreach ($father->getIndicators() as $i)
+        //    $s[] = $i->oid();
+        //dump(join(', ', $s));
+        //$father->mutate();
+        //die;
+        dump('Father fitness: '.$father->fitness());
 
+        $dump_foreign = function($strat) {
+            $owners = [];
+            foreach ($strat->getIndicators() as $ind) {
+                if ($ind->getOwner() !== $strat) {
+                    $owners[$ind->oid()] = $ind->getOwner()->oid();
+                }
+            }
+            if (count($owners)) {
+                dump('Foreign indicators for '.$strat->oid(), $owners);
+            }
+        };
+        //$dump_foreign($father);
 
+        $father->setParam('name', 'father')->visualize(15);
 
-        $mem('before');
-        for ($i=0; $i<5; $i++) {
+        //$mem('before');
+        for ($i=0; $i<10; $i++) {
             //$sig = Indicator::make('Ema')->mutate(.5, 3)->getSignature();
             //$ind = $father->getOrAddIndicator($sig);
             //Log::debug('before');
             //$father->unsetIndicator($ind);
             //Log::debug('after');
+            //$father->mutate();
+            //$beagle->evaluate($father);
+            //dump('Father '.$i.' fitness: '.$father->fitness());
+            //$father->setParam('name', 'father')->visualize(15);
+            //continue;
 
             $son = clone $father;
+            $son->setParam('name', 'son '.$i);
             $son->mutate();
             $beagle->evaluate($son);
-            $son->setParam('name', 'son '.$i)->visualize(15);
+            dump('Son '.$i.' fitness: '.$son->fitness());
+            $son->visualize(15);
+            //$dump_foreign($son);
             //$son->kill();
 
         }
 
-        //$son->setParam('name', 'son')->visualize(15);
-        $father->setParam('name', 'father')->visualize(15);
+        /*
+        $son = clone $father;
+        $son->mutate();
+        $beagle->evaluate($son);
+        dump('Son fitness: '.$son->fitness());
+        $son->setParam('name', 'son')->visualize(15);
+        */
+
 
         DevUtil::fdump($father->visGetJSON(), storage_path('dumps/debug.json'));
 

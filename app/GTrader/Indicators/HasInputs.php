@@ -21,6 +21,7 @@ abstract class HasInputs extends Indicator
         }
     }
 
+
     public function kill()
     {
         if (!$this->getParam('temporary')) {
@@ -29,10 +30,18 @@ abstract class HasInputs extends Indicator
         parent::kill();
     }
 
+
     public function __wakeup()
     {
         parent::__wakeup();
-        //$this->subscribeEvents();
+        $this->subscribeEvents();
+    }
+
+
+    public function __clone()
+    {
+        parent::__clone();
+        $this->subscribeEvents();
     }
 
 
@@ -67,7 +76,13 @@ abstract class HasInputs extends Indicator
         if ($object === $this) {
             return $this;
         }
-        if ($object->getOwner() !== $this->getOwner()) {
+        if (!$owner = $this->getOwner()) {
+            return $this;
+        }
+        //if ('Signals' == $this->getShortClass() && 'Ema' == $object->getShortClass()) {
+        //    Log::debug($this->oid().' of '.$owner->getParam('name').' received an event from '.$object->oid().' of '.$object->getOwner()->getParam('name'));
+        //};
+        if ($object->getOwner() !== $owner) {
             return $this;
         }
         if (!$old_sig = Arr::get($event, 'signature.old')) {
@@ -81,11 +96,11 @@ abstract class HasInputs extends Indicator
         }
         $changed = null;
         foreach ($this->getInputs() as $input_key => $input_sig) {
+            //if ('Signals' == $this->getShortClass() && false !== strpos($input_sig, 'Ema')) {
+            //    Log::debug('Signals has input from Ema');
+            //}
             if ($this->getParam('adjustable.'.$input_key.'.immutable')) {
                 continue;
-            }
-            if (!$owner = $this->getOwner()) {
-                return $this;
             }
             if (Indicator::signatureSame($input_sig, $old_sig)) {
                 if (is_null($changed)) {
@@ -95,23 +110,13 @@ abstract class HasInputs extends Indicator
                 $ind = $owner->getOrAddIndicator($new_sig);
                 $this->setParam('indicator.'.$input_key, $ind->getSignature($output));
                 $ind->addRef($this);
+                //if ('Ema' == $ind->getShortClass() && 'Signals' == $this->getShortClass()) {
+                //    Log::debug($this->oid().' knows that Ema changed: '.json_encode($this->getParam('indicator')));
+                //}
             }
         }
-        if (!is_null($changed)
-            && ($changed !== ($after = $this->getSignature()))
-        ) {
-            Event::dispatch(
-                $this,
-                'indicator.change',
-                [
-                    'signature' => [
-                        'old' => $changed,
-                        'new' => $after,
-                    ],
-                ]
-            );
-            $this->cleanCache();
-            $this->calculated(false);
+        if (!is_null($changed)) {
+            $this->handleChange($changed, $this->getSignature());
         }
         return $this;
     }

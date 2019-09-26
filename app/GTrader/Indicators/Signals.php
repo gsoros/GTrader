@@ -274,4 +274,15 @@ class Signals extends HasInputs
         }
         return $this;
     }
+
+
+    /*
+    protected function handleChange(string $before, string $after)
+    {
+        //Log::debug('Before: '.$before);
+        //Log::debug('After: '.$after);
+        return parent::handleChange($before, $after);
+    }
+    */
+
 }

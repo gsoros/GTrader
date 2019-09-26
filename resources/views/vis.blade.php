@@ -108,9 +108,9 @@ g.vis = {
             physics: {
                 stabilization: false,
                 barnesHut: {
-                    gravitationalConstant: -50000,
+                    gravitationalConstant: -20000,
                     springLength: 100,
-                    centralGravity: 10,
+                    centralGravity: 1,
                 }
             },
             layout: {

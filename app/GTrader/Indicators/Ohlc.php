@@ -171,4 +171,10 @@ class Ohlc extends HasInputs
             'close' => $close,
         ];
     }
+
+
+    public function subscribeEvents(bool $subscribe = true)
+    {
+        return $this;
+    }
 }

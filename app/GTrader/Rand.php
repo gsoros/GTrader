@@ -2,6 +2,8 @@
 
 namespace GTrader;
 
+use gburtini\Distributions\Normal as NormalDistribution;
+
 class Rand
 {
     public static function uniqId(int $length = 13)
@@ -83,7 +85,7 @@ class Rand
         $tries = 0;
         $found = false;
         do {
-            $rnd = $peak + $term * \gburtini\Distributions\Normal::draw(0, $squared_scale);
+            $rnd = $peak + $term * NormalDistribution::draw(0, $squared_scale);
             $found = $min <= $rnd && $rnd <= $max;
         } while ($tries++ < $max_tries && !$found);
         if (!$found) {
