@@ -733,9 +733,9 @@ abstract class Indicator extends Base implements Gene
 
     protected function handleChange(string $before, string $after)
     {
-        if ('Ema' == $this->getShortClass()) {
-            Log::debug('Ema changed: '.$this->getParam('indicator.length'));
-        }
+        //if ('Ema' == $this->getShortClass()) {
+        //    Log::debug('Ema changed: '.$this->getParam('indicator.length'));
+        //}
         if ($before !== $after) {
             Event::dispatch(
                 $this,

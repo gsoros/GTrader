@@ -34,6 +34,8 @@ class Ma extends Trader
 
     public function traderCalc(array $values)
     {
+        //$j = json_encode($this->getParams('indicator'));
+        //Log::debug('...'.substr($j, strpos($j, 'length'), 20).'...');
         if (!($values = trader_ma(
             $values[$this->getInput()],
             $this->getParam('indicator.length', 1),

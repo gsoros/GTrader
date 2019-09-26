@@ -53,7 +53,7 @@ class Beagle extends Training implements Evolution
             ->setProgress('state', 'evolving')
             ->saveProgress();
         $og_candles = clone $this->father()->getCandles();
-
+        $this->father()->visualize(15);
         $generation = 0;
         $max_generations = 10000;
 
@@ -70,6 +70,7 @@ class Beagle extends Training implements Evolution
                 ->raiseGeneration(100)
                 ->selection(1)
                 ;
+            Dump('Gen: '.$generation.' Subs: '.Event::subscriptionCount());
 
             $gen_best = $this->generation()[0]->fitness();
             $this->setProgress('generation_best', $gen_best)
@@ -81,8 +82,12 @@ class Beagle extends Training implements Evolution
 
             if ($gen_best > $this->father()->fitness()) {
                 dump('New best: '.$gen_best);
+                $this->generation()[0]->setCandles(clone $og_candles)->save();
                 $this->father()->kill();
-                $this->father($this->generation()[0]->setCandles(clone $og_candles)->save());
+                $this->father(clone $this->generation()[0]);
+                $this->father()->visReset()->visualize();
+                \GTrader\DevUtil::fdump($this->father()->visGetJSON(), storage_path('dumps/debug.json'));
+                //die;
                 $this->setProgress('best', $gen_best)
                     ->setProgress(
                         'last_improvement_epoch',
@@ -227,8 +232,10 @@ class Beagle extends Training implements Evolution
         $sig = $this->getMaximizeSig($strategy); //dump($sig);
         $candles = $this->father()->getCandles();
         $ind = $candles->getOrAddIndicator($sig);
+        $sig = $ind->getSignature();
+        //dump('Beagle:evaluate('.$strategy->getParam('name').') ...'.substr($sig, strpos($sig, 'length'), 20).'...');
         $bal = $ind->calculated(false)->getLastValue();
-        $candles->unsetIndicator($ind);
+        //$candles->unsetIndicator($ind);
         $strategy->fitness($bal);
         return $this;
     }

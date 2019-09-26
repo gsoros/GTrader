@@ -138,11 +138,12 @@ class Simple extends Strategy
     public function getSignalsIndicator(array $options = [])
     {
         if ($sig = $this->cached('signals_sig')) {
+            Log::debug('cached '.$sig);
             return $this->getOrAddIndicator($sig);
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
             //Log::error('Could not find Signals, creating default');
-/*
+            /*
             fwrite(
                 $f = fopen('/gtrader/public/test.json', 'w'),
                 json_encode(
@@ -153,10 +154,10 @@ class Simple extends Strategy
             fclose($f);
             echo \GTrader\DevUtil::backtrace();
             dd('This shoud not have happened.');
- */
+            */
             $this->createDefaultIndicators();
             if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
-                //Log::error('Failed to create default');
+                Log::error('Failed to create default');
                 return null;
             }
         }
@@ -186,8 +187,8 @@ class Simple extends Strategy
         $ohlc_open  = $ohlc->getSignature('open');
         $ohlc_close = $ohlc->getSignature('close');
 
-        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 15]);
-        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 55]);
+        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 9]);
+        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 49]);
         $mid  = $this->getOrAddIndicator('Mid');
 
         $ema1_sig = $ema1->getSignature();

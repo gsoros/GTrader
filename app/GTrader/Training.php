@@ -244,6 +244,7 @@ abstract class Training extends Model
     {
         //dump('maxi sig for '.$strategy->oid());
         if ($sig = $strategy->cached('maximize_sig')) {
+            Log::debug('cached max sig');
             return $sig;
         }
         $maximize = $this->options['maximize_for'] ??
@@ -279,6 +280,7 @@ abstract class Training extends Model
         }
         $sig = $indicator->getSignature();
         $strategy->cache('maximize_sig', $sig);
+        //Log::debug('...'.substr($sig, strpos($sig, 'length'), 20).'...');
         return $sig;
     }
 

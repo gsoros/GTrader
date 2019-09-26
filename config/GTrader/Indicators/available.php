@@ -6,7 +6,7 @@ return [
     'Operator'          => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],
     'Roc'               => ['allow_multiple' => true],
-    'Balance'           => ['allow_multiple' => false],
+    'Balance'           => ['allow_multiple' => true],
     'Ma'                => ['allow_multiple' => true],
     'Ema'               => ['allow_multiple' => true],
     'FannPrediction'    => ['allow_multiple' => true],

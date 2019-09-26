@@ -69,7 +69,7 @@ class Tiktaalik extends Simple implements Evolvable
             );
         }
 
-        //$this->cleanCache();
+        $this->cleanCache();
 
         return $this;
     }

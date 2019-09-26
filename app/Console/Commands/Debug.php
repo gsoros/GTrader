@@ -135,6 +135,7 @@ class Debug extends Command
         //$dump_foreign($father);
 
         $father->setParam('name', 'father')->visualize(15);
+        //die;
 
         //$mem('before');
         for ($i=0; $i<10; $i++) {
@@ -157,17 +158,17 @@ class Debug extends Command
             $son->visualize(15);
             //$dump_foreign($son);
             //$son->kill();
-
         }
 
         /*
         $son = clone $father;
+        $son->setParam('name', 'son');
         $son->mutate();
+        dump('about to evaluate son');
         $beagle->evaluate($son);
         dump('Son fitness: '.$son->fitness());
-        $son->setParam('name', 'son')->visualize(15);
+        $son->visualize(15);
         */
-
 
         DevUtil::fdump($father->visGetJSON(), storage_path('dumps/debug.json'));
 

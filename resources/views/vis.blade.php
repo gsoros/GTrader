@@ -83,7 +83,8 @@ g.vis = {
                     //'type': 'dynamic',
                     'type': 'cubicBezier',
                     'roundness': 0.5,
-                }
+                },
+                selectionWidth: 3,
             },
             groups: {
                 root_input: {
