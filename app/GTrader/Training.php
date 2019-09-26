@@ -244,7 +244,7 @@ abstract class Training extends Model
     {
         //dump('maxi sig for '.$strategy->oid());
         if ($sig = $strategy->cached('maximize_sig')) {
-            Log::debug('cached max sig');
+            //Log::debug('cached max sig');
             return $sig;
         }
         $maximize = $this->options['maximize_for'] ??
@@ -288,7 +288,9 @@ abstract class Training extends Model
     protected function setProgress($key, $value)
     {
         if (is_numeric($value)) {
-            $value = number_format($value, 2, '.', '');
+            if (intval($value) != $value) {
+                $value = number_format($value, 2, '.', '');
+            }
         }
         $progress = $this->progress;
         if (!is_array($progress)) {
