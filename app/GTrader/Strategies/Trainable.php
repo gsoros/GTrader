@@ -291,7 +291,7 @@ trait Trainable
         $deleted = 0;
         foreach ($epochs as $epoch) {
             if ($count == $nth) {
-                $deleted +=  DB::table('fann_history')
+                $deleted +=  DB::table($this->getParam('history_table'))
                     ->where('strategy_id', $this->getParam('id'))
                     ->where('epoch', $epoch->epoch)
                     ->delete();
@@ -301,7 +301,7 @@ trait Trainable
                 $count = 1;
             }
         }
-        Log::error($deleted.' history records deleted.');
+        Log::info($deleted.' history records deleted.');
         return $this;
     }
 

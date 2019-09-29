@@ -95,7 +95,7 @@ class IndicatorController extends Controller
 
     protected function loadOwner(Request $request)
     {
-        if (!isset($request->owner_class)) {
+        if (!$request->owner_class) {
             Log::error('Owner_class is not set');
             return false;
         }

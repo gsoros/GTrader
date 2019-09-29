@@ -19,7 +19,7 @@ g.vis = {
         g.setLoading('visFile', true);
         //console.log('vis.getFileList()');
         $.ajax({
-            url: 'dev.files?path=dumps',
+            url: 'dev.dumps?path=/',
             dataType: 'json',
             type: 'GET',
             headers: {

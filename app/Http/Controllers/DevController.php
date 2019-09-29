@@ -50,9 +50,10 @@ class DevController extends Controller
 
     public function json(Request $request)
     {
-        if (!($file = isset($request->file) ? $request->file : null)) {
+        if (!($file = isset($request->file) ? trim($request->file) : null)) {
             return response('file not found', 404);
         }
+        $file = basename($file);
         if (!file_exists(storage_path('dumps/'.$file))) {
             return response('file not found', 404);
         }
@@ -65,20 +66,22 @@ class DevController extends Controller
     }
 
 
-    public function files(Request $request)
+    public function dumps(Request $request)
     {
-        if (!($path = isset($request->path) ? $request->path : null)) {
-            return response('path '.$path.' not found', 404);
+        $path = isset($request->path) ?
+            str_replace('..', '', trim($request->path)) :
+            '';
+        $path = 'dumps/'.$path;
+        if (!file_exists($path = storage_path($path))) {
+            return response('path not found', 404);
         }
-        if (!file_exists(storage_path($path))) {
-            return response('path '.$path.' not found', 404);
-        }
-        $path = storage_path($path);
         if (!is_readable($path)) {
             return response('path not readable', 403);
         }
         foreach ($files = scandir($path) as $k => $file) {
-            if (is_dir($path.'/'.$file) || !is_readable($path.'/'.$file)) {
+            if (is_dir($path.'/'.$file) ||
+                !is_readable($path.'/'.$file) ||
+                '.' == substr($file, 0, 1)) {
                 unset($files[$k]);
             }
         }
@@ -249,9 +252,7 @@ class DevController extends Controller
         echo '<hr>Session:';
         dump($request->session()->all());
 
-        return view('basic')->with([
-            'content' => ob_get_clean(),
-        ]);
+        return response(ob_get_clean(), 200);
     }
 
 

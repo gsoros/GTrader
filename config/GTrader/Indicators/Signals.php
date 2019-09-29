@@ -11,6 +11,7 @@ return [
         'short_cond' => '<',
         'input_short_b' => 'open',
         'input_short_source' => 'open',
+        'min_trade_distance' => 1,
     ],
     'adjustable' => [
         'strategy_id' => [
@@ -69,6 +70,12 @@ return [
             'type' => 'source',
             'immutable' => true,                // do not mutate this setting
             'description' => 'Source for the short signal price. Used in back-testing and if the exchange is configured to use limit orders.',
+        ],
+        'min_trade_distance' => [
+            'name' => 'Minimum Trade Distance',
+            'type' => 'int',
+            'min' => 1,
+            'max' => 100,
         ],
     ],
     'display' =>  [

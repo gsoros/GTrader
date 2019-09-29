@@ -1283,6 +1283,7 @@ class Fann extends Strategy
                 'short_cond' => '>',
                 'input_short_b' => $pred_sig,
                 'input_short_source' =>  $this->getParam('short_source', 'open'),
+                'min_trade_distance' =>  $this->getParam('min_trade_distance', 1),
             ])) {
             Log::error('Could not add Signals');
             return null;

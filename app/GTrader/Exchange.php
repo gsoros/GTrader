@@ -185,19 +185,36 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getESR()
+    public function getSupported(): array
     {
-        $esr = [];
+        return [$this];
+    }
+
+    public static function getAvailable(): array
+    {
+        $exchanges = [];
         $default_exchange = Exchange::singleton();
         foreach ($default_exchange->getParam('available_exchanges') as $class) {
             $exchange = Exchange::make($class);
+            foreach ($exchange->getSupported() as $supported) {
+                $exchanges[] = $supported;
+            }
+        }
+        return $exchanges;
+    }
+
+
+    public static function getESR(): array
+    {
+        $esr = [];
+        foreach (static::getAvailable() as $exchange) {
             $exo = new \stdClass();
             $exo->name = $exchange->getParam('local_name');
             $exo->long_name = $exchange->getParam('long_name');
             $exo->short_name = $exchange->getParam('short_name');
             $exo->symbols = [];
 
-            foreach ($exchange->getParam('symbols') as $symbol) {
+            foreach ($exchange->getParam('symbols', []) as $symbol) {
                 $symo = new \stdClass();
                 $symo->name = $symbol['local_name'];
                 $symo->long_name = $symbol['long_name'];

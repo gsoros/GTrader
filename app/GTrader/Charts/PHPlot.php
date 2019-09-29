@@ -358,29 +358,48 @@ class PHPlot extends Chart
         //dump($item);
         if (strstr($item['class'], 'Signals')) {
             $item['num_outputs'] = 2;
-            $this->colors = ['#ff000010', '#00ff0050'];
+            // 0 => red, 1 => green, 2 => blue, 3 => transparent
+            $this->colors = ['#ff000010', '#00ff0050', '#0d00ff50', '#00000000'];
             $this->PHPlot->SetYDataLabelType('data', 2);         // precision
             $this->label = array_merge($this->label, ['']);
-            $signals = $values = [];
+            $signals = $prev_signals = $values = [];
+            $last_signal = null;
             foreach ($item['values'] as $k => $v) {
                 if (isset($v[2])) {
                     $signals[] = $v[2];
+                    $prev_signals[] = $last_signal;
                     $values[] = ['', $v[1], round($v[3], 2)];
+                    $last_signal = $v[2];
                 }
             }
             $item['values'] = $values;
             $this->PHPlot->SetCallback(
                 'data_color',
-                function ($img, $junk, $row, $col, $extra = 0) use ($signals) {
-                    //dump('R: '.$row.' C: '.$col.' E:'.$extra);
+                function ($img, $junk, $row, $col, $extra = 0) use (
+                    $signals,
+                    $prev_signals
+                ) {
+                    // $extra: 0 = line segment, 1 = marker shape
+                    //Log::debug('R: '.$row.' C: '.$col.' E:'.$extra);
                     $s = $signals[$row] ?? null;
-                    ;
-                    if ('long' === $s) {
-                        return (0 === $extra) ? 0 : 1;
-                    } elseif ('short' === $s) {
-                        return (0 === $extra) ? 1 : 0;
+                    $ps = $prev_signals[$row] ?? null;
+                    if (0 === $extra) { // line color
+                        if ('short' === $ps) {
+                            return 0;       // red
+                        }
+                        if ('long' === $ps) {
+                            return 1;       // green
+                        }
+                        return 3;           // transparent
                     }
-                    Log::error('Unknown signal '.$s);
+                    // marker color
+                    if ('short' === $s) {
+                        return 0;       // red
+                    }
+                    if ('long' === $s) {
+                        return 1;       // green
+                    }
+                    return 2;           // blue
                 }
             );
             //dd($item);

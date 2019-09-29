@@ -325,7 +325,7 @@ abstract class Training extends Model
         $value,
         string $strat_name = 'default')
     {
-        Log::sparse('saveHistory('.$this->getProgress('epoch').', '.$name.', '.$value.')');
+        dump('E: '.$this->getProgress('epoch').', '.$name.': '.$value);
         $this->getStrategy($strat_name)
             ->saveHistory(
                 $this->getProgress('epoch'),
@@ -352,7 +352,7 @@ abstract class Training extends Model
             return $this;
         }
         if ($this->getStrategy($strat_name)->getHistoryNumRecords() > $limit) {
-            Log::sparse('Pruning history');
+            dump('Pruning history');
             $state = $this->getProgress('state');
             $this->setProgress('last_history_prune', $current_epoch)
                 ->setProgress('state', 'pruning history')
@@ -366,7 +366,7 @@ abstract class Training extends Model
 
     protected function logMemoryUsage()
     {
-        Log::sparse('Memory used: '.Util::getMemoryUsage());
+        dump('Memory used: '.Util::getMemoryUsage());
         return $this;
     }
 
@@ -375,7 +375,7 @@ abstract class Training extends Model
     {
         if (!$this->started) {
             $this->started = time();
-            Log::sparse('Training start: '.date('Y-m-d H:i:s'));
+            dump('Training start: '.date('Y-m-d H:i:s'));
         }
 
         // check db if we have been stopped or deleted
@@ -384,14 +384,14 @@ abstract class Training extends Model
                 ->where('status', 'training')
                 ->firstOrFail();
         } catch (\Exception $e) {
-            Log::sparse('Training stopped.');
+            dump('Training stopped.');
             return false;
         }
         // check if the number of active trainings is greater than the number of slots
         if (self::where('status', 'training')->count() > TrainingManager::getSlotCount()) {
             // check if we have spent too much time
             if ((time() - $this->started) > $this->getParam('max_time_per_session')) {
-                Log::sparse('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
+                dump('Time up: '.(time() - $this->started).'/'.$this->getParam('max_time_per_session'));
                 return false;
             }
         }

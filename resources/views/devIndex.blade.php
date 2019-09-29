@@ -2,13 +2,19 @@
     <li class="nav-item" role="presentation">
         <a class="nav-link" data-toggle="tab" role="tab" href="#"
             onClick="window.GTrader.request('dev', 'vis', [], 'GET', 'devArea');">
-            Visualize Dump
+            Visualize Object Dump
         </a>
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link" data-toggle="tab" role="tab" href="#"
             onClick="window.GTrader.request('dev', 'dist', [], 'GET', 'devArea');">
             Distributions
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" data-toggle="tab" role="tab" href="#"
+            onClick="window.GTrader.request('dev', 'dump', [], 'GET', 'devArea');">
+            Dump Variables
         </a>
     </li>
 </ul>

@@ -148,13 +148,15 @@ class Balance extends HasInputs
                                     $stake / $prev_signal['price'] *
                                     ($prev_signal['price'] - $signal_price) *
                                     $leverage;
+                                // closing a position involves a fee
+                                $capital -= $stake * $fee_multiplier;
                             }
                             $upl = 0;
                         }
                         if ($mode == 'dynamic') {
                             $stake = $capital * $position_size / 100;
                         }
-                        // open long
+                        // open long: opening a position involves a fee
                         $capital -= $stake * $fee_multiplier;
                     } elseif ($signal == 'short' && $capital > 0) {
                         // go short
@@ -166,14 +168,45 @@ class Balance extends HasInputs
                                     $stake / $prev_signal['price'] *
                                     ($signal_price - $prev_signal['price']) *
                                     $leverage;
+                                // closing a position involves a fee
+                                $capital -= $stake * $fee_multiplier;
                             }
                             $upl = 0;
                         }
                         if ($mode == 'dynamic') {
                             $stake = $capital * $position_size / 100;
                         }
-                        // open short
+                        // open short: opening a position involves a fee
                         $capital -= $stake * $fee_multiplier;
+                    } elseif ($signal == 'neutral') {
+                        // close last position
+                        if ($prev_signal && $prev_signal['signal'] == 'long') {
+                            // close last long
+                            if ($prev_signal['price']) {
+                                // avoid division by zero
+                                $capital +=
+                                    $stake / $prev_signal['price'] *
+                                    ($signal_price - $prev_signal['price']) *
+                                    $leverage;
+                                // closing a position involves a fee
+                                $capital -= $stake * $fee_multiplier;
+                            }
+                            $upl = 0;
+                        }
+                        elseif ($prev_signal && $prev_signal['signal'] == 'short') {
+                            // close last short
+                            if ($prev_signal['price']) {
+                                // avoid division by zero
+                                $capital +=
+                                    $stake / $prev_signal['price'] *
+                                    ($prev_signal['price'] - $signal_price) *
+                                    $leverage;
+                                // closing a position involves a fee
+                                $capital -= $stake * $fee_multiplier;
+                            }
+                            $upl = 0;
+                        }
+
                     }
                     $prev_signal = [
                         'signal' => $signal,

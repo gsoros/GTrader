@@ -57,7 +57,7 @@ class TrainingManager extends Base
         foreach ($active_trainings as $training) {
             // Check if we have a free trainer slot
             while (is_null($slot = $this->getSlot())) {
-                echo "No free slot\n";
+                dump('No free slot');
                 $this->sleep();
             }
             // Check if a trainer is already working on this training
@@ -95,7 +95,7 @@ class TrainingManager extends Base
 
     protected function assign(int $slot, string $class, Training $training)
     {
-        Log::info('Assigning training '.$training->id.' to slot '.$slot);
+        dump('Assigning training '.$training->id.' to slot '.$slot);
 
         $command = $this->getParam('php_command').' '.
                     base_path('artisan').' training:run '.
@@ -112,7 +112,7 @@ class TrainingManager extends Base
                 @chmod($log_file, 0664);
             }
             $command = $command.' >> '.$log_file.' 2>&1 &';
-            Log::info('command: '.$command);
+            dump('Executing command: '.$command);
             exec($command);
         }
 

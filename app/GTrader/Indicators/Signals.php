@@ -72,6 +72,7 @@ class Signals extends HasInputs
         $this->setParam('indicator.strategy_id', $strategy_id);
         // remove strategy's signal ind
         if ($i !== $this) {
+            // TODO $i->kill() ?? to remove event subs ??
             $owner->unsetIndicator($i);
         }
         return $this;
@@ -184,6 +185,8 @@ class Signals extends HasInputs
         $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);
         $candles = $this->getCandles();
+        $resolution = $candles->getParam('resolution');
+        $min_trade_distance = $this->getParam('indicator.min_trade_distance', 1);
 
         $output_keys = [
             'signal' => $candles->key($this->getSignature('signal')),
@@ -233,6 +236,15 @@ class Signals extends HasInputs
                 continue;
             }
 
+            if ('neutral' !==  $previous_signal['signal']) {
+                if (1 < $min_trade_distance) {
+                    if ($previous_signal['time'] > $candle->time - $resolution * $min_trade_distance) {
+                        $previous_candle = $candle;
+                        continue;
+                    }
+                }
+            }
+
             foreach (['long', 'short'] as $action) {
                 foreach (['a', 'b', 'source'] as $component) {
                     if (!isset($previous_candle->{$input_keys['input_'.$action.'_'.$component]})) {
@@ -259,8 +271,9 @@ class Signals extends HasInputs
                     if ($previous_signal['time'] === $candle->time) {
                         //Log::debug('Multiple conditions met for '.$candle->time);
                         $previous_candle = $candle;
-                        continue;
+                        continue 2;
                     }
+                    // emit the short or long signal
                     $candle->{$output_keys['signal']} = $action;
                     $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
 
@@ -269,8 +282,20 @@ class Signals extends HasInputs
                         'signal' => $action,
                     ];
                 }
-                $previous_candle = $candle;
             }
+            if (!isset($candle->{$output_keys['signal']}) &&
+                $previous_signal['signal'] !== 'neutral') {
+                // emit the neutral signal
+                $candle->{$output_keys['signal']} = 'neutral';
+                $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
+
+                $previous_signal = [
+                    'time' => $candle->time,
+                    'signal' => 'neutral',
+                ];
+            }
+
+            $previous_candle = $candle;
         }
         return $this;
     }

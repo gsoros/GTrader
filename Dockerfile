@@ -26,7 +26,7 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
                     php-xml \
                 php-zip \
             php-mbstring \
-        php-pear \
+        php-pear php-bcmath php-curl \
             curl \
                 openssl \
                     libpng-dev \

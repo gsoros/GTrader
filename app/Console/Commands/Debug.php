@@ -71,6 +71,15 @@ class Debug extends Command
     protected function debug()
     {
 
+        for ($i = 10; --$i;) {
+            Log::error('Error test', ['key' => [1, 2, 3, 4, 100 => 'haha']]);
+        }
+        Log::sparse('Sparse test'."\r\n");
+        Log::sparse('Sparse test');
+        Log::sparse('Sparse test');
+        Log::debug('Sparse test');
+        Log::sparse('Sparse test');
+        die;
 
         $mem = function($msg = '') {
             dump(

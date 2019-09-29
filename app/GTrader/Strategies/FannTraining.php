@@ -179,7 +179,7 @@ class FannTraining extends Training
             $this->getProgress('last_reset')
         );
         if ($last < $this->getProgress('epoch') - $reset) {
-            Log::sparse('Reset training');
+            dump('Reset training');
             $this->setProgress('last_reset', $this->getProgress('epoch'))
                 ->brake(100);
             $this->getStrategy('train')->createFann();
@@ -259,20 +259,20 @@ class FannTraining extends Training
             $this->getProgress('last_improvement_epoch'),
             $this->getProgress('last_crosstrain_swap')
         );
-        Log::sparse('Epoch: '.$current_epoch.' Last: '.$last_epoch);
+        dump('E: '.$current_epoch.' Last: '.$last_epoch);
 
         if (($this->getProgress('test') > 100 &&
             $this->acceptable('test', 70) &&
             $current_epoch >= $last_epoch + $this->options['crosstrain']) ||
             $current_epoch >= $last_epoch + $this->options['crosstrain'] * 10) {
-            Log::sparse('*** Swap ***');
+            dump('*** Swap ***');
             $this->setProgress('last_crosstrain_swap', $current_epoch);
 
-            Log::sparse('Before: '.$this->getProgress('test_before_swap').
+            dump('Before: '.$this->getProgress('test_before_swap').
                         ' Now: '.$this->getProgress('test'));
             if ($this->getProgress('test') < $this->getProgress('test_before_swap')) {
                 if ($this->reverts < 3) {
-                    Log::sparse('Reverting fann');
+                    dump('Reverting fann');
                     if (is_resource($this->saved_fann)) {
                         $this->getStrategy('train')->setFann($this->saved_fann);
                         $this->reverts++;

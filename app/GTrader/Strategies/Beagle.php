@@ -60,7 +60,6 @@ class Beagle extends Training implements Evolution
         while ($this->shouldRun() && ($generation < $max_generations)) {
 
             $generation++;
-            Log::debug('Generation '.$generation);
 
             $this->increaseEpoch()
                 ->setProgress('father', $this->father()->fitness())
@@ -70,9 +69,10 @@ class Beagle extends Training implements Evolution
                 ->raiseGeneration(100)
                 ->selection(1)
                 ;
-            Dump('Gen: '.$generation.' Subs: '.Event::subscriptionCount());
 
             $gen_best = $this->generation()[0]->fitness();
+            dump('E: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
+
             $this->setProgress('generation_best', $gen_best)
                 ->saveHistory('generation_best', $gen_best, 'father')
                 ->setProgress(
