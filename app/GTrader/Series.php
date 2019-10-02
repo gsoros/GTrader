@@ -385,7 +385,7 @@ class Series extends Collection
 
         list($start, $end, $limit) = $this->getStartEndLimit(true);
 
-        $candles = DB::table('candles')
+        $qbuilder = DB::table('candles')
             ->select('time', 'open', 'high', 'low', 'close', 'volume')
             ->where('resolution', $resolution)
             ->join('exchanges', 'candles.exchange_id', '=', 'exchanges.id')
@@ -404,7 +404,12 @@ class Series extends Collection
             ->orderBy('time', 'desc')
             ->when(0 < $limit, function ($query) use ($limit) {
                 return $query->limit($limit);
-            })
+            }
+        );
+
+        //Log::debug(vsprintf(str_replace(['?'], ['\'%s\''], $qbuilder->toSql()), $qbuilder->getBindings()));
+
+        $candles = $qbuilder
             ->get()
             ->reverse()
             ->values();

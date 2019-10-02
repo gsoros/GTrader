@@ -185,9 +185,15 @@ abstract class Exchange extends Base
     }
 
 
-    public function getSupported(): array
+    public function getSupported(array $options = []): array
     {
+        // by default an exchange class supports only a single real-world exchange
         return [$this];
+    }
+
+    public function getSymbols(array $options = []): array
+    {
+        return $this->getParam('symbols', []);
     }
 
     public static function getAvailable(): array
@@ -256,11 +262,6 @@ abstract class Exchange extends Base
 
     public static function getList()
     {
-        $default = self::singleton();
-        $exchanges = [];
-        foreach ($default->getParam('available_exchanges') as $class) {
-            $exchanges[] = self::make($class);
-        }
-        return view('Exchanges/List', ['exchanges' => $exchanges]);
+        return view('Exchanges/List', ['exchanges' => static::getAvailable()]);
     }
 }

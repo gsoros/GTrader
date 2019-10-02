@@ -165,8 +165,7 @@ class Aggregator extends Base
      */
     protected function getExchanges()
     {
-        $default_exchange = Exchange::make();
-        return $default_exchange->getParam('available_exchanges');
+        return Exchange::getAvailable();
     }
 
     /**
@@ -174,9 +173,11 @@ class Aggregator extends Base
      * @param  string $class Class name
      * @return Exchange
      */
-    protected function getExchange(string $class)
+    protected function getExchange($exchange)
     {
-        $exchange = Exchange::make($class);
+        if (!is_object($exchange)) {
+            $exchange = Exchange::make($exchange);
+        }
         $exchange_id = null;
         $o = DB::table('exchanges')
             ->select('id')

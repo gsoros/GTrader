@@ -29,6 +29,23 @@ class ExchangeController extends Controller
     }
 
 
+    public function symbols(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return $error;
+        }
+        try {
+            $symbols = $exchange->getSymbols();
+        } catch (\Exception $e) {
+            Log::info($e->getMessage());
+            return response($e->getMessage(), 300);
+        }
+        return response(json_encode($symbols), 200);
+    }
+
+
     public function form(Request $request)
     {
         list($exchange, $config, $class, $error) =
@@ -69,7 +86,7 @@ class ExchangeController extends Controller
             Log::error('Failed to load exchange ID '.$exchange_id);
             $error = response('Failed to load exchange.', 404);
         } else {
-            $exchange = Exchange::make($class);
+            $exchange = Exchange::make($class, $request->options ?? []);
             $config = Auth::user()
                         ->exchangeConfigs()
                         ->firstOrNew(['exchange_id' => $exchange_id]);

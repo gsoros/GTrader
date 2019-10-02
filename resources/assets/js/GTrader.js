@@ -53,6 +53,9 @@ $(function() {
             } else {
                 if (params) {
                     if (typeof params === 'object') {
+                        //console.log(params);
+                        url += '&' + $.param(params, false);
+                        /*
                         if (Object.keys(params).length) {
                             var i = 0;
                             $.each(params, function(k, v) {
@@ -61,6 +64,7 @@ $(function() {
                                 i++;
                             });
                         }
+                        */
                     } else if (typeof params === 'string')
                         url += '&' + params;
                 }
@@ -79,7 +83,7 @@ $(function() {
                 },
                 success: function(response) {
                     $('#' + target).html(response);
-                    console.log('GTraderRequest success: ' + request + '.' + method);
+                    //console.log('GTraderRequest success: ' + request + '.' + method);
                     if (-1 == [
                             'change',
                             'image',
@@ -99,8 +103,14 @@ $(function() {
                     if (0 == response.status && 'abort' === response.statusText) {
                         return;
                     }
+                    console.log(response);
                     window.GTrader.setLoading(target, false);
-                    window.GTrader.errorBubble(target, response.status + ': ' + response.statusText);
+                    window.GTrader.errorBubble(
+                        target,
+                        response.status + ': ' +
+                        response.statusText + '<br>' +
+                        response.responseText
+                    );
                 }
             });
         },
@@ -304,9 +314,9 @@ $(function() {
         errorBubble: function(target, message) {
             var top = $('#' + target).height() / 2 - 10;
             var left = $('#' + target).width() / 2 - 70;
-            $('#' + target).append('<span id="errorBubble" class="errorBubble" ' +
-                'style="top: -' + top + 'px; left: ' + left + 'px"><strong>' +
-                message + '</strong></span>');
+            $('#' + target).append('<div id="errorBubble" class="errorBubble" ' +
+                'style="top: -' + top + 'px; left: ' + left + 'px">' +
+                message + '</div>');
             $('#errorBubble').css({
                 opacity: 1
             });

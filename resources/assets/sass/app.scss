@@ -304,10 +304,17 @@ pre.debug {
 }
 
 .errorBubble {
+    left: 50%;
+    margin-left: -25vw;
+    margin-right: -25vw;
+    max-width: 50vw;
+    right: 50%;
+    z-index: 1;
+
+    position: relative;
     background-color: #ff4;
     color: #000;
     padding: 15px;
-    position: relative;
     border: 1px solid #000;
     border-radius: 15px;
     box-shadow: 10px 10px 10px 10px #000;

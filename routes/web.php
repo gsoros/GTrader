@@ -71,6 +71,7 @@ Route::get('/bot.delete',               'BotController@delete');
 Route::post('/bot.save',                'BotController@save');
 
 Route::get('/exchange.form',            'ExchangeController@form');
+Route::get('/exchange.symbols',         'ExchangeController@symbols');
 Route::get('/exchange.list',            'ExchangeController@list');
 Route::post('/exchange.save',           'ExchangeController@save');
 

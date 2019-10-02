@@ -29,9 +29,9 @@
                 @endphp
                 <small>
                 {{ GTrader\Exchange::getESRReadonly(
-                                    $candles->getParam('exchange'),
-                                    $candles->getParam('symbol'),
-                                    $candles->getParam('resolution')) }}
+                    $candles->getParam('exchange'),
+                    $candles->getParam('symbol'),
+                    $candles->getParam('resolution')) }}
                 </small>
             @else
                 {!! GTrader\Exchange::getESRSelector($chart->getParam('name')) !!}
