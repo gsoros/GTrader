@@ -3,10 +3,49 @@
 
 // Variables
 @import "variables";
+
 // Bootstrap
-@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+@import "node_modules/bootstrap/scss/bootstrap.scss";
+
 // Select2
 @import "node_modules/select2/dist/css/select2.min";
+
+// FA
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '~@fortawesome/fontawesome-free/scss/solid.scss';
+@import '~@fortawesome/fontawesome-free/scss/regular.scss';
+@import '~@fortawesome/fontawesome-free/scss/brands.scss';
+
+body {
+    color: #aaa;
+}
+
+a {
+    color: #737373;
+}
+
+/*
+.container {
+    border: 1px solid red !important;
+}
+.container-fluid {
+    border: 1px solid #a21ae3 !important;
+}
+.row {
+    border: 1px solid yellow !important;
+}
+.col {
+    border: 1px solid green !important;
+}
+form {
+    border: 1px dashed #13eeee !important;
+}
+.form-group {
+    border: 1px dashed red !important;
+}
+*/
+
+
 
 .select2 {
     // @extend .btn-primary;
@@ -78,47 +117,57 @@
 .navbar {
     margin-bottom: 0;
     min-height: 0;
+    background-color: #000000 !important;
+    padding: 0 !important;
 }
 
-.navbar-nav li a,
- .nav-pills li a,
- .nav li a {
+
+.navbar ul.nav li.nav-item a.nav-link {
     margin-top: 2px;
     padding-top: 3px;
     padding-bottom: 3px;
     line-height: 21px;
-    color: #858585;
+    border-color: #000000 !important;
+    background-color: #000000 !important;
+    color: #858585 !important;
 }
 
-.nav li a:hover,
-.nav li a:focus,
-.nav li.active a {
-     background-color: #242424;
+.navbar ul.nav li.nav-item a.nav-link:hover,
+.navbar ul.nav li.nav-item a.nav-link:focus,
+.navbar ul.nav li.active a.nav-link {
+    border-color: #202020 !important;
+    border-bottom-color: #000000 !important;
  }
 
-.panel-default {
-    margin-top: 10px;
+.card {
+    background-color: #181818;
+    margin-top: 5px;
     border-radius: 10px;
 }
 
-.panel-default > .panel-heading {
+.card > .card-title {
     color: #bbb;
+    border-radius: inherit;
+    padding: 5px;
+    margin-bottom: 0;
 }
 
-.panel-default > .panel-body {
+.card > .card-body {
     background-color: #111;
     color: #ccc;
+    padding: 5px;
+    border-radius: 0 0 10px 10px;
 }
 
 .dropdown-menu,
-.dropdown-menu > li > a {
-    color: #ccc;
-    background-color: #111;
+.dropdown-menu > a.dropdown-item {
+    color: #ccc !important;
+    background-color: #111 !important;
 }
 
-.dropdown-menu > li > a:hover {
-    color: white;
-    background-color: #222;
+.dropdown-menu > a.dropdown-item:hover {
+    color: white !important;
+    background-color: #222 !important;
 }
 
 h3 {
@@ -126,11 +175,15 @@ h3 {
 }
 
 .form-horizontal .form-group {
-    margin: 3px;
+    margin: 3px 0 3px 0;
 }
 
 .form-horizontal .control-label {
     padding: 2px 0 0 15px;
+}
+
+input.form-control {
+    width: auto;
 }
 
 .btn-primary, .btn-group > .btn-secondary {
@@ -138,8 +191,17 @@ h3 {
     background-color: #0d0c0c;
 }
 
+.btn-primary:focus, .btn-group > .btn-secondary:focus {
+    background-color: #393737;
+}
+
 .btn-primary:hover, .btn-group > .btn-secondary:hover {
     background-color: #333;
+}
+
+.btn-sm {
+    height: 16px;
+    font-size: 12px;
 }
 
 .btn-mini {
@@ -195,15 +257,15 @@ select.btn-mini + .caret {
 }
 
 .np {
-    padding: 0;
+    padding: 0 !important;
 }
 
 .npl {
-    padding-left: 0;
+    padding-left: 0 !important;
 }
 
 .npr {
-    padding-right: 0;
+    padding-right: 0 !important;
 }
 
 label {
@@ -322,16 +384,15 @@ pre.debug {
     transition: opacity 0.5s;
 }
 
+.trans {
+    -webkit-transition: all 2s ease-in-out;
+    -moz-transition: all 2s ease-in-out;
+    -o-transition: all 2s ease-in-out;
+    transition: all 2s ease-in-out;
+}
+
 #vis {
     background-color: #000;
     width: 100%;
     height: 100%;
-}
-
-:-webkit-autofill,
-:-webkit-autofill:focus,
-:-webkit-autofill:hover {
-    -webkit-text-fill-color: white;
-    -webkit-box-shadow: 0 0 0 1000px #333 inset;
-    transition: background-color 5000s ease-in-out 0s;
 }

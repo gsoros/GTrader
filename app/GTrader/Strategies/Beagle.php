@@ -86,7 +86,13 @@ class Beagle extends Training implements Evolution
                 $this->father()->kill();
                 $this->father(clone $this->generation()[0]);
                 $this->father()->visReset()->visualize();
-                \GTrader\DevUtil::fdump($this->father()->visGetJSON(), storage_path('dumps/debug.json'));
+                \GTrader\DevUtil::fdump(
+                    $this->father()->visGetJSON(),
+                    storage_path(
+                        'dumps/'.
+                        preg_replace( '/[^a-zA-Z0-9 ]+/', '-', $this->father()->getParam('name')).
+                        '.json')
+                );
                 //die;
                 $this->setProgress('best', $gen_best)
                     ->setProgress(

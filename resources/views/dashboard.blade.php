@@ -1,39 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
 
-    <div class="row">
+
+
 
         <!-- Tab panes -->
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade in active" id="chartTab">
+            <div role="tabpanel" class="tab-pane container-fluid np fade show active" id="chartTab">
                 {!! $chart !!}
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="strategyTab">
+            <div role="tabpanel" class="tab-pane container-fluid np" id="strategyTab">
                 {!! $strategies !!}
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="settingsTab">
+            <div role="tabpanel" class="tab-pane container-fluid np" id="settingsTab">
                 {!! $exchanges !!}
             </div>
-            <div role="tabpanel" class="tab-pane fade" id="botTab">
+            <div role="tabpanel" class="tab-pane container-fluid np" id="botTab">
                 {!! $bots !!}
             </div>
             @env('local')
-            <div role="tabpanel" class="tab-pane fade" id="devTab">
+            <div role="tabpanel" class="tab-pane container-fluid np" id="devTab">
                 {!! $dev !!}
             </div>
             @endenv
         </div>
 
-    </div>
-</div>
+
+
 
 <!-- Chart Settings Modal -->
 <div class="modal fade bs-modal-lg">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-body" id="settings_content">
+            <div class="modal-body container" id="settings_content">
 
             </div>
             <div class="modal-footer">

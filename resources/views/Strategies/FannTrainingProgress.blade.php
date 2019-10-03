@@ -112,8 +112,8 @@
     </script>
 @endif
 <div class="row bdr-rad">
-    <div class="col-sm-12">
-        <span class="pull-right">
+    <div class="col-sm-12 float-right">
+        <span class="float-right">
             @if ('paused' === $training->status)
                 <button onClick="window.GTrader.request(
                                         'strategy',
@@ -121,9 +121,9 @@
                                         'id={{ $strategy->getParam('id') }}'
                                         )"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Resume Training">
-                    <span class="glyphicon glyphicon-play"></span> Resume Training
+                    <span class="fas fa-play"></span> Resume Training
                 </button>
             @else
                 <button onClick="clearTimeout(pollTimeout);
@@ -133,9 +133,9 @@
                                         'id={{ $strategy->getParam('id') }}'
                                         )"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Pause Training">
-                    <span class="glyphicon glyphicon-pause"></span> Pause Training
+                    <span class="fas fa-pause"></span> Pause Training
                 </button>
             @endif
             <button onClick="window.GTrader.request(
@@ -144,15 +144,15 @@
                                 'id={{ $strategy->getParam('id') }}'
                                 )"
                     type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Stop Training">
-                <span class="glyphicon glyphicon-stop"></span> Stop Training
+                <span class="fas fa-stop"></span> Stop Training
             </button>
             <button onClick="window.GTrader.request('strategy', 'list')"
                     type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Back to the List of Strategies">
-                <span class="glyphicon glyphicon-arrow-left"></span> Back
+                <span class="fas fa-arrow-left"></span> Back
             </button>
         </span>
     </div>

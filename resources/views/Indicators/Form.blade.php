@@ -22,24 +22,24 @@ foreach ([
 </h5>
 @endif
 @if (!in_array('form', $disabled))
-<form id="form_{{ $uid }}" class="form-horizontal row">
+<form id="form_{{ $uid }}" class="form-horizontal container-fluid np">
 @endif
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
         @php
             $desc = $param['description'] ?? '';
         @endphp
-        <div class="form-group"
+        <div class="form-group row"
             id="form_group_{{ $uid }}_{{ $key }}"
             @if ($desc)
                 title="{{ $desc }}"
             @endif
         >
-            <label class="col-sm-3 control-label" for="{{ $key }}_{{ $uid }}">
+            <label class="col-sm-3 control-label npl" for="{{ $key }}_{{ $uid }}">
                 @if ('bool' !== $param['type'])
                     {{ $param['name'] }}
                 @endif
             </label>
-            <div class="col-sm-9">
+            <div class="col-sm-9 np">
 
                 {{-- String --}}
                 @if ('string' === $param['type'])
@@ -194,10 +194,10 @@ foreach ([
     @if (!in_array('savebutton', $disabled))
     <div class="col-sm-2">
         <button id="save_{{ $uid }}"
-                class="btn btn-primary btn-sm trans"
+                class="btn btn-primary btn-mini trans"
                 title="Save changes"
                 onClick="return window.save_indicator{{ $uid }}()">
-            <span class="glyphicon glyphicon-ok"></span>
+            <span class="fas fa-check"></span>
         </button>
     </div>
     @endif

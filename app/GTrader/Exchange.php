@@ -123,13 +123,21 @@ abstract class Exchange extends Base
         if ($id = static::statCached('name_'.$name)) {
             return $id;
         }
+        $id = null;
         $query = DB::table('exchanges')
             ->select('id')
             ->where('name', $name)
             ->first();
         if (is_object($query)) {
-            static::statCache('name_'.$name, $query->id);
-            return $query->id;
+            $id = $query->id;
+        } else {
+            $id = DB::table('exchanges')->insertGetId([
+                'name' => $name,
+            ]);
+        }
+        if ($id) {
+            static::statCache('name_'.$name, $id);
+            return $id;
         }
         return null;
     }
@@ -216,14 +224,12 @@ abstract class Exchange extends Base
         foreach (static::getAvailable() as $exchange) {
             $exo = new \stdClass();
             $exo->name = $exchange->getParam('local_name');
-            $exo->long_name = $exchange->getParam('long_name');
             $exo->short_name = $exchange->getParam('short_name');
             $exo->symbols = [];
 
             foreach ($exchange->getParam('symbols', []) as $symbol) {
                 $symo = new \stdClass();
                 $symo->name = $symbol['local_name'];
-                $symo->long_name = $symbol['long_name'];
                 $symo->short_name = $symbol['short_name'];
                 $symo->resolutions = $symbol['resolutions'];
                 $exo->symbols[] = $symo;
@@ -264,4 +270,11 @@ abstract class Exchange extends Base
     {
         return view('Exchanges/List', ['exchanges' => static::getAvailable()]);
     }
+
+
+    public function getInfo()
+    {
+        return view('Exchanges/Info', ['exchange' => $this]);
+    }
+
 }

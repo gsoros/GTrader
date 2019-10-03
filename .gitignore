@@ -19,6 +19,7 @@ storage/locks/
 storage/dumps/
 */GTrader/Strategies/Unreleased
 .bash*
+.serenata
 .config
 .npm
 .composer

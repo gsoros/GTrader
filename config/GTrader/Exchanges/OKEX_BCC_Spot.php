@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'long_name'         => 'OKEX BCC Spot',
     'short_name'        => 'OKXBC',
     'local_name'        => 'OKEX_BCC_Spot',     // class name, also used in the local database
     'user_options'      => [                    // user-configurable options
@@ -12,7 +11,6 @@ return [
     ],
     'symbols' => [
         'bcc_btc' => [                                  // used in the local database, same as symbolname.local_name
-            'long_name' => 'Bicoin Cash - Bitcoin',
             'short_name' => 'BCCBTC',                   // used for displaying in lists
             'local_name' => 'bcc_btc',                  // used in the local database, same as the key
             'remote_name' => 'bcc_btc',                 // used when querying the remote data

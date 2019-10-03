@@ -17,25 +17,25 @@
                                                                     'form',
                                                                     'id={{ $id }}')"
                                     type="button"
-                                    class="btn btn-primary btn-sm editbutton trans"
+                                    class="btn btn-primary btn-mini editbutton trans"
                                     title="Edit Strategy">
-                                <span class="glyphicon glyphicon-wrench"></span>
+                                <span class="fas fa-wrench"></span>
                             </button>
                             <button onClick="window.GTrader.request('strategy',
                                                                     'clone',
                                                                     'id={{ $id }}')"
                                     type="button"
-                                    class="btn btn-primary btn-sm editbutton trans"
+                                    class="btn btn-primary btn-mini editbutton trans"
                                     title="Clone Strategy">
-                                <span class="glyphicon glyphicon-duplicate"></span>
+                                <span class="fas fa-clone"></span>
                             </button>
                             <button onClick="window.GTrader.request('strategy',
                                                                     'delete',
                                                                     'id={{ $id }}')"
                                     type="button"
-                                    class="btn btn-primary btn-sm editbutton trans"
+                                    class="btn btn-primary btn-mini editbutton trans"
                                     title="Delete Strategy">
-                                <span class="glyphicon glyphicon-trash"></span>
+                                <span class="fas fa-trash"></span>
                             </button>
                         </div>
                     </div>
@@ -62,9 +62,9 @@
                             'new',
                             {strategyClass: $('#new_strategy_class').val()})"
                     type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Create new strategy">
-                <span class="glyphicon glyphicon-ok"></span> Create
+                <span class="fas fa-check"></span> Create
             </button>
         </div>
     </div>

@@ -2,7 +2,7 @@
     <input type="hidden" name="id" value="{{ $exchange->getId() }}">
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <h4>Settings for {{ $exchange->getParam('long_name') }}</h4>
+            <h4>Settings for {{ $exchange->getParam('local_name') }}</h4>
         </div>
         <div class="col-sm-4 editable form-group">
             <label for="api_key">API Key</label>
@@ -62,20 +62,20 @@
     </div>
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <span class="pull-right">
+            <div class="float-right">
                 <button onClick="window.GTrader.request('exchange', 'list', null, 'GET', 'settingsTab')"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Discard Changes">
-                    <span class="glyphicon glyphicon-remove"></span> Discard Changes
+                    <span class="fas fa-ban"></span> Discard Changes
                 </button>
                 <button onClick="window.GTrader.request('exchange', 'save', $('#exchangeForm').serialize(), 'POST', 'settingsTab')"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Save Settings">
-                    <span class="glyphicon glyphicon-ok"></span> Save Settings
+                    <span class="fas fa-check"></span> Save Settings
                 </button>
-            </span>
+            </div>
         </div>
     </div>
 </form>

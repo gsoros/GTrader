@@ -17,16 +17,16 @@
                     <div class="col-sm-4">
                         <div class="form-group editbuttons">
                             <button type="button"
-                                    class="btn btn-primary btn-sm editbutton trans"
+                                    class="btn btn-primary btn-mini editbutton trans"
                                     title="Edit Bot"
                                     onClick="window.GTrader.request('bot', 'form', 'id={{ $id }}')">
-                                <span class="glyphicon glyphicon-wrench"></span>
+                                <span class="fas fa-wrench"></span>
                             </button>
                             <button type="button"
-                                    class="btn btn-primary btn-sm editbutton trans"
+                                    class="btn btn-primary btn-mini editbutton trans"
                                     title="Delete Bot"
                                     onClick="window.GTrader.request('bot', 'delete', 'id={{ $id }}')">
-                                <span class="glyphicon glyphicon-trash"></span>
+                                <span class="fas fa-trash"></span>
                             </button>
                         </div>
                     </div>
@@ -37,10 +37,10 @@
     <div class="row" id="new_bot">
         <div class="col-sm-12 editable text-right">
             <button type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Create new bot"
                     onClick="window.GTrader.request('bot', 'new')">
-                <span class="glyphicon glyphicon-ok"></span> Create a Bot
+                <span class="fas fa-check"></span> Create a Bot
             </button>
         </div>
     </div>

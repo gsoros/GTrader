@@ -15,9 +15,9 @@
             }
         )"
         type="button"
-        class="btn btn-primary btn-sm trans"
+        class="btn btn-primary btn-mini trans"
         title="{{ $train }} ID: {{ $training_id }}">
-    <span class="glyphicon glyphicon-fire"></span> {{ $train }}
+    <span class="fas fa-fire"></span> {{ $train }}
 </button>
 <span title="ID: {{ $strategy->getParam('id') }}">
     <strong>{{ $strategy->getParam('name') }}</strong>

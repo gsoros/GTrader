@@ -89,7 +89,7 @@
 </form>
 <div class="row bdr-rad">
     <div class="col-sm-12">
-        <span class="pull-right">
+        <span class="float-right">
             <button onClick="
                     window.GTrader.request(
                         'strategy',
@@ -108,15 +108,15 @@
                         )
                     )"
                     type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Start Training">
-                <span class="glyphicon glyphicon-fire"></span> Start Training
+                <span class="fas fa-fire"></span> Start Training
             </button>
             <button onClick="window.GTrader.request('strategy', 'list')"
                     type="button"
-                    class="btn btn-primary btn-sm trans"
+                    class="btn btn-primary btn-mini trans"
                     title="Back to the List of Strategies">
-                <span class="glyphicon glyphicon-arrow-left"></span> Back
+                <span class="fas fa-arrow-left"></span> Back
             </button>
         </span>
     </div>

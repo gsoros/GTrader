@@ -66,11 +66,18 @@ class DevUtil
      */
     public static function fdump($content, string $path = '/tmp/dump')
     {
+        $dir = pathinfo($path, PATHINFO_DIRNAME);
+        if (!file_exists($dir)) {
+            $oldumask = umask(0);
+            mkdir($dir, 0775, true);
+            umask($oldumask);
+        }
         fwrite(
             $fd = fopen($path, 'w'),
             $content
         );
         fclose($fd);
+        return;
     }
 
 

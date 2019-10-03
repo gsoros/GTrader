@@ -64,20 +64,20 @@
     </div>
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <span class="pull-right">
+            <div class="float-right">
                 <button onClick="window.GTrader.request('bot', 'list')"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Discard Changes">
-                    <span class="glyphicon glyphicon-remove"></span> Discard Changes
+                    <span class="fas fa-ban"></span> Discard Changes
                 </button>
                 <button onClick="window.GTrader.request('bot', 'save', $('#botForm').serialize(), 'POST')"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
+                        class="btn btn-primary btn-mini trans"
                         title="Save Bot">
-                    <span class="glyphicon glyphicon-ok"></span> Save Bot
+                    <span class="fas fa-check"></span> Save Bot
                 </button>
-            </span>
+            </div>
         </div>
     </div>
 </form>

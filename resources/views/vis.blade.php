@@ -5,9 +5,9 @@
 </select>
 <button onClick="g.vis.loadFile();"
         type="button"
-        class="btn btn-primary btn-sm trans"
+        class="btn btn-primary btn-mini trans"
         title="Reload">
-    <span class="glyphicon glyphicon-ok"></span> Reload
+    <span class="fas fa-check"></span> Reload
 </button>
 <div id="vis" class="npr npl"></div>
 <script>

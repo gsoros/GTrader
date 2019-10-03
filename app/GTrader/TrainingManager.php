@@ -46,11 +46,10 @@ class TrainingManager extends Base
                 }
             }
         } catch (\Exception $e) {
-            Log::error(
+            Log::info(
                 'Could not fetch trainings from the database.',
                 $e->getMessage(),
-                $active_trainings,
-                $trainings
+                $active_trainings
             );
             return $this;
         }

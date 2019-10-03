@@ -1,9 +1,11 @@
 <div class="panel-body">
-    <form role="form" class="form-horizontal">
+    <form role="form" class="form-horizontal container">
         {{csrf_field()}}
 
-        <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
-            <label for="password" class="col-md-4 control-label">Current Password</label>
+        <div class="editable form-group{{ $errors->has('password') ? ' has-error' : '' }} row">
+            <label for="password" class="col-md-4 control-label">
+                Current Password
+            </label>
             <div class="col-md-6">
                 <input id="password"
                     type="password"
@@ -18,8 +20,10 @@
             </div>
         </div>
 
-        <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
-            <label for="new_password" class="col-md-4 control-label">New Password</label>
+        <div class="editable form-group{{ $errors->has('password') ? ' has-error' : '' }} row">
+            <label for="new_password" class="col-md-4 control-label">
+                New Password
+            </label>
             <div class="col-md-6">
                 <input id="new_password"
                     type="password"
@@ -34,8 +38,10 @@
             </div>
         </div>
 
-        <div class="form-group{{ $errors->has('password_confirmation') ? ' has-error' : '' }}">
-            <label for="new_password_confirmation" class="col-md-4 control-label">Confirm New Password</label>
+        <div class="editable form-group{{ $errors->has('password_confirmation') ? ' has-error' : '' }} row">
+            <label for="new_password_confirmation" class="col-md-4 control-label">
+                Confirm New Password
+            </label>
             <div class="col-md-6">
                 <input id="new_password_confirmation"
                     type="password"
@@ -50,7 +56,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="editable form-group row">
             <div class="col-md-6 col-md-offset-4">
                 <button
                     class="btn btn-primary form-control"

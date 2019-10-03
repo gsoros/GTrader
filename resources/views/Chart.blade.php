@@ -16,12 +16,11 @@
         window.GTrader.registerChart('{{ $name }}');
     });
 </script>
-<div class="container-fluid">
-    <div class="row">
+<div class="d-flex">
 
-        @if (!in_array('esr', $disabled))
-        <!-- Exchange, Symbol, Resolution Selectors -->
-        <div class="col-xs-6 npl" id="esr_{{ $name }}">
+    @if (!in_array('esr', $disabled))
+    <!-- Exchange, Symbol, Resolution Selectors -->
+    <div class="p-2" id="esr_{{ $name }}">
         <div class="form-group">
             @if (in_array('esr', $readonly))
                 @php
@@ -37,39 +36,38 @@
                 {!! GTrader\Exchange::getESRSelector($chart->getParam('name')) !!}
             @endif
         </div>
-        </div>
-        @endif
-
-        @if (!in_array('strategy', $disabled))
-        <!-- Strategy Selector -->
-        <div class="col-xs-3 npl">
-        @if (in_array('strategy', $readonly))
-            <small>[{{ $chart->getStrategy()->getParam('name') }}]</small>
-        @else
-            <select title="Strategy Selector"
-                    class="btn-primary btn btn-mini"
-                    id="strategy_select_{{ $name }}"></select>
-            <script>
-                $(function() {
-                    window.GTrader.registerStrategySelector('{{ $name }}');
-                });
-            </script>
-        @endif
-        </div>
-        @endif
-
-        @if (!in_array('settings', $disabled))
-        <!-- Chart Settings Button -->
-        <div class="col-xs-3 text-right">
-            <button type="button"
-                    class="btn btn-primary btn-sm"
-                    id="settings_{{ $name }}"
-                    data-toggle="modal"
-                    data-target=".bs-modal-lg">
-                <span class="glyphicon glyphicon-wrench"></span>
-            </button>
-        </div>
-        @endif
-
     </div>
+    @endif
+
+    @if (!in_array('strategy', $disabled))
+    <!-- Strategy Selector -->
+    <div class="p-2">
+    @if (in_array('strategy', $readonly))
+        <small>[{{ $chart->getStrategy()->getParam('name') }}]</small>
+    @else
+        <select title="Strategy Selector"
+                class="btn-primary btn btn-mini"
+                id="strategy_select_{{ $name }}"></select>
+        <script>
+            $(function() {
+                window.GTrader.registerStrategySelector('{{ $name }}');
+            });
+        </script>
+    @endif
+    </div>
+    @endif
+
+    @if (!in_array('settings', $disabled))
+    <!-- Chart Settings Button -->
+    <div class="ml-auto p-2">
+        <button type="button"
+                class="btn btn-primary btn-mini"
+                id="settings_{{ $name }}"
+                data-toggle="modal"
+                data-target=".bs-modal-lg">
+            <span class="fas fa-wrench"></span>
+        </button>
+    </div>
+    @endif
+
 </div>

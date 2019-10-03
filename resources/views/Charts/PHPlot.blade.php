@@ -3,34 +3,34 @@
         <div class="btn-group">
             <button type="button"
                     title="Backward"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-primary btn-mini"
                     id="backward_{{ $name }}">
-                <span class="glyphicon glyphicon-backward"></span>
+                <span class="fas fa-backward"></span>
             </button>
             <button type="button"
                     title="Zoom In"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-primary btn-mini"
                     id="zoomIn_{{ $name }}">
-                <span class="glyphicon glyphicon-zoom-in"></span>
+                <span class="fas fa-search-plus"></span>
             </button>
             <button type="button"
                     title="Zoom Out"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-primary btn-mini"
                     id="zoomOut_{{ $name }}">
-                <span class="glyphicon glyphicon-zoom-out"></span>
+                <span class="fas fa-search-minus"></span>
             </button>
             <button type="button"
                     title="Forward"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-primary btn-mini"
                     id="forward_{{ $name }}">
-                <span class="glyphicon glyphicon-forward"></span>
+                <span class="fas fa-forward"></span>
             </button>
             @if (!in_array('fullscreen', $disabled))
             <button type="button"
                     title="Fullscreen"
-                    class="btn btn-primary btn-sm"
+                    class="btn btn-primary btn-mini"
                     id="fullscreen_{{ $name }}">
-                <span class="glyphicon glyphicon-fullscreen"></span>
+                <span class="fas fa-expand"></span>
             </button>
             @endif
         </div>

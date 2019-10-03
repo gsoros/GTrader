@@ -59,7 +59,7 @@
                 </span>
                 <div class="form-group editbuttons">
                     @if ($num_params)
-                        <button class="btn btn-primary btn-sm editbutton trans"
+                        <button class="btn btn-primary btn-mini editbutton trans"
                                 title="Edit"
                                 onClick="window.GTrader.request(
                                     'indicator',
@@ -74,10 +74,10 @@
                                     'POST',
                                     'form_{{ $uid }}'
                                 ); return false">
-                            <span class="glyphicon glyphicon-wrench"></span>
+                            <span class="fas fa-wrench"></span>
                         </button>
                     @endif
-                    <button class="btn btn-primary btn-sm editbutton trans"
+                    <button class="btn btn-primary btn-mini editbutton trans"
                             title="Delete"
                             onClick="window.GTrader.request(
                                 'indicator',
@@ -91,7 +91,7 @@
                                 'POST',
                                 '{{ $target_element }}'
                             ); return false">
-                        <span class="glyphicon glyphicon-trash"></span>
+                        <span class="fas fa-trash"></span>
                     </button>
                 </div>
                 @if ($display_outputs && (1 < $num_outputs))
@@ -140,9 +140,9 @@
                     'GET',
                     '{{ $target_element }}'
                 ); return false"
-                class="btn btn-primary btn-sm trans"
+                class="btn btn-primary btn-mini trans"
                 title="Add new indicator">
-            <span class="glyphicon glyphicon-ok"></span>
+            <span class="fas fa-check"></span>
         </button>
     </div>
 </div>

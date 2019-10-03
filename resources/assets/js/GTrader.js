@@ -267,11 +267,11 @@ $(function() {
                                         symbol.resolutions[resolution] + '</option>';
                                 }
                             }
-                            opts.symbol += 'value="' + symbol.name + '" title="' + symbol.long_name + '">' +
+                            opts.symbol += 'value="' + symbol.name + '" title="' + symbol.name + '">' +
                                 symbol.short_name + '</option>';
                         });
                     }
-                    opts.exchange += 'value="' + exchange.name + '" title="' + exchange.long_name + '">' +
+                    opts.exchange += 'value="' + exchange.name + '" title="' + exchange.name + '">' +
                         exchange.short_name + '</option>';
                 });
                 $('#exchange_' + name).html(opts.exchange);
@@ -315,11 +315,12 @@ $(function() {
             var top = $('#' + target).height() / 2 - 10;
             var left = $('#' + target).width() / 2 - 70;
             $('#' + target).append('<div id="errorBubble" class="errorBubble" ' +
-                'style="top: -' + top + 'px; left: ' + left + 'px">' +
-                message + '</div>');
+                'style="top: -' + top + 'px; left: ' + left + 'px"></div>');
             $('#errorBubble').css({
-                opacity: 1
+                opacity: 1,
+                transition: 'opacity .5s linear',
             });
+            $('#errorBubble').text(message);
             setTimeout(function() {
                 $('#errorBubble').css({
                     opacity: 0

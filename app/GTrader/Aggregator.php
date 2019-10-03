@@ -36,12 +36,15 @@ class Aggregator extends Base
 
         foreach ($this->getExchanges() as $exchange_class) {
             $exchange = $this->getExchange($exchange_class);
-            $symbols = $exchange->getParam('symbols');
+            $symbols = $exchange->getSymbols();
             if (!is_array($symbols)) {
                 continue;
             }
+            if (!count($symbols)) {
+                continue;
+            }
             $delay = $exchange->getParam('aggregator_delay', 0);
-            echo $exchange->getParam('short_name').': ';
+            echo $exchange->getParam('local_name').': ';
 
             foreach ($symbols as $symbol_local => $symbol) {
                 if (!is_array($symbol['resolutions'])) {
@@ -49,8 +52,7 @@ class Aggregator extends Base
                 }
                 $symbol_id = $this->getSymbolId(
                     $exchange->getParam('id'),
-                    $symbol_local,
-                    $symbol['long_name']
+                    $symbol_local
                 );
 
                 echo $symbol_local.': ';
@@ -110,7 +112,7 @@ class Aggregator extends Base
         }
         foreach ($this->getExchanges() as $exchange_class) {
             $exchange = $this->getExchange($exchange_class);
-            dump($exchange->getParam('long_name').': '.
+            dump($exchange->getParam('short_name').': '.
                 $exchange->getParam('delete_candle_age')
             );
         }
@@ -189,8 +191,7 @@ class Aggregator extends Base
         if (!$exchange_id) {
             $exchange_id = DB::table('exchanges')
                 ->insertGetId([
-                    'name' => $exchange->getParam('local_name'),
-                    'long_name' => $exchange->getParam('long_name')
+                    'name' => $exchange->getParam('local_name')
                 ]);
         }
         $exchange->setParam('id', $exchange_id);
@@ -201,13 +202,11 @@ class Aggregator extends Base
      * Returns symbol ID
      * @param  int    $exchange_id
      * @param  string $local_name
-     * @param  string $long_name
      * @return int
      */
     protected function getSymbolId(
         int $exchange_id,
-        string $local_name,
-        string $long_name
+        string $local_name
     ) {
         $symbol_id = null;
         $o = DB::table('symbols')
@@ -222,8 +221,7 @@ class Aggregator extends Base
             $symbol_id = DB::table('symbols')
                 ->insertGetId([
                     'name' => $local_name,
-                    'exchange_id' => $exchange_id,
-                    'long_name' => $long_name,
+                    'exchange_id' => $exchange_id
                 ]);
         }
         return $symbol_id;

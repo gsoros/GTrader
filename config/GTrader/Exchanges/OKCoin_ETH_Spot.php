@@ -7,7 +7,6 @@
 */
 
 return [
-    'long_name'         => 'OKCoin ETH Spot',
     'short_name'        => 'OKCES',
     'local_name'        => 'OKCoin_ETH_Spot',   // class name, also used in the local database
     'user_options'      => [                    // user-configurable options
@@ -18,7 +17,6 @@ return [
     ],
     'symbols' => [
         'eth_usd' => [                              // used in the local database, same as symbolname.local_name
-            'long_name' => 'Ethereum - US Dollar',
             'short_name' => 'ETHUSD',               // used for displaying in lists
             'local_name' => 'eth_usd',              // used in the local database, same as the key
             'remote_name' => 'eth_usd',             // used when querying the remote data

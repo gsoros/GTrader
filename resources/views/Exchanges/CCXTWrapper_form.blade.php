@@ -1,72 +1,116 @@
 <form id="exchangeForm">
     <input type="hidden" name="id" value="{{ $exchange->getId() }}">
-    <div class="row bdr-rad">
-        <div class="col-sm-12">
-            <h4>Settings for {{ $exchange->getParam('long_name') }}</h4>
+    <div class="row">
+        <div class="col-sm-8">
+            <h4>Exchanges supported by {{ $exchange->getParam('local_name') }}</h4>
         </div>
-
-        <div class="col-sm-12 editable form-group">
-            <label>Exchanges</label>
-            <div class="row bdr-rad">
-                @foreach ($supported_exchanges as $supported)
-                    <div class="col-sm-2 editable form-group">
-                        <div class="form-check form-check-inline">
-                            <label class="form-check-label" title="{{ $supported['name'] }}">
-                                <input class="form-check-input"
-                                    id="ccxt_exchange_{{ $supported['id'] }}"
-                                    name="exchanges[]"
-                                    type="checkbox"
-                                    value="{{ $supported['id'] }}"
-                                @if (in_array($supported['id'], $selected_exchanges))
-                                    checked
-                                @endif
-                                >
-                                {{ $supported['name'] }}
-                            </label>
-                        </div>
-                        <div id="ccxt_symbols_{{ $supported['id'] }}"></div>
+        <div class="col-sm-4">
+            <span class="float-right">
+                <button onClick="window.GTrader.request(
+                            'exchange',
+                            'list',
+                            null,
+                            'GET',
+                            'settingsTab'
+                        )"
+                        type="button"
+                        class="btn btn-primary btn-mini trans"
+                        title="Back">
+                    <span class="fas fa-arrow-left"></span> Back
+                </button>
+            </span>
+        </div>
+        <div class="col-sm-12 card-columns">
+            @foreach ($supported_exchanges as $supported)
+                <div class="card trans">
+                    <div id="ccxt_card_{{ $supported['id'] }}" class="card-title">
+                        <!--<img src="" width="25" height="25">-->
+                        <b>{{ $supported['name'] }}</b>
                     </div>
-                @endforeach
-            </div>
+                    <div class="card-body">
+                        <p id="ccxt_info_{{ $supported['id'] }}"
+                            style="display: none;"
+                            class="card-text"></p>
+                    </div>
+                </div>
+            @endforeach
         </div>
 
     </div>
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <span class="pull-right">
-                <button onClick="window.GTrader.request('exchange', 'list', null, 'GET', 'settingsTab')"
+            <div class="float-right">
+                <button onClick="window.GTrader.request(
+                            'exchange',
+                            'list',
+                            null,
+                            'GET',
+                            'settingsTab'
+                        )"
                         type="button"
-                        class="btn btn-primary btn-sm trans"
-                        title="Discard Changes">
-                    <span class="glyphicon glyphicon-remove"></span> Discard Changes
+                        class="btn btn-primary btn-mini trans"
+                        title="Back">
+                    <span class="fas fa-arrow-left"></span> Back
                 </button>
-                <button onClick="window.GTrader.request('exchange', 'save', $('#exchangeForm').serialize(), 'POST', 'settingsTab')"
-                        type="button"
-                        class="btn btn-primary btn-sm trans"
-                        title="Save Settings">
-                    <span class="glyphicon glyphicon-ok"></span> Save Settings
-                </button>
-            </span>
+            </div>
         </div>
     </div>
 </form>
 
 <script>
 var g = window.GTrader;
-g.ccxtToggleSymbols = function(id, show) {
-    if (show) {
-        g.request('exchange', 'symbols', {id: {{ $exchange->getId() }}, options: {'id': id}}, 'GET', 'ccxt_symbols_' + id);
+g.ccxtInfoLoaded = [];
+g.ccxtToggleInfo = function(id) {
+    if ($('#ccxt_info_' + id).is(':visible')) {
+        $('#ccxt_info_' + id).hide();
         return;
     }
-    $('#ccxt_symbols_' + id).html('');
+    if (-1 === $.inArray(id, g.ccxtInfoLoaded)) {
+        g.ccxtGetInfo(id);
+        return;
+    }
+    $('#ccxt_info_' + id).show();
 };
+
+g.ccxtGetInfo = function (id) {
+    g.setLoading('ccxt_card_' + id, true);
+    $.ajax({
+        url: '/exchange.info?id={{ $exchange->getId() }}&' + $.param({options: {id: id}}, false),
+        type: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            g.setLoading('ccxt_card_' + id, false);
+            if (!response.length) {
+                return;
+            }
+            g.ccxtInfoLoaded.push(id);
+            $('#ccxt_info_' + id).html(response);
+            $('#ccxt_info_' + id).show();
+        },
+        error: function(response) {
+            g.setLoading('ccxt_card_' + id, false);
+            if (0 == response.status && 'abort' === response.statusText) {
+                return;
+            }
+            g.errorBubble(
+                'ccxt_card_' + id,
+                response.status + ': ' +
+                response.statusText + '<br>' +
+                response.responseText
+            );
+        }
+    });
+}
+
 $(function() {
-    var ccxtExchanges = {!! json_encode($supported_exchanges) !!};
-    ccxtExchanges.forEach(function(exchange) {
-        var element = $('#ccxt_exchange_' + exchange.id);
-        g.ccxtToggleSymbols(exchange.id, element.prop('checked'));
-        element.on('change', function() {
-            g.ccxtToggleSymbols(exchange.id, this.checked);
+    {!! json_encode($supported_exchanges) !!}.forEach(function(exchange) {
+        var element = $('#ccxt_card_' + exchange.id);
+        element.on('click', function() {
+            g.ccxtToggleInfo(exchange.id);
+        }).on('mouseover', function() {
+            element.css('cursor', 'pointer');
         });
     });
 

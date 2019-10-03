@@ -13,7 +13,7 @@ class CCXTWrapper extends Exchange
 {
     protected const CCXT_NAMESPACE = '\\ccxt\\';
     protected $ccxt = null;
-    
+
 
     public function __construct(array $params = [])
     {
@@ -60,14 +60,28 @@ class CCXTWrapper extends Exchange
                 Log::debug('a different ccxt exists', $this->oid(), $this->ccxt->id, $id);
             }
 
-
-            if (is_object($this->ccxt)) {
-                $this->cleanCache();
+            if ($id) {
+                if (is_object($this->ccxt)) {
+                    $this->cleanCache();
+                }
+                $this->ccxt = $make_ccxt($id);
             }
-            $this->ccxt = $make_ccxt($id);
         }
         return $this->ccxt;
     }
+
+
+    public function getCcxtId(): string
+    {
+        if (!is_object($this->ccxt())) {
+            throw new \Exception('ccxt not an object');
+        }
+        if (!strlen($this->ccxt()->id)) {
+            throw new \Exception('ccxt id is empty');
+        }
+        return $this->ccxt()->id;
+    }
+
 
     public function getSupported(array $options = []): array
     {
@@ -79,6 +93,7 @@ class CCXTWrapper extends Exchange
                 $exchange = $this->ccxt($id, true);
                 $exchanges[] = $exchange;
             }
+            //$exchanges = array_slice($exchanges, 0, 20);
             return $exchanges;
         }
 
@@ -108,13 +123,41 @@ class CCXTWrapper extends Exchange
     }
 
 
+    public function getInfo()
+    {
+        return view('Exchanges/CCXTInfo', [
+            'exchange' => $this,
+        ]);
+    }
+
+
     public function getSymbols(array $options = []): array
     {
-        if (!$symbols = $this->cached('symbols')) {
-            $this->ccxt()->loadMarkets();
-            $this->cache('symbols', $this->ccxt()->symbols ?? []);
+        $ret = $this->getCCXTProperty('symbols', $options);
+        return is_array($ret) ? $ret : [];
+    }
+
+
+    public function getTimeframes(array $options = []): array
+    {
+        $ret = $this->getCCXTProperty('timeframes', $options);
+        return is_array($ret) ? $ret : [];
+    }
+
+
+    public function getCCXTProperty($prop, array $options = [])
+    {
+        if (!$this->cached($prop)) {
+            if (!is_object($ccxt = $this->ccxt())) {
+                return null;
+            }
+            $ccxt->loadMarkets();
+            if (!isset($ccxt->$prop)) {
+                return null;
+            }
+            $this->cache($prop, $ccxt->$prop);
         }
-        return $this->cached('symbols');
+        return $this->cached($prop);
     }
 
 

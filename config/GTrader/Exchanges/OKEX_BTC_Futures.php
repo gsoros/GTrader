@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'long_name'         => 'OKEX BTC Futures',
     'short_name'        => 'OKXBF',
     'local_name'        => 'OKEX_BTC_Futures',  // class name, also used in the local database
     'user_options'      => [                    // user-configurable options
@@ -14,7 +13,6 @@ return [
     ],
     'symbols' => [
         'btc_usd_3m' => [                                       // used in the local database, same as symbolname.local_name
-            'long_name' => 'Bitcoin - US Dollar Quarterly',
             'short_name' => 'BTCUSD3M',                         // used for displaying in lists
             'local_name' => 'btc_usd_3m',                       // used in the local database, same as the key
             'remote_name' => 'btc_usd',                         // used when querying the remote data

@@ -46,6 +46,23 @@ class ExchangeController extends Controller
     }
 
 
+    public function info(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return $error;
+        }
+        try {
+            $info = $exchange->getInfo();
+        } catch (\Exception $e) {
+            Log::info($e->getMessage());
+            return response($e->getMessage(), 300);
+        }
+        return response($info, 200);
+    }
+
+
     public function form(Request $request)
     {
         list($exchange, $config, $class, $error) =

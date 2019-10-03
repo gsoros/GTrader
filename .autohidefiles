@@ -1,4 +1,11 @@
 \.  //autohidefiles$
 \.git$
-\node_modules$
-\vendor$
+\.gitattributes$
+node_modules
+vendor$
+\.config
+\.nano$
+\.npm$
+\.serenata
+\.bash
+\.mysql
