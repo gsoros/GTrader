@@ -98,7 +98,7 @@ g.ccxtGetInfo = function (id) {
                 'ccxt_card_' + id,
                 response.status + ': ' +
                 response.statusText + '<br>' +
-                response.responseText
+                response.responseText.substring(0, 300)
             );
         }
     });

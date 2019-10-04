@@ -75,7 +75,6 @@ class ExchangeController extends Controller
     }
 
 
-
     public function save(Request $request)
     {
         list($exchange, $config, $class, $error) =
@@ -97,13 +96,37 @@ class ExchangeController extends Controller
 
     private function setUpRequest(Request $request)
     {
-        $exchange = $config = $class = $error = null;
+        $exchange = $config = $error = null;
         $exchange_id = (int)$request->id;
-        if (!($class = Exchange::getNameById($exchange_id))) {
-            Log::error('Failed to load exchange ID '.$exchange_id);
+        $class = $request->class;
+        if ($class && $exchange_id) {
+            Log::error('we need either class or id, not both');
             $error = response('Failed to load exchange.', 404);
-        } else {
-            $exchange = Exchange::make($class, $request->options ?? []);
+        }
+        if (!$error) {
+            if ($exchange_id) {
+                if (!($class = Exchange::getNameById($exchange_id))) {
+                    Log::error('Failed to get exchange name from id '.$exchange_id);
+                    $error = response('Failed to load exchange.', 404);
+                }
+            } elseif (!$class) {
+                Log::error('no id or class');
+                $error = response('Failed to load exchange.', 404);
+            }
+        }
+        if (!$error) {
+            if (!$exchange = Exchange::make($class, $request->options ?? [])) {
+                Log::error('Failed to make '.$class);
+                $error = response('Failed to load exchange.', 404);
+            }
+        }
+        if (!$error) {
+            if (!$exchange_id = $exchange->getId()) {
+                Log::error('Failed to get  id for '.$class);
+                $error = response('Failed to load exchange.', 404);
+            }
+        }
+        if (!$error) {
             $config = Auth::user()
                         ->exchangeConfigs()
                         ->firstOrNew(['exchange_id' => $exchange_id]);

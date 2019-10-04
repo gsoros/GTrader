@@ -8,7 +8,6 @@ abstract class Exchange extends Base
 {
     use HasCache, HasStatCache;
 
-    abstract public function form(array $options = []);
     abstract public function getTicker(string $symbol);
     abstract public function getCandles(
         string $symbol,
@@ -24,6 +23,23 @@ abstract class Exchange extends Base
     );
     abstract public function cancelUnfilledOrders(string $symbol, int $before_timestamp);
     abstract public function saveFilledOrders(string $symbol, int $bot_id = null);
+
+
+    public static function make(string $class = null, array $params = [])
+    {
+        // hack for CCXTWrapper
+        $ccxtwrapper = 'CCXTWrapper';
+        if ($ccxtwrapper === substr($class, 0, 11)) {
+            if ($ccxt_id = strstr($class, '_')) {
+                if (strlen($ccxt_id = substr($ccxt_id, 1))) {
+                    $params['ccxt_id'] = $ccxt_id;
+                    Log::debug('making '.$ccxtwrapper.' with ccxt_id='.$ccxt_id);
+                    return parent::make($ccxtwrapper, $params);
+                }
+            }
+        }
+        return parent::make($class, $params);
+    }
 
 
     /**
@@ -204,6 +220,25 @@ abstract class Exchange extends Base
         return $this->getParam('symbols', []);
     }
 
+
+    public function getResolutions(string $symbol_id = '', array $options = []): array
+    {
+        if (!count($symbols = $this->getSymbols())) {
+            Log::error('no symbols for '.$this->getShortClass());
+            return [];
+        }
+        if (strlen($symbol_id)) {
+            if (!isset($symbols[$symbol_id])) {
+                Log::error('symbol not found: '.$symbol_id);
+                return [];
+            }
+            return $symbols[$symbol_id]['resolutions'];
+        }
+        // return the resolutions of the first symbol
+        return $symbols[0]['resolutions'];
+    }
+
+
     public static function getAvailable(): array
     {
         $exchanges = [];
@@ -277,4 +312,46 @@ abstract class Exchange extends Base
         return view('Exchanges/Info', ['exchange' => $this]);
     }
 
+
+    public function getSymbol(string $symbol_id = ''): array
+    {
+        if (!strlen($symbol_id)) {
+            Log::error('need symbol in '.$this->getShortClass());
+            return [];
+        }
+        $symbols = $this->getSymbols();
+        if (!isset($symbols[$symbol_id])) {
+            Log::error('symbol not set in '.$this->getShortClass(), $symbol_id);
+            return [];
+        }
+        if (!is_array($symbols[$symbol_id])) {
+            Log::error('symbol not an array in '.$this->getShortClass(), $symbol_id);
+            return [];
+        }
+        return $symbols[$symbol_id];
+    }
+
+
+    public function getSymbolName(string $symbol_id): string
+    {
+        $symbol = $this->getSymbol($symbol_id);
+        if (!isset($symbol['local_name'])) {
+            return $symbol_id;
+        }
+        return $symbol['local_name'];
+    }
+
+
+    public function getName()
+    {
+        return $this->getParam('local_name');
+    }
+
+
+    public function form(array $options = [])
+    {
+        return view('Exchanges/Form', [
+            'exchange' => $this,
+        ]);
+    }
 }

@@ -71,6 +71,16 @@ class CCXTWrapper extends Exchange
     }
 
 
+    public function getId()
+    {
+        $name = $this->getShortClass();
+        if (strlen($this->getParam('ccxt_id'))) {
+            $name .= '_'.$this->getParam('ccxt_id');
+        }
+        return self::getIdByName($name);
+    }
+
+
     public function getCcxtId(): string
     {
         if (!is_object($this->ccxt())) {
@@ -105,6 +115,10 @@ class CCXTWrapper extends Exchange
 
     public function form(array $options = [])
     {
+        if ($this->getParam('ccxt_id')) {
+            return parent::form($options);
+        }
+
         $exchanges = $this->getSupported(['get_all' => true]);
         $supported = [];
         foreach ($exchanges as $exchange) {
@@ -114,11 +128,9 @@ class CCXTWrapper extends Exchange
             ];
         }
         //$supported = array_slice($supported, 0, 7);
-        $selected = ['anxpro'];
         return view('Exchanges/CCXTWrapper_form', [
             'exchange' => $this,
             'supported_exchanges' => $supported,
-            'selected_exchanges' => $selected,
         ]);
     }
 
@@ -133,8 +145,38 @@ class CCXTWrapper extends Exchange
 
     public function getSymbols(array $options = []): array
     {
-        $ret = $this->getCCXTProperty('symbols', $options);
-        return is_array($ret) ? $ret : [];
+        $markets = $this->getCCXTProperty('markets', $options);
+        if (!is_array($markets)) {
+            Log::error('markets not array in '.$this->getShortClass(), $markets);
+            return [];
+        }
+        $symbols = [];
+        foreach ($markets as $market) {
+            if (!isset($market['id'])) {
+                Log::error('missing market id in '.$this->getShortClass(), $market);
+                continue;
+            }
+            $symbols[$market['id']] = $market;
+        }
+        return $symbols;
+    }
+
+
+
+    /*
+        In CCXT, there is a single list of resolutions per exchange
+    */
+    public function getResolutions(string $symbol_id = '', array $options = []): array
+    {
+        $timeframes = $this->getTimeframes($options);
+        $resolutions = [];
+        foreach ($timeframes as $key => $timeframe) {
+            if (!$resolution = $this->getParam('resolution_map.'.$key)) {
+                Log::info('unmapped resolution: '.$key.' => '.$timeframe.' for '.$this->getId());
+            }
+            $resolutions[$resolution] = $key;
+        }
+        return $resolutions;
     }
 
 
@@ -158,6 +200,24 @@ class CCXTWrapper extends Exchange
             $this->cache($prop, $ccxt->$prop);
         }
         return $this->cached($prop);
+    }
+
+
+    public function getName()
+    {
+        if (strlen($this->getParam('ccxt_id'))) {
+            return $this->getCCXTProperty('name');
+        }
+        return parent::getName();
+    }
+
+    public function getSymbolName(string $symbol_id): string
+    {
+        $symbol = $this->getSymbol($symbol_id);
+        if (!isset($symbol['symbol'])) {
+            return $symbol_id;
+        }
+        return $symbol['symbol'];
     }
 
 

@@ -12,7 +12,14 @@
         <div class="col-sm-12 editable">
             <label>Symbols</label>
             <p style="max-height: 100px" class="col-sm-12 overflow-auto">
-                {{ join(', ', $exchange->getSymbols()) }}
+                @php
+                    $symbol_ids = array_keys($exchange->getSymbols());
+                    $symbol_names = [];
+                    foreach ($symbol_ids as $symbol_id) {
+                        $symbol_names[] = $exchange->getSymbolName($symbol_id);
+                    }
+                @endphp
+                {{ join(', ', $symbol_names) }}
             </p>
         </div>
     </div>
@@ -29,10 +36,10 @@
     <div class="row">
         <div class="col-sm-12 np">
             <div class="float-right">
-                <button onClick="alert('TODO'); console.log(
+                <button onClick="window.GTrader.request(
                             'exchange',
-                            'new',
-                            [{class: 'CCXTWrapper'}, {ccxt_id: '{{ $exchange->getCCXTProperty('id') }}'}],
+                            'form',
+                            {class: 'CCXTWrapper_{{ $exchange->getCCXTProperty('id') }}'},
                             'GET',
                             'settingsTab'
                         )"
