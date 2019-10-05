@@ -12,7 +12,7 @@
             <div class="col-sm-6 editable">
                 <div class="row">
                     <div class="col-sm-8">
-                        <strong>{{ $exchange->getParam('local_name') }}</strong>
+                        <strong>{{ $exchange->getName() }}</strong>
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group editbuttons">

@@ -12,6 +12,7 @@ use ccxt\Exchange as CCXT;
 class CCXTWrapper extends Exchange
 {
     protected const CCXT_NAMESPACE = '\\ccxt\\';
+    protected const LOAD_MARKETS_BEFORE = ['markets', 'symbols'];
     protected $ccxt = null;
 
 
@@ -95,21 +96,37 @@ class CCXTWrapper extends Exchange
 
     public function getSupported(array $options = []): array
     {
-        // all exchanges supported by ccxt
-        if (true === Arr::get($options, 'get_all')) {
+        $exchanges = [];
+
+        $options = count($options) ? $options : ['get' => ['self' => true]];
+        $get = Arr::get($options, 'get', []);
+        $all = in_array('all', $get);
+        $self = in_array('self', $get);
+        $configured = in_array('configured', $get);
+        $user_id = Arr::get($options, 'user_id');
+
+        Log::debug($options, $all, $self, $configured, $user_id);
+
+        if ($all || ($configured && $user_id)) {
             $CCXT = new CCXT;
-            $exchanges = [];
-            foreach ($CCXT::$exchanges as $id) {
-                $exchange = $this->ccxt($id, true);
+            foreach ($CCXT::$exchanges as $ccxt_id) {
+                $exchange = self::make(get_class($this), ['ccxt_id' => $ccxt_id]);
+                if ($configured && $user_id) {
+                    if (!$exchange->setParam('user_id', $user_id)->getUserOptions()) {
+                        //Log::debug('user '.$user_id.' has no config for '.$exchange->getName());
+                        continue;
+                    }
+                }
                 $exchanges[] = $exchange;
             }
             //$exchanges = array_slice($exchanges, 0, 20);
-            return $exchanges;
         }
 
-        // exchanges chosen by the user
+        if ($self) {
+            $exchanges[] = $this;
+        }
 
-        return [$this];
+        return $exchanges;
     }
 
 
@@ -119,18 +136,18 @@ class CCXTWrapper extends Exchange
             return parent::form($options);
         }
 
-        $exchanges = $this->getSupported(['get_all' => true]);
-        $supported = [];
+        $exchanges = $this->getSupported([
+            'get' => ['all'],
+        ]);
+        $ids = [];
         foreach ($exchanges as $exchange) {
-            $supported[] = [
-                'id' => $exchange->id,
-                'name' => $exchange->name ?? 'unnamed',
-            ];
-        }
-        //$supported = array_slice($supported, 0, 7);
+            $ids[] = $exchange->getParam('ccxt_id');
+        };
+
         return view('Exchanges/CCXTWrapper_form', [
-            'exchange' => $this,
-            'supported_exchanges' => $supported,
+            'exchange'              => $this,
+            'supported_exchanges'   => $exchanges,
+            'supported_exchange_ids' => $ids,
         ]);
     }
 
@@ -193,7 +210,10 @@ class CCXTWrapper extends Exchange
             if (!is_object($ccxt = $this->ccxt())) {
                 return null;
             }
-            $ccxt->loadMarkets();
+            if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
+                Log::debug('loading markets, because', $prop, self::LOAD_MARKETS_BEFORE);
+                $ccxt->loadMarkets();
+            }
             if (!isset($ccxt->$prop)) {
                 return null;
             }
@@ -208,7 +228,7 @@ class CCXTWrapper extends Exchange
         if (strlen($this->getParam('ccxt_id'))) {
             return $this->getCCXTProperty('name');
         }
-        return parent::getName();
+        return 'CCXT';
     }
 
     public function getSymbolName(string $symbol_id): string

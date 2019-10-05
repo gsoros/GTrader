@@ -4,7 +4,7 @@ return [
     'short_name'        => 'CCXTW',
     'local_name'        => 'CCXTWrapper',  // class name, also used in the local database
     'user_options'      => [               // user-configurable options
-        'exchanges'     => [],
+        'symbols'     => [],
     ],
     'resolution_map'    => [
         '1m'    =>  60,

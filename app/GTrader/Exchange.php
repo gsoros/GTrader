@@ -3,6 +3,7 @@
 namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 abstract class Exchange extends Base
 {
@@ -49,19 +50,18 @@ abstract class Exchange extends Base
      */
     public function getUserOptions()
     {
-        if (!($user_id = $this->getParam('user_id'))) {
-            throw new \Exception('cannot getUserOptions() without user_id');
-        }
         if ($options = $this->cached('user_options')) {
             return $options;
         }
+        if (!($user_id = $this->getParam('user_id'))) {
+            throw new \Exception('cannot getUserOptions() without user_id');
+        }
         $config = UserExchangeConfig::select('options')
-                        ->where('user_id', $user_id)
-                        ->where('exchange_id', $this->getId())
-                        ->first();
+            ->where('user_id', $user_id)
+            ->where('exchange_id', $this->getId())
+            ->first();
         if (null === $config) {
-            Log::error('Exchange has not yet been configured by the user.');
-            return [];
+            return null;
         }
         $this->cache('user_options', $config->options);
         return $config->options;
@@ -75,15 +75,22 @@ abstract class Exchange extends Base
      */
     public function getUserOption(string $option)
     {
-        $options = $this->getUserOptions();
+        $options = $this->getUserOptions() ?? [];
+        return $options[$option] ?? null;
+    }
 
-        if (!isset($options[$option])) {
-            throw new \Exception($option.' not set');
+
+    public function updateUserOptions(UserExchangeConfig $config, array $new_options)
+    {
+        $options = $config->options;
+        foreach ($this->getParam('user_options') as $key => $default) {
+            Log::debug('updating '.$key.' to ', $new_options[$key] ?? $default);
+            $options[$key] = $new_options[$key] ?? $default;
         }
-        if (is_null($options[$option])) {
-            throw new \Exception($option.' is null');
-        }
-        return $options[$option];
+        $config->options = $options;
+        $config->save();
+        $this->unCache('user_options');
+        return $this;
     }
 
 
@@ -116,6 +123,7 @@ abstract class Exchange extends Base
     {
         return self::getIdByName($this->getShortClass());
     }
+
 
     public static function getNameById(int $id)
     {
@@ -157,6 +165,7 @@ abstract class Exchange extends Base
         }
         return null;
     }
+
 
     public static function getSymbolIdByExchangeSymbolName(string $exchange_name, string $symbol_name)
     {
@@ -215,6 +224,7 @@ abstract class Exchange extends Base
         return [$this];
     }
 
+
     public function getSymbols(array $options = []): array
     {
         return $this->getParam('symbols', []);
@@ -239,13 +249,13 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getAvailable(): array
+    public static function getAvailable(array $options = []): array
     {
         $exchanges = [];
         $default_exchange = Exchange::singleton();
         foreach ($default_exchange->getParam('available_exchanges') as $class) {
             $exchange = Exchange::make($class);
-            foreach ($exchange->getSupported() as $supported) {
+            foreach ($exchange->getSupported($options) as $supported) {
                 $exchanges[] = $supported;
             }
         }
@@ -274,6 +284,7 @@ abstract class Exchange extends Base
         return $esr;
     }
 
+
     public static function getESRReadonly(
         string $exchange,
         string $symbol,
@@ -301,9 +312,9 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getList()
+    public static function getList(array $options = [])
     {
-        return view('Exchanges/List', ['exchanges' => static::getAvailable()]);
+        return view('Exchanges/List', ['exchanges' => static::getAvailable($options)]);
     }
 
 
@@ -350,6 +361,7 @@ abstract class Exchange extends Base
 
     public function form(array $options = [])
     {
+        $this->setParam('user_id', Auth::user()->id);
         return view('Exchanges/Form', [
             'exchange' => $this,
         ]);

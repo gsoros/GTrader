@@ -25,7 +25,10 @@ class ExchangeController extends Controller
 
     public function list(Request $request)
     {
-        return response(Exchange::getList(), 200);
+        return response(Exchange::getList([
+            'get' => ['self', 'configured'],
+            'user_id' => Auth::user()->id,
+        ]), 200);
     }
 
 
@@ -82,15 +85,11 @@ class ExchangeController extends Controller
         if ($error) {
             return response($error);
         }
-
-        $options = $config->options;
-        foreach ($exchange->getParam('user_options') as $key => $default) {
-            $options[$key] = $request->$key ?? $default;
+        if (isset($request->options)) {
+            Log::debug($request->options);
         }
-        $config->options = $options;
-        $config->save();
-
-        return response(Exchange::getList(), 200);
+        $exchange->updateUserOptions($config, $request->options ?? []);
+        return $this->list($request);
     }
 
 
@@ -128,8 +127,8 @@ class ExchangeController extends Controller
         }
         if (!$error) {
             $config = Auth::user()
-                        ->exchangeConfigs()
-                        ->firstOrNew(['exchange_id' => $exchange_id]);
+                ->exchangeConfigs()
+                ->firstOrNew(['exchange_id' => $exchange_id]);
             $options = $config->options;
             foreach ($exchange->getParam('user_options') as $key => $default) {
                 if (!isset($options[$key])) {

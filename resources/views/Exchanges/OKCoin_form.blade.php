@@ -9,7 +9,7 @@
             <input class="btn-primary form-control form-control-sm"
                     type="text"
                     id="api_key"
-                    name="api_key"
+                    name="options[api_key]"
                     title="API Key"
                     value="{{ $options['api_key'] }}">
         </div>
@@ -18,7 +18,7 @@
             <input class="btn-primary form-control form-control-sm"
                     type="text"
                     id="api_secret"
-                    name="api_secret"
+                    name="options[api_secret]"
                     title="API Secret"
                     value="{{ $options['api_secret'] }}">
         </div>
@@ -27,7 +27,7 @@
             <select title="Maximum percentage of capital to be used in a position"
                     class="btn-primary form-control form-control-sm"
                     id="position_size"
-                    name="position_size">
+                    name="options[position_size]">
             @for ($i=1; $i<=100; $i++)
                 <option value="{{ $i }}"
                 @if (isset($options['position_size']))
@@ -47,7 +47,7 @@
             <select title="Order Type"
                     class="btn-primary form-control form-control-sm"
                     id="market_orders"
-                    name="market_orders">
+                    name="options[market_orders]">
             @foreach ([0 => 'Limit', 1 => 'Market'] as $k => $v)
                 <option value="{{ $k }}"
                 @if (isset($options['market_orders']))

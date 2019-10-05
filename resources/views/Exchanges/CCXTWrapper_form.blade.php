@@ -1,8 +1,7 @@
 <form id="exchangeForm">
-    <input type="hidden" name="id" value="{{ $exchange->getId() }}">
     <div class="row">
         <div class="col-sm-8">
-            <h4>Exchanges supported by {{ $exchange->getParam('local_name') }}</h4>
+            <h4>Exchanges supported by {{ $exchange->getName() }}</h4>
         </div>
         <div class="col-sm-4">
             <span class="float-right">
@@ -22,13 +21,16 @@
         </div>
         <div class="col-sm-12 card-columns">
             @foreach ($supported_exchanges as $supported)
+                @php
+                    $id = $supported->getParam('ccxt_id');
+                @endphp
                 <div class="card trans">
-                    <div id="ccxt_card_{{ $supported['id'] }}" class="card-title">
+                    <div id="ccxt_card_{{ $id }}" class="card-title">
                         <!--<img src="" width="25" height="25">-->
-                        <b>{{ $supported['name'] }}</b>
+                        <b>{{ $supported->getName() }}</b>
                     </div>
                     <div class="card-body">
-                        <p id="ccxt_info_{{ $supported['id'] }}"
+                        <p id="ccxt_info_{{ $id }}"
                             style="display: none;"
                             class="card-text"></p>
                     </div>
@@ -105,10 +107,10 @@ g.ccxtGetInfo = function (id) {
 }
 
 $(function() {
-    {!! json_encode($supported_exchanges) !!}.forEach(function(exchange) {
-        var element = $('#ccxt_card_' + exchange.id);
+    {!! json_encode($supported_exchange_ids) !!}.forEach(function(exchange_id) {
+        var element = $('#ccxt_card_' + exchange_id);
         element.on('click', function() {
-            g.ccxtToggleInfo(exchange.id);
+            g.ccxtToggleInfo(exchange_id);
         }).on('mouseover', function() {
             element.css('cursor', 'pointer');
         });

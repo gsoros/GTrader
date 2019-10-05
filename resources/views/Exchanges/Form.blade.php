@@ -26,7 +26,7 @@
         <div class="row bdr-rad">
             @php
                 $exchange_id = $exchange->getId();
-                $selected = $exchange->getParam('options.selected', []);
+                $selected = $exchange->getUserOption('symbols', []);
             @endphp
             @foreach ($exchange->getSymbols() as $symbol_id => $symbol)
                 @php
@@ -34,30 +34,35 @@
                     $md5_symbol_id = md5($symbol_id);
                     $symbol_name = $exchange->getSymbolName($symbol_id);
                 @endphp
-                <div class="col-sm-6 editable form-group">
-                    <span class="editable trans" title="{{ $symbol_name }}">
+                <div class="col-sm-4 editable form-group container">
+                    <div class="row">
+                        <div class="col-sm-3 editable trans" title="{{ $symbol_name }}">
                             {{ $symbol_name }}
-                    </span>
-                    @foreach ($exchange->getResolutions($symbol_id) as $res_time => $res_name)
-                        <span class="form-check form-check-inline">
-                            <label class="form-check-label" title="{{ $res_name }}">
-                                <input class="form-check-input"
-                                    id="{{ $md5_symbol_id }}_{{ $res_time }}"
-                                    name="{{ $md5_symbol_id }}[]"
-                                    type="checkbox"
-                                    value="{{ $res_time }}"
-                                    @if (isset($selected[$symbol_id]))
-                                        @if (is_array($selected[$symbol_id]))
-                                            @if (in_array($res_time, $selected[$symbol_id]))
-                                                checked
+                        </div>
+                        <div class="col-sm-9 editable form-group">
+                            @foreach ($exchange->getResolutions($symbol_id) as $res_time => $res_name)
+                                @php
+                                    $selected_symbol = $selected[$symbol_id] ?? [];
+                                @endphp
+                                <span class="form-check form-check-inline">
+                                    <label class="form-check-label" title="{{ $res_name }}">
+                                        <input class="form-check-input"
+                                            id="{{ $md5_symbol_id }}_{{ $res_time }}"
+                                            name="options[symbols][{{ $symbol_id }}][]"
+                                            type="checkbox"
+                                            value="{{ $res_time }}"
+                                            @if (is_array($selected_symbol))
+                                                @if (in_array($res_time, $selected_symbol))
+                                                    checked
+                                                @endif
                                             @endif
-                                        @endif
-                                    @endif
-                                >
-                                {{ $res_name }}
-                            </label>
-                        </span>
-                    @endforeach
+                                        >
+                                        {{ $res_name }}
+                                    </label>
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
