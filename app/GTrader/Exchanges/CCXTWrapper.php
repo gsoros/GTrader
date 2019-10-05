@@ -4,6 +4,7 @@ namespace GTrader\Exchanges;
 
 use Illuminate\Support\Arr;
 
+use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
 use GTrader\Trade;
 use GTrader\Log;
@@ -41,7 +42,9 @@ class CCXTWrapper extends Exchange
                 throw new \Exception($class.' does not exist');
                 return null;
             }
-            return new $class;
+            return new $class([
+                'enableRateLimit' => true,
+            ]);
         };
 
         if ($temporary) {
@@ -74,11 +77,17 @@ class CCXTWrapper extends Exchange
 
     public function getId()
     {
+        return self::getIdByName($this->getVirtualClassName());
+    }
+
+
+    public function getVirtualClassName()
+    {
         $name = $this->getShortClass();
         if (strlen($this->getParam('ccxt_id'))) {
             $name .= '_'.$this->getParam('ccxt_id');
         }
-        return self::getIdByName($name);
+        return $name;
     }
 
 
@@ -98,8 +107,7 @@ class CCXTWrapper extends Exchange
     {
         $exchanges = [];
 
-        $options = count($options) ? $options : ['get' => ['self' => true]];
-        $get = Arr::get($options, 'get', []);
+        $get = Arr::get($options, 'get', ['self']);
         $all = in_array('all', $get);
         $self = in_array('self', $get);
         $configured = in_array('configured', $get);
@@ -107,23 +115,27 @@ class CCXTWrapper extends Exchange
 
         Log::debug($options, $all, $self, $configured, $user_id);
 
-        if ($all || ($configured && $user_id)) {
+        if ($self) {
+            $exchanges[] = $this;
+        }
+
+        if ($all || $configured) {
             $CCXT = new CCXT;
             foreach ($CCXT::$exchanges as $ccxt_id) {
                 $exchange = self::make(get_class($this), ['ccxt_id' => $ccxt_id]);
-                if ($configured && $user_id) {
-                    if (!$exchange->setParam('user_id', $user_id)->getUserOptions()) {
-                        //Log::debug('user '.$user_id.' has no config for '.$exchange->getName());
+                if ($configured) {
+                    $config = UserExchangeConfig::select('options');
+                    if ($user_id) {
+                        $config->where('user_id', $user_id);
+                    }
+                    $config->where('exchange_id', $exchange->getId());
+                    if (!$config->value('options')) {
                         continue;
                     }
                 }
                 $exchanges[] = $exchange;
             }
             //$exchanges = array_slice($exchanges, 0, 20);
-        }
-
-        if ($self) {
-            $exchanges[] = $this;
         }
 
         return $exchanges;
@@ -160,25 +172,25 @@ class CCXTWrapper extends Exchange
     }
 
 
-    public function getSymbols(array $options = []): array
+    protected function getAllSymbols(): array
     {
-        $markets = $this->getCCXTProperty('markets', $options);
+        if (!$markets = $this->getCCXTProperty('markets')) {
+            return [];
+        }
         if (!is_array($markets)) {
-            Log::error('markets not array in '.$this->getShortClass(), $markets);
+            Log::error('markets not array in '.$this->getName(), $markets);
             return [];
         }
         $symbols = [];
         foreach ($markets as $market) {
-            if (!isset($market['id'])) {
-                Log::error('missing market id in '.$this->getShortClass(), $market);
+            if (!isset($market['symbol'])) {
+                Log::error('missing market symbol in '.$this->getShortClass(), $market);
                 continue;
             }
-            $symbols[$market['id']] = $market;
+            $symbols[$market['symbol']] = $market;
         }
         return $symbols;
     }
-
-
 
     /*
         In CCXT, there is a single list of resolutions per exchange
@@ -189,11 +201,18 @@ class CCXTWrapper extends Exchange
         $resolutions = [];
         foreach ($timeframes as $key => $timeframe) {
             if (!$resolution = $this->getParam('resolution_map.'.$key)) {
-                Log::info('unmapped resolution: '.$key.' => '.$timeframe.' for '.$this->getId());
+                Log::info('unmapped resolution: '.$key.' => '.$timeframe.' for '.$this->getName());
             }
             $resolutions[$resolution] = $key;
         }
         return $resolutions;
+    }
+
+    public function getRemoteResolution(int $resolution): string
+    {
+        $resolutions = $this->getResolutions();
+        $remote = $resolutions[$resolution] ?? strval($resolution);
+        return $remote;
     }
 
 
@@ -211,7 +230,7 @@ class CCXTWrapper extends Exchange
                 return null;
             }
             if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
-                Log::debug('loading markets, because', $prop, self::LOAD_MARKETS_BEFORE);
+                Log::debug('loading markets, because '.$prop, $ccxt->id);
                 $ccxt->loadMarkets();
             }
             if (!isset($ccxt->$prop)) {
@@ -242,12 +261,57 @@ class CCXTWrapper extends Exchange
 
 
     public function getTicker(string $symbol) {}
-    public function getCandles(
+
+
+    public function fetchCandles(
         string $symbol,
         int $resolution,
         int $since = 0,
         int $size = 0
-    ) {}
+    )
+    {
+        $size = 2;
+        $remote_resolution = $this->getRemoteResolution($resolution);
+        Log::debug($this->getParam('ccxt_id'), $symbol, $remote_resolution, $since, $size);
+        $candles = $this->ccxt()->fetchOHLCV(
+            $symbol,
+            $remote_resolution,
+            $since,
+            $size
+        );
+        //Log::debug($candles);
+
+        if (!is_array($candles)) {
+            return [];
+        }
+        if (!count($candles)) {
+            return [];
+        }
+
+        $exchange_id = $this->getId();
+        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName($this->getVirtualClassName(), $symbol))) {
+            throw new \Exception('Could not find symbol ID for '.$this->getVirtualClassName().' '.$symbol);
+        }
+
+        $return = [];
+        foreach ($candles as $candle) {
+            $new_candle = (object) [
+                'open'          => $candle[1],
+                'high'          => $candle[2],
+                'low'           => $candle[3],
+                'close'         => $candle[4],
+                'volume'        => $candle[5],
+                'time'          => (int)substr($candle[0], 0, -3),
+                'exchange_id'   => $exchange_id,
+                'symbol_id'     => $symbol_id,
+                'resolution'    => $resolution,
+            ];
+            $return[] = $new_candle;
+        }
+        return $return;
+    }
+
+
     public function takePosition(
         string $symbol,
         string $signal,

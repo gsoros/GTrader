@@ -102,7 +102,10 @@ class HomeController extends Controller
         $viewData = [
             'chart'             => $chart->toHtml(),
             'strategies'        => Strategy::getListOfUser(Auth::id()),
-            'exchanges'         => Exchange::getList(),
+            'exchanges'         => Exchange::getList([
+                'get' => ['self', 'configured'],
+                'user_id' => Auth::id(),
+            ]),
             'bots'              => Bot::getListOfUser(Auth::id()),
             'dev'               => view('devIndex'),
             'stylesheets'       => Page::get('stylesheets'),

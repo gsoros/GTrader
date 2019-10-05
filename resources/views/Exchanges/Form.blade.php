@@ -48,12 +48,16 @@
                                     <label class="form-check-label" title="{{ $res_name }}">
                                         <input class="form-check-input"
                                             id="{{ $md5_symbol_id }}_{{ $res_time }}"
-                                            name="options[symbols][{{ $symbol_id }}][]"
+                                            name="options[symbols][{{ $symbol_id }}][resolutions][]"
                                             type="checkbox"
                                             value="{{ $res_time }}"
                                             @if (is_array($selected_symbol))
-                                                @if (in_array($res_time, $selected_symbol))
-                                                    checked
+                                                @if (isset($selected_symbol['resolutions']))
+                                                    @if (is_array($selected_symbol['resolutions']))
+                                                        @if (in_array($res_time, $selected_symbol['resolutions']))
+                                                            checked
+                                                        @endif
+                                                    @endif
                                                 @endif
                                             @endif
                                         >

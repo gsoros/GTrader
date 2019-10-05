@@ -97,4 +97,10 @@ class DevUtil
         fclose($fd);
     }
 
+
+    public static function eloquentSql($qbuilder)
+    {
+        return vsprintf(str_replace(['?'], ['\'%s\''], $qbuilder->toSql()), $qbuilder->getBindings());
+    }
+
 }

@@ -27,7 +27,7 @@ class ExchangeController extends Controller
     {
         return response(Exchange::getList([
             'get' => ['self', 'configured'],
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
         ]), 200);
     }
 

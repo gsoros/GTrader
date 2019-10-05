@@ -242,7 +242,7 @@ class OKCoin extends Exchange
      * @param $size int
      * @return array of Candles
      */
-    public function getCandles(
+    public function fetchCandles(
         string $symbol,
         int $resolution,
         int $since = 0,

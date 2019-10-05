@@ -4,13 +4,14 @@ namespace GTrader;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 
 abstract class Exchange extends Base
 {
     use HasCache, HasStatCache;
 
     abstract public function getTicker(string $symbol);
-    abstract public function getCandles(
+    abstract public function fetchCandles(
         string $symbol,
         int $resolution,
         int $since = 0,
@@ -48,23 +49,29 @@ abstract class Exchange extends Base
      *
      * @return array
      */
-    public function getUserOptions()
+    public function getUserOptions(array $options = [])
     {
-        if ($options = $this->cached('user_options')) {
+        $user_id = Arr::get($options, 'user_id') ??
+            $this->getParam('user_id') ??
+            Auth::id();
+        //Log::debug('checking user config opts for ', $this->getName(), $user_id);
+        if (!$user_id) {
+            return [];
+        }
+        $cache_key = 'user_options';
+        if ($options = $this->cached($cache_key)) {
             return $options;
         }
-        if (!($user_id = $this->getParam('user_id'))) {
-            throw new \Exception('cannot getUserOptions() without user_id');
-        }
-        $config = UserExchangeConfig::select('options')
+        $options = UserExchangeConfig::select('options')
             ->where('user_id', $user_id)
             ->where('exchange_id', $this->getId())
-            ->first();
-        if (null === $config) {
-            return null;
+            ->value('options');
+        if (!is_array($options)) {
+            Log::debug('no user config opts for ', $this->getName(), $user_id);
+            return [];
         }
-        $this->cache('user_options', $config->options);
-        return $config->options;
+        $this->cache($cache_key, $options);
+        return $options;
     }
 
 
@@ -73,10 +80,10 @@ abstract class Exchange extends Base
      *
      * @return mixed
      */
-    public function getUserOption(string $option)
+    public function getUserOption(string $option, $default = null)
     {
         $options = $this->getUserOptions() ?? [];
-        return $options[$option] ?? null;
+        return $options[$option] ?? $default;
     }
 
 
@@ -173,13 +180,13 @@ abstract class Exchange extends Base
             return $id;
         }
         $query = DB::table('symbols')
-                    ->select('symbols.id')
-                    ->join('exchanges', function ($join) use ($exchange_name) {
-                        $join->on('exchanges.id', '=', 'symbols.exchange_id')
-                            ->where('exchanges.name', $exchange_name);
-                    })
-                    ->where('symbols.name', $symbol_name)
-                    ->first();
+            ->select('symbols.id')
+            ->join('exchanges', function ($join) use ($exchange_name) {
+                $join->on('exchanges.id', '=', 'symbols.exchange_id')
+                    ->where('exchanges.name', $exchange_name);
+            })
+            ->where('symbols.name', $symbol_name)
+            ->first();
         if (is_object($query)) {
             static::statCache('exchange_symbol_'.$exchange_name.'_'.$symbol_name, $query->id);
             return $query->id;
@@ -227,7 +234,58 @@ abstract class Exchange extends Base
 
     public function getSymbols(array $options = []): array
     {
+        $get = Arr::get($options, 'get', ['all']);
+        $all = in_array('all', $get);
+        $configured = in_array('configured', $get);
+        $user_id = Arr::get($options, 'user_id');
+
+        if ($all) {
+            return $this->getAllSymbols();
+        }
+        if ($configured) {
+            return $this->getConfiguredSymbols($options);
+        }
+    }
+
+
+    protected function getAllSymbols(): array
+    {
         return $this->getParam('symbols', []);
+    }
+
+
+    protected function getConfiguredSymbols(array $options = []): array
+    {
+        $user_id = Arr::get($options, 'user_id');
+        $config = UserExchangeConfig::select('options');
+        if ($user_id) {
+            $config->where('user_id', $user_id);
+        }
+        $configs = $config->where('exchange_id', $this->getId())->get();
+        $configured_symbols = [];
+        foreach ($configs as $config) {
+            if (!isset($config->options)) continue;
+            if (!is_array($config->options)) continue;
+            if (!isset($config->options['symbols'])) continue;
+            if (!is_array($config->options['symbols'])) continue;
+            foreach ($config->options['symbols'] as $cosk => $cosv) {
+                if (!is_array($cosv)) continue;
+                if (!isset($cosv['resolutions'])) continue;
+                if (!is_array($cosv['resolutions'])) continue;
+                if (!isset($configured_symbols[$cosk])) {
+                    $configured_symbols[$cosk] = [];
+                }
+                $new_resolutions = [];
+                foreach ($cosv['resolutions'] as $res) {
+                    $new_resolutions[self::resolutionName($res)] = $res;
+                }
+                $configured_symbols[$cosk]['resolutions'] = array_replace(
+                    $configured_symbols[$cosk]['resolutions'] ?? [],
+                    $new_resolutions
+                );
+            }
+        }
+        return $configured_symbols;
     }
 
 
@@ -266,16 +324,20 @@ abstract class Exchange extends Base
     public static function getESR(): array
     {
         $esr = [];
-        foreach (static::getAvailable() as $exchange) {
+        foreach (static::getAvailable([
+                'get' => ['configured'],
+            ]) as $exchange) {
             $exo = new \stdClass();
-            $exo->name = $exchange->getParam('local_name');
-            $exo->short_name = $exchange->getParam('short_name');
+            $exo->name = $exchange->getName();
+            $exo->short_name = $exchange->getParam('short_name') ?? $exchange->getName();
             $exo->symbols = [];
 
-            foreach ($exchange->getParam('symbols', []) as $symbol) {
+            foreach ($exchange->getSymbols([
+                    'get' => ['configured'],
+                ]) as $symbol_name => $symbol) {
                 $symo = new \stdClass();
-                $symo->name = $symbol['local_name'];
-                $symo->short_name = $symbol['short_name'];
+                $symo->name = $symbol_name;
+                $symo->short_name = $symbol_name;
                 $symo->resolutions = $symbol['resolutions'];
                 $exo->symbols[] = $symo;
             }
@@ -353,6 +415,13 @@ abstract class Exchange extends Base
     }
 
 
+    public static function resolutionName(int $resolution): string
+    {
+        $map = Exchange::singleton()->getParam('resolution_map');
+        return array_search($resolution, $map) ?? strval($resolution);
+    }
+
+
     public function getName()
     {
         return $this->getParam('local_name');
@@ -361,7 +430,7 @@ abstract class Exchange extends Base
 
     public function form(array $options = [])
     {
-        $this->setParam('user_id', Auth::user()->id);
+        $this->setParam('user_id', Auth::id());
         return view('Exchanges/Form', [
             'exchange' => $this,
         ]);

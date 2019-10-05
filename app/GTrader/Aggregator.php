@@ -36,7 +36,7 @@ class Aggregator extends Base
 
         foreach ($this->getExchanges() as $exchange_class) {
             $exchange = $this->getExchange($exchange_class);
-            $symbols = $exchange->getSymbols();
+            $symbols = $exchange->getSymbols(['get' => ['configured']]);
             if (!is_array($symbols)) {
                 continue;
             }
@@ -44,33 +44,39 @@ class Aggregator extends Base
                 continue;
             }
             $delay = $exchange->getParam('aggregator_delay', 0);
-            echo $exchange->getParam('local_name').': ';
+            echo $exchange->getName().': ';
 
             foreach ($symbols as $symbol_local => $symbol) {
+                //dump($exchange->getName(), $symbols);
+                if (!isset($symbol['resolutions'])) {
+                    continue;
+                }
                 if (!is_array($symbol['resolutions'])) {
                     continue;
                 }
-                $symbol_id = $this->getSymbolId(
-                    $exchange->getParam('id'),
+                $symbol_id = $this->getOrCreateSymbolId(
+                    $exchange->getId(),
                     $symbol_local
                 );
 
                 echo $symbol_local.': ';
 
-                foreach ($symbol['resolutions'] as $resolution => $res_name) {
+                foreach ($symbol['resolutions'] as $res_name => $resolution) {
                     $time = $this->getLastCandleTime(
                         $exchange->getParam('id'),
                         $symbol_id,
                         $resolution
                     );
+                    $since = $time - $resolution;
+                    $since = $since > 0 ? $since : 0;
 
                     echo $res_name.': ';
                     flush();
 
-                    $candles = $exchange->getCandles(
+                    $candles = $exchange->fetchCandles(
                         $symbol_local,
                         $resolution,
-                        $time - $resolution,
+                        $since,
                         100000
                     );
 
@@ -83,7 +89,7 @@ class Aggregator extends Base
                         continue;
                     }
                     foreach ($candles as $candle) {
-                        $candle->exchange_id = $exchange->getParam('id');
+                        $candle->exchange_id = $exchange->getId();
                         $candle->symbol_id = $symbol_id;
                         $candle->resolution = $resolution;
                         Series::saveCandle($candle);
@@ -161,13 +167,11 @@ class Aggregator extends Base
         return is_object($time) ? $time->time : 0;
     }
 
-    /**
-     * Returns available exchange class names
-     * @return array
-     */
     protected function getExchanges()
     {
-        return Exchange::getAvailable();
+        return Exchange::getAvailable([
+            'get' => ['configured']
+        ]);
     }
 
     /**
@@ -199,12 +203,12 @@ class Aggregator extends Base
     }
 
     /**
-     * Returns symbol ID
+     * Returns or creates and returns symbol ID
      * @param  int    $exchange_id
      * @param  string $local_name
      * @return int
      */
-    protected function getSymbolId(
+    protected function getOrCreateSymbolId(
         int $exchange_id,
         string $local_name
     ) {
