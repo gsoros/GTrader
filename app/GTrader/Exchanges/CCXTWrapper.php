@@ -4,6 +4,7 @@ namespace GTrader\Exchanges;
 
 use Illuminate\Support\Arr;
 
+use Illuminate\Http\Request;
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
 use GTrader\Trade;
@@ -14,30 +15,30 @@ class CCXTWrapper extends Exchange
 {
     protected const CCXT_NAMESPACE = '\\ccxt\\';
     protected const LOAD_MARKETS_BEFORE = ['markets', 'symbols'];
-    protected $ccxt = null;
+    protected $ccxt;
 
 
     public function __construct(array $params = [])
     {
         parent::__construct($params);
-        if ($id = $this->getParam('id')) {
-            $this->ccxt($id);
+        if ($ccxt_id = $this->getParam('ccxt_id')) {
+            $this->ccxt($ccxt_id);
         }
         //Log::debug($this->getParam('id', 'no id'));
     }
 
 
-    protected function ccxt(string $id = '', bool $temporary = false)
+    protected function ccxt(string $ccxt_id = '', bool $temporary = false)
     {
-        $id = strlen($id) ? $id : $this->getParam('ccxt_id');
-        $id = strlen($id) ? $id : null;
+        $ccxt_id = strlen($ccxt_id) ? $ccxt_id : $this->getParam('ccxt_id');
+        $ccxt_id = strlen($ccxt_id) ? $ccxt_id : null;
 
-        $make_ccxt = function (string $id) {
-            if (!$id) {
-                throw new \Exception('Tried to make ccxt without id');
+        $make_ccxt = function (string $ccxt_id) {
+            if (!$ccxt_id) {
+                throw new \Exception('Tried to make ccxt without ccxt_id');
                 return null;
             }
-            $class = self::CCXT_NAMESPACE.$id;
+            $class = self::CCXT_NAMESPACE.$ccxt_id;
             if (!class_exists($class)) {
                 throw new \Exception($class.' does not exist');
                 return null;
@@ -48,27 +49,27 @@ class CCXTWrapper extends Exchange
         };
 
         if ($temporary) {
-            if (is_object($this->ccxt) && $this->ccxt->id == $id) {
+            if (is_object($this->ccxt) && $this->ccxt->id == $ccxt_id) {
                 return $this->ccxt;
             }
-            return $make_ccxt($id);
+            return $make_ccxt($ccxt_id);
         }
         if (!is_object($this->ccxt) ||
             (
-                $id &&
+                $ccxt_id &&
                 is_object($this->ccxt) &&
-                $this->ccxt->id !== $id
+                $this->ccxt->id !== $ccxt_id
             )) {
 
-            if ($id && is_object($this->ccxt) && $this->ccxt->id !== $id) {
-                Log::debug('a different ccxt exists', $this->oid(), $this->ccxt->id, $id);
+            if ($ccxt_id && is_object($this->ccxt) && $this->ccxt->id !== $ccxt_id) {
+                Log::debug('a different ccxt exists', $this->oid(), $this->ccxt->id, $ccxt_id);
             }
 
-            if ($id) {
+            if ($ccxt_id) {
                 if (is_object($this->ccxt)) {
                     $this->cleanCache();
                 }
-                $this->ccxt = $make_ccxt($id);
+                $this->ccxt = $make_ccxt($ccxt_id);
             }
         }
         return $this->ccxt;
@@ -77,7 +78,10 @@ class CCXTWrapper extends Exchange
 
     public function getId()
     {
-        return self::getIdByName($this->getVirtualClassName());
+        return self::getOrAddIdByName(
+            $this->getVirtualClassName(),
+            $this->getLongName()
+        );
     }
 
 
@@ -227,6 +231,7 @@ class CCXTWrapper extends Exchange
     {
         if (!$this->cached($prop)) {
             if (!is_object($ccxt = $this->ccxt())) {
+                Log::debug('ccxt not obj, wanted ', $prop);
                 return null;
             }
             if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
@@ -245,10 +250,17 @@ class CCXTWrapper extends Exchange
     public function getName()
     {
         if (strlen($this->getParam('ccxt_id'))) {
-            return $this->getCCXTProperty('name');
+            return $this->getVirtualClassName();
         }
         return 'CCXT';
     }
+
+
+    public function getLongName()
+    {
+        return $this->getCCXTProperty('name') ?? $this->getVirtualClassName();
+    }
+
 
     public function getSymbolName(string $symbol_id): string
     {
@@ -257,6 +269,33 @@ class CCXTWrapper extends Exchange
             return $symbol_id;
         }
         return $symbol['symbol'];
+    }
+
+
+    public function getSymbolLongName(string $symbol_id): string
+    {
+        $symbol = $this->getSymbol($symbol_id);
+        if (!isset($symbol['name'])) {
+            return $symbol_id;
+        }
+        return $symbol['name'];
+    }
+
+
+    public function handleSaveRequest(Request $request, UserExchangeConfig $config)
+    {
+        $options = $request->options ?? [];
+        if (isset($options['symbols'])) {
+            if (is_array($options['symbols'])) {
+                foreach (array_keys($options['symbols']) as $symbol) {
+                    $symbol_id = self::getOrCreateSymbolId(
+                        $symbol,
+                        $this->getSymbolLongName($symbol)
+                    );
+                }
+            }
+        }
+        return parent::handleSaveRequest($request, $config);
     }
 
 
@@ -270,13 +309,13 @@ class CCXTWrapper extends Exchange
         int $size = 0
     )
     {
-        $size = 2;
         $remote_resolution = $this->getRemoteResolution($resolution);
         Log::debug($this->getParam('ccxt_id'), $symbol, $remote_resolution, $since, $size);
+        //$this->ccxt()->loadMarkets(); // why??
         $candles = $this->ccxt()->fetchOHLCV(
             $symbol,
             $remote_resolution,
-            $since,
+            $since.'000',
             $size
         );
         //Log::debug($candles);
@@ -289,8 +328,13 @@ class CCXTWrapper extends Exchange
         }
 
         $exchange_id = $this->getId();
-        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName($this->getVirtualClassName(), $symbol))) {
-            throw new \Exception('Could not find symbol ID for '.$this->getVirtualClassName().' '.$symbol);
+        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName(
+            $this->getVirtualClassName(),
+            $symbol
+        ))) {
+            throw new \Exception('Could not find symbol ID for '.
+                $this->getVirtualClassName().' '.$symbol
+            );
         }
 
         $return = [];

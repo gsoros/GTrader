@@ -6,6 +6,7 @@ ENV PAXIFY 'setfattr -n user.pax.flags -v "m"'
 ENV PAX_PHP "$PAXIFY /usr/bin/php"
 ENV PAX_NODE "$PAXIFY /usr/bin/nodejs"
 
+ARG GTRADER_UID
 ENV SUG "su -s /bin/sh -m gtrader -c"
 ENV CACHE /tmp/cache
 
@@ -65,12 +66,11 @@ COPY . /gtrader
 RUN cp -Rv /gtrader/docker-fs/etc /
 
 RUN    echo "############### FILES #########################" \
-    && useradd -u 1001 -G www-data -d /gtrader -s /bin/bash -M gtrader \
+    && useradd -u "$GTRADER_UID" -G www-data -d /gtrader -s /bin/bash -M gtrader \
     && for file in GTrader laravel schedule trainingManager bots; \
         do touch /gtrader/storage/logs/$file.log; \
     done \
     && chown -R gtrader:gtrader /gtrader \
-    && find /gtrader -type d -name .git -exec rm -rf {} + \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
             chgrp -R www-data $dir; \
             find $dir -type d -exec chmod 775 {} \;; \

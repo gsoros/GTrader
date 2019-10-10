@@ -2,7 +2,7 @@
     <input type="hidden" name="id" value="{{ $exchange->getId() }}">
     <div class="row bdr-rad">
         <div class="col-sm-12">
-            <h4>Settings for {{ $exchange->getParam('local_name') }}</h4>
+            <h4>Settings for {{ $exchange->getName() }}</h4>
         </div>
         <div class="col-sm-4 editable form-group">
             <label for="api_key">API Key</label>

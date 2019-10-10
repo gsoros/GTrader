@@ -22,15 +22,15 @@
         <div class="col-sm-12 card-columns">
             @foreach ($supported_exchanges as $supported)
                 @php
-                    $id = $supported->getParam('ccxt_id');
+                    $ccxt_id = $supported->getParam('ccxt_id');
                 @endphp
                 <div class="card trans">
-                    <div id="ccxt_card_{{ $id }}" class="card-title">
+                    <div id="ccxt_card_{{ $ccxt_id }}" class="card-title">
                         <!--<img src="" width="25" height="25">-->
-                        <b>{{ $supported->getName() }}</b>
+                        <b>{{ $supported->getLongName() }}</b>
                     </div>
                     <div class="card-body">
-                        <p id="ccxt_info_{{ $id }}"
+                        <p id="ccxt_info_{{ $ccxt_id }}"
                             style="display: none;"
                             class="card-text"></p>
                     </div>
@@ -62,42 +62,42 @@
 <script>
 var g = window.GTrader;
 g.ccxtInfoLoaded = [];
-g.ccxtToggleInfo = function(id) {
-    if ($('#ccxt_info_' + id).is(':visible')) {
-        $('#ccxt_info_' + id).hide();
+g.ccxtToggleInfo = function(ccxt_id) {
+    if ($('#ccxt_info_' + ccxt_id).is(':visible')) {
+        $('#ccxt_info_' + ccxt_id).hide();
         return;
     }
-    if (-1 === $.inArray(id, g.ccxtInfoLoaded)) {
-        g.ccxtGetInfo(id);
+    if (-1 === $.inArray(ccxt_id, g.ccxtInfoLoaded)) {
+        g.ccxtGetInfo(ccxt_id);
         return;
     }
-    $('#ccxt_info_' + id).show();
+    $('#ccxt_info_' + ccxt_id).show();
 };
 
-g.ccxtGetInfo = function (id) {
-    g.setLoading('ccxt_card_' + id, true);
+g.ccxtGetInfo = function (ccxt_id) {
+    g.setLoading('ccxt_card_' + ccxt_id, true);
     $.ajax({
-        url: '/exchange.info?id={{ $exchange->getId() }}&' + $.param({options: {id: id}}, false),
+        url: '/exchange.info?id={{ $exchange->getId() }}&' + $.param({options: {ccxt_id: ccxt_id}}, false),
         type: 'GET',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
-            g.setLoading('ccxt_card_' + id, false);
+            g.setLoading('ccxt_card_' + ccxt_id, false);
             if (!response.length) {
                 return;
             }
-            g.ccxtInfoLoaded.push(id);
-            $('#ccxt_info_' + id).html(response);
-            $('#ccxt_info_' + id).show();
+            g.ccxtInfoLoaded.push(ccxt_id);
+            $('#ccxt_info_' + ccxt_id).html(response);
+            $('#ccxt_info_' + ccxt_id).show();
         },
         error: function(response) {
-            g.setLoading('ccxt_card_' + id, false);
+            g.setLoading('ccxt_card_' + ccxt_id, false);
             if (0 == response.status && 'abort' === response.statusText) {
                 return;
             }
             g.errorBubble(
-                'ccxt_card_' + id,
+                'ccxt_card_' + ccxt_id,
                 response.status + ': ' +
                 response.statusText + '<br>' +
                 response.responseText.substring(0, 300)
@@ -107,10 +107,10 @@ g.ccxtGetInfo = function (id) {
 }
 
 $(function() {
-    {!! json_encode($supported_exchange_ids) !!}.forEach(function(exchange_id) {
-        var element = $('#ccxt_card_' + exchange_id);
+    {!! json_encode($supported_exchange_ids) !!}.forEach(function(ccxt_id) {
+        var element = $('#ccxt_card_' + ccxt_id);
         element.on('click', function() {
-            g.ccxtToggleInfo(exchange_id);
+            g.ccxtToggleInfo(ccxt_id);
         }).on('mouseover', function() {
             element.css('cursor', 'pointer');
         });

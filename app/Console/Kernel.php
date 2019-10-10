@@ -30,6 +30,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        return; // schedule disabled
         $schedule->command('candles:fetch')
             ->cron('*/'.config('GTrader.Exchange.schedule_frequency', 1).' * * * *')
             ->appendOutputTo(storage_path('logs/schedule.log'));
@@ -41,6 +42,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('trainingManager:run')
             ->cron('*/'.config('GTrader.TrainingManager.schedule_frequency', 1).' * * * *')
             ->appendOutputTo(storage_path('logs/trainingManager.log'));
+
     }
 
 

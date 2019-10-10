@@ -54,10 +54,22 @@ class PHPlot extends Chart
             ->initPlotElements();
 
         $t = Arr::get($this->data, 'times', [0]);
+        if (!$resolution = $candles->getParam('resolution')) {
+            Log::error('could not get resolution from candles');
+            return '';
+        }
+        if (!$tfirst = $t[0]) {
+            Log::error('could not get first time');
+            return '';
+        }
+        if (!$tlast = $t[count($t)-1]) {
+            Log::error('could not get last time');
+            return '';
+        }
 
         // Plot items on left Y-axis
-        $this->setParam('xmin', $t[0] - $candles->getParam('resolution'));
-        $this->setParam('xmax', $t[count($t)-1] + $candles->getParam('resolution'));
+        $this->setParam('xmin', $tfirst - $resolution);
+        $this->setParam('xmax', $tlast + $resolution);
         $this->setWorld([
             'xmin' => $this->getParam('xmin'),
             'xmax' => $this->getParam('xmax'),
@@ -891,12 +903,19 @@ class PHPlot extends Chart
 
     protected function handleCommand(string $command, array $args = [])
     {
-        //Log::error('Command: '.$command.' args: ', $args);
+        Log::debug('Command: '.$command.' args: ', $args);
         $candles = $this->getCandles();
         $end = $candles->getParam('end');
         $limit = $candles->getParam('limit');
-        $resolution = $candles->getParam('resolution');
-        $last = $candles->getLastInSeries();
+        if (!$resolution = $candles->getParam('resolution')) {
+            Log::error('could not get resolution');
+            return $this;
+        }
+        if (!$last = $candles->getLastInSeries()) {
+            Log::error('Could not get last candle');
+            $last = 0;
+            //return $this;
+        }
         $live = ($end == 0) || $end > $last - $resolution;
         if ($live) {
             $end = 0;

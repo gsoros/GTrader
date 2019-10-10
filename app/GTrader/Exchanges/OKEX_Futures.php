@@ -248,7 +248,10 @@ class OKEX_Futures extends OKCoin
         }
 
         $exchange_id = $this->getId();
-        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName($this->getParam('local_name'), $symbol))) {
+        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName(
+            $this->getName(), 
+            $symbol
+        ))) {
             throw new \Exception('Could not find symbol ID for '.$symbol);
         }
 

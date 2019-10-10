@@ -226,7 +226,7 @@ $(function() {
                         resolution: ''
                     },
                     selected = {};
-                console.log(window.GTrader);
+                console.log('Updating ESR');
                 // loop through all exchanges
                 window.GTrader.ESR.forEach(function(exchange) { // loop through all exchanges
                     opts.exchange += '<option ';
@@ -268,11 +268,11 @@ $(function() {
                                 }
                             }
                             opts.symbol += 'value="' + symbol.name + '" title="' + symbol.name + '">' +
-                                symbol.short_name + '</option>';
+                                symbol.long_name + '</option>';
                         });
                     }
                     opts.exchange += 'value="' + exchange.name + '" title="' + exchange.name + '">' +
-                        exchange.short_name + '</option>';
+                        exchange.long_name + '</option>';
                 });
                 $('#exchange_' + name).html(opts.exchange);
                 $('#symbol_' + name).html(opts.symbol);

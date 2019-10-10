@@ -1,0 +1,19 @@
+
+
+
+
+
+                Exchange                CCXT Exchange
+
+name            ClassName               ClassName_ccxt.id
+long_name       Human Name              ccxt.name
+
+
+
+
+
+
+                Symbol                  CCXT Symbol
+
+name            symbol_name             ccxt.markets[symbol].symbol
+long_name       Human Name              ccxt.markets[symbol].symbol

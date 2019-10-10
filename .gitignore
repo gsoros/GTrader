@@ -6,7 +6,6 @@
 Homestead.json
 Homestead.yaml
 .env*
-.notes*
 .php_cs.cache
 *.geany
 public/css/*.css

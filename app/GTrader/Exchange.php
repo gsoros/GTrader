@@ -2,6 +2,7 @@
 
 namespace GTrader;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Arr;
@@ -101,21 +102,31 @@ abstract class Exchange extends Base
     }
 
 
+    public function handleSaveRequest(Request $request, UserExchangeConfig $config)
+    {
+        $this->updateUserOptions($config, $request->options ?? []);
+        return $this;
+    }
+
+
     public static function getDefault(string $param)
     {
         $exchange = Exchange::singleton();
         if ('exchange' === $param) {
-            return $exchange->getParam('local_name');
+            return $exchange->getName();
         }
         if ('symbol' === $param) {
-            $symbols = $exchange->getParam('symbols');
+            $symbols = $exchange->getSymbols();
             $first_symbol = reset($symbols);
-            return $first_symbol['local_name'];
+            return $first_symbol['name'];
         }
         if ('resolution' === $param) {
-            $symbols = $exchange->getParam('symbols');
+            $symbols = $exchange->getSymbols();
             $first_symbol = reset($symbols);
-            $resolutions = $first_symbol['resolutions'];
+            if (!count($resolutions = $exchange->getResolutions($first_symbol['name']))) {
+                Log::error('no resolutions for '.$exchange->getName());
+                return null;
+            }
             if (isset($resolutions[3600])) {// prefer 1-hour
                 return 3600;
             }
@@ -128,7 +139,10 @@ abstract class Exchange extends Base
 
     public function getId()
     {
-        return self::getIdByName($this->getShortClass());
+        return self::getOrAddIdByName(
+            $this->getParam('name'),
+            $this->getParam('long_name')
+        );
     }
 
 
@@ -149,7 +163,7 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getIdByName(string $name)
+    public static function getOrAddIdByName(string $name, string $long_name_if_new = '')
     {
         if ($id = static::statCached('name_'.$name)) {
             return $id;
@@ -161,9 +175,10 @@ abstract class Exchange extends Base
             ->first();
         if (is_object($query)) {
             $id = $query->id;
-        } else {
+        } elseif (strlen($long_name_if_new)) {
             $id = DB::table('exchanges')->insertGetId([
                 'name' => $name,
+                'long_name' => $long_name_if_new,
             ]);
         }
         if ($id) {
@@ -176,11 +191,30 @@ abstract class Exchange extends Base
 
     public static function getSymbolIdByExchangeSymbolName(string $exchange_name, string $symbol_name)
     {
-        if ($id = static::statCached('exchange_symbol_'.$exchange_name.'_'.$symbol_name)) {
-            return $id;
+        return count($symbol = self::getSymbolByExchangeSymbolName(
+            $exchange_name,
+            $symbol_name
+        )) ? $symbol['id'] : null;
+    }
+
+
+    public static function getSymbolLongNameByExchangeSymbolName(string $exchange_name, string $symbol_name)
+    {
+        return count($symbol = self::getSymbolByExchangeSymbolName(
+            $exchange_name,
+            $symbol_name
+        )) ? $symbol['long_name'] : $symbol_name;
+    }
+
+
+    public static function getSymbolByExchangeSymbolName(string $exchange_name, string $symbol_name)
+    {
+        $cache_key = 'exchange_symbol_'.$exchange_name.'_'.$symbol_name;
+        if ($symbol = static::statCached($cache_key)) {
+            return $symbol;
         }
         $query = DB::table('symbols')
-            ->select('symbols.id')
+            ->select(['symbols.id', 'symbols.long_name'])
             ->join('exchanges', function ($join) use ($exchange_name) {
                 $join->on('exchanges.id', '=', 'symbols.exchange_id')
                     ->where('exchanges.name', $exchange_name);
@@ -188,10 +222,15 @@ abstract class Exchange extends Base
             ->where('symbols.name', $symbol_name)
             ->first();
         if (is_object($query)) {
-            static::statCache('exchange_symbol_'.$exchange_name.'_'.$symbol_name, $query->id);
-            return $query->id;
+            $return = [
+                'id' => $query->id,
+                'name' => $symbol_name,
+                'long_name' => $query->long_name,
+            ];
+            static::statCache($cache_key, $return);
+            return $return;
         }
-        return null;
+        return [];
     }
 
 
@@ -200,8 +239,8 @@ abstract class Exchange extends Base
         foreach ($this->getParam('symbols') as $symbol) {
             if ($symbol['remote_name'] === $remote_name) {
                 return self::getSymbolIdByExchangeSymbolName(
-                    $this->getParam('local_name'),
-                    $symbol['local_name']
+                    $this->getName(),
+                    $symbol['name']
                 );
             }
         }
@@ -245,6 +284,7 @@ abstract class Exchange extends Base
         if ($configured) {
             return $this->getConfiguredSymbols($options);
         }
+        return $this->getAllSymbols();
     }
 
 
@@ -277,7 +317,7 @@ abstract class Exchange extends Base
                 }
                 $new_resolutions = [];
                 foreach ($cosv['resolutions'] as $res) {
-                    $new_resolutions[self::resolutionName($res)] = $res;
+                    $new_resolutions[$res] = self::resolutionName($res);
                 }
                 $configured_symbols[$cosk]['resolutions'] = array_replace(
                     $configured_symbols[$cosk]['resolutions'] ?? [],
@@ -291,13 +331,21 @@ abstract class Exchange extends Base
 
     public function getResolutions(string $symbol_id = '', array $options = []): array
     {
-        if (!count($symbols = $this->getSymbols())) {
+        if (!count($symbols = $this->getSymbols($options))) {
             Log::error('no symbols for '.$this->getShortClass());
             return [];
         }
         if (strlen($symbol_id)) {
             if (!isset($symbols[$symbol_id])) {
                 Log::error('symbol not found: '.$symbol_id);
+                return [];
+            }
+            if (!isset($symbols[$symbol_id]['resolutions'])) {
+                Log::error('resolutions not found for: '.$symbol_id);
+                return [];
+            }
+            if (!is_array($symbols[$symbol_id]['resolutions'])) {
+                Log::error('resolutions not an array for: '.$symbol_id);
                 return [];
             }
             return $symbols[$symbol_id]['resolutions'];
@@ -329,7 +377,7 @@ abstract class Exchange extends Base
             ]) as $exchange) {
             $exo = new \stdClass();
             $exo->name = $exchange->getName();
-            $exo->short_name = $exchange->getParam('short_name') ?? $exchange->getName();
+            $exo->long_name = $exchange->getLongName();
             $exo->symbols = [];
 
             foreach ($exchange->getSymbols([
@@ -337,8 +385,8 @@ abstract class Exchange extends Base
                 ]) as $symbol_name => $symbol) {
                 $symo = new \stdClass();
                 $symo->name = $symbol_name;
-                $symo->short_name = $symbol_name;
-                $symo->resolutions = $symbol['resolutions'];
+                $symo->long_name = self::getSymbolLongNameByExchangeSymbolName($exo->name, $symbol_name);
+                $symo->resolutions = $exchange->getResolutions($symbol_name);
                 $exo->symbols[] = $symo;
             }
             $esr[] = $exo;
@@ -348,12 +396,14 @@ abstract class Exchange extends Base
 
 
     public static function getESRReadonly(
-        string $exchange,
-        string $symbol,
+        string $exchange_name,
+        string $symbol_name,
         int $resolution
     ) {
+        return $exchange_name.' / '.$symbol_name.' / '.$resolution;
         //Log::info('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
         //return '';
+        /*
         try {
             $exchange = self::make($exchange);
         } catch (\Exception $e) {
@@ -365,6 +415,7 @@ abstract class Exchange extends Base
         return $exchange->getParam('short_name').' / '.
             $symbol['short_name'].' / '.
             $symbol['resolutions'][$resolution];
+        */
     }
 
 
@@ -386,33 +437,24 @@ abstract class Exchange extends Base
     }
 
 
-    public function getSymbol(string $symbol_id = ''): array
+    public function getSymbol(string $symbol_name = ''): array
     {
-        if (!strlen($symbol_id)) {
+        if (!strlen($symbol_name)) {
             Log::error('need symbol in '.$this->getShortClass());
             return [];
         }
         $symbols = $this->getSymbols();
-        if (!isset($symbols[$symbol_id])) {
-            Log::error('symbol not set in '.$this->getShortClass(), $symbol_id);
+        if (!isset($symbols[$symbol_name])) {
+            Log::error('symbol not set in '.$this->getShortClass(), $symbol_name);
             return [];
         }
-        if (!is_array($symbols[$symbol_id])) {
-            Log::error('symbol not an array in '.$this->getShortClass(), $symbol_id);
+        if (!is_array($symbols[$symbol_name])) {
+            Log::error('symbol not an array in '.$this->getShortClass(), $symbol_name);
             return [];
         }
-        return $symbols[$symbol_id];
+        return $symbols[$symbol_name];
     }
 
-
-    public function getSymbolName(string $symbol_id): string
-    {
-        $symbol = $this->getSymbol($symbol_id);
-        if (!isset($symbol['local_name'])) {
-            return $symbol_id;
-        }
-        return $symbol['local_name'];
-    }
 
 
     public static function resolutionName(int $resolution): string
@@ -424,7 +466,13 @@ abstract class Exchange extends Base
 
     public function getName()
     {
-        return $this->getParam('local_name');
+        return $this->getParam('name');
+    }
+
+
+    public function getLongName()
+    {
+        return $this->getParam('long_name');
     }
 
 
@@ -434,5 +482,40 @@ abstract class Exchange extends Base
         return view('Exchanges/Form', [
             'exchange' => $this,
         ]);
+    }
+
+
+    /**
+     * Returns or creates and returns symbol ID
+     * @param  string $name
+     * @param  string $long_name
+     * @return int | null
+     */
+    public function getOrCreateSymbolId(
+        string $name,
+        string $long_name = ''
+    ) {
+        if (!strlen($name)) {
+            Log::error('name is required');
+            return null;
+        }
+        $exchange_id = $this->getId();
+        $symbol_id = null;
+        $o = DB::table('symbols')
+            ->select('id')
+            ->where('name', $name)
+            ->where('exchange_id', $exchange_id)
+            ->first();
+        if (is_object($o)) {
+            $symbol_id = $o->id;
+        }
+        if (!$symbol_id && strlen($long_name)) {
+            $symbol_id = DB::table('symbols')->insertGetId([
+                'name' => $name,
+                'long_name' => $long_name,
+                'exchange_id' => $exchange_id
+            ]);
+        }
+        return $symbol_id;
     }
 }

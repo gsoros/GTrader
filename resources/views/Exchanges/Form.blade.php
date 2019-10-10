@@ -3,7 +3,7 @@
     <div class="col-sm-12 editable form-group container">
         <div class="row">
             <div class="col-sm-8">
-                <h4>Settings for {{ $exchange->getName() }}</h4>
+                <h4>Settings for {{ $exchange->getLongName() }}</h4>
             </div>
 
             <div class="col-sm-4 text-right">

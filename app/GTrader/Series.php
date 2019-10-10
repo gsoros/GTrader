@@ -407,7 +407,7 @@ class Series extends Collection
             }
         );
 
-        //Log::debug(vsprintf(str_replace(['?'], ['\'%s\''], $qbuilder->toSql()), $qbuilder->getBindings()));
+        Log::debug(\GTrader\DevUtil::eloquentSql($qbuilder));
 
         $candles = $qbuilder
             ->get()
@@ -450,7 +450,7 @@ class Series extends Collection
     public function save()
     {
         if ($e = $this->getParam('exchange')) {
-            if ($r = Exchange::getIdByName($e)) {
+            if ($r = Exchange::getOrAddIdByName($e)) {
                 $exchange_id = intval($r);
             }
             if ($s = $this->getParam('symbol')) {

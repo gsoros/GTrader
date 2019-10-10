@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'short_name'        => 'CCXTW',
-    'local_name'        => 'CCXTWrapper',  // class name, also used in the local database
-    'user_options'      => [               // user-configurable options
+    'name'          => 'CCXTWrapper',
+    'long_name'     => 'CCXT',
+    'user_options'  => [
         'symbols'     => [],
     ],
 ];

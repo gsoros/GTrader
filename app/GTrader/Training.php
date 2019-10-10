@@ -114,7 +114,7 @@ abstract class Training extends Model
         }
 
         $exchange = $request->exchange;
-        if (!($exchange_id = Exchange::getIdByName($exchange))) {
+        if (!($exchange_id = Exchange::getOrAddIdByName($exchange))) {
             Log::error('Exchange not found ');
             return response('Exchange not found.', 403);
         }

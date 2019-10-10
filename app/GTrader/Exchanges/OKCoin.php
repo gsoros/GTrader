@@ -10,6 +10,10 @@ use OKCoinWrapper;
 
 class OKCoin extends Exchange
 {
+    protected function getConfiguredSymbols(array $options = []): array
+    {
+        return $this->getAllSymbols();
+    }
 
     protected function request(string $method, ...$params)
     {
@@ -273,7 +277,10 @@ class OKCoin extends Exchange
         }
 
         $exchange_id = $this->getId();
-        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName($this->getParam('local_name'), $symbol))) {
+        if (!($symbol_id = self::getSymbolIdByExchangeSymbolName(
+            $this->getName(),
+            $symbol
+        ))) {
             throw new \Exception('Could not find symbol ID for '.$symbol);
         }
 

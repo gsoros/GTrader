@@ -201,7 +201,7 @@ class Bot extends Model
 
         $ex = 'exchange_bot_'.$this->id;
         if (isset($request->$ex)) {
-            $this->exchange_id = Exchange::getIdByName($request->$ex);
+            $this->exchange_id = Exchange::getOrAddIdByName($request->$ex);
         }
 
         $sy = 'symbol_bot_'.$this->id;

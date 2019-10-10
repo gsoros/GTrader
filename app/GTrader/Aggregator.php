@@ -36,6 +36,7 @@ class Aggregator extends Base
 
         foreach ($this->getExchanges() as $exchange_class) {
             $exchange = $this->getExchange($exchange_class);
+            $exchange_id = $exchange->getId();
             $symbols = $exchange->getSymbols(['get' => ['configured']]);
             if (!is_array($symbols)) {
                 continue;
@@ -44,9 +45,9 @@ class Aggregator extends Base
                 continue;
             }
             $delay = $exchange->getParam('aggregator_delay', 0);
-            echo $exchange->getName().': ';
+            echo PHP_EOL.$exchange->getName().': ';
 
-            foreach ($symbols as $symbol_local => $symbol) {
+            foreach ($symbols as $symbol_name => $symbol) {
                 //dump($exchange->getName(), $symbols);
                 if (!isset($symbol['resolutions'])) {
                     continue;
@@ -54,14 +55,17 @@ class Aggregator extends Base
                 if (!is_array($symbol['resolutions'])) {
                     continue;
                 }
-                $symbol_id = $this->getOrCreateSymbolId(
-                    $exchange->getId(),
-                    $symbol_local
+                if (!isset($symbol['long_name'])) {
+                    $symbol['long_name'] = $symbol_name;
+                }
+                $symbol_id = $exchange->getOrCreateSymbolId(
+                    $symbol_name,
+                    $symbol['long_name'],
                 );
 
-                echo $symbol_local.': ';
+                echo $symbol_name.': ';
 
-                foreach ($symbol['resolutions'] as $res_name => $resolution) {
+                foreach ($symbol['resolutions'] as $resolution => $res_name) {
                     $time = $this->getLastCandleTime(
                         $exchange->getParam('id'),
                         $symbol_id,
@@ -70,14 +74,14 @@ class Aggregator extends Base
                     $since = $time - $resolution;
                     $since = $since > 0 ? $since : 0;
 
-                    echo $res_name.': ';
+                    echo $res_name.' ('.date('Y-m-d H:i', $since).'): ';
                     flush();
 
                     $candles = $exchange->fetchCandles(
-                        $symbol_local,
+                        $symbol_name,
                         $resolution,
                         $since,
-                        100000
+                        2000
                     );
 
                     if (!is_array($candles)) {
@@ -89,7 +93,7 @@ class Aggregator extends Base
                         continue;
                     }
                     foreach ($candles as $candle) {
-                        $candle->exchange_id = $exchange->getId();
+                        $candle->exchange_id = $exchange_id;
                         $candle->symbol_id = $symbol_id;
                         $candle->resolution = $resolution;
                         Series::saveCandle($candle);
@@ -99,7 +103,7 @@ class Aggregator extends Base
                 }
             }
         }
-        echo 'all done.'.PHP_EOL;
+        echo 'All done.'.PHP_EOL;
 
         Lock::release($lock);
 
@@ -118,7 +122,7 @@ class Aggregator extends Base
         }
         foreach ($this->getExchanges() as $exchange_class) {
             $exchange = $this->getExchange($exchange_class);
-            dump($exchange->getParam('short_name').': '.
+            dump($exchange->getName().': '.
                 $exchange->getParam('delete_candle_age')
             );
         }
@@ -184,50 +188,13 @@ class Aggregator extends Base
         if (!is_object($exchange)) {
             $exchange = Exchange::make($exchange);
         }
-        $exchange_id = null;
-        $o = DB::table('exchanges')
-            ->select('id')
-            ->where('name', $exchange->getParam('local_name'))
-            ->first();
-        if (is_object($o)) {
-            $exchange_id = $o->id;
-        }
-        if (!$exchange_id) {
-            $exchange_id = DB::table('exchanges')
-                ->insertGetId([
-                    'name' => $exchange->getParam('local_name')
-                ]);
+        if (!$exchange_id = $exchange->getOrAddIdByName(
+            $exchange->getName(),
+            $exchange->getLongName()
+        )) {
+            throw new \Exception('could not get id');
         }
         $exchange->setParam('id', $exchange_id);
         return $exchange;
-    }
-
-    /**
-     * Returns or creates and returns symbol ID
-     * @param  int    $exchange_id
-     * @param  string $local_name
-     * @return int
-     */
-    protected function getOrCreateSymbolId(
-        int $exchange_id,
-        string $local_name
-    ) {
-        $symbol_id = null;
-        $o = DB::table('symbols')
-            ->select('id')
-            ->where('name', $local_name)
-            ->where('exchange_id', $exchange_id)
-            ->first();
-        if (is_object($o)) {
-            $symbol_id = $o->id;
-        }
-        if (!$symbol_id) {
-            $symbol_id = DB::table('symbols')
-                ->insertGetId([
-                    'name' => $local_name,
-                    'exchange_id' => $exchange_id
-                ]);
-        }
-        return $symbol_id;
     }
 }
