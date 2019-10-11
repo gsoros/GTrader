@@ -304,14 +304,18 @@ abstract class Exchange extends Base
         $configs = $config->where('exchange_id', $this->getId())->get();
         $configured_symbols = [];
         foreach ($configs as $config) {
-            if (!isset($config->options)) continue;
-            if (!is_array($config->options)) continue;
-            if (!isset($config->options['symbols'])) continue;
-            if (!is_array($config->options['symbols'])) continue;
+            if (!isset($config->options)
+                || !is_array($config->options)
+                || !isset($config->options['symbols'])
+                || !is_array($config->options['symbols'])) {
+                continue;
+            }
             foreach ($config->options['symbols'] as $cosk => $cosv) {
-                if (!is_array($cosv)) continue;
-                if (!isset($cosv['resolutions'])) continue;
-                if (!is_array($cosv['resolutions'])) continue;
+                if (!is_array($cosv)
+                    || !isset($cosv['resolutions'])
+                    || !is_array($cosv['resolutions'])) {
+                    continue;
+                }
                 if (!isset($configured_symbols[$cosk])) {
                     $configured_symbols[$cosk] = [];
                 }
@@ -329,26 +333,27 @@ abstract class Exchange extends Base
     }
 
 
-    public function getResolutions(string $symbol_id = '', array $options = []): array
+    public function getResolutions(string $symbol = '', array $options = []): array
     {
         if (!count($symbols = $this->getSymbols($options))) {
             Log::error('no symbols for '.$this->getShortClass());
             return [];
         }
-        if (strlen($symbol_id)) {
-            if (!isset($symbols[$symbol_id])) {
-                Log::error('symbol not found: '.$symbol_id);
+        if (strlen($symbol)) {
+            if (!isset($symbols[$symbol])) {
+                Log::error('symbol not found: '.$symbol);
                 return [];
             }
-            if (!isset($symbols[$symbol_id]['resolutions'])) {
-                Log::error('resolutions not found for: '.$symbol_id);
+            if (!isset($symbols[$symbol]['resolutions'])) {
+                Log::error('resolutions not found for: '.$symbol);
                 return [];
             }
-            if (!is_array($symbols[$symbol_id]['resolutions'])) {
-                Log::error('resolutions not an array for: '.$symbol_id);
+            if (!is_array($symbols[$symbol]['resolutions'])) {
+                Log::error('resolutions not an array for: '.$symbol);
                 return [];
             }
-            return $symbols[$symbol_id]['resolutions'];
+            //Log::debug(count($symbols[$symbol]['resolutions']).' resolutions for '.$symbol);
+            return $symbols[$symbol]['resolutions'];
         }
         // return the resolutions of the first symbol
         return $symbols[0]['resolutions'];
@@ -371,23 +376,29 @@ abstract class Exchange extends Base
 
     public static function getESR(): array
     {
+        Log::debug('getESR()');
+        $options = ['get' => ['configured']];
         $esr = [];
-        foreach (static::getAvailable([
-                'get' => ['configured'],
-            ]) as $exchange) {
+        foreach (static::getAvailable($options) as $exchange) {
             $exo = new \stdClass();
             $exo->name = $exchange->getName();
             $exo->long_name = $exchange->getLongName();
             $exo->symbols = [];
+            Log::debug('getESR() '.$exchange->getName());
 
-            foreach ($exchange->getSymbols([
-                    'get' => ['configured'],
-                ]) as $symbol_name => $symbol) {
+            foreach ($exchange->getSymbols($options) as $symbol_name => $symbol) {
+                $resolutions =
+                    $symbol['resolutions'] ?
+                    is_array($symbol['resolutions']) ?
+                        $symbol['resolutions'] : []
+                    : [];
                 $symo = new \stdClass();
                 $symo->name = $symbol_name;
                 $symo->long_name = self::getSymbolLongNameByExchangeSymbolName($exo->name, $symbol_name);
-                $symo->resolutions = $exchange->getResolutions($symbol_name);
+                //$symo->resolutions = $exchange->getResolutions($symbol_name, $options);
+                $symo->resolutions = $resolutions;
                 $exo->symbols[] = $symo;
+                Log::debug('getESR() '.$symbol_name.': '.count($symo->resolutions));
             }
             $esr[] = $exo;
         }
@@ -427,7 +438,14 @@ abstract class Exchange extends Base
 
     public static function getList(array $options = [])
     {
-        return view('Exchanges/List', ['exchanges' => static::getAvailable($options)]);
+        $reload = Arr::get($options, 'reload');
+        return view(
+            'Exchanges/List',
+            [
+                'exchanges' => static::getAvailable($options),
+                'reload' => $reload,
+            ]
+        );
     }
 
 

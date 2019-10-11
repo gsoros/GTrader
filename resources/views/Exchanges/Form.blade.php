@@ -51,14 +51,11 @@
                                             name="options[symbols][{{ $symbol_id }}][resolutions][]"
                                             type="checkbox"
                                             value="{{ $res_time }}"
-                                            @if (is_array($selected_symbol))
-                                                @if (isset($selected_symbol['resolutions']))
-                                                    @if (is_array($selected_symbol['resolutions']))
-                                                        @if (in_array($res_time, $selected_symbol['resolutions']))
-                                                            checked
-                                                        @endif
-                                                    @endif
-                                                @endif
+                                            @if (is_array($selected_symbol)
+                                                    && isset($selected_symbol['resolutions'])
+                                                    && is_array($selected_symbol['resolutions'])
+                                                    && in_array($res_time, $selected_symbol['resolutions']))
+                                                checked
                                             @endif
                                         >
                                         {{ $res_name }}

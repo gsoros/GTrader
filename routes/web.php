@@ -69,8 +69,9 @@ Route::get('/bot.new',                  'BotController@create');
 Route::get('/bot.form',                 'BotController@form');
 Route::get('/bot.delete',               'BotController@delete');
 Route::post('/bot.save',                'BotController@save');
-;
+
 Route::get('/exchange.form',            'ExchangeController@form');
+Route::get('/exchange.ESR',             'ExchangeController@ESR');
 Route::get('/exchange.symbols',         'ExchangeController@symbols');
 Route::get('/exchange.info',            'ExchangeController@info');
 Route::get('/exchange.list',            'ExchangeController@list');

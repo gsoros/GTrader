@@ -29,3 +29,10 @@
         @endforeach
     </div>
 </div>
+@if (isset($reload) && is_array($reload) && in_array('ESR', $reload))
+    <script>
+        if (window.GTrader.reloadESR) {
+            window.GTrader.reloadESR();
+        }
+    </script>
+@endif

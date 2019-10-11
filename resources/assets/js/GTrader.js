@@ -226,6 +226,10 @@ $(function() {
                         resolution: ''
                     },
                     selected = {};
+                if (undefined === window.GTrader.ESR) {
+                    console.log('ESR is undefined');
+                    return;
+                }
                 console.log('Updating ESR');
                 // loop through all exchanges
                 window.GTrader.ESR.forEach(function(exchange) { // loop through all exchanges
@@ -235,6 +239,7 @@ $(function() {
                         ||
                         1 === window.GTrader.ESR.length) { // or only one exchange
                         opts.exchange += 'selected '; // found selected exchange
+                        if (undefined === exchange.symbols) return;
                         exchange.symbols.forEach(function(symbol) { // loop through all symbols within selected exchange
                             opts.symbol += '<option ';
                             chart.exchange = exchange.name;
@@ -298,6 +303,45 @@ $(function() {
                 });
             });
         }, // registerESR
+
+
+        reloadESR: function() {
+            console.log('reloading ESR');
+            var g = window.GTrader;
+
+            $.ajax({
+                url: '/exchange.ESR',
+                type: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    var ESR = JSON.parse(response);
+                    if (!ESR.length) {
+                        return;
+                    }
+                    //console.log('old: ', g.ESR);
+                    g.ESR.length = 0;
+                    g.ESR.push(... ESR);
+                    //console.log('new: ', g.ESR);
+                    $('.GTraderChart').each(function() {
+                        var chart = g.charts[$(this).attr('id')];
+                        if (chart.updateESR) {
+                            chart.updateESR();
+                        }
+                        if (chart.refresh) {
+                            chart.refresh();
+                        }
+                    });
+                },
+                error: function(response) {
+                    if (0 == response.status && 'abort' === response.statusText) {
+                        return;
+                    }
+                }
+            });
+        },
+
 
         /**
          * Updates all strategy selectors

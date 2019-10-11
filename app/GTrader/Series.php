@@ -407,7 +407,7 @@ class Series extends Collection
             }
         );
 
-        Log::debug(\GTrader\DevUtil::eloquentSql($qbuilder));
+        //Log::debug(\GTrader\DevUtil::eloquentSql($qbuilder));
 
         $candles = $qbuilder
             ->get()

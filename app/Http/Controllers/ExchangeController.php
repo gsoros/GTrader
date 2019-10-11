@@ -23,12 +23,27 @@ class ExchangeController extends Controller
     }
 
 
-    public function list(Request $request)
+    public function list(Request $request, array $options = [])
     {
-        return response(Exchange::getList([
-            'get' => ['self', 'configured'],
-            'user_id' => Auth::id(),
-        ]), 200);
+        $options = array_replace_recursive([
+                'get'       => ['self', 'configured'],
+                'user_id'   => Auth::id(),
+            ],
+            $options
+        );
+        return response(
+            Exchange::getList($options),
+            200
+        );
+    }
+
+
+    public function ESR(Request $request)
+    {
+        return response(
+            json_encode(Exchange::getESR()),
+            200
+        );
     }
 
 
@@ -89,7 +104,7 @@ class ExchangeController extends Controller
             Log::debug($request->options);
         }
         $exchange->handleSaveRequest($request, $config);
-        return $this->list($request);
+        return $this->list($request, ['reload' => ['ESR']]);
     }
 
 

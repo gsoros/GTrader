@@ -91,14 +91,6 @@ class ChartController extends Controller
             Log::error('Strategy owner mismatch');
             return response('Strategy not found.', 403);
         }
-        /*
-        //Log::debug('strategySelect() copying indicators');
-        if ($old_strategy = $chart->getStrategy()) {
-            foreach ($old_strategy->getIndicators() as $indicator) {
-                $strategy->addIndicator($indicator);
-            }
-        }
-        */
         $chart->setStrategy($strategy);
         $chart->saveToSession();
         $chart->save();

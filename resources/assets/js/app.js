@@ -41,7 +41,10 @@ $(function() {
         console.log('tab change: ' + target);
 
         var chart = $(target + ' .GTraderChart');
-        console.log(chart.attr('id') ? 'we have a chart: ' + chart.attr('id') : 'no chart here');
+        console.log(
+            chart.attr('id') ?
+            'tab has a chart: ' + chart.attr('id') :
+            'no chart on this tab');
 
         if (chart.attr('id')) {
             var chartObj = window.GTrader.charts[chart.attr('id')];
