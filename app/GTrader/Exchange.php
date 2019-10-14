@@ -376,7 +376,7 @@ abstract class Exchange extends Base
 
     public static function getESR(): array
     {
-        Log::debug('getESR()');
+        //Log::debug('getESR()');
         $options = ['get' => ['configured']];
         $esr = [];
         foreach (static::getAvailable($options) as $exchange) {
@@ -384,7 +384,7 @@ abstract class Exchange extends Base
             $exo->name = $exchange->getName();
             $exo->long_name = $exchange->getLongName();
             $exo->symbols = [];
-            Log::debug('getESR() '.$exchange->getName());
+            //Log::debug('getESR() '.$exchange->getName());
 
             foreach ($exchange->getSymbols($options) as $symbol_name => $symbol) {
                 $resolutions =
@@ -398,7 +398,7 @@ abstract class Exchange extends Base
                 //$symo->resolutions = $exchange->getResolutions($symbol_name, $options);
                 $symo->resolutions = $resolutions;
                 $exo->symbols[] = $symo;
-                Log::debug('getESR() '.$symbol_name.': '.count($symo->resolutions));
+                //Log::debug('getESR() '.$symbol_name.': '.count($symo->resolutions));
             }
             $esr[] = $exo;
         }
