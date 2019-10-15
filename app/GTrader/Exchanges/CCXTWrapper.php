@@ -13,7 +13,8 @@ use ccxt\Exchange as CCXT;
 
 class CCXTWrapper extends Exchange
 {
-    protected const CCXT_NAMESPACE = '\\ccxt\\';
+    protected const CCXT_NAMESPACE      = '\\ccxt\\';
+    protected const CHILD_PREFIX        = 'CCXT_';
     protected const LOAD_MARKETS_BEFORE = ['markets', 'symbols'];
     protected $ccxt;
 
@@ -24,7 +25,7 @@ class CCXTWrapper extends Exchange
         if ($ccxt_id = $this->getParam('ccxt_id')) {
             $this->ccxt($ccxt_id);
         }
-        //Log::debug($this->getParam('id', 'no id'));
+        Log::debug($this->getParam('default_child', 'no default_child'));
     }
 
 
@@ -87,11 +88,10 @@ class CCXTWrapper extends Exchange
 
     public function getVirtualClassName()
     {
-        $name = $this->getShortClass();
         if (strlen($this->getParam('ccxt_id'))) {
-            $name .= '_'.$this->getParam('ccxt_id');
+            return self::CHILD_PREFIX.$this->getParam('ccxt_id');
         }
-        return $name;
+        return $this->getShortClass();
     }
 
 
@@ -168,11 +168,18 @@ class CCXTWrapper extends Exchange
     }
 
 
+    public function getListItem()
+    {
+        if ($this->getParam('ccxt_id')) {
+            return parent::getListItem();
+        }
+        return view('Exchanges/CCXTWrapperListItem', ['exchange' => $this]);
+    }
+
+
     public function getInfo()
     {
-        return view('Exchanges/CCXTInfo', [
-            'exchange' => $this,
-        ]);
+        return view('Exchanges/CCXTInfo', ['exchange' => $this]);
     }
 
 

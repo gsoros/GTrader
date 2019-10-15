@@ -32,7 +32,8 @@ abstract class Exchange extends Base
     {
         // hack for CCXTWrapper
         $ccxtwrapper = 'CCXTWrapper';
-        if ($ccxtwrapper === substr($class, 0, 11)) {
+        $ccxt = 'CCXT';
+        if ($ccxt === substr($class, 0, 4)) {
             if ($ccxt_id = strstr($class, '_')) {
                 if (strlen($ccxt_id = substr($ccxt_id, 1))) {
                     $params['ccxt_id'] = $ccxt_id;
@@ -123,6 +124,10 @@ abstract class Exchange extends Base
         if ('resolution' === $param) {
             $symbols = $exchange->getSymbols();
             $first_symbol = reset($symbols);
+            if (!$first_symbol['name']) {
+                Log::error('no first symbol for '.$exchange->getName());
+                return null;
+            }
             if (!count($resolutions = $exchange->getResolutions($first_symbol['name']))) {
                 Log::error('no resolutions for '.$exchange->getName());
                 return null;
@@ -446,6 +451,12 @@ abstract class Exchange extends Base
                 'reload' => $reload,
             ]
         );
+    }
+
+
+    public function getListItem()
+    {
+        return view('Exchanges/ListItem', ['exchange' => $this]);
     }
 
 

@@ -13,5 +13,6 @@
 <script>
     $(function() {
         window.GTrader.registerESR('{{ $name }}');
+        $('#exchange_{{ $name }}').trigger('change');
     });
 </script>

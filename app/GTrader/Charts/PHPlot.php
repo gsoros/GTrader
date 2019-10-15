@@ -909,7 +909,8 @@ class PHPlot extends Chart
         $limit = $candles->getParam('limit');
         if (!$resolution = $candles->getParam('resolution')) {
             Log::error('could not get resolution');
-            return $this;
+            $resolution = 0;
+            //return $this;
         }
         if (!$last = $candles->getLastInSeries()) {
             Log::error('Could not get last candle');

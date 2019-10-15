@@ -4,6 +4,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\User;
+use GTrader\Exchange;
+use GTrader\Log;
 
 class UsersTableSeeder extends Seeder
 {
@@ -18,10 +21,29 @@ class UsersTableSeeder extends Seeder
             return;
         }
 
-        DB::table('users')->insert([
+        $user_id = DB::table('users')->insertGetId([
             'name' => 'gtrader',
             'email' => 'gtrader@localhost',
             'password' => Hash::make(''),
         ]);
+
+        $user = User::where(['id' => $user_id])->first();
+
+        $exchange = Exchange::make('CCXT_bitfinex2');
+
+        $config = $user->exchangeConfigs()->firstOrNew([
+            'exchange_id' => $exchange->getId(),
+        ]);
+
+        $config->options = [
+            'symbols' => [
+                'BTC/USD' => [
+                    'resolutions' => ['86400'],
+                ],
+            ],
+        ];
+        $config->save();
+
+        //Log::debug($user->id, $exchange->getId(), $config->id);
     }
 }
