@@ -1,9 +1,3 @@
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
-
 require('./bootstrap');
 
 // Select2
@@ -44,7 +38,8 @@ $(function() {
         console.log(
             chart.attr('id') ?
             'tab has a chart: ' + chart.attr('id') :
-            'no chart on this tab');
+            'no chart on this tab'
+        );
 
         if (chart.attr('id')) {
             var chartObj = window.GTrader.charts[chart.attr('id')];

@@ -89,7 +89,7 @@ trait Trainable
         $chart = Chart::make(null, [
             'candles' => $candles,
             'name' => 'trainingChart',
-            'height' => 200,
+            'height' => 230,
             'disabled' => ['title', 'map', 'panZoom', 'strategy', 'settings'],
         ]);
         $ind = $chart->addIndicator('Ohlc', ['mode' => 'linepoints']);
@@ -130,6 +130,7 @@ trait Trainable
             'strategy' => $this,
             'name' => 'trainingProgressChart',
             'height' => 200,
+            'heightPercentage' => 41,
             'disabled' => ['title', 'strategy', 'map', 'settings', 'fullscreen'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
@@ -163,6 +164,7 @@ trait Trainable
         $chart->saveToSession();
         return $chart;
     }
+
 
     public function delete()
     {

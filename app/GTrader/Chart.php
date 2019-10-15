@@ -251,6 +251,9 @@ abstract class Chart extends Plot
         $candles = $this->getCandles();
         $o = new \stdClass();
         $o->name = $this->getParam('name');
+        if ($hp = $this->getParam('heightPercentage')) {
+            $o->heightPercentage = $hp;
+        }
         //$o->start = $candles->getParam('start');
         //$o->end = $candles->getParam('end');
         //$o->limit = $candles->getParam('limit');

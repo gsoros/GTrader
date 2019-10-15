@@ -142,7 +142,6 @@ $(function() {
         }, // registerChart
 
 
-
         /**
          * Registers a strategy selector
          */
@@ -189,7 +188,6 @@ $(function() {
                 });
             }
         }, // registerStrategySelector
-
 
 
         /**
@@ -383,5 +381,5 @@ $(function() {
             });
             return result;
         }
-    }) // $.extend( window.GTrader
-}); // $(f () {
+    }) 
+});

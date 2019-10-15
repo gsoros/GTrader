@@ -38,8 +38,6 @@ $(function() {
             this.request('plot', 'image', params, 'GET', name);
         },
 
-
-
         registerPanZoomHandler: function(name) {
             [
                 'zoomIn_' + name,
@@ -90,7 +88,6 @@ $(function() {
             */
             fscreen.requestFullscreen($('#fullscreen-wrap_' + name)[0]);
         },
-
 
         registerRefreshFunc: function(name) {
 
@@ -152,8 +149,29 @@ $(function() {
             window.GTrader.registerPanZoomHandler(name);
             window.GTrader.setPanZoomPosition(name);
             if (initialRefresh) {
-                window.GTrader.requestPlot(name);
+                window.GTrader.setChartSize(name);
+                //window.GTrader.requestPlot(name);
             }
+        },
+
+        setChartSize: function(name) {
+            console.log('g.setChartSize ' + name);
+            //$('#' + name).width($(window).width() - 4);
+            $('#' + name).width($('#' + name).parent().width() - 6);
+            if (window.GTrader.charts[name].heightPercentage) {
+                if (fscreen.fullscreenElement !== null) {
+                    $('#' + name).height($(window).height());
+                } else {
+                    var height =
+                        ($(window).height() - 110) *
+                        window.GTrader.charts[name].heightPercentage / 100;
+                    $('#' + name).height(height);
+                    console.log(name + ' height set to ' + height);
+                }
+            } else
+                console.log(name + ' has no heightPercentage');
+            if (window.GTrader.charts[name].refresh)
+                window.GTrader.charts[name].refresh();
         }
     });
 });
@@ -166,7 +184,9 @@ $(window).resize(function() {
         $('.GTraderChart').each(function() {
             var name = $(this).attr('id');
             console.log(name + ' resize');
-            if (window.GTrader.charts[name].refresh)
+            if (window.GTrader.setChartSize)
+                window.GTrader.setChartSize(name);
+            else if (window.GTrader.charts[name].refresh)
                 window.GTrader.charts[name].refresh();
             if (window.GTrader.setPanZoomPosition)
                 window.GTrader.setPanZoomPosition(name);

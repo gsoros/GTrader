@@ -1,5 +1,5 @@
-<div id="fullscreen-wrap_{{ $name }}">
-    <div id="{{ $name }}" class="GTraderChart npr npl"
+<div class="np" id="fullscreen-wrap_{{ $name }}">
+    <div id="{{ $name }}" class="GTraderChart np"
     @if ($height)
         style="height: {{ $height }}px"
     @endif

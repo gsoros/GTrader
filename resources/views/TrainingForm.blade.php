@@ -22,7 +22,7 @@
         <div class="col-sm-12">
             <h3>Select range{{ (1 < count($ranges)) ? 's' : '' }} for {{ $strategy->getParam('name') }}</h3>
             @php
-                $height = floor(184 / count($ranges));
+                $height = floor(230 / count($ranges));
                 $displayed = 0;
                 foreach ($ranges as $range_key => $range) {
                     echo '<div id="'.$range_key.'_slider"
