@@ -416,22 +416,21 @@ abstract class Exchange extends Base
         string $symbol_name,
         int $resolution
     ) {
-        return $exchange_name.' / '.$symbol_name.' / '.$resolution;
-        //Log::info('Exchange::getESRReadonly('.$exchange.', '.$symbol.', '.$resolution.')');
-        //return '';
-        /*
+        $fallback = $exchange_name.' | '.$symbol_name.' | '.$resolution;
+
         try {
-            $exchange = self::make($exchange);
+            $exchange = self::make($exchange_name);
         } catch (\Exception $e) {
-            return null;
+            Log::bedug($exchange_name.', '.$symbol_name.', '.$resolution);
+            return $fallback;
         }
-        if (!($symbol = $exchange->getParam('symbols')[$symbol])) {
-            return null;
-        }
-        return $exchange->getParam('short_name').' / '.
-            $symbol['short_name'].' / '.
-            $symbol['resolutions'][$resolution];
-        */
+        //if (!($symbol = $exchange->getSymbol($symbol_name)) {
+        //    return $fallback;
+        //}
+        return $exchange->getLongName().' | '.
+            $symbol_name.' | '.
+            static::resolutionName($resolution);
+
     }
 
 
