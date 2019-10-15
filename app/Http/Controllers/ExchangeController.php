@@ -108,6 +108,18 @@ class ExchangeController extends Controller
     }
 
 
+    public function delete(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return response($error);
+        }
+        $config->delete();
+        return $this->list($request, ['reload' => ['ESR']]);
+    }
+
+
     private function setUpRequest(Request $request)
     {
         $exchange = $config = $error = null;

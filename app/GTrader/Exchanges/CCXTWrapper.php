@@ -25,7 +25,7 @@ class CCXTWrapper extends Exchange
         if ($ccxt_id = $this->getParam('ccxt_id')) {
             $this->ccxt($ccxt_id);
         }
-        Log::debug($this->getParam('default_child', 'no default_child'));
+        //Log::debug($this->getParam('default_child', 'no default_child'));
     }
 
 
@@ -171,7 +171,7 @@ class CCXTWrapper extends Exchange
     public function getListItem()
     {
         if ($this->getParam('ccxt_id')) {
-            return parent::getListItem();
+            return view('Exchanges/CCXTWrapperChildListItem', ['exchange' => $this]);
         }
         return view('Exchanges/CCXTWrapperListItem', ['exchange' => $this]);
     }
@@ -265,7 +265,10 @@ class CCXTWrapper extends Exchange
 
     public function getLongName()
     {
-        return $this->getCCXTProperty('name') ?? $this->getVirtualClassName();
+        if (strlen($this->getParam('ccxt_id'))) {
+            return $this->getCCXTProperty('name') ?? $this->getVirtualClassName();
+        }
+        return 'CCXT';
     }
 
 

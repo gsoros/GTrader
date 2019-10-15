@@ -216,7 +216,7 @@ trait HasIndicators
             }
         }
         if (is_null($target)) {
-            Log::error('not found', substr($sig, 0, 50));
+            //Log::error('not found', substr($sig, 0, 50));
             return $this;
         }
         // if (0 < $target->refCount() && ['root'] !== array_merge($target->getRefs())) {

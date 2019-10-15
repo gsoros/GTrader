@@ -72,7 +72,6 @@ class Signals extends HasInputs
         $this->setParam('indicator.strategy_id', $strategy_id);
         // remove strategy's signal ind
         if ($i !== $this) {
-            // TODO $i->kill() ?? to remove event subs ??
             $owner->unsetIndicator($i);
         }
         return $this;

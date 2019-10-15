@@ -76,6 +76,7 @@ Route::get('/exchange.symbols',         'ExchangeController@symbols');
 Route::get('/exchange.info',            'ExchangeController@info');
 Route::get('/exchange.list',            'ExchangeController@list');
 Route::post('/exchange.save',           'ExchangeController@save');
+Route::get('/exchange.delete',          'ExchangeController@delete');
 
 // Route::get('/password.change', function() { return view('auth.passwords.change'); });
 Route::get('/password.change', 'Auth\ChangePasswordController@view');

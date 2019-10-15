@@ -1,4 +1,4 @@
-<div class="col-sm-6 editable container">
+<div class="col-sm-3 editable container">
     <div class="row">
         <div class="col-sm-8">
             <strong>{{ $exchange->getLongName() }}</strong>

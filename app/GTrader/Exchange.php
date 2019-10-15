@@ -37,7 +37,7 @@ abstract class Exchange extends Base
             if ($ccxt_id = strstr($class, '_')) {
                 if (strlen($ccxt_id = substr($ccxt_id, 1))) {
                     $params['ccxt_id'] = $ccxt_id;
-                    Log::debug('making '.$ccxtwrapper.' with ccxt_id='.$ccxt_id);
+                    //Log::debug('making '.$ccxtwrapper.' with ccxt_id='.$ccxt_id);
                     return parent::make($ccxtwrapper, $params);
                 }
             }

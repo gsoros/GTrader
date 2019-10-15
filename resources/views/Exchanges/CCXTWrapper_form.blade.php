@@ -26,8 +26,18 @@
                 @endphp
                 <div class="card trans">
                     <div id="ccxt_card_{{ $ccxt_id }}" class="card-title">
-                        <!--<img src="" width="25" height="25">-->
-                        <b>{{ $supported->getLongName() }}</b>
+                        @php
+                            $name = $supported->getLongName();
+                            $logo = is_array($urls = $supported->getCCXTProperty('urls'))
+                                && isset($urls['logo']) ?
+                                $urls['logo'] :
+                                null;
+                        @endphp
+                        @if ($logo)
+                            <img src="{{ $logo }}" title="{{ $name }}" alt="{{ $name }}">
+                        @else
+                            <b>{{ $name }}</b>
+                        @endif
                     </div>
                     <div class="card-body">
                         <p id="ccxt_info_{{ $ccxt_id }}"

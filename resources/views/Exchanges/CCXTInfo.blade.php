@@ -36,18 +36,25 @@
     <div class="row">
         <div class="col-sm-12 np">
             <div class="float-right">
-                <button onClick="window.GTrader.request(
-                            'exchange',
-                            'form',
-                            {class: 'CCXTWrapper_{{ $exchange->getCCXTProperty('id') }}'},
-                            'GET',
-                            'settingsTab'
-                        )"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Set up {{ $exchange->getCCXTProperty('name') }}">
-                    <span class="fas fa-wrench"></span> Set up
-                </button>
+                @php
+                    $has = $exchange->getCCXTProperty('has');
+                @endphp
+                @if (is_array($has) && isset($has['fetchOHLCV']) && true === $has['fetchOHLCV'])
+                    <button onClick="window.GTrader.request(
+                                'exchange',
+                                'form',
+                                {class: 'CCXTWrapper_{{ $exchange->getCCXTProperty('id') }}'},
+                                'GET',
+                                'settingsTab'
+                            )"
+                            type="button"
+                            class="btn btn-primary btn-mini trans"
+                            title="Set up {{ $exchange->getCCXTProperty('name') }}">
+                        <span class="fas fa-wrench"></span> Set up
+                    </button>
+                @else
+                    Exchange does not support candlestick data.
+                @endif
             </div>
         </div>
     </div>

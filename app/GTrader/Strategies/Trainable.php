@@ -130,7 +130,7 @@ trait Trainable
             'strategy' => $this,
             'name' => 'trainingProgressChart',
             'height' => 200,
-            'heightPercentage' => 41,
+            'heightPercentage' => 40,
             'disabled' => ['title', 'strategy', 'map', 'settings', 'fullscreen'],
             'readonly' => ['esr'],
             'highlight' => $highlights,
