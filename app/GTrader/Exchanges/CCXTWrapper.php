@@ -117,7 +117,7 @@ class CCXTWrapper extends Exchange
         $configured = in_array('configured', $get);
         $user_id = Arr::get($options, 'user_id');
 
-        Log::debug($options, $all, $self, $configured, $user_id);
+        //Log::debug($options, $all, $self, $configured, $user_id);
 
         if ($self) {
             $exchanges[] = $this;
@@ -242,7 +242,7 @@ class CCXTWrapper extends Exchange
                 return null;
             }
             if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
-                Log::debug('loading markets, because '.$prop, $ccxt->id);
+                //Log::debug('loading markets, because '.$prop, $ccxt->id);
                 $ccxt->loadMarkets();
             }
             if (!isset($ccxt->$prop)) {
