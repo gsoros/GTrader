@@ -234,7 +234,7 @@ class CCXTWrapper extends Exchange
     }
 
 
-    public function getCCXTProperty($prop, array $options = [])
+    public function getCCXTProperty(string $prop, array $options = [])
     {
         if (!$this->cached($prop)) {
             if (!is_object($ccxt = $this->ccxt())) {
@@ -251,6 +251,16 @@ class CCXTWrapper extends Exchange
             $this->cache($prop, $ccxt->$prop);
         }
         return $this->cached($prop);
+    }
+
+
+    public function has($prop = null)
+    {
+        $has = $this->getCCXTProperty('has');
+        if (!$prop) {
+            return is_array($has) ? $has : [];
+        }
+        return is_array($has) && isset($has[$prop]) ? $has[$prop] : null;
     }
 
 

@@ -903,7 +903,7 @@ class PHPlot extends Chart
 
     protected function handleCommand(string $command, array $args = [])
     {
-        Log::debug('Command: '.$command.' args: ', $args);
+        //Log::debug('Command: '.$command.' args: ', $args);
         $candles = $this->getCandles();
         $end = $candles->getParam('end');
         $limit = $candles->getParam('limit');

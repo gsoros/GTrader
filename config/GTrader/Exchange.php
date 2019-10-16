@@ -19,8 +19,9 @@ return [
     'position_size'     => env('EXCHANGE_POSITION_SIZE', 10),               // 10% of capital
     'leverage'          => env('EXCHANGE_LEVERAGE', 10),
 
-    'delete_candle_age' => env('DELETE_CANDLE_AGE', 0),                     // delete candles older than this # of days, 0 to disable
-    'aggregator_delay'  => env('AGGREGATOR_DELAY', 2000000),                // sleep this # of microseconds between requests
+    'delete_candle_age'         => env('DELETE_CANDLE_AGE', 0),             // delete candles older than this # of days, 0 to disable
+    'aggregator_delay'          => env('AGGREGATOR_DELAY', 500000),         // sleep this # of microseconds between requests
+    'aggregator_chunk_size'     => env('AGGREGATOR_CHUNK_SIZE', 1000),      // sleep this # of microseconds between requests
 
     'resolution_map'    => [
         '1m'    =>  60,

@@ -21,6 +21,10 @@ class Mid extends HasInputs
 
         $candles->reset();
         while ($candle = $candles->next()) {
+            if (!isset($candle->$key_a) || !isset($candle->$key_b)) {
+                $candle->$key = 0;
+                continue;
+            }
             $candle->$key = ($candle->$key_a + $candle->$key_b) / 2;
         }
         return $this;

@@ -1,26 +1,43 @@
-<form id="exchangeForm">
+<div class="row">
+    <div class="col-sm-8">
+        <h4>Exchanges supported by {{ $exchange->getName() }}</h4>
+    </div>
+    <div class="col-sm-4">
+        <span class="float-right">
+            <button onClick="window.GTrader.request(
+                        'exchange',
+                        'list',
+                        null,
+                        'GET',
+                        'settingsTab'
+                    )"
+                    type="button"
+                    class="btn btn-primary btn-mini trans"
+                    title="Back">
+                <span class="fas fa-arrow-left"></span> Back
+            </button>
+        </span>
+    </div>
+</div>
+@php
+    $exchanges_with = $exchanges_without = [];
+    foreach ($supported_exchanges as $supported) {
+        if (true === $supported->has('fetchOHLCV')) {
+            $exchanges_with[] = $supported;
+            continue;
+        }
+        if ('emulated' === $supported->has('fetchOHLCV')) {
+            $exchanges_without[] = $supported;
+        }
+    }
+@endphp
+@foreach (['with', 'without'] as $with_or_without)
     <div class="row">
-        <div class="col-sm-8">
-            <h4>Exchanges supported by {{ $exchange->getName() }}</h4>
-        </div>
-        <div class="col-sm-4">
-            <span class="float-right">
-                <button onClick="window.GTrader.request(
-                            'exchange',
-                            'list',
-                            null,
-                            'GET',
-                            'settingsTab'
-                        )"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Back">
-                    <span class="fas fa-arrow-left"></span> Back
-                </button>
-            </span>
+        <div class="col-sm-12 card-columns">
+            Exchanges {{ $with_or_without }} candlestick data support
         </div>
         <div class="col-sm-12 card-columns">
-            @foreach ($supported_exchanges as $supported)
+            @foreach (${'exchanges_'.$with_or_without} as $supported)
                 @php
                     $ccxt_id = $supported->getParam('ccxt_id');
                 @endphp
@@ -47,27 +64,26 @@
                 </div>
             @endforeach
         </div>
-
     </div>
-    <div class="row bdr-rad">
-        <div class="col-sm-12">
-            <div class="float-right">
-                <button onClick="window.GTrader.request(
-                            'exchange',
-                            'list',
-                            null,
-                            'GET',
-                            'settingsTab'
-                        )"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Back">
-                    <span class="fas fa-arrow-left"></span> Back
-                </button>
-            </div>
+@endforeach
+<div class="row bdr-rad">
+    <div class="col-sm-12">
+        <div class="float-right">
+            <button onClick="window.GTrader.request(
+                        'exchange',
+                        'list',
+                        null,
+                        'GET',
+                        'settingsTab'
+                    )"
+                    type="button"
+                    class="btn btn-primary btn-mini trans"
+                    title="Back">
+                <span class="fas fa-arrow-left"></span> Back
+            </button>
         </div>
     </div>
-</form>
+</div>
 
 <script>
 var g = window.GTrader;

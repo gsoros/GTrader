@@ -77,12 +77,17 @@ class Aggregator extends Base
                     echo $res_name.' ('.date('Y-m-d H:i', $since).'): ';
                     flush();
 
-                    $candles = $exchange->fetchCandles(
-                        $symbol_name,
-                        $resolution,
-                        $since,
-                        2000
-                    );
+                    try {
+                        $candles = $exchange->fetchCandles(
+                            $symbol_name,
+                            $resolution,
+                            $since,
+                            $exchange->getParam('aggregator_chunk_size', 1000)
+                        );
+                    } catch (\Exception $e) {
+                        echo PHP_EOL.'Error: '.$e->getMessage();
+                        Log::error($e->getMessage());
+                    }
 
                     if (!is_array($candles)) {
                         echo '0, ';
@@ -96,7 +101,12 @@ class Aggregator extends Base
                         $candle->exchange_id = $exchange_id;
                         $candle->symbol_id = $symbol_id;
                         $candle->resolution = $resolution;
-                        Series::saveCandle($candle);
+                        try {
+                            Series::saveCandle($candle);
+                        } catch (\Exception $e) {
+                            echo PHP_EOL.'Error: '.$e->getMessage();
+                            Log::error($e->getMessage());
+                        }
                     }
                     echo count($candles).', ';
                     usleep($delay);

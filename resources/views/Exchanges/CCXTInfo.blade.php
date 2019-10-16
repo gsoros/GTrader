@@ -36,10 +36,7 @@
     <div class="row">
         <div class="col-sm-12 np">
             <div class="float-right">
-                @php
-                    $has = $exchange->getCCXTProperty('has');
-                @endphp
-                @if (is_array($has) && isset($has['fetchOHLCV']) && true === $has['fetchOHLCV'])
+                @if (true === $exchange->has('fetchOHLCV'))
                     <button onClick="window.GTrader.request(
                                 'exchange',
                                 'form',

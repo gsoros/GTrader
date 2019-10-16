@@ -369,8 +369,8 @@ $(function() {
                 });
                 setTimeout(function() {
                     $('#errorBubble').remove();
-                }, 1000);
-            }, 3000);
+                }, 3000);
+            }, 4000);
         }, // errorBubble
 
 
@@ -381,5 +381,5 @@ $(function() {
             });
             return result;
         }
-    }) 
+    })
 });
