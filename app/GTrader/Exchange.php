@@ -150,7 +150,7 @@ abstract class Exchange extends Base
 
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
-        $this->updateUserOptions($config, $request->options ?? []);
+        //$this->updateUserOptions($config, $request->options ?? []);
         return $this;
     }
 
