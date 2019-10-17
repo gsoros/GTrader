@@ -17,18 +17,19 @@ trait HasPCache
     }
 
 
-    public function pCached(string $key, $default = null, int $age = null)
+    public function pCached(string $key, $default = null, int $age = 0)
     {
-        $value = is_object($first =
-            $this->getPCacheTable()
+        $query = $this->getPCacheTable()
             ->select('cache_value')
-            ->where([
-                ['cache_key', $key],
-                ['cache_time', '>', time() - (0 < $age ? $age : $this->pcache_default_age)],
-            ])
-            ->first()) ?
-            $first->cache_value :
-            null;
+            ->where('cache_key', $key);
+        if (0 <= $age) {
+            $query->where(
+                'cache_time',
+                '>',
+                time() - (0 == $age ? $this->pcache_default_age : $age)
+            );
+        }
+        $value = is_object($first = $query->first()) ? $first->cache_value : null;
         $this->logPCache('get', $key, $value);
         return $value ? unserialize($value) : $default;
     }
@@ -45,13 +46,16 @@ trait HasPCache
             }
         }
         if ($table
-            ->selectRaw('count(*) as total')
+            //->selectRaw('count(*) as total')
+            ->select(DB::raw('count(*) as total'))
             ->where('cache_key', $key)
             ->first()->total) {
             $table->where('cache_key', $key)->update([
                 'cache_value' => serialize($value),
                 'cache_time' => time(),
             ]);
+            // generates duplicate where:
+            // update `pcache` set `cache_value` = '...', `cache_time` = '1234' where `cache_key` = 'key' and `cache_key` = 'key' limit 1
         }
         else {
             $table->insert([

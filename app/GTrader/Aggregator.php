@@ -89,11 +89,7 @@ class Aggregator extends Base
                         Log::error($e->getMessage());
                     }
 
-                    if (!is_array($candles)) {
-                        echo '0, ';
-                        continue;
-                    }
-                    if (!count($candles)) {
+                    if (!isset($candles) || !is_array($candles) || !count($candles)) {
                         echo '0, ';
                         continue;
                     }

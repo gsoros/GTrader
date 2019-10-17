@@ -243,19 +243,33 @@ class CCXTWrapper extends Exchange
         if ($val = $this->cached($prop)) {
             return $val;
         }
-        if (!is_object($ccxt = $this->ccxt())) {
-            Log::debug('ccxt not obj, wanted ', $prop);
-            return null;
-        }
-        $pcache_key = null;
+        $pcache_key = $ccxt = null;
         if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
             $pcache_key = 'CCXT_'.$this->getParam('ccxt_id').'_'.$prop;
             if ($val = $this->pCached($pcache_key)) {
                 $this->cache($prop, $val);
                 return $val;
             }
-            //Log::debug('loading markets, because '.$prop, $ccxt->id);
-            $ccxt->loadMarkets();
+            if (!is_object($ccxt = $this->ccxt())) {
+                Log::debug('ccxt not obj, wanted ', $prop);
+                return null;
+            }
+            try {
+                Log::debug('loadMarkets() for '.$this->getParam('ccxt_id'));
+                $ccxt->loadMarkets();
+            } catch (\Exception $e) {
+                Log::debug('loadMarkets() failed for '.$this->getParam('ccxt_id'), $e->getMessage());
+                Log::debug('checking pcache without age');
+                if ($val = $this->pCached($pcache_key, null, -1)) {
+                    Log::debug('pcache had an older entry');
+                    $this->cache($prop, $val);
+                    return $val;
+                }
+            }
+        }
+        if (!$ccxt && !is_object($ccxt = $this->ccxt())) {
+            Log::debug('ccxt not obj, wanted ', $prop);
+            return null;
         }
         if (!isset($ccxt->$prop)) {
             return null;

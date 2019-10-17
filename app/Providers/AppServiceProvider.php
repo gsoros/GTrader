@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         // Query log
-        // SET global log_output = 'FILE'; SET global general_log_file='/var/log/mysql/query.log'; SET global general_log = 0;
+        // another way: SET global log_output = 'FILE'; SET global general_log_file='/var/log/mysql/query.log'; SET global general_log = 1;
         if (false) { // disabled
             DB::listen(function ($query) {
                 \GTrader\Log::sparse(vsprintf(

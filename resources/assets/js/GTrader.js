@@ -362,7 +362,7 @@ $(function() {
                 opacity: 1,
                 transition: 'opacity .5s linear',
             });
-            $('#errorBubble').text(message);
+            $('#errorBubble').html(message);
             setTimeout(function() {
                 $('#errorBubble').css({
                     opacity: 0
