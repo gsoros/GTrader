@@ -130,6 +130,7 @@ class ExchangeController extends Controller
         return view('Exchanges/FormSymbols', [
             'exchange' => $exchange,
             'selected' => $config->options['symbols'] ?? [],
+            'reload' => ['ESR']
         ]);
     }
 
@@ -156,6 +157,7 @@ class ExchangeController extends Controller
         return view('Exchanges/FormSymbols', [
             'exchange' => $exchange,
             'selected' => $config->options['symbols'] ?? [],
+            'reload' => ['ESR'],
         ]);
     }
 

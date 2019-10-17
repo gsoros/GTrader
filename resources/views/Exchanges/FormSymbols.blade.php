@@ -126,4 +126,11 @@
         );
         $('#new_res').trigger('change');
     };
+    @if (isset($reload) && is_array($reload) && in_array('ESR', $reload))
+    $(function() {
+        if (window.GTrader.reloadESR) {
+            window.GTrader.reloadESR();
+        }
+    });
+    @endif
 </script>
