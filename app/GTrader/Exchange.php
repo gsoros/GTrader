@@ -137,6 +137,9 @@ abstract class Exchange extends Base
         }
         if (false !== ($k = array_search($res, $options['symbols'][$symbol]['resolutions']))) {
             unset($options['symbols'][$symbol]['resolutions'][$k]);
+            if (!count($options['symbols'][$symbol]['resolutions'])) {
+                unset($options['symbols'][$symbol]);
+            }
             $config->options = $options;
             $config->save();
             $this->unCache('user_options');
@@ -360,7 +363,8 @@ abstract class Exchange extends Base
             foreach ($config->options['symbols'] as $cosk => $cosv) {
                 if (!is_array($cosv)
                     || !isset($cosv['resolutions'])
-                    || !is_array($cosv['resolutions'])) {
+                    || !is_array($cosv['resolutions'])
+                    || !count($cosv['resolutions'])) {
                     continue;
                 }
                 if (!isset($configured_symbols[$cosk])) {
