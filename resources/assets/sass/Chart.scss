@@ -34,7 +34,8 @@
     margin-left: 3px;
 }
 
-.editable:hover .editbuttons .editbutton {
+.editable:hover .editbuttons .editbutton,
+.editable:hover .editbutton {
     opacity: 1;
     filter: alpha(opacity=100);
 }

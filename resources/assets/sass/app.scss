@@ -199,6 +199,11 @@ input.form-control {
     background-color: #333;
 }
 
+.btn-primary:disabled, .btn-group > .btn-secondary:disabled {
+    background-color: #131313;
+    color: #444444;
+}
+
 .btn-sm {
     height: 16px;
     font-size: 12px;

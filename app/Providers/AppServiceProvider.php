@@ -18,25 +18,18 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        /*
-        // Dump all queries
-        DB::listen(function ($query) {
-
-            $replace = function ($sql, $bindings) {
-                $needle = '?';
-                foreach ($bindings as $replace) {
-                    $pos = strpos($sql, $needle);
-                    if ($pos !== false) {
-                        $sql = substr_replace($sql, "'".$replace."'", $pos, strlen($needle));
-                    }
-                }
-                return $sql;
-            };
-            $sql = $replace($query->sql, $query->bindings);
-            dump($sql);
-        });
-        */
-
+        // Query log
+        // SET global log_output = 'FILE'; SET global general_log_file='/var/log/mysql/query.log'; SET global general_log = 0;
+        if (false) { // disabled
+            DB::listen(function ($query) {
+                \GTrader\Log::sparse(vsprintf(
+                    str_replace(['?'], ['\'%s\''], $query->sql),
+                    array_map(function ($s) {
+                        return 200 < strlen($s) ? substr($s, 0, 197).'...' : $s;
+                    }, $query->bindings)
+                ));
+            });
+        }
 
         // Save some memory
         DB::connection()->disableQueryLog();

@@ -51,7 +51,7 @@
                                 null;
                         @endphp
                         @if ($logo)
-                            <img src="{{ $logo }}" title="{{ $name }}" alt="{{ $name }}">
+                            <img style="border-radius: 3px" src="{{ $logo }}" title="{{ $name }}" alt="{{ $name }}">
                         @else
                             <b>{{ $name }}</b>
                         @endif

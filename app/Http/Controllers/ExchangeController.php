@@ -52,7 +52,7 @@ class ExchangeController extends Controller
         list($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
         if ($error) {
-            return $error;
+            return response($error);
         }
         try {
             $symbols = $exchange->getSymbols();
@@ -69,7 +69,7 @@ class ExchangeController extends Controller
         list($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
         if ($error) {
-            return $error;
+            return response($error);
         }
         try {
             $info = $exchange->getInfo();
@@ -86,10 +86,77 @@ class ExchangeController extends Controller
         list($exchange, $config, $class, $error) =
                 $this->setUpRequest($request);
         if ($error) {
-            return $error;
+            return response($error);
         }
 
         return $exchange->form($config->options);
+    }
+
+
+    public function formSymbols(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return response($error);
+        }
+
+        return view('Exchanges/FormSymbols', [
+            'exchange' => $exchange,
+            'selected' => $config->options['symbols'] ?? [],
+        ]);
+    }
+
+
+    public function addSymbol(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return response($error);
+        }
+
+        if (!isset($request->new_symbol)|| !isset($request->new_res)) {
+            Log::error('missing parameters');
+            return response('Could not add symbol', 400);
+        }
+
+        $exchange->handleAddSymbolRequest(
+            $config,
+            $request->new_symbol,
+            $request->new_res
+        );
+
+        return view('Exchanges/FormSymbols', [
+            'exchange' => $exchange,
+            'selected' => $config->options['symbols'] ?? [],
+        ]);
+    }
+
+
+    public function deleteRes(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return response($error);
+        }
+
+        if (!isset($request->symbol)|| !isset($request->res)) {
+            Log::error('missing parameters');
+            return response('Could not delete resolution', 400);
+        }
+
+        $exchange->handleDeleteResolutionRequest(
+            $config,
+            $request->symbol,
+            $request->res
+        );
+
+        return view('Exchanges/FormSymbols', [
+            'exchange' => $exchange,
+            'selected' => $config->options['symbols'] ?? [],
+        ]);
     }
 
 

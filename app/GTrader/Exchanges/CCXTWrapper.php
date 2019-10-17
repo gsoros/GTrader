@@ -7,12 +7,15 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
+use GTrader\HasPCache;
 use GTrader\Trade;
 use GTrader\Log;
 use ccxt\Exchange as CCXT;
 
 class CCXTWrapper extends Exchange
 {
+    use HasPCache;
+
     protected const CCXT_NAMESPACE      = '\\ccxt\\';
     protected const CHILD_PREFIX        = 'CCXT_';
     protected const LOAD_MARKETS_BEFORE = ['markets', 'symbols'];
@@ -25,6 +28,7 @@ class CCXTWrapper extends Exchange
         if ($ccxt_id = $this->getParam('ccxt_id')) {
             $this->ccxt($ccxt_id);
         }
+        //$this->setParam('pcache.log', 'all');
         //Log::debug($this->getParam('default_child', 'no default_child'));
     }
 
@@ -236,21 +240,31 @@ class CCXTWrapper extends Exchange
 
     public function getCCXTProperty(string $prop, array $options = [])
     {
-        if (!$this->cached($prop)) {
-            if (!is_object($ccxt = $this->ccxt())) {
-                Log::debug('ccxt not obj, wanted ', $prop);
-                return null;
-            }
-            if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
-                //Log::debug('loading markets, because '.$prop, $ccxt->id);
-                $ccxt->loadMarkets();
-            }
-            if (!isset($ccxt->$prop)) {
-                return null;
-            }
-            $this->cache($prop, $ccxt->$prop);
+        if ($val = $this->cached($prop)) {
+            return $val;
         }
-        return $this->cached($prop);
+        if (!is_object($ccxt = $this->ccxt())) {
+            Log::debug('ccxt not obj, wanted ', $prop);
+            return null;
+        }
+        $pcache_key = null;
+        if (in_array($prop, self::LOAD_MARKETS_BEFORE)) {
+            $pcache_key = 'CCXT_'.$this->getParam('ccxt_id').'_'.$prop;
+            if ($val = $this->pCached($pcache_key)) {
+                $this->cache($prop, $val);
+                return $val;
+            }
+            //Log::debug('loading markets, because '.$prop, $ccxt->id);
+            $ccxt->loadMarkets();
+        }
+        if (!isset($ccxt->$prop)) {
+            return null;
+        }
+        $this->cache($prop, $ccxt->$prop);
+        if ($pcache_key) {
+            $this->pCache($pcache_key, $ccxt->$prop);
+        }
+        return $ccxt->$prop;
     }
 
 
@@ -319,9 +333,6 @@ class CCXTWrapper extends Exchange
     }
 
 
-    public function getTicker(string $symbol) {}
-
-
     public function fetchCandles(
         string $symbol,
         int $resolution,
@@ -381,8 +392,15 @@ class CCXTWrapper extends Exchange
         string $signal,
         float $price,
         int $bot_id = null
-    ) {}
+    )
+    {
+
+    }
+
+
     public function cancelUnfilledOrders(string $symbol, int $before_timestamp) {}
     public function saveFilledOrders(string $symbol, int $bot_id = null) {}
+
+    public function getTicker(string $symbol) {}
 
 }

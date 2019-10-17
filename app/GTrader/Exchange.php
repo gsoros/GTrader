@@ -103,6 +103,48 @@ abstract class Exchange extends Base
     }
 
 
+    public function handleAddSymbolRequest(UserExchangeConfig $config, string $symbol, int $res)
+    {
+        $options = $config->options;
+        $options['symbols'] = $options['symbols'] ?? [];
+        if (!isset($options['symbols'][$symbol]) ||
+            !is_array($options['symbols'][$symbol])) {
+            $options['symbols'][$symbol] = ['resolutions' => []];
+        }
+        if (!isset($options['symbols'][$symbol]['resolutions']) ||
+            !is_array($options['symbols'][$symbol]['resolutions'])) {
+            $options['symbols'][$symbol]['resolutions'] = [];
+        }
+        if (false === array_search($res, $options['symbols'][$symbol]['resolutions'])) {
+            $options['symbols'][$symbol]['resolutions'][] = $res;
+            $config->options = $options;
+            $config->save();
+            $this->unCache('user_options');
+        }
+        return $this;
+    }
+
+
+    public function handleDeleteResolutionRequest(UserExchangeConfig $config, string $symbol, int $res)
+    {
+        $options = $config->options;
+        $options['symbols'] = $options['symbols'] ?? [];
+        if (!isset($options['symbols'][$symbol]) ||
+            !is_array($options['symbols'][$symbol]) ||
+            !isset($options['symbols'][$symbol]['resolutions']) ||
+            !is_array($options['symbols'][$symbol]['resolutions'])) {
+            return $this;
+        }
+        if (false !== ($k = array_search($res, $options['symbols'][$symbol]['resolutions']))) {
+            unset($options['symbols'][$symbol]['resolutions'][$k]);
+            $config->options = $options;
+            $config->save();
+            $this->unCache('user_options');
+        }
+        return $this;
+    }
+
+
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
         $this->updateUserOptions($config, $request->options ?? []);
