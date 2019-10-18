@@ -3,11 +3,9 @@
 return [
     'name'          => 'CCXTWrapper',
     'long_name'     => 'CCXT',
-    'user_options'  => [
-        'symbols' => [],
-    ],
+    'user_options'  => [],
     'symbols' => [
-        'BTC/USD' => [                           
+        'BTC/USD' => [
             'name'          => 'BTC/USD',
             'long_name'     => 'BTC/USD',
             'resolutions'   => [

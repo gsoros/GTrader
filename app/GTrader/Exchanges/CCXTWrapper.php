@@ -164,7 +164,7 @@ class CCXTWrapper extends Exchange
             $ids[] = $exchange->getParam('ccxt_id');
         };
 
-        return view('Exchanges/CCXTWrapper_form', [
+        return view('Exchanges/CCXTWrapperForm', [
             'exchange'              => $this,
             'supported_exchanges'   => $exchanges,
             'supported_exchange_ids' => $ids,
@@ -332,17 +332,17 @@ class CCXTWrapper extends Exchange
 
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
+        /*
         $options = $request->options ?? [];
-        if (isset($options['symbols'])) {
-            if (is_array($options['symbols'])) {
-                foreach (array_keys($options['symbols']) as $symbol) {
-                    $symbol_id = self::getOrCreateSymbolId(
-                        $symbol,
-                        $this->getSymbolLongName($symbol)
-                    );
-                }
+        if (isset($options['symbols']) && is_array($options['symbols'])) {
+            foreach (array_keys($options['symbols']) as $symbol) {
+                $symbol_id = self::getOrCreateSymbolId(
+                    $symbol,
+                    $this->getSymbolLongName($symbol)
+                );
             }
         }
+        */
         return parent::handleSaveRequest($request, $config);
     }
 

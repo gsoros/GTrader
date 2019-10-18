@@ -33,7 +33,7 @@
 @endphp
 @foreach (['with', 'without'] as $with_or_without)
     <div class="row">
-        <div class="col-sm-12 card-columns">
+        <div class="col-sm-12">
             Exchanges {{ $with_or_without }} candlestick data support
         </div>
         <div class="col-sm-12 card-columns">

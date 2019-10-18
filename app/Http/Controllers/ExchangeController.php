@@ -225,7 +225,7 @@ class ExchangeController extends Controller
             $config = Auth::user()
                 ->exchangeConfigs()
                 ->firstOrNew(['exchange_id' => $exchange_id]);
-            $options = $config->options;
+            $options = $config->options ?? [];
             foreach ($exchange->getParam('user_options') as $key => $default) {
                 if (!isset($options[$key])) {
                     $options[$key] = $default;
