@@ -10,9 +10,9 @@ use GTrader\Exchange;
 use GTrader\HasPCache;
 use GTrader\Trade;
 use GTrader\Log;
-use ccxt\Exchange as CCXT;
+use ccxt\Exchange as CCXTlib;
 
-class CCXTWrapper extends Exchange
+class CCXT extends Exchange
 {
     use HasPCache;
 
@@ -128,8 +128,8 @@ class CCXTWrapper extends Exchange
         }
 
         if ($all || $configured) {
-            $CCXT = new CCXT;
-            foreach ($CCXT::$exchanges as $ccxt_id) {
+            $CCXTlib = new CCXTlib;
+            foreach ($CCXTlib::$exchanges as $ccxt_id) {
                 $exchange = self::make(get_class($this), ['ccxt_id' => $ccxt_id]);
                 if ($configured) {
                     $config = UserExchangeConfig::select('options');
@@ -164,7 +164,7 @@ class CCXTWrapper extends Exchange
             $ids[] = $exchange->getParam('ccxt_id');
         };
 
-        return view('Exchanges/CCXTWrapperForm', [
+        return view('Exchanges/CCXT/Form', [
             'exchange'              => $this,
             'supported_exchanges'   => $exchanges,
             'supported_exchange_ids' => $ids,
@@ -175,15 +175,15 @@ class CCXTWrapper extends Exchange
     public function getListItem()
     {
         if ($this->getParam('ccxt_id')) {
-            return view('Exchanges/CCXTWrapperChildListItem', ['exchange' => $this]);
+            return view('Exchanges/CCXT/ChildListItem', ['exchange' => $this]);
         }
-        return view('Exchanges/CCXTWrapperListItem', ['exchange' => $this]);
+        return view('Exchanges/CCXT/ListItem', ['exchange' => $this]);
     }
 
 
     public function getInfo()
     {
-        return view('Exchanges/CCXTInfo', ['exchange' => $this]);
+        return view('Exchanges/CCXT/Info', ['exchange' => $this]);
     }
 
 

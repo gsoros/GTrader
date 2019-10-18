@@ -15,7 +15,7 @@ $(function() {
             window.GTrader.setLoading(name, true);
             var container = $('#' + name);
             //var plot = window[name];
-            console.log('requestPlot: ' + name);
+            console.log('requestPlot: ' + name + ' height: ' + container.height());
             var params = {
                 name: name,
                 height: container.height()

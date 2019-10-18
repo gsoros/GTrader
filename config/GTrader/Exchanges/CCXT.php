@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name'          => 'CCXTWrapper',
+    'name'          => 'CCXT',
     'long_name'     => 'CCXT',
     'user_options'  => [],
     'symbols' => [

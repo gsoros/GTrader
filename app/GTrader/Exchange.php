@@ -30,15 +30,14 @@ abstract class Exchange extends Base
 
     public static function make(string $class = null, array $params = [])
     {
-        // hack for CCXTWrapper
-        $ccxtwrapper = 'CCXTWrapper';
+        // hack for CCXT
         $ccxt = 'CCXT';
         if ($ccxt === substr($class, 0, 4)) {
             if ($ccxt_id = strstr($class, '_')) {
                 if (strlen($ccxt_id = substr($ccxt_id, 1))) {
                     $params['ccxt_id'] = $ccxt_id;
-                    //Log::debug('making '.$ccxtwrapper.' with ccxt_id='.$ccxt_id);
-                    return parent::make($ccxtwrapper, $params);
+                    //Log::debug('making '.$ccxt.' with ccxt_id='.$ccxt_id);
+                    return parent::make($ccxt, $params);
                 }
             }
         }

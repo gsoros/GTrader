@@ -80,6 +80,8 @@ class HomeController extends Controller
     {
         $chart = Chart::load(Auth::id(), 'mainchart', null, [
             'autorefresh' => true,
+            'height' => 200,
+            'heightPercentage' => 100,
             //'disabled' => ['map'],
             'indicators_if_new' => [
                 'Ohlc',
