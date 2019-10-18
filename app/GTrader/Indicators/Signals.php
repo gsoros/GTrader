@@ -244,6 +244,7 @@ class Signals extends HasInputs
                 }
             }
 
+            $long_or_short = null;
             foreach (['long', 'short'] as $action) {
                 foreach (['a', 'b', 'source'] as $component) {
                     if (!isset($previous_candle->{$input_keys['input_'.$action.'_'.$component]})) {
@@ -263,27 +264,29 @@ class Signals extends HasInputs
                 //     );
                 // }
                 if (Util::conditionMet(
-                    $previous_candle->{$input_keys['input_'.$action.'_a']},
-                    $conditions[$action],
-                    $previous_candle->{$input_keys['input_'.$action.'_b']}
-                ) && $previous_signal['signal'] !== $action) {
-                    if ($previous_signal['time'] === $candle->time) {
-                        //Log::debug('Multiple conditions met for '.$candle->time);
-                        $previous_candle = $candle;
-                        continue 2;
-                    }
-                    // emit the short or long signal
-                    $candle->{$output_keys['signal']} = $action;
-                    $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
+                        $previous_candle->{$input_keys['input_'.$action.'_a']},
+                        $conditions[$action],
+                        $previous_candle->{$input_keys['input_'.$action.'_b']}
+                    )) {
+                    $long_or_short = true;
+                    if ($previous_signal['signal'] !== $action) {
+                        if ($previous_signal['time'] === $candle->time) {
+                            //Log::debug('Multiple conditions met for '.$candle->time);
+                            $previous_candle = $candle;
+                            continue 2;
+                        }
+                        // emit the short or long signal
+                        $candle->{$output_keys['signal']} = $action;
+                        $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
 
-                    $previous_signal = [
-                        'time' => $candle->time,
-                        'signal' => $action,
-                    ];
+                        $previous_signal = [
+                            'time' => $candle->time,
+                            'signal' => $action,
+                        ];
+                    }
                 }
             }
-            if (!isset($candle->{$output_keys['signal']}) &&
-                $previous_signal['signal'] !== 'neutral') {
+            if (!$long_or_short && $previous_signal['signal'] !== 'neutral') {
                 // emit the neutral signal
                 $candle->{$output_keys['signal']} = 'neutral';
                 $candle->{$output_keys['price']} = $candle->{$input_keys['input_'.$action.'_source']};
