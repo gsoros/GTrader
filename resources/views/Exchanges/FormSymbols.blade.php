@@ -32,7 +32,28 @@
     <div class="row">
         @foreach ($symbols_configured as $symbol_id => $symbol)
             <div class="col col-sm2 editable">
-                <label>{{ $symbol['name'] }}</label>
+                <label class="editable">
+                    <a href="#" onClick="
+                        $('#new_symbol').val('{{ $symbol_id }}').trigger('change');
+                        ">
+                        {{ $symbol['name'] }}
+                    </a>
+                    <button onClick="window.GTrader.request(
+                                'exchange',
+                                'deleteSymbol',
+                                {
+                                    id: {{ $exchange_id}},
+                                    symbol: '{{ $symbol['name'] }}',
+                                },
+                                'GET',
+                                'exchange_{{ $exchange_id }}_symbols'
+                            )"
+                            type="button"
+                            class="btn btn-primary btn-mini editbutton trans"
+                            title="Delete resolution">
+                        <span class="fas fa-trash"></span>
+                    </button>
+                </label>
                 @foreach ($symbol['resolutions'] as $res_time => $res_name)
                     <span class="editable">
                         {{ $res_name }}

@@ -154,6 +154,22 @@ abstract class Exchange extends Base
     }
 
 
+    public function handleDeleteSymbolRequest(UserExchangeConfig $config, string $symbol)
+    {
+        $options = $config->options;
+        $options['symbols'] = $options['symbols'] ?? [];
+        if (!isset($options['symbols'][$symbol]) ||
+            !is_array($options['symbols'][$symbol])) {
+            return $this;
+        }
+        unset($options['symbols'][$symbol]);
+        $config->options = $options;
+        $config->save();
+        $this->unCache('user_options');
+        return $this;
+    }
+
+
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
         $this->updateUserOptions($config, $request->options ?? []);

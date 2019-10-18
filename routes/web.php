@@ -74,6 +74,7 @@ Route::get('/exchange.form',            'ExchangeController@form');
 Route::get('/exchange.formSymbols',     'ExchangeController@formSymbols');
 Route::get('/exchange.addSymbol',       'ExchangeController@addSymbol');
 Route::get('/exchange.deleteRes',       'ExchangeController@deleteRes');
+Route::get('/exchange.deleteSymbol',    'ExchangeController@deleteSymbol');
 Route::get('/exchange.ESR',             'ExchangeController@ESR');
 Route::get('/exchange.symbols',         'ExchangeController@symbols');
 Route::get('/exchange.info',            'ExchangeController@info');

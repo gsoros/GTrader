@@ -143,7 +143,7 @@ class ExchangeController extends Controller
             return response($error);
         }
 
-        if (!isset($request->symbol)|| !isset($request->res)) {
+        if (!isset($request->symbol) || !isset($request->res)) {
             Log::error('missing parameters');
             return response('Could not delete resolution', 400);
         }
@@ -152,6 +152,32 @@ class ExchangeController extends Controller
             $config,
             $request->symbol,
             $request->res
+        );
+
+        return view('Exchanges/FormSymbols', [
+            'exchange' => $exchange,
+            'selected' => $config->options['symbols'] ?? [],
+            'reload' => ['ESR'],
+        ]);
+    }
+
+
+    public function deleteSymbol(Request $request)
+    {
+        list($exchange, $config, $class, $error) =
+                $this->setUpRequest($request);
+        if ($error) {
+            return response($error);
+        }
+
+        if (!isset($request->symbol)) {
+            Log::error('missing parameter');
+            return response('Could not delete symbol', 400);
+        }
+
+        $exchange->handleDeleteSymbolRequest(
+            $config,
+            $request->symbol
         );
 
         return view('Exchanges/FormSymbols', [
