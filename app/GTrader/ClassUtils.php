@@ -10,7 +10,7 @@ trait ClassUtils
         if (!is_null($key)) {
             $key = '.'.$key;
         }
-        $conf = config(str_replace('\\', '.', $class).$key);
+        $conf = config(str_replace('\\', '.', $class).$key); 
         return $conf;
     }
 

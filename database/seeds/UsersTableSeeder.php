@@ -29,7 +29,7 @@ class UsersTableSeeder extends Seeder
 
         $user = User::where(['id' => $user_id])->first();
 
-        $exchange = Exchange::make('CCXT_bitfinex2');
+        $exchange = Exchange::make('CCXT\\bitfinex2');
 
         $config = $user->exchangeConfigs()->firstOrNew([
             'exchange_id' => $exchange->getId(),
@@ -38,7 +38,7 @@ class UsersTableSeeder extends Seeder
         $config->options = [
             'symbols' => [
                 'BTC/USD' => [
-                    'resolutions' => ['86400'],
+                    'resolutions' => [3600],
                 ],
             ],
         ];

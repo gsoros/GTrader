@@ -40,7 +40,7 @@
                     <button onClick="window.GTrader.request(
                                 'exchange',
                                 'form',
-                                {class: 'CCXT_{{ $exchange->getCCXTProperty('id') }}'},
+                                {id: {{ $exchange->getId() }}},
                                 'GET',
                                 'settingsTab'
                             )"

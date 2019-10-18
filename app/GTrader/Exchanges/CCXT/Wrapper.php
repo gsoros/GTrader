@@ -1,10 +1,10 @@
 <?php
 
-namespace GTrader\Exchanges;
+namespace GTrader\Exchanges\CCXT;
 
 use Illuminate\Support\Arr;
-
 use Illuminate\Http\Request;
+
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
 use GTrader\HasPCache;
@@ -12,12 +12,12 @@ use GTrader\Trade;
 use GTrader\Log;
 use ccxt\Exchange as CCXTlib;
 
-class CCXT extends Exchange
+class Wrapper extends Exchange
 {
     use HasPCache;
 
     protected const CCXT_NAMESPACE      = '\\ccxt\\';
-    protected const CHILD_PREFIX        = 'CCXT_';
+    protected const CHILD_PREFIX        = 'CCXT\\';
     protected const LOAD_MARKETS_BEFORE = ['markets', 'symbols'];
     protected $ccxt;
 
@@ -95,7 +95,7 @@ class CCXT extends Exchange
         if (strlen($this->getParam('ccxt_id'))) {
             return self::CHILD_PREFIX.$this->getParam('ccxt_id');
         }
-        return $this->getShortClass();
+        return self::CHILD_PREFIX.$this->getShortClass();
     }
 
 

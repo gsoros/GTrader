@@ -47,7 +47,6 @@ trait Skeleton
                 .self::getClassConf($called, 'children_ns').'\\'.$class;
         }
         if (!class_exists($class)) {
-            Log::error($called.'::make() Class '.$class.' does not exist');
             return null;
         }
         return new $class($params);
