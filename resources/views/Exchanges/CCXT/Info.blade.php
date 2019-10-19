@@ -1,5 +1,5 @@
 <div class="container">
-    @if ($version = $exchange->getCCXTProperty('version'))
+    @if (is_string($version = $exchange->getCCXTProperty('version')))
         <div class="row">
             <div class="col-sm-12 editable">
                 <p class="col-sm-12">
@@ -46,7 +46,7 @@
                             )"
                             type="button"
                             class="btn btn-primary btn-mini trans"
-                            title="Set up {{ $exchange->getCCXTProperty('name') }}">
+                            title="Set up {{ $exchange->getName() }}">
                         <span class="fas fa-wrench"></span> Set up
                     </button>
                 @else

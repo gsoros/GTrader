@@ -35,6 +35,7 @@ trait Skeleton
 
     public static function make(string $class = null, array $params = [])
     {
+        $orig_class = $class;
         $called = get_called_class();
         if (is_null($class)) {
             $class = self::getClassConf($called, 'default_child');
@@ -47,6 +48,14 @@ trait Skeleton
                 .self::getClassConf($called, 'children_ns').'\\'.$class;
         }
         if (!class_exists($class)) {
+            Log::critical(
+                'Class '.$class.' does not exist.',
+                __NAMESPACE__,
+                self::getClassConf($called, 'children_ns'),
+                $orig_class,
+                $called
+            );
+            throw new \Exception('Class '.$class.' does not exist.');
             return null;
         }
         return new $class($params);

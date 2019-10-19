@@ -103,7 +103,11 @@ g.ccxtToggleInfo = function(ccxt_id) {
 g.ccxtGetInfo = function (ccxt_id) {
     g.setLoading('ccxt_card_' + ccxt_id, true);
     $.ajax({
-        url: '/exchange.info?id={{ $exchange->getId() }}&' + $.param({options: {ccxt_id: ccxt_id}}, false),
+        url: '/exchange.info?' +
+            $.param({
+                class: '{{ addslashes($exchange->getClassPrefix()) }}' + ccxt_id,
+                options: {ccxt_id: ccxt_id}
+            }, false),
         type: 'GET',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

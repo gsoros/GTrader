@@ -32,21 +32,27 @@ abstract class Exchange extends Base
     {
         $ccxt = 'CCXT';
         if ($ccxt === substr($class, 0, 4)) {
+            $wrapper = 'Wrapper';
+            $supported = 'CCXT\\Supported';
+            $ns = static::getClassConf(__CLASS__, 'children_ns').'\\';
             if ($ccxt_id = strstr($class, '\\')) {
                 if (strlen($ccxt_id = substr($ccxt_id, 1))) {
-                    $wrapper = 'Wrapper';
                     if ($wrapper === $ccxt_id) {
                         return parent::make($ccxt.'\\'.$wrapper, $params);
                     }
                     $params['ccxt_id'] = $ccxt_id;
-                    $ns = __NAMESPACE__.'\\Exchanges\\';
                     $class = $ccxt.'\\'.$ccxt_id;
-                    if (class_exists($ns.$class)) {
+                    //Log::debug('exists? '.__NAMESPACE__.'\\'.$ns.$class);
+                    if (class_exists(__NAMESPACE__.'\\'.$ns.$class)) {
+                        //Log::debug('exists '.__NAMESPACE__.'\\'.$ns.$class);
                         return parent::make($class, $params);
                     }
-                    return parent::make($ccxt.'\\'.$wrapper, $params);
+                    //Log::debug('no, making '.$supported, $params);
+                    return parent::make($supported, $params);
+
                 }
             }
+            return parent::make($ccxt.'\\'.$wrapper, $params);
         }
         return parent::make($class, $params);
     }
