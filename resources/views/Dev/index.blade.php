@@ -13,6 +13,12 @@
     </li>
     <li class="nav-item" role="presentation">
         <a class="nav-link" data-toggle="tab" role="tab" href="#"
+            onClick="window.GTrader.request('dev', 'pcache', [], 'GET', 'devArea');">
+            PCache
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" data-toggle="tab" role="tab" href="#"
             onClick="window.GTrader.request('dev', 'dump', [], 'GET', 'devArea');">
             Dump Variables
         </a>

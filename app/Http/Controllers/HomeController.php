@@ -108,7 +108,8 @@ class HomeController extends Controller
                 'user_id' => Auth::id(),
             ]),
             'bots'              => Bot::getListOfUser(Auth::id()),
-            'dev'               => view('devIndex'),
+            'dev'               =>
+                app()->environment('local') ? view('Dev/index') : '',
             'stylesheets'       => Page::get('stylesheets'),
             'scripts_top'       => Page::get('scripts_top'),
             'scripts_bottom'    => Page::get('scripts_bottom'),

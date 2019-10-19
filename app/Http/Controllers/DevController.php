@@ -38,13 +38,31 @@ class DevController extends Controller
 
     public function dev(Request $request)
     {
-        return view('devIndex');
+        return view('Dev/index');
     }
 
 
     public function vis(Request $request)
     {
-        return view('vis');
+        return view('Dev/vis');
+    }
+
+
+    public function pcache(Request $request)
+    {
+        if (isset($request->key)) {
+            try {
+                $val = unserialize(DB::table('pcache')->where('cache_key', $request->key)->value('cache_value'));
+            } catch (\Exception $e) {
+                $val = $e->getMessage();
+            }
+            return view('Dev/pcacheValue', [
+                'value' => $val,
+            ]);
+        }
+        return view('Dev/pcache', [
+            'keys' => DB::table('pcache')->select('cache_key')->orderBy('cache_key')->get(),
+        ]);
     }
 
 

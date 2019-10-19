@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "ccxt/ccxt",
-            "version": "1.18.1270",
+            "version": "1.18.1299",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ccxt/ccxt.git",
-                "reference": "05342b02972d8fa4660362bcb00152c69b9d3c53"
+                "reference": "9c139c1ce6ddb920afb7ed79a5b09cedb7310ab9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/05342b02972d8fa4660362bcb00152c69b9d3c53",
-                "reference": "05342b02972d8fa4660362bcb00152c69b9d3c53",
+                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/9c139c1ce6ddb920afb7ed79a5b09cedb7310ab9",
+                "reference": "9c139c1ce6ddb920afb7ed79a5b09cedb7310ab9",
                 "shasum": ""
             },
             "require": {
@@ -40,7 +40,7 @@
                     "ccxt\\": "php/"
                 },
                 "files": [
-                    "php/errors.php"
+                    "ccxt.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -272,7 +272,7 @@
                 "zec",
                 "zerocoin"
             ],
-            "time": "2019-10-15T13:04:50+00:00"
+            "time": "2019-10-18T17:51:55+00:00"
         },
         {
             "name": "codedruids/simple-diff",
@@ -1366,16 +1366,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "1.0.56",
+            "version": "1.0.57",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "90e3f83cb10ef6b058d70f95267030e7a6236518"
+                "reference": "0e9db7f0b96b9f12dcf6f65bc34b72b1a30ea55a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/90e3f83cb10ef6b058d70f95267030e7a6236518",
-                "reference": "90e3f83cb10ef6b058d70f95267030e7a6236518",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/0e9db7f0b96b9f12dcf6f65bc34b72b1a30ea55a",
+                "reference": "0e9db7f0b96b9f12dcf6f65bc34b72b1a30ea55a",
                 "shasum": ""
             },
             "require": {
@@ -1446,7 +1446,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2019-10-12T13:05:59+00:00"
+            "time": "2019-10-16T21:01:05+00:00"
         },
         {
             "name": "monolog/monolog",

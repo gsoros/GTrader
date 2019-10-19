@@ -21,6 +21,7 @@ if (\Config::get('app.env') === 'local') {
     Route::get('/dev',          'DevController@dev');
     Route::get('/dev.dev',      'DevController@dev');
     Route::get('/dev.vis',      'DevController@vis');
+    Route::get('/dev.pcache',   'DevController@pcache');
     Route::get('/dev.json',     'DevController@json');
     Route::get('/dev.dumps',    'DevController@dumps');
     Route::get('/dev.dist',     'DevController@dist');
