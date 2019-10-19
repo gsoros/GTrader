@@ -91,11 +91,10 @@ class Wrapper extends Exchange
         ]);
         $ids = [];
         foreach ($exchanges as $exchange) {
-            Log::debug(gettype($exchange));
             $ids[] = $exchange->getParam('ccxt_id');
         };
 
-        return view('Exchanges/CCXT/Form', [
+        return view('Exchanges/CCXT/WrapperForm', [
             'exchange'              => $this,
             'supported_exchanges'   => $exchanges,
             'supported_exchange_ids' => $ids,
@@ -105,7 +104,7 @@ class Wrapper extends Exchange
 
     public function getListItem()
     {
-        return view('Exchanges/CCXT/ListItem', ['exchange' => $this]);
+        return view('Exchanges/CCXT/WrapperListItem', ['exchange' => $this]);
     }
 
 

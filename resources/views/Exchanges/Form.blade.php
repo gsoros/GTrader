@@ -7,40 +7,34 @@
             </div>
 
             <div class="col-sm-4 text-right">
-                <button onClick="window.GTrader.request('exchange', 'list', null, 'GET', 'settingsTab')"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Discard Changes">
-                    <span class="fas fa-ban"></span> Discard Changes
-                </button>
-                <button onClick="window.GTrader.request('exchange', 'save', $('#exchangeForm').serialize(), 'POST', 'settingsTab')"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Save Settings">
-                    <span class="fas fa-check"></span> Save Settings
-                </button>
+                @section('buttons')
+                    <button onClick="window.GTrader.request('exchange', 'list', null, 'GET', 'settingsTab')"
+                            type="button"
+                            class="btn btn-primary btn-mini trans"
+                            title="Discard Changes">
+                        <span class="fas fa-ban"></span> Discard Changes
+                    </button>
+                    <button onClick="window.GTrader.request('exchange', 'save', $('#exchangeForm').serialize(), 'POST', 'settingsTab')"
+                            type="button"
+                            class="btn btn-primary btn-mini trans"
+                            title="Save Settings">
+                        <span class="fas fa-check"></span> Save Settings
+                    </button>
+                @show
             </div>
 
         </div>
-        <label>Symbols / Resolutions to Track</label>
-        <div id="exchange_{{ $exchange->getId() }}_symbols" class="row bdr-rad"></div>
+        <div class="row bdr-rad">
+            <label class="col-sm-12">Symbols / Resolutions to Track</label>
+            <div id="exchange_{{ $exchange->getId() }}_symbols" class="col-sm-12"></div>
+        </div>
+        @yield('child_rows', '')
     </div>
 
     <div class="row bdr-rad">
         <div class="col-sm-12">
             <div class="float-right">
-                <button onClick="window.GTrader.request('exchange', 'list', null, 'GET', 'settingsTab')"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Discard Changes">
-                    <span class="fas fa-ban"></span> Discard Changes
-                </button>
-                <button onClick="window.GTrader.request('exchange', 'save', $('#exchangeForm').serialize(), 'POST', 'settingsTab')"
-                        type="button"
-                        class="btn btn-primary btn-mini trans"
-                        title="Save Settings">
-                    <span class="fas fa-check"></span> Save Settings
-                </button>
+                @yield('buttons')
             </div>
         </div>
     </div>

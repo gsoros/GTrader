@@ -208,6 +208,21 @@ input.form-control {
 .btn-primary:disabled, .btn-group > .btn-secondary:disabled {
     background-color: #131313;
     color: #444444;
+    border-color: #202020;
+}
+
+.btn-primary:not(:disabled):not(.disabled):focus,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled):focus:active  {
+    color: #fff;
+    background-color: #4b1414;
+    border-color: #280000;
+    box-shadow: 0 0 0 0.5rem rgba(#282828, 0.5);
+}
+
+.btn-primary:not(:disabled):not(.disabled):hover,
+.btn-primary:not(:disabled):not(.disabled):active:hover {
+    border-color: #836200 !important;
 }
 
 .btn-sm {

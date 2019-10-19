@@ -3,6 +3,7 @@
 namespace GTrader\Exchanges\CCXT;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
@@ -40,7 +41,7 @@ class Supported extends Exchange
 
     public function getListItem()
     {
-        return view('Exchanges/CCXT/ChildListItem', ['exchange' => $this]);
+        return view('Exchanges/CCXT/ListItem', ['exchange' => $this]);
     }
 
 
@@ -148,18 +149,29 @@ class Supported extends Exchange
 
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
-        /*
-        $options = $request->options ?? [];
-        if (isset($options['symbols']) && is_array($options['symbols'])) {
-            foreach (array_keys($options['symbols']) as $symbol) {
-                $symbol_id = self::getOrCreateSymbolId(
-                    $symbol,
-                    $this->getSymbolLongName($symbol)
-                );
+
+        $r_options = $request->options ?? [];
+        $c_options = $config->options ?? [];
+        if ($this->has('privateAPI')) {
+            foreach (['apiKey', 'secret'] as $param) {
+                if (isset($r_options[$param])) {
+                    $c_options[$param] = $r_options[$param];
+                }
             }
         }
-        */
+        $config->options = $c_options;
         return parent::handleSaveRequest($request, $config);
+    }
+
+
+    public function form(array $options = [])
+    {
+        Log::debug($options);
+        $this->setParam('user_id', Auth::id());
+        return view('Exchanges/CCXT/Form', [
+            'exchange' => $this,
+            'options' => $options,
+        ]);
     }
 
 
