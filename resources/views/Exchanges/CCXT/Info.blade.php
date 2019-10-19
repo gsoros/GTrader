@@ -1,10 +1,29 @@
+@php
+    $version = $exchange->getCCXTProperty('version');
+    $symbol_ids = array_keys($exchange->getSymbols());
+    $symbol_names = [];
+    foreach ($symbol_ids as $symbol_id) {
+        $symbol_names[] = $exchange->getSymbolName($symbol_id);
+    }
+    $timeframes = $exchange->getTimeframes();
+@endphp
 <div class="container">
-    @if (is_string($version = $exchange->getCCXTProperty('version')))
+    @if (is_string($version))
         <div class="row">
             <div class="col-sm-12 editable">
-                <p class="col-sm-12">
+                <p>
                     Version: {{ $version }}
                 </p>
+            </div>
+        </div>
+    @endif
+    @if ($error = $exchange->lastError())
+        <div class="row">
+            <div class="col-sm-12 alert alert-warning alert-dismissible fade show" role="alert">
+                {!! $error !!}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
         </div>
     @endif
@@ -12,18 +31,11 @@
         <div class="col-sm-12 editable">
             <label>Symbols</label>
             <p style="max-height: 100px" class="col-sm-12 overflow-auto">
-                @php
-                    $symbol_ids = array_keys($exchange->getSymbols());
-                    $symbol_names = [];
-                    foreach ($symbol_ids as $symbol_id) {
-                        $symbol_names[] = $exchange->getSymbolName($symbol_id);
-                    }
-                @endphp
                 {{ join(', ', $symbol_names) }}
             </p>
         </div>
     </div>
-    @if (count($timeframes = $exchange->getTimeframes()))
+    @if (count($timeframes))
         <div class="row">
             <div class="col-sm-12 editable">
                 <label>Timeframes</label>

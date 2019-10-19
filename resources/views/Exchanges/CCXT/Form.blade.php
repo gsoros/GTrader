@@ -105,8 +105,7 @@ g.ccxtGetInfo = function (ccxt_id) {
     $.ajax({
         url: '/exchange.info?' +
             $.param({
-                class: '{{ addslashes($exchange->getClassPrefix()) }}' + ccxt_id,
-                options: {ccxt_id: ccxt_id}
+                class: '{{ addslashes($exchange->getClassPrefix()) }}' + ccxt_id
             }, false),
         type: 'GET',
         headers: {

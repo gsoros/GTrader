@@ -6,6 +6,7 @@ return [
     'children_ns'   => 'Exchanges',
     'default_child' => 'CCXT\\Supported',
     'user_options'  => [],
+    /*
     'symbols' => [
         'BTC/USD' => [
             'name'          => 'BTC/USD',
@@ -15,4 +16,5 @@ return [
             ],
         ],
     ],
+    */
 ];

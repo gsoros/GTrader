@@ -11,6 +11,8 @@ abstract class Exchange extends Base
 {
     use HasCache, HasStatCache;
 
+    protected $last_error;
+
     abstract public function getTicker(string $symbol);
     abstract public function fetchCandles(
         string $symbol,
@@ -619,5 +621,15 @@ abstract class Exchange extends Base
             ]);
         }
         return $symbol_id;
+    }
+
+
+    public function lastError(string $set = null)
+    {
+        if ($set) {
+            $this->last_error = $set;
+            return $this;
+        }
+        return $this->last_error;
     }
 }

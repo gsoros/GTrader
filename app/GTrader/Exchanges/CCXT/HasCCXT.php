@@ -96,6 +96,7 @@ trait HasCCXT
                 $ccxt->loadMarkets();
             } catch (\Exception $e) {
                 Log::debug('loadMarkets() failed for '.$this->getParam('ccxt_id'), $e->getMessage());
+                $this->lastError($e->getMessage());
                 Log::debug('checking pcache without age');
                 if ($val = $this->pCached($pcache_key, null, -1)) {
                     Log::debug('pcache had an older entry');

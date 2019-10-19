@@ -395,6 +395,15 @@ pre.debug {
     transition: opacity 0.5s;
 }
 
+.alert {
+    background-color: #ff4;
+    color: #000;
+}
+
+.alert-warning {
+    border: 1px solid red;
+}
+
 .trans {
     -webkit-transition: all 0.5s ease-in-out;
     -moz-transition: all 0.5s ease-in-out;
