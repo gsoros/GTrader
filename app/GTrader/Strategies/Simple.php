@@ -187,27 +187,37 @@ class Simple extends Strategy
         $ohlc_open  = $ohlc->getSignature('open');
         $ohlc_close = $ohlc->getSignature('close');
 
-        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 9]);
-        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 49]);
+        $ema9  = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 9]);
+        $ema29 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 29]);
+        $ema49 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 49]);
         $mid  = $this->getOrAddIndicator('Mid');
 
-        $ema1_sig = $ema1->getSignature();
-        $ema2_sig = $ema2->getSignature();
-        $mid_sig  = $mid->getSignature();
+        $ema9_sig  = $ema9->getSignature();
+        $ema29_sig = $ema29->getSignature();
+        $ema49_sig = $ema49->getSignature();
+        $mid_sig   = $mid->getSignature();
 
         $signals = Indicator::make(
             'Signals',
             [
                 'indicator' => [
                     'strategy_id'               => 0,           // Custom Settings
-                    'input_open_long_a'         => $ema1_sig,
-                    'open_long_cond'            => '>=',
-                    'input_open_long_b'         => $ema2_sig,
+                    'input_open_long_a'         => $ema9_sig,
+                    'open_long_cond'            => '>',
+                    'input_open_long_b'         => $ema49_sig,
                     'input_open_long_source'    => $mid_sig,
-                    'input_open_short_a'        => $ema1_sig,
+                    'input_close_long_a'        => $ema9_sig,
+                    'close_long_cond'           => '<',
+                    'input_close_long_b'        => $ema29_sig,
+                    'input_close_long_source'   => $mid_sig,
+                    'input_open_short_a'        => $ema9_sig,
                     'open_short_cond'           => '<',
-                    'input_open_short_b'        => $ema2_sig,
+                    'input_open_short_b'        => $ema49_sig,
                     'input_open_short_source'   => $mid_sig,
+                    'input_close_short_a'       => $ema9_sig,
+                    'close_short_cond'          => '>',
+                    'input_close_short_b'       => $ema29_sig,
+                    'input_close_short_source'  => $mid_sig,
                 ],
             ]
         );
@@ -216,8 +226,9 @@ class Simple extends Strategy
         $signals->addRef('root');
 
         $ohlc->visible(true);
-        $ema1->visible(true);
-        $ema2->visible(true);
+        $ema9->visible(true);
+        $ema29->visible(true);
+        $ema49->visible(true);
         $mid->visible(true);
         $signals->visible(true);
 
