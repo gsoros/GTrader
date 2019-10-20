@@ -194,13 +194,14 @@ class Signals extends HasInputs
 
         $input_keys = $input_sigs = [];
         foreach ($this->getInputs() as $input => $sig) {
+            //Log::debug($input);
             $input_keys[$input] = $candles->key($sig);
             $input_sigs[$input] = $sig;
         }
 
         $conditions = [
-            'long' => $this->getParam('indicator.long_cond'),
-            'short' => $this->getParam('indicator.short_cond'),
+            'open_long' => $this->getParam('indicator.open_long_cond'),
+            'open_short' => $this->getParam('indicator.open_short_cond'),
         ];
 
         $previous_signal = [
@@ -245,15 +246,24 @@ class Signals extends HasInputs
             }
 
             $long_or_short = null;
-            foreach (['long', 'short'] as $action) {
+            foreach (['open_long', 'open_short'] as $action) {
                 foreach (['a', 'b', 'source'] as $component) {
                     if (!isset($previous_candle->{$input_keys['input_'.$action.'_'.$component]})) {
-                        Log::error('Missing input', $action, $component, $input_sigs['input_'.$action.'_'.$component]);
+                        Log::error(
+                            'Missing input',
+                            $action,
+                            $component,
+                            $input_sigs['input_'.$action.'_'.$component]
+                        );
                         return $this;
                     }
                 }
                 if (!isset($candle->{$input_keys['input_'.$action.'_source']})) {
-                    Log::error('Missing input source', $action, $input_sigs['input_'.$action.'_source']);
+                    Log::error(
+                        'Missing input source',
+                        $action,
+                        $input_sigs['input_'.$action.'_source']
+                    );
                     return $this;
                 }
                 // if ($dumptime == $candle->time) {

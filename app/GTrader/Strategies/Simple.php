@@ -199,15 +199,15 @@ class Simple extends Strategy
             'Signals',
             [
                 'indicator' => [
-                    'strategy_id'        => 0,                 // Custom Settings
-                    'input_long_a'       => $ema1_sig,
-                    'long_cond'          => '>=',
-                    'input_long_b'       => $ema2_sig,
-                    'input_long_source'  => $mid_sig,
-                    'input_short_a'      => $ema1_sig,
-                    'short_cond'         => '<',
-                    'input_short_b'      => $ema2_sig,
-                    'input_short_source' => $mid_sig,
+                    'strategy_id'               => 0,           // Custom Settings
+                    'input_open_long_a'         => $ema1_sig,
+                    'open_long_cond'            => '>=',
+                    'input_open_long_b'         => $ema2_sig,
+                    'input_open_long_source'    => $mid_sig,
+                    'input_open_short_a'        => $ema1_sig,
+                    'open_short_cond'           => '<',
+                    'input_open_short_b'        => $ema2_sig,
+                    'input_open_short_source'   => $mid_sig,
                 ],
             ]
         );

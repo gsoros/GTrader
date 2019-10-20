@@ -3,14 +3,14 @@
 return [
     'indicator' => [
         'strategy_id' => -1,
-        'input_long_a' => 'open',
-        'long_cond' => '>',
-        'input_long_b' => 'open',
-        'input_long_source' => 'open',
-        'input_short_a' => 'open',
-        'short_cond' => '<',
-        'input_short_b' => 'open',
-        'input_short_source' => 'open',
+        'input_open_long_a' => 'open',
+        'open_long_cond' => '>',
+        'input_open_long_b' => 'open',
+        'input_open_long_source' => 'open',
+        'input_open_short_a' => 'open',
+        'open_short_cond' => '<',
+        'input_open_short_b' => 'open',
+        'input_open_short_source' => 'open',
         'min_trade_distance' => 1,
     ],
     'adjustable' => [
@@ -23,7 +23,7 @@ return [
             ],
             'immutable' => true,                // do not mutate this setting
         ],
-        'input_long_a' => [
+        'input_open_long_a' => [
             'name' => 'Open Long A',
             'type' => 'source',
             'display' => [
@@ -35,7 +35,7 @@ return [
                 ],
             ],
         ],
-        'long_cond' => [
+        'open_long_cond' => [
             'name' => 'Open Long Condition',
             'type' => 'select',
             'options' => [
@@ -52,7 +52,7 @@ return [
                 ],
             ],
         ],
-        'input_long_b' => [
+        'input_open_long_b' => [
             'name' => 'Open Long B',
             'type' => 'source',
             'display' => [
@@ -63,13 +63,13 @@ return [
                 ],
             ],
         ],
-        'input_long_source' => [
-            'name' => 'Long Source',
+        'input_open_long_source' => [
+            'name' => 'Open Long Source',
             'type' => 'source',
             'immutable' => true,                // do not mutate this setting
-            'description' => 'Source for the long signal price. Used in back-testing and if the exchange is configured to use limit orders.',
+            'description' => 'Source for the \'Open Long\' signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
-        'input_short_a' => [
+        'input_open_short_a' => [
             'name' => 'Open Short A',
             'type' => 'source',
             'display' => [
@@ -81,7 +81,7 @@ return [
                 ],
             ],
         ],
-        'short_cond' => [
+        'open_short_cond' => [
             'name' => 'Open Short Condition',
             'type' => 'select',
             'options' => [
@@ -98,7 +98,7 @@ return [
                 ],
             ],
         ],
-        'input_short_b' => [
+        'input_open_short_b' => [
             'name' => 'Open Short B',
             'type' => 'source',
             'display' => [
@@ -109,11 +109,11 @@ return [
                 ],
             ],
         ],
-        'input_short_source' => [
-            'name' => 'Short Source',
+        'input_open_short_source' => [
+            'name' => 'Open Short Source',
             'type' => 'source',
             'immutable' => true,                // do not mutate this setting
-            'description' => 'Source for the short signal price. Used in back-testing and if the exchange is configured to use limit orders.',
+            'description' => 'Source for the \'Open Short\' signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
         'min_trade_distance' => [
             'name' => 'Minimum Trade Distance',

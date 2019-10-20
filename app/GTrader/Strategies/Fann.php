@@ -1260,30 +1260,30 @@ class Fann extends Strategy
         $long_thresh = $candles->getOrAddIndicator('Constant', [
             'value' => 100 + $this->getParam('long_threshold', 0.5)]);
         $long_ind = $candles->getOrAddIndicator('Operator', [
-            'input_a' => 'open',
+            'input_a'   => 'open',
             'operation' => 'perc',
-            'input_b' => $long_thresh->getSignature(),
+            'input_b'   => $long_thresh->getSignature(),
         ]);
 
         $short_thresh = $candles->getOrAddIndicator('Constant', [
             'value' => 100 - $this->getParam('short_threshold', 0.5)]);
         $short_ind = $candles->getOrAddIndicator('Operator', [
-            'input_a' => 'open',
+            'input_a'   => 'open',
             'operation' => 'perc',
-            'input_b' => $short_thresh->getSignature(),
+            'input_b'   => $short_thresh->getSignature(),
         ]);
 
         if (!$signals = $candles->getOrAddIndicator('Signals', [
-                'strategy_id' => 0, // Custom Settings
-                'input_long_a' => $long_ind->getSignature(),
-                'long_cond' => '<',
-                'input_long_b' => $pred_sig,
-                'input_long_source' => $this->getParam('long_source', 'open'),
-                'input_short_a' => $short_ind->getSignature(),
-                'short_cond' => '>',
-                'input_short_b' => $pred_sig,
-                'input_short_source' =>  $this->getParam('short_source', 'open'),
-                'min_trade_distance' =>  $this->getParam('min_trade_distance', 1),
+                'strategy_id'               => 0, // Custom Settings
+                'input_open_long_a'         => $long_ind->getSignature(),
+                'open_long_cond'            => '<',
+                'input_open_long_b'         => $pred_sig,
+                'input_open_long_source'    => $this->getParam('long_source', 'open'),
+                'input_open_short_a'        => $short_ind->getSignature(),
+                'open_short_cond'           => '>',
+                'input_open_short_b'        => $pred_sig,
+                'input_open_short_source'   =>  $this->getParam('short_source', 'open'),
+                'min_trade_distance'        =>  $this->getParam('min_trade_distance', 1),
             ])) {
             Log::error('Could not add Signals');
             return null;
