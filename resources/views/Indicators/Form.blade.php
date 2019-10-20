@@ -14,6 +14,7 @@
     ] as $varname => $default) {
         $$varname = isset($$varname) ? $$varname : $default;
     };
+    $first = true;
 @endphp
 
 @if (!in_array('title', $disabled))
@@ -27,19 +28,44 @@
     @foreach ($indicator->getParam('adjustable', []) as $key => $param)
         @php
             $desc = $param['description'] ?? '';
+            $display = $param['display'] ?? [];
+            $hide = $display['hide'] ?? [];
+            $prev_group = $group ?? null;
+            $group = isset($display['group']) ? $display['group']['label'] ?? null : null;
+            $cols = isset($display['group']) ? $display['group']['cols'] ?? 3 : 9;
+            $group_desc = isset($display['group']) ? $display['group']['description'] ?? $param['name'] : $param['name'];
+            //GTrader\Log::debug($param['name'], $prev_group, $group, $cols, $group_desc);
         @endphp
-        <div class="form-group row"
-            id="form_group_{{ $uid }}_{{ $key }}"
-            @if ($desc)
-                title="{{ $desc }}"
+        @if (!$group || ($group && ($prev_group !== $group)))
+            @if ($prev_group || (!$prev_group && !$first))
+                </div>
             @endif
-        >
-            <label class="col-sm-3 control-label npl" for="{{ $key }}_{{ $uid }}">
-                @if ('bool' !== $param['type'])
-                    {{ $param['name'] }}
+            <div class="form-group row"
+                id="form_group_{{ $uid }}_{{ $key }}"
+                @if ($desc)
+                    title="{{ $desc }}"
                 @endif
-            </label>
-            <div class="col-sm-9 np">
+            >
+        @endif
+            @if (!in_array('label', $hide))
+                <label class="col-sm-3 control-label npl" for="{{ $key }}_{{ $uid }}">
+                    @if ('bool' !== $param['type'])
+                        {{ $param['name'] }}
+                    @endif
+                </label>
+            @else
+                @php
+                    $desc = $desc ?? $param['name'];
+                @endphp
+                @if ($group && ($prev_group !== $group))
+                    <label class="col-sm-3 control-label npl"
+                        for="{{ $key }}_{{ $uid }}"
+                        title="{{ $group_desc }}">
+                        {{ $group }}
+                    </label>
+                @endif
+            @endif
+            <div class="col-sm-{{ $cols }} np">
 
                 {{-- String --}}
                 @if ('string' === $param['type'])
@@ -52,58 +78,59 @@
 
                 {{-- Source --}}
                 @elseif ('source' === $param['type'])
-                <select class="btn-primary btn btn-mini form-control form-control-sm"
-                        id="{{ $key }}_{{ $uid }}"
-                        name="{{ $key }}_{{ $uid }}"
-                        title="{{ $desc ?? 'Select the source' }}">
-                    @php
-                        $sources = $indicator->getOwner()->getAvailableSources(
-                            $indicator->getSignature(),
-                            [],
-                            Arr::get($param, 'filters', []),
-                            Arr::get($param, 'disabled', []),
-                            20
-                        );
-                    @endphp
-                    @foreach ($sources as $signature => $display_name)
-                        <option
+                    <select class="btn-primary btn btn-mini form-control form-control-sm"
+                            id="{{ $key }}_{{ $uid }}"
+                            name="{{ $key }}_{{ $uid }}"
+                            title="{{ $desc ?? 'Select the source' }}">
                         @php
-                        if (!is_string($saved_sig = $indicator->getParam('indicator.'.$key))) {
-                            $saved_sig = json_encode($saved_sig);
-                        }
+                            $sources = $indicator->getOwner()->getAvailableSources(
+                                $indicator->getSignature(),
+                                [],
+                                Arr::get($param, 'filters', []),
+                                Arr::get($param, 'disabled', []),
+                                20
+                            );
                         @endphp
-                        @if ($signature === $saved_sig)
-                            selected
-                        @endif
-                        value="{{ urlencode($signature) }}">{{ $display_name }}</option>
-                    @endforeach
-                </select>
-                @if (!in_array('Constant', Arr::get($param, 'disabled', [])))
-                    <script>
-                        $('#{{ $key }}_{{ $uid }}').select2({
-                            tags: true,
-                            createTag: function (params) {
-                                var text = String(parseFloat(params.term));
-                                if ('NaN' == text) {
-                                    return null;
-                                }
-                                return {
-                                    id: encodeURIComponent('{"class": "Constant","params": {"value": "' + text + '"}}'),
-                                    text: 'Constant (' + text + ')',
-                                    newOption: true
-                                }
-                            },
-                            templateResult: function (data) {
-                                var $result = $('<span></span>');
-                                $result.text(data.text);
-                                if (data.newOption) {
-                                    $result.html('<em>' + data.text + '</em>');
-                                }
-                                return $result;
+                        @foreach ($sources as $signature => $display_name)
+                            <option
+                            @php
+                            if (!is_string($saved_sig = $indicator->getParam('indicator.'.$key))) {
+                                $saved_sig = json_encode($saved_sig);
                             }
-                        });
-                    </script>
-                @endif
+                            @endphp
+                            @if ($signature === $saved_sig)
+                                selected
+                            @endif
+                            value="{{ urlencode($signature) }}">{{ $display_name }}</option>
+                        @endforeach
+                    </select>
+                    @if (!in_array('Constant', Arr::get($param, 'disabled', [])))
+                        <script>
+                            $('#{{ $key }}_{{ $uid }}').select2({
+                                dropdownAutoWidth: true,
+                                tags: true,
+                                createTag: function (params) {
+                                    var text = String(parseFloat(params.term));
+                                    if ('NaN' == text) {
+                                        return null;
+                                    }
+                                    return {
+                                        id: encodeURIComponent('{"class": "Constant","params": {"value": "' + text + '"}}'),
+                                        text: 'Constant (' + text + ')',
+                                        newOption: true
+                                    }
+                                },
+                                templateResult: function (data) {
+                                    var $result = $('<span></span>');
+                                    $result.text(data.text);
+                                    if (data.newOption) {
+                                        $result.html('<em>' + data.text + '</em>');
+                                    }
+                                    return $result;
+                                }
+                            });
+                        </script>
+                    @endif
 
                 {{-- Bool --}}
                 @elseif ('bool' === $param['type'])
@@ -188,9 +215,13 @@
                         {!! $opts !!}
                         value="{{ $indicator->getParam('indicator.'.$key) }}">
                 @endif
+
             </div>
-        </div>
+        @php
+            $first = false;
+        @endphp
     @endforeach
+    </div>
     @if (!in_array('savebutton', $disabled))
         <div class="col-sm-2">
             <button id="save_{{ $uid }}"

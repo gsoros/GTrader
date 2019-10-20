@@ -24,22 +24,44 @@ return [
             'immutable' => true,                // do not mutate this setting
         ],
         'input_long_a' => [
-            'name' => 'Long A',
+            'name' => 'Open Long A',
             'type' => 'source',
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Long',
+                    'description' => 'Generate an \'Open Long\' signal by comparing two sources',
+                    'cols' => 4,
+                ],
+            ],
         ],
         'long_cond' => [
-            'name' => 'Long Condition',
+            'name' => 'Open Long Condition',
             'type' => 'select',
             'options' => [
-                '<' => 'LT',
-                '<=' => 'LTE',
-                '>' => 'GT',
-                '>=' => 'GTE',
+                '<' => '<',
+                '<=' => '<=',
+                '>' => '>',
+                '>=' => '>=',
+            ],
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Long',
+                    'cols' => 1,
+                ],
             ],
         ],
         'input_long_b' => [
-            'name' => 'Long B',
+            'name' => 'Open Long B',
             'type' => 'source',
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Long',
+                    'cols' => 4,
+                ],
+            ],
         ],
         'input_long_source' => [
             'name' => 'Long Source',
@@ -48,22 +70,44 @@ return [
             'description' => 'Source for the long signal price. Used in back-testing and if the exchange is configured to use limit orders.',
         ],
         'input_short_a' => [
-            'name' => 'Short A',
+            'name' => 'Open Short A',
             'type' => 'source',
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Short',
+                    'description' => 'Generate an \'Open Short\' signal by comparing two sources',
+                    'cols' => 4,
+                ],
+            ],
         ],
         'short_cond' => [
-            'name' => 'Short Condition',
+            'name' => 'Open Short Condition',
             'type' => 'select',
             'options' => [
-                '<' => 'LT',
-                '<=' => 'LTE',
-                '>' => 'GT',
-                '>=' => 'GTE',
+                '<' => '<',
+                '<=' => '<=',
+                '>' => '>',
+                '>=' => '>=',
+            ],
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Short',
+                    'cols' => 1,
+                ],
             ],
         ],
         'input_short_b' => [
-            'name' => 'Short B',
+            'name' => 'Open Short B',
             'type' => 'source',
+            'display' => [
+                'hide' => ['label'],
+                'group' => [
+                    'label' => 'Open Short',
+                    'cols' => 4,
+                ],
+            ],
         ],
         'input_short_source' => [
             'name' => 'Short Source',

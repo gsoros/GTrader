@@ -22,7 +22,7 @@ return [
     // trigger short signal if prediction is lower than price minus this percentage
     'short_threshold'               => 0.5,
     // do not trade if last trade was more recent than this value
-    'min_trade_distance'            => 0,
+    'min_trade_distance'            => 1,
     // compensate for the bias of the null sample
     'bias_compensation'             => 0,
     'training_log_prefix'           => 'fanntraining_',

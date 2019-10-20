@@ -112,11 +112,17 @@ class Log extends Base {
 
         $args = implode(', ', array_map(function($v) {
             return gettype($v);
-        }, $class['args']));
+        }, $class['args'] ?? []));
 
-        return '['.basename($file['file']).':'.$file['line'].'] ['.
-            substr($class['class'], strrpos($class['class'], '\\') + 1).
-            $class['type'].$class['function'].'('.$args.')]';
+        $type = $class['type'] ?? '';
+        $function = $class['function'] ?? '';
+        $class = $class['class'] ?? '';
+        $line = $file['line'] ?? '';
+        $file = $file['file'] ?? '';
+
+        return '['.basename($file).':'.$line.'] ['.
+            substr($class, strrpos($class, '\\') + 1).
+            $type.$function.'('.$args.')]';
 
     }
 }
