@@ -166,7 +166,6 @@ class Supported extends Exchange
 
     public function form(array $options = [])
     {
-        Log::debug($options);
         $this->setParam('user_id', Auth::id());
         return view('Exchanges/CCXT/Form', [
             'exchange' => $this,

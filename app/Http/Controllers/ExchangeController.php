@@ -196,7 +196,7 @@ class ExchangeController extends Controller
             return response($error);
         }
         if (isset($request->options)) {
-            Log::debug($request->options);
+            //Log::debug($request->options);
         }
         $exchange->handleSaveRequest($request, $config);
         return $this->list($request, ['reload' => ['ESR']]);
