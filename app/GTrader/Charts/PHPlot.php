@@ -396,19 +396,19 @@ class PHPlot extends Chart
                     $s = $signals[$row] ?? null;
                     $ps = $prev_signals[$row] ?? null;
                     if (0 === $extra) { // line color
-                        if ('open_short' === $ps) {
+                        if ('short' === $ps) {
                             return 0;       // red
                         }
-                        if ('open_long' === $ps) {
+                        if ('long' === $ps) {
                             return 1;       // green
                         }
                         return 3;           // transparent
                     }
                     // marker color
-                    if ('open_short' === $s) {
+                    if ('short' === $s) {
                         return 0;       // red
                     }
-                    if ('open_long' === $s) {
+                    if ('long' === $s) {
                         return 1;       // green
                     }
                     return 2;           // blue

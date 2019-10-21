@@ -125,10 +125,10 @@ class Balance extends HasInputs
                 // update UPL
                 if ($candle->close != $prev_signal['price']) {
                     // avoid division by zero
-                    if ($prev_signal['signal'] == 'open_long') {
+                    if ($prev_signal['signal'] == 'long') {
                         $upl = $stake / $prev_signal['price'] *
                                 ($candle->close - $prev_signal['price']) * $leverage;
-                    } elseif ($prev_signal['signal'] == 'open_short') {
+                    } elseif ($prev_signal['signal'] == 'short') {
                         $upl = $stake / $prev_signal['price'] *
                                 ($prev_signal['price'] - $candle->close) * $leverage;
                     }
@@ -140,7 +140,7 @@ class Balance extends HasInputs
                     ($signal_price = $candle->$signal_price_key)) {
                     if ($signal == 'long' && $capital > 0) {
                         // go long
-                        if ($prev_signal && $prev_signal['signal'] == 'open_short') {
+                        if ($prev_signal && $prev_signal['signal'] == 'short') {
                             // close last short
                             if ($prev_signal['price']) {
                                 // avoid division by zero
@@ -160,7 +160,7 @@ class Balance extends HasInputs
                         $capital -= $stake * $fee_multiplier;
                     } elseif ($signal == 'short' && $capital > 0) {
                         // go short
-                        if ($prev_signal && $prev_signal['signal'] == 'open_long') {
+                        if ($prev_signal && $prev_signal['signal'] == 'long') {
                             // close last long
                             if ($prev_signal['price']) {
                                 // avoid division by zero
@@ -180,7 +180,7 @@ class Balance extends HasInputs
                         $capital -= $stake * $fee_multiplier;
                     } elseif ($signal == 'neutral') {
                         // close last position
-                        if ($prev_signal && $prev_signal['signal'] == 'open_long') {
+                        if ($prev_signal && $prev_signal['signal'] == 'long') {
                             // close last long
                             if ($prev_signal['price']) {
                                 // avoid division by zero
@@ -193,7 +193,7 @@ class Balance extends HasInputs
                             }
                             $upl = 0;
                         }
-                        elseif ($prev_signal && $prev_signal['signal'] == 'open_short') {
+                        elseif ($prev_signal && $prev_signal['signal'] == 'short') {
                             // close last short
                             if ($prev_signal['price']) {
                                 // avoid division by zero

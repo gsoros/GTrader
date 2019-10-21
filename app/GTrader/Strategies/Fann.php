@@ -1273,16 +1273,28 @@ class Fann extends Strategy
             'input_b'   => $short_thresh->getSignature(),
         ]);
 
-        if (!$signals = $candles->getOrAddIndicator('Signals', [
+        $long_sig = $long_ind->getSignature();
+        $short_sig = $short_ind->getSignature();
+
+        if (!$signals = $candles->getOrAddIndicator('Signals',
+            [
                 'strategy_id'               => 0, // Custom Settings
-                'input_open_long_a'         => $long_ind->getSignature(),
+                'input_open_long_a'         => $long_sig,
                 'open_long_cond'            => '<',
                 'input_open_long_b'         => $pred_sig,
                 'input_open_long_source'    => $this->getParam('long_source', 'open'),
-                'input_open_short_a'        => $short_ind->getSignature(),
+                'input_close_long_a'        => $long_sig,
+                'close_long_cond'           => '>=',
+                'input_close_long_b'        => $pred_sig,
+                'input_close_long_source'   => $this->getParam('long_source', 'open'),
+                'input_open_short_a'        => $short_sig,
                 'open_short_cond'           => '>',
                 'input_open_short_b'        => $pred_sig,
                 'input_open_short_source'   =>  $this->getParam('short_source', 'open'),
+                'input_close_short_a'        => $short_sig,
+                'close_short_cond'           => '<=',
+                'input_close_short_b'        => $pred_sig,
+                'input_close_short_source'   =>  $this->getParam('short_source', 'open'),
                 'min_trade_distance'        =>  $this->getParam('min_trade_distance', 1),
             ])) {
             Log::error('Could not add Signals');
