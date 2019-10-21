@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use GTrader\UserExchangeConfig;
-use GTrader\Exchange;
+use GTrader\Exchanges\DefaultExchange;
 use GTrader\Log;
 
-class Supported extends Exchange
+class Supported extends DefaultExchange
 {
     use HasCCXT;
 
@@ -228,18 +228,4 @@ class Supported extends Exchange
     }
 
 
-    public function takePosition(
-        string $symbol,
-        string $signal,
-        float $price,
-        int $bot_id = null
-    )
-    {
-
-    }
-
-    public function cancelUnfilledOrders(string $symbol, int $before_timestamp) {}
-    public function saveFilledOrders(string $symbol, int $bot_id = null) {}
-
-    public function getTicker(string $symbol) {}
 }

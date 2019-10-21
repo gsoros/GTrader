@@ -6,12 +6,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 
 use GTrader\UserExchangeConfig;
-use GTrader\Exchange;
+use GTrader\Exchanges\DefaultExchange;
 use GTrader\Trade;
 use GTrader\Log;
 use ccxt\Exchange as CCXTlib;
 
-class Wrapper extends Exchange
+class Wrapper extends DefaultExchange
 {
     use HasCCXT;
 
@@ -124,29 +124,5 @@ class Wrapper extends Exchange
     {
         return self::CLASS_PREFIX;
     }
-
-
-    public function fetchCandles(
-        string $symbol,
-        int $resolution,
-        int $since = 0,
-        int $size = 0
-    )
-    {
-    }
-
-    public function takePosition(
-        string $symbol,
-        string $signal,
-        float $price,
-        int $bot_id = null
-    )
-    {
-    }
-
-    public function cancelUnfilledOrders(string $symbol, int $before_timestamp) {}
-    public function saveFilledOrders(string $symbol, int $bot_id = null) {}
-
-    public function getTicker(string $symbol) {}
 
 }

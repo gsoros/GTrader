@@ -10,9 +10,10 @@ trait ClassUtils
         if (!is_null($key)) {
             $key = '.'.$key;
         }
-        $conf = config(str_replace('\\', '.', $class).$key); 
+        $conf = config(str_replace('\\', '.', $class).$key);
         return $conf;
     }
+
 
     protected static function loadConfRecursive(string $class)
     {
@@ -31,6 +32,7 @@ trait ClassUtils
         return $parent_conf;
     }
 
+
     public function getShortClass()
     {
         $reflect = new \ReflectionClass($this);
@@ -44,8 +46,21 @@ trait ClassUtils
         return $this instanceof $class;
     }
 
+
     public function oid()
     {
         return $this->getShortClass().'('.md5(spl_object_hash($this)).')';
+    }
+
+
+    public function methodNotImplemented()
+    {
+        $d = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
+        Log::error(
+            'Method '.
+            (is_array($d[1]) ? $d[1]['function'] ?? 'unknown' : 'unknown').
+            ' not implemented in '.
+            get_called_class()
+        );
     }
 }
