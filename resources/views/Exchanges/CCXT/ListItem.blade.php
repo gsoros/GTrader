@@ -10,9 +10,8 @@
             @endphp
             @if ($logo)
                 <img style="border-radius: 3px" src="{{ $logo }}" title="{{ $name }}" alt="{{ $name }}">
-            @else
-                <strong>{{ $name }}</strong>
             @endif
+            <strong>{{ $name }}</strong>
         </div>
         <div class="col-sm-4">
             <div class="form-group editbuttons">

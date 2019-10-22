@@ -85,8 +85,10 @@ class Aggregator extends Base
                             $exchange->getParam('aggregator_chunk_size', 1000)
                         );
                     } catch (\Exception $e) {
-                        echo PHP_EOL.'Error: '.$e->getMessage();
-                        Log::error($e->getMessage());
+                        $msg = str_replace("\n", '', strip_tags($e->getMessage()));
+                        $msg = 197 < strlen($msg) ? substr($msg, 0, 197).'...' : $msg;
+                        echo PHP_EOL.'Error: '.$msg;
+                        Log::error('fetchCandles', $exchange->getName(), $symbol_name, $msg);
                     }
 
                     if (!isset($candles) || !is_array($candles) || !count($candles)) {

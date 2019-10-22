@@ -81,7 +81,7 @@
 </div>
 <div class="col-sm-12 form-group container editable trans">
     <div class="row">
-        <div class="col-sm-8">
+        <div class="col-sm-9">
             <select id="new_symbol" name="new_symbol"
                 style="width: 100%; max-height: 300px; overflow-y: auto;"
                 onChange="populateResolutions()">
@@ -94,11 +94,11 @@
             </select>
         </div>
         <div class="col-sm-2">
-            <select id="new_res" name="new_res" style="width: 100%"
+            <select id="new_res" name="new_res" style="width: 100%" disabled="disabled"
                 onChange="$('#new_symbol_submit').removeAttr('disabled')">
             </select>
         </div>
-        <div class="col-sm-2">
+        <div class="col-sm-1">
             <button onClick="window.GTrader.request(
                         'exchange',
                         'addSymbol',
@@ -145,7 +145,7 @@
                 ));
             }
         );
-        $('#new_res').trigger('change');
+        $('#new_res').removeAttr('disabled').focus().trigger('change').select2('open');
     };
     @if (isset($reload) && is_array($reload) && in_array('ESR', $reload))
     $(function() {

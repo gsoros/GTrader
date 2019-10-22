@@ -149,7 +149,6 @@ class Supported extends DefaultExchange
 
     public function handleSaveRequest(Request $request, UserExchangeConfig $config)
     {
-
         $r_options = $request->options ?? [];
         $c_options = $config->options ?? [];
         if ($this->has('privateAPI')) {
@@ -166,7 +165,6 @@ class Supported extends DefaultExchange
 
     public function form(array $options = [])
     {
-        $this->setParam('user_id', Auth::id());
         return view('Exchanges/CCXT/Form', [
             'exchange' => $this,
             'options' => $options,
@@ -182,8 +180,8 @@ class Supported extends DefaultExchange
     )
     {
         $remote_resolution = $this->getRemoteResolution($resolution);
-        Log::debug($this->getName(), $symbol, $remote_resolution, $since, $size);
-        //$this->ccxt()->loadMarkets(); // why??
+        //Log::debug($this->getName(), $symbol, $remote_resolution, $since, $size);
+
         $candles = $this->ccxt()->fetchOHLCV(
             $symbol,
             $remote_resolution,

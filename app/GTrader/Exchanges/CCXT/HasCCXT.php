@@ -63,7 +63,7 @@ trait HasCCXT
     }
 
 
-    public function getCcxtId(): string
+    public function getCCXTId(): string
     {
         if (!is_object($this->ccxt())) {
             throw new \Exception('ccxt not an object');
@@ -75,16 +75,77 @@ trait HasCCXT
     }
 
 
-    public function getCCXTProperty(string $prop, array $options = [])
+    protected function getCCXTpCacheKey($prop): string
     {
-        if ($val = $this->cached($prop)) {
+        return 'CCXT_'.$this->getParam('ccxt_id').'_'.$this->getCCXTCacheKey($prop);
+    }
+
+
+    protected function getCCXTCacheKey($prop)
+    {
+        $key = null;
+        if (is_array($prop)) {
+            if (!count($prop)) {
+                Log::error('empty array');
+                return $key;
+            }
+            $key = join('.', $prop);
+        } else {
+            $key = strval($prop);
+        }
+        if (!strlen($key)) {
+            Log::error('empty str from', $prop);
+        }
+        return $key;
+    }
+
+
+    protected function &getCCXTTargetProp($prop)
+    {
+        if (!is_object($ccxt = $this->ccxt())) {
+            Log::debug('ccxt not obj, wanted ', $prop);
+            return null;
+        }
+        $target = null;
+        if (is_array($prop)) {
+            $key = array_shift($prop);
+            if (!isset($ccxt->$key)) {
+                Log::debug('Property does not exist', $key, $prop);
+                return null;
+            }
+            $target = &$ccxt->$key;
+            foreach($prop as $key) {
+                if (!isset($target[$key])) {
+                    Log::debug('Key does not exist', $key, $prop);
+                    return null;
+                }
+                $target = &$target[$key];
+            }
+        } else {
+            if (!isset($ccxt->$prop)) {
+                Log::debug('Property does not exist', $prop);
+                return null;
+            }
+            $target = &$ccxt->$prop;
+        }
+        return $target;
+    }
+
+
+    public function getCCXTProperty($prop, array $options = [])
+    {
+        if (!$cache_key = $this->getCCXTCacheKey($prop)) {
+            Log::error('could not get cache key for', $prop);
+            return null;
+        }
+        if ($val = $this->cached($cache_key)) {
             return $val;
         }
         $pcache_key = $ccxt = null;
-        if (in_array($prop, self::$LOAD_MARKETS_BEFORE)) {
-            $pcache_key = 'CCXT_'.$this->getParam('ccxt_id').'_'.$prop;
+        if (in_array($cache_key, self::$LOAD_MARKETS_BEFORE)) {
+            $pcache_key = $this->getCCXTpCacheKey($cache_key);
             if ($val = $this->pCached($pcache_key)) {
-                $this->cache($prop, $val);
+                $this->cache($cache_key, $val);
                 return $val;
             }
             if (!is_object($ccxt = $this->ccxt())) {
@@ -100,23 +161,48 @@ trait HasCCXT
                 Log::debug('checking pcache without age');
                 if ($val = $this->pCached($pcache_key, null, -1)) {
                     Log::debug('pcache had an older entry');
-                    $this->cache($prop, $val);
+                    $this->cache($cache_key, $val);
                     return $val;
                 }
             }
         }
-        if (!$ccxt && !is_object($ccxt = $this->ccxt())) {
-            Log::debug('ccxt not obj, wanted ', $prop);
-            return null;
-        }
-        if (!isset($ccxt->$prop)) {
-            return null;
-        }
-        $this->cache($prop, $ccxt->$prop);
+        $target = $this->getCCXTTargetProp($prop);
+        $this->cache($cache_key, $target);
         if ($pcache_key) {
-            $this->pCache($pcache_key, $ccxt->$prop);
+            $this->pCache($pcache_key, $target);
         }
-        return $ccxt->$prop;
+        return $target;
     }
 
+
+    public function setCCXTProperty($prop, $value, array $options = []): bool
+    {
+        if (!$cache_key = $this->getCCXTCacheKey($prop)) {
+            Log::error('could not get cache key for', $prop);
+            return false;
+        }
+        $ccxt = null;
+        if (in_array($cache_key, self::$LOAD_MARKETS_BEFORE)) {
+            if (!is_object($ccxt = $this->ccxt())) {
+                Log::debug('ccxt not obj, wanted ', $prop);
+                return false;
+            }
+            try {
+                Log::debug('loadMarkets() for '.$this->getParam('ccxt_id'));
+                $ccxt->loadMarkets();
+            } catch (\Exception $e) {
+                Log::debug('loadMarkets() failed for '.$this->getParam('ccxt_id'), $e->getMessage());
+                $this->lastError($e->getMessage());
+            }
+        }
+        if (!$target = &$this->getCCXTTargetProp($prop)) {
+            Log::debug('could not get target, wanted ', $prop);
+            return false;
+        }
+        //Log::debug('old', $target, 'new', $value);
+        $target = $value;
+        // TODO unCache and unPCache recursively
+        $this->unCache($cache_key);
+        return true;
+    }
 }

@@ -52,9 +52,8 @@
                         @endphp
                         @if ($logo)
                             <img style="border-radius: 3px" src="{{ $logo }}" title="{{ $name }}" alt="{{ $name }}">
-                        @else
-                            <b>{{ $name }}</b>
                         @endif
+                        <strong>{{ $name }}</strong>
                     </div>
                     <div class="card-body">
                         <p id="ccxt_info_{{ $ccxt_id }}"

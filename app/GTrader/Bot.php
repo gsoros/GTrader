@@ -106,6 +106,7 @@ class Bot extends Model
         $exchange->setParam('user_id', $this->user_id);
 
         // Check if we got the correct exchange
+        // TODO this will fail with CCXT
         if ($exchange->getShortClass() !== $exchange_name) {
             throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
         }
@@ -124,13 +125,12 @@ class Bot extends Model
 
         // Set up our series
         $candles_limit = 200;
-        $candles = new Series(
-            [
+        $candles = new Series([
             'exchange' => Exchange::getNameById($this->exchange_id),
             'symbol' => $symbol,
             'resolution' => $this->resolution,
-            'limit' => $candles_limit]
-        );
+            'limit' => $candles_limit,
+        ]);
 
         $t = time();
 
@@ -139,7 +139,7 @@ class Bot extends Model
         $strategy->setCandles($candles);
 
         // Fire signal even if previous signal was identical
-        $strategy->setParam('spitfire', true);
+        //$strategy->setParam('spitfire', true);
 
         // Check for a signal
         $signals = $strategy->getSignals();
