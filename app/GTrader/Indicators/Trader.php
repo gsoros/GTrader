@@ -5,15 +5,15 @@ namespace GTrader\Indicators;
 use GTrader\Series;
 use GTrader\Log;
 
-if (!extension_loaded('trader')) {
-    throw new \Exception('Trader extension not loaded');
-}
 
 /** Indicators using the Trader PHP extension */
 abstract class Trader extends HasInputs
 {
     public function __construct(array $params = [])
     {
+        if (!extension_loaded('trader')) {
+            throw new \Exception('Trader extension not loaded');
+        }
         trader_set_unstable_period(TRADER_FUNC_UNST_ALL, 0);
         parent::__construct($params);
         $this->unsetParam('MA_TYPES');

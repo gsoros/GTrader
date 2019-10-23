@@ -28,7 +28,7 @@ class Rand
     }
 
 
-    public static function float(float $min = 0, float $max = 1): float
+    public static function float(float $min = 0.0, float $max = 1.0): float
     {
         return $min + ($max - $min) * mt_rand() / mt_getrandmax();
     }
@@ -43,8 +43,8 @@ class Rand
      * @return float
      */
     public static function floatNormal(
-        float $min = 0,
-        float $max = 1,
+        float $min = 0.0,
+        float $max = 1.0,
         float $peak = .5,
         float $weight = .5
     ): float

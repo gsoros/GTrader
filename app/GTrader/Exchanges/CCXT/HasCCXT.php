@@ -89,7 +89,7 @@ trait HasCCXT
                 Log::error('empty array');
                 return $key;
             }
-            $key = join('.', $prop);
+            $key = join('_', $prop);
         } else {
             $key = strval($prop);
         }
@@ -106,25 +106,26 @@ trait HasCCXT
             Log::debug('ccxt not obj, wanted ', $prop);
             return null;
         }
+        $nil = null;
         $target = null;
         if (is_array($prop)) {
             $key = array_shift($prop);
             if (!isset($ccxt->$key)) {
                 Log::debug('Property does not exist', $key, $prop);
-                return null;
+                return $nil;
             }
             $target = &$ccxt->$key;
             foreach($prop as $key) {
                 if (!isset($target[$key])) {
                     Log::debug('Key does not exist', $key, $prop);
-                    return null;
+                    return $nil;
                 }
                 $target = &$target[$key];
             }
         } else {
             if (!isset($ccxt->$prop)) {
                 Log::debug('Property does not exist', $prop);
-                return null;
+                return $nil;
             }
             $target = &$ccxt->$prop;
         }

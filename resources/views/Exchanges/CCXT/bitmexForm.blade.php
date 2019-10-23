@@ -15,7 +15,7 @@
                 @endforeach
             </select>
             <script>
-            $('#use_testnet').select2();
+                $('#use_testnet').select2();
             </script>
         </div>
     </div>

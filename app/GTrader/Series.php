@@ -597,7 +597,8 @@ class Series extends Collection
         }
         $nth = 1;
         if (1 < $density_cutoff) {
-            $total = $this->count($respect_padding);
+            //$total = $this->count($respect_padding);
+            $total = $this->size($respect_padding);
             $nth = 1 < ($nth = floor($total / $density_cutoff)) ? $nth : 1;
             //Log::debug('total: '.$total.' density: '.$density_cutoff.' nth: '.$nth);
         }

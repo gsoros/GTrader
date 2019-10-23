@@ -55,7 +55,7 @@ trait ClassUtils
 
     public function methodNotImplemented()
     {
-        $d = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2);
+        $d = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         Log::error(
             'Method '.
             (is_array($d[1]) ? $d[1]['function'] ?? 'unknown' : 'unknown').

@@ -28,7 +28,7 @@ class Patterns extends Trader
     public function update(array $params = [], string $suffix = '')
     {
         parent::update($params, $suffix);
-        $this->setSelectedFunctions($this->getParam('indicator.use_functions'), []);
+        $this->setSelectedFunctions($this->getParam('indicator.use_functions', []));
         return $this;
     }
 
@@ -178,7 +178,7 @@ class Patterns extends Trader
             ]);
 
             $func_label = $this->getParam('map.'.$func, $func);
-            array_walk($open, function ($v, $k) use (&$annotation, &$line, $func, $output, $func_label) {
+            array_walk($open, function ($v, $k) use (&$annotation, &$line, $output, $func_label) {
                 if (!isset($line[$k])) {
                     $line[$k] = 0;
                 }

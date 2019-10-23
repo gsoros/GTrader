@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 
 class ChangePasswordController extends Controller
 {
@@ -23,7 +24,7 @@ class ChangePasswordController extends Controller
     public function change(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'password' => 'required',
+            'password' => '',
             'new_password' => 'confirmed',
         ]);
 

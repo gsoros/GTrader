@@ -56,7 +56,7 @@ class Bot extends Model
 
     /**
      * Get the trades of the bot.
-     * @return GTrader\Trade
+     * @return Trade
      */
     public function trades()
     {
@@ -65,7 +65,7 @@ class Bot extends Model
 
     /**
      * Get the user that owns the bot.
-     * @return App\User
+     * @return \App\User
      */
     public function user()
     {

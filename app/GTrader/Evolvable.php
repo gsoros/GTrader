@@ -8,5 +8,5 @@ interface Evolvable
 
     public function mutate(): Evolvable;
 
-    public function fitness();
+    public function fitness($set = null);
 }

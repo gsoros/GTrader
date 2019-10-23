@@ -4,6 +4,7 @@ namespace GTrader\Indicators;
 
 use Illuminate\Support\Arr;
 use GTrader\Series;
+use GTrader\Log;
 
 /** Hilbert Transform */
 class Ht extends Trader

@@ -17,11 +17,6 @@ use GTrader\Plot;
 use GTrader\Log;
 
 
-if (!extension_loaded('fann')) {
-    throw new \Exception('FANN extension not loaded');
-}
-
-
 /**
  * Strategy using the PHP-FANN extension.
  */
@@ -67,7 +62,7 @@ class Fann extends Strategy
 
     /**
      * Fann output on the null sample
-     * @var float
+     * @var float|null
      */
     protected $fannBias = null;
 
@@ -78,6 +73,9 @@ class Fann extends Strategy
      */
     public function __construct(array $params = [])
     {
+        if (!extension_loaded('fann')) {
+            throw new \Exception('FANN extension not loaded');
+        }
         parent::__construct($params);
         $this->setParam('num_output', 1);
         $ohlc = $this->addIndicator('Ohlc', [], ['display' => ['visible' => true]]);
@@ -959,7 +957,7 @@ class Fann extends Strategy
     /**
      * Test the network
      * @param  bool $force_rerun
-     * @return int The mean sqared error
+     * @return float The mean sqared error
      */
     public function test(bool $force_rerun = false)
     {

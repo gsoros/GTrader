@@ -15,7 +15,7 @@ class bitmex extends Supported
         //$this->setParam('pcache.log', 'all');
 
         parent::__construct($params);
-        
+
         if ($this->getUserOption('use_testnet')) {
             //Log::debug($this->getName().' is configured to use testnet API.');
             if (!$test_url = $this->getTestnetApiUrl()) {

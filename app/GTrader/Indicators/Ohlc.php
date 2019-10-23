@@ -9,6 +9,7 @@ class Ohlc extends HasInputs
         return $this;
     }
 
+
     public function key(string $output = '')
     {
         if (!$output) {
@@ -30,7 +31,6 @@ class Ohlc extends HasInputs
     }
 
 
-
     public function getInput(string $name = null)
     {
         if ('linepoints' === $this->getParam('indicator.mode')) {
@@ -49,6 +49,7 @@ class Ohlc extends HasInputs
         return parent::getInputs();
     }
 
+
     public function getOutputs()
     {
         // if ('linepoints' === $this->getParam('indicator.mode')) {
@@ -57,10 +58,11 @@ class Ohlc extends HasInputs
         return parent::getOutputs();
     }
 
+
     public function outputDependsOn(array $sigs = [], string $output = null)
     {
         // Pretend that our outputs depend 1:1 on the matching input
-        $output = ($output = strtolower($output)) ? $output : 'open';
+        $output = ($output = strtolower(strval($output))) ? $output : 'open';
         $input = $this->getInput('input_'.$output);
         if (in_array($input, $sigs)) {
             return true;
@@ -86,7 +88,6 @@ class Ohlc extends HasInputs
         $mode_name = $this->getParam('adjustable.mode.options.'.$mode, 'Candlesticks');
         return $output ? $mode_name.' => '.ucfirst($output) : $mode_name;
     }
-
 
 
     public function calculate(bool $force_rerun = false)
@@ -161,8 +162,8 @@ class Ohlc extends HasInputs
         }
         $open = ($in_0['open'] + $in_0['close']) / 2;
         $close = ($in_1['open'] + $in_1['high'] + $in_1['low'] + $in_1['close']) / 4;
-        $high = max($in_1['high'], $open, $close);
-        $low = min($in_1['low'], $open, $close);
+        $high = max([$in_1['high'], $open, $close]);
+        $low = min([$in_1['low'], $open, $close]);
 
         return [
             'open' => $open,

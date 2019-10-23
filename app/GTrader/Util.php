@@ -9,7 +9,7 @@ class Util
      * @param  Closure $closure
      * @return mixed
      */
-    public static function time(\Closure $closure)
+    public static function time(Closure $closure)
     {
         $start = microtime(true);
         $return = $closure();

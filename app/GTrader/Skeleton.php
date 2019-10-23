@@ -65,7 +65,7 @@ trait Skeleton
     /**
      * Create and return a singleton.
      *
-     * @return \GTrader\*
+     * @return Base
      */
     public static function singleton()
     {

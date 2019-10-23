@@ -80,7 +80,7 @@ abstract class Chart extends Plot
     public function __clone()
     {
         $this->__HasIndicators__clone();
-        parent::clone();
+        parent::__clone();
     }
 
 
