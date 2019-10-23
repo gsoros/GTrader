@@ -1,0 +1,11 @@
+parameters:
+	excludes_analyse:
+		- %currentWorkingDirectory%/vendor/*
+		- %currentWorkingDirectory%/storage/*
+		- %currentWorkingDirectory%/__/*
+		- %currentWorkingDirectory%/routes/*
+		- %currentWorkingDirectory%/database/*
+	ignoreErrors:
+#		- '#Call to an undefined static method GTrader\\Log::[a-zA-Z]+\(\)#'
+		- '#Call to an undefined (static )?method [a-zA-Z0-9\\_]+::[a-zA-Z_]+\(\)#'
+		- '#Access to an undefined property [a-zA-Z0-9\\_\$\(\)]+::\$[a-zA-Z0-9_]+#'

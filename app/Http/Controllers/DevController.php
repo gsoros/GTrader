@@ -52,12 +52,19 @@ class DevController extends Controller
     {
         if (isset($request->key)) {
             try {
-                $val = unserialize(DB::table('pcache')->where('cache_key', $request->key)->value('cache_value'));
+                $res = DB::table('pcache')
+                    ->select(['cache_time', 'cache_value'])
+                    ->where('cache_key', $request->key)
+                    ->first();
+                $time = $res->cache_time;
+                $value = unserialize($res->cache_value);
             } catch (\Exception $e) {
-                $val = $e->getMessage();
+                $time = 0;
+                $value = $e->getMessage();
             }
             return view('Dev/pcacheValue', [
-                'value' => $val,
+                'time' => $time,
+                'value' => $value,
             ]);
         }
         return view('Dev/pcache', [

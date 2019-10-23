@@ -6,13 +6,13 @@ class Util
 {
     /**
      * Time a call.
-     * @param  Closure $closure
+     * @param  Callable $callable
      * @return mixed
      */
-    public static function time(Closure $closure)
+    public static function time(Callable $callable)
     {
         $start = microtime(true);
-        $return = $closure();
+        $return = $callable();
         dump('t = '.(microtime(true) - $start));
         return $return;
     }

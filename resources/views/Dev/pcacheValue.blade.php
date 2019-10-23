@@ -1,3 +1,2 @@
-@php
-    dump($value);
-@endphp
+{{ $time ? gmdate('Y-m-d H:i:s', $time) : '' }}
+@dump($value)

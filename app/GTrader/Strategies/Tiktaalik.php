@@ -26,8 +26,8 @@ class Tiktaalik extends Simple implements Evolvable
 
     public function mate(Evolvable $partner): Evolvable
     {
-        $fitness = ($this->getFitness() ?? 1);
-        $partner_fitness = ($partner->getFitness() ?? 1);
+        $fitness = ($this->fitness() ?? 1);
+        $partner_fitness = ($partner->fitness() ?? 1);
         $partner_weight =  1 / ($fitness + $partner_fitness) * $partner_fitness;
         dd('Tiktaalik::mate()', $fitness, $partner_fitness, $partner_weight);
 
