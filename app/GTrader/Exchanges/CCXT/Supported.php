@@ -21,6 +21,16 @@ class Supported extends DefaultExchange
         //$this->setParam('ccxt_id', $this->getShortClass());
         //Log::debug($this->oid().' __construct()', $params, $this->getParams());
         parent::__construct($params);
+
+        foreach (
+            ['apiKey' => 'apiKey', 'secret' => 'secret']
+            as $user_option => $ccxt_prop
+        ) {
+            $value = $this->getUserOption($user_option);
+            if (!$this->setCCXTProperty($ccxt_prop, $value)) {
+                throw new \Exception('Could not set '.$ccxt_prop.' to '.$value);
+            }
+        }
     }
 
 
@@ -226,4 +236,71 @@ class Supported extends DefaultExchange
     }
 
 
+    public function takePosition(
+        string $symbol,
+        string $signal,
+        float $price,
+        int $bot_id = null
+    )
+    {
+        if (!$user_id = $this->getParam('user_id')) {
+            throw new \Exception('takePosition() requires user_id to be set');
+            return $this;
+        }
+        if (!$markets = $this->getMarkets()) {
+            throw new \Exception('could not get markets');
+            return $this;
+        }
+        if (!isset($markets[$symbol])) {
+            throw new \Exception('could not find symbol in markets', $symbol);
+            return $this;
+        }
+        $market = $markets[$symbol];
+        /*
+        // https://github.com/ccxt/ccxt/wiki/Manual#markets
+        // "The active flag is not yet supported and/or implemented by all markets."
+        if (isset($market['active']) && !$market['active']) {
+            Log::debug('active: ', isset($market['active']) ? $market['active'] : 'not set');
+            throw new \Exception('market is not active');
+            return $this;
+        }
+        */
+        if (!$base_curr = $market['base']) {
+            throw new \Exception('could not get base currency');
+            return $this;
+        }
+        dump($this->getFreeBalance($base_curr));
+        return $this;
+    }
+
+
+    public function getBalance()
+    {
+        return $this->ccxt()->fetchBalance();
+    }
+
+
+    public function getFreeBalance(string $currency): float
+    {
+        if (!$balance = $this->getBalance()) {
+            throw new \Exception('could not get balance');
+            return 0.0;
+        }
+        if (!isset($balance[$currency]) ||
+            !is_array($balance[$currency])) {
+            throw new \Exception('could not get balance of', $currency);
+            return 0.0;
+        }
+        if (!isset($balance[$currency]['free'])) {
+            Log::info('no balance in', $currency);
+            return 0.0;
+        }
+        return $balance[$currency]['free'];
+    }
+
+
+    public function getMarkets()
+    {
+        return $this->getCCXTProperty('markets');
+    }
 }

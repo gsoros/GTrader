@@ -72,6 +72,7 @@ abstract class Exchange extends Base
             Auth::id();
         //Log::debug('checking user config opts for ', $this->getName(), $user_id);
         if (!$user_id) {
+            Log::error('could not find user_id');
             return [];
         }
         $cache_key = 'user_options';

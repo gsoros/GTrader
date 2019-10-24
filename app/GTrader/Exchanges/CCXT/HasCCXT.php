@@ -125,7 +125,6 @@ trait HasCCXT
         } else {
             if (!isset($ccxt->$prop)) {
                 Log::debug('Property does not exist', $prop);
-                return $nil;
             }
             $target = &$ccxt->$prop;
         }
@@ -196,10 +195,7 @@ trait HasCCXT
                 $this->lastError($e->getMessage());
             }
         }
-        if (!$target = &$this->getCCXTTargetProp($prop)) {
-            Log::debug('could not get target, wanted ', $prop);
-            return false;
-        }
+        $target = &$this->getCCXTTargetProp($prop);
         //Log::debug('old', $target, 'new', $value);
         $target = $value;
         // TODO unCache and unPCache recursively
