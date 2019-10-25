@@ -61,8 +61,9 @@ class Supported extends DefaultExchange
     }
 
 
-    protected function getAllSymbols(): array
+    protected function getAllSymbols(array $options = []): array
     {
+        //Log::debug($options);
         if (!$markets = $this->getCCXTProperty('markets')) {
             return [];
         }
@@ -70,10 +71,14 @@ class Supported extends DefaultExchange
             Log::error('markets not array in '.$this->getName(), $markets);
             return [];
         }
+        $active = in_array('active', Arr::get($options, 'get', []));
         $symbols = [];
         foreach ($markets as $market) {
             if (!isset($market['symbol'])) {
                 Log::error('missing market symbol in '.$this->getShortClass(), $market);
+                continue;
+            }
+            if ($active && !$this->marketActive($market['symbol'])) {
                 continue;
             }
             $symbols[$market['symbol']] = $market;
@@ -258,16 +263,10 @@ class Supported extends DefaultExchange
             throw new \Exception('could not get market');
             return $this;
         }
-        /*
-        // https://github.com/ccxt/ccxt/wiki/Manual#markets
-        // "The active flag is not yet supported and/or implemented by all markets."
-        // also, bitmex testnet is not 'active'
-        if (isset($market['active']) && !$market['active']) {
-            Log::debug('active: ', isset($market['active']) ? $market['active'] : 'not set');
-            throw new \Exception('market is not active');
+        if ($this->marketActive($symbol)) {
+            throw new \Exception('market is not active', $symbol);
             return $this;
         }
-        */
         if (!$currency = $market['base']) {
             throw new \Exception('could not get base currency');
             return $this;
@@ -291,6 +290,18 @@ class Supported extends DefaultExchange
         $new_contracts = $target_contracts + $current_contracts;
         dump($new_contracts, $target_contracts, $current_contracts, $target_position, $price, $contract_value, $leverage);
         return $this;
+    }
+
+
+    // https://github.com/ccxt/ccxt/wiki/Manual#markets
+    // "The active flag is not yet supported and/or implemented by all markets."
+    // so we are defaulting to true
+    public function marketActive(string $symbol): bool
+    {
+        if (!$market = $this->getMarket($symbol)) {
+            return false;
+        }
+        return isset($market['active']) ? boolval($market['active']) : true;
     }
 
 

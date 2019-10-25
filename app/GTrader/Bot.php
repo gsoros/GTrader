@@ -138,9 +138,6 @@ class Bot extends Model
         $strategy = $this->getStrategy();
         $strategy->setCandles($candles);
 
-        // Fire signal even if previous signal was identical
-        //$strategy->setParam('spitfire', true);
-
         // Check for a signal
         $signals = $strategy->getSignals();
         //Log::debug('signals:', $signals);

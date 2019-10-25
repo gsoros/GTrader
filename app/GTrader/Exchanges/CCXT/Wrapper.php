@@ -52,6 +52,7 @@ class Wrapper extends DefaultExchange
         $all = in_array('all', $get);
         $self = in_array('self', $get);
         $configured = in_array('configured', $get);
+        $active = in_array('active', $get);
         $user_id = Arr::get($options, 'user_id');
 
         //Log::debug($options, $all, $self, $configured, $user_id);

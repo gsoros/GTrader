@@ -12,7 +12,10 @@
         name="resolution_{{ $name }}"></select>
 <script>
     $(function() {
-        window.GTrader.registerESR('{{ $name }}');
+        window.GTrader.registerESR(
+            '{{ $name }}',
+            {!! json_encode($options) !!}
+        );
         $('#exchange_{{ $name }}').trigger('change');
     });
 </script>

@@ -360,7 +360,7 @@ abstract class Exchange extends Base
         $user_id = Arr::get($options, 'user_id');
 
         if ($all) {
-            return $this->getAllSymbols();
+            return $this->getAllSymbols($options);
         }
         if ($configured) {
             return $this->getConfiguredSymbols($options);
@@ -369,7 +369,7 @@ abstract class Exchange extends Base
     }
 
 
-    protected function getAllSymbols(): array
+    protected function getAllSymbols(array $options = []): array
     {
         return $this->getParam('symbols', []);
     }
@@ -378,6 +378,7 @@ abstract class Exchange extends Base
     protected function getConfiguredSymbols(array $options = []): array
     {
         $user_id = Arr::get($options, 'user_id');
+        $active = in_array('active', Arr::get($options, 'get', []));
         $config = UserExchangeConfig::select('options');
         if ($user_id) {
             $config->where('user_id', $user_id);
@@ -392,6 +393,9 @@ abstract class Exchange extends Base
                 continue;
             }
             foreach ($config->options['symbols'] as $cosk => $cosv) {
+                if ($active && !$this->marketActive($cosk)) {
+                    continue;
+                }
                 if (!is_array($cosv)
                     || !isset($cosv['resolutions'])
                     || !is_array($cosv['resolutions'])
@@ -456,10 +460,10 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getESR(): array
+    public static function getESR(array $options = []): array
     {
-        //Log::debug('getESR()');
-        $options = ['get' => ['configured']];
+        //Log::debug('getESR()', $options);
+        $options = count($options) ? $options : ['get' => ['configured']];
         $esr = [];
         foreach (static::getAvailable($options) as $exchange) {
             $exo = new \stdClass();
@@ -470,10 +474,11 @@ abstract class Exchange extends Base
 
             foreach ($exchange->getSymbols($options) as $symbol_name => $symbol) {
                 $resolutions =
-                    $symbol['resolutions'] ?
-                    is_array($symbol['resolutions']) ?
-                        $symbol['resolutions'] : []
-                    : [];
+                    isset($symbol['resolutions'])
+                        ? is_array($symbol['resolutions'])
+                            ? $symbol['resolutions']
+                            : []
+                        : [];
                 $symo = new \stdClass();
                 $symo->name = $symbol_name;
                 $symo->long_name = self::getSymbolLongNameByExchangeSymbolName($exo->name, $symbol_name);
@@ -511,9 +516,9 @@ abstract class Exchange extends Base
     }
 
 
-    public static function getESRSelector(string $name)
+    public static function getESRSelector(string $name, array $options = [])
     {
-        return view('ESRSelector', ['name' => $name]);
+        return view('ESRSelector', ['name' => $name, 'options' => $options]);
     }
 
 
@@ -632,5 +637,14 @@ abstract class Exchange extends Base
             return $this;
         }
         return $this->last_error;
+    }
+
+
+    public function marketActive(string $symbol): bool
+    {
+        if (count($this->getSymbol($symbol))) {
+            return true;
+        }
+        return false;
     }
 }

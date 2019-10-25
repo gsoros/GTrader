@@ -193,13 +193,17 @@ $(function() {
         /**
          * Registers a set of exchange, symbol, resolution selectors
          */
-        registerESR: function(name) {
+        registerESR: function(name, options) {
 
             var chart = this.charts[name];
             if (!chart) chart = window[name];
             if (!chart) {
                 console.log('registerESR() could not get obj for ' + name);
                 return false;
+            }
+            chart.source = window.GTrader.ESR;
+            if ((undefined !== options) && (undefined !== options.source)) {
+                chart.source = options.source;
             }
 
             /**
@@ -230,7 +234,7 @@ $(function() {
                 }
                 console.log('Updating ESR');
                 // loop through all exchanges
-                window.GTrader.ESR.forEach(function(exchange) { // loop through all exchanges
+                this.source.forEach(function(exchange) { // loop through all exchanges
                     opts.exchange += '<option ';
                     if (!chart.exchange || // nothing
                         chart.exchange === exchange.name // or selected exchange
@@ -324,6 +328,9 @@ $(function() {
                     //console.log('new: ', g.ESR);
                     $('.GTraderChart').each(function() {
                         var chart = g.charts[$(this).attr('id')];
+                        if (chart.source !== g.ESR) {
+                            return;
+                        }
                         if (chart.updateESR) {
                             chart.updateESR();
                         }

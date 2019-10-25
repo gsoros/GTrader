@@ -18,7 +18,16 @@
         </div>
         <div class="col-sm-6 editable form-group">
             <label>Exchange, Symbol, Resolution</label><br>
-            {!! GTrader\Exchange::getESRSelector('bot_'.$bot->id) !!}
+            {!!
+                GTrader\Exchange::getESRSelector(
+                    'bot_'.$bot->id,
+                    [
+                        'source' => GTrader\Exchange::getESR([
+                            'get' => ['configured', 'active']
+                        ])
+                    ]
+                )
+            !!}
         </div>
         <div class="col-sm-6 editable form-group">
             <label>Strategy</label>
