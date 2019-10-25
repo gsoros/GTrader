@@ -34,7 +34,7 @@ class DefaultExchange extends Exchange {
     }
 
 
-    public function cancelUnfilledOrders(string $symbol, int $before_timestamp)
+    public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
     {
         $this->methodNotImplemented();
     }

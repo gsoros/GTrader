@@ -8,6 +8,8 @@ use GTrader\Log;
 use GuzzleHttp\Client as HttpClient;
 use OKCoinWrapper;
 
+/* deprecated class */
+
 class OKCoin extends DefaultExchange
 {
     protected function getConfiguredSymbols(array $options = []): array
@@ -79,7 +81,7 @@ class OKCoin extends DefaultExchange
     }
 
 
-    public function cancelUnfilledOrders(string $symbol, int $before_timestamp)
+    public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
     {
         $orders = $this->getOrderHistory($symbol, 'unfilled');
 

@@ -6,6 +6,8 @@ use GTrader\Log;
 use GTrader\Exchange;
 use GTrader\Trade;
 
+/* deprecated class */
+
 class OKEX_Futures extends OKCoin
 {
     public function saveFilledOrders(string $symbol, int $bot_id = null)

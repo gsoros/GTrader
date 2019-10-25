@@ -26,7 +26,7 @@ abstract class Exchange extends Base
         float $price,
         int $bot_id = null
     );
-    abstract public function cancelUnfilledOrders(string $symbol, int $before_timestamp);
+    abstract public function cancelOpenOrders(string $symbol, int $before_timestamp = 0);
     abstract public function saveFilledOrders(string $symbol, int $bot_id = null);
 
 

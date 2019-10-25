@@ -86,12 +86,4 @@ class bitmex extends Supported
         }
         return $sum;
     }
-
-
-    public function getContractValue(string $symbol): float
-    {
-        //$market = $this->getMarket($symbol);
-        //return 1 / ($market['info']['markPrice'] ?? 1);
-        return 1; // return in quote curr
-    }
 }

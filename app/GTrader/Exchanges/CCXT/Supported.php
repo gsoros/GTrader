@@ -261,6 +261,7 @@ class Supported extends DefaultExchange
         /*
         // https://github.com/ccxt/ccxt/wiki/Manual#markets
         // "The active flag is not yet supported and/or implemented by all markets."
+        // also, bitmex testnet is not 'active'
         if (isset($market['active']) && !$market['active']) {
             Log::debug('active: ', isset($market['active']) ? $market['active'] : 'not set');
             throw new \Exception('market is not active');
@@ -287,8 +288,65 @@ class Supported extends DefaultExchange
         $target_position = $balance * $position_size / 100;
         $target_contracts = floor($target_position * $price / $contract_value / $leverage);
         $current_contracts = $this->getPositionSum($symbol);
-        dump($target_contracts, $current_contracts, $target_position, $price, $contract_value, $leverage);
+        $new_contracts = $target_contracts + $current_contracts;
+        dump($new_contracts, $target_contracts, $current_contracts, $target_position, $price, $contract_value, $leverage);
         return $this;
+    }
+
+
+    public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
+    {
+        foreach ($this->fetchOrders($symbol, 'open', $before_timestamp) as $order) {
+            $this->cancelOrder($order['id'] ?? '', $order['symbol'] ?? $symbol);
+        }
+        return $this;
+    }
+
+
+    public function cancelOrder(string $id, string $symbol)
+    {
+        $return = [];
+        try {
+            $return = $this->ccxt()->cancelOrder($id, $symbol);
+        } catch (\Exception $e) {
+            Log::info($id, $e->getMessage());
+        }
+        return $return;
+    }
+
+
+    public function fetchOrders(
+        string $symbol,
+        string $order_type = '', // '', 'any', 'open', 'closed'
+        int $before_timestamp = 0): array
+    {
+        $orders = [];
+        $order_types = ['' => '', 'any' => '', 'open' => 'Open', 'closed' => 'Closed'];
+        if (!isset($order_types[$order_type])) {
+            Log::error('wrong order_type', $order_type);
+            return $orders;
+        }
+        $method = 'fetch'.$order_types[$order_type].'Orders';
+        if (!$this->has($method) || !method_exists($this->ccxt(), $method)) {
+            Log::info('Exchange has no method', $method, $this->getName());
+            return $orders;
+        }
+        try {
+            $orders = $this->ccxt()->$method($symbol);
+        } catch (\Exception $e) {
+            Log::info($e->getMessage());
+        }
+        if (0 < $before_timestamp) {
+            foreach ($orders as $id => $order) {
+                if (!isset($order['timestamp'])) {
+                    continue;
+                }
+                if ($before_timestamp < $order['timestamp']) {
+                    unset($orders[$id]);
+                }
+            }
+        }
+        return $orders;
     }
 
 
@@ -318,6 +376,7 @@ class Supported extends DefaultExchange
         }
         return $balance_arr[$currency][$field];
     }
+
 
 
     public function getFreeBalance(string $currency, $balance_arr = null): float
@@ -371,9 +430,9 @@ class Supported extends DefaultExchange
 
     public function getContractValue(string $symbol): float
     {
-        $this->methodNotImplemented();
-        return 0.0;
+        return 1.0;
     }
+
 
     public function isFutures(string $symbol): bool
     {

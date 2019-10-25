@@ -116,7 +116,7 @@ class Bot extends Model
 
         // Cancel unfilled orders
         if ($unfilled_max = intval(Arr::get($this->options, 'unfilled_max'))) {
-            $exchange->cancelUnfilledOrders(
+            $exchange->cancelOpenOrders(
                 $symbol,
                 time() - $unfilled_max * $this->resolution
             );

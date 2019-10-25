@@ -238,13 +238,11 @@ class Signals extends HasInputs
                 continue;
             }
 
-            if ('neutral' !==  $previous_signal['signal']) {
-                if (1 < $min_trade_distance) {
-                    if ($previous_signal['time'] > $candle->time - $resolution * $min_trade_distance) {
-                        $previous_candle = $candle;
-                        continue;
-                    }
-                }
+            if (('neutral' !==  $previous_signal['signal']) &&
+                (1 < $min_trade_distance) &&
+                ($previous_signal['time'] > $candle->time - $resolution * $min_trade_distance)) {
+                    $previous_candle = $candle;
+                    continue;
             }
 
             $met = [];
