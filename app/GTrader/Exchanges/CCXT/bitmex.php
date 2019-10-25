@@ -47,8 +47,51 @@ class bitmex extends Supported
                     $c_options[$param] = $r_options[$param] ? 1 : 0;
                 }
             }
+            foreach (['leverage'] as $param) {
+                if (isset($r_options[$param])) {
+                    $c_options[$param] = intval($r_options[$param]);
+                }
+            }
         }
         $config->options = $c_options;
         return parent::handleSaveRequest($request, $config);
+    }
+
+
+    public function fetchPositions(string $symbol): array
+    {
+        $positions = [];
+        $all_positions = $this->ccxt()->privateGetPosition();
+        if (!is_array($all_positions)) {
+            return $positions;
+        }
+        if (!$rsymbol = $this->getRemoteSymbol($symbol)) {
+            Log::error('could not get remote symbol for ', $symbol);
+            return $positions;
+        }
+        foreach ($all_positions as $pos) {
+            if (($pos['symbol'] ?? null) === $rsymbol) {
+                $positions[] = $pos;
+            }
+        }
+        return $positions;
+    }
+
+
+    public function getPositionSum(string $symbol): float
+    {
+        $sum = 0.0;
+        foreach ($this->fetchPositions($symbol) as $pos) {
+            $sum += floatval($pos['currentQty'] ?? 0);
+        }
+        return $sum;
+    }
+
+
+    public function getContractValue(string $symbol): float
+    {
+        //$market = $this->getMarket($symbol);
+        //return 1 / ($market['info']['markPrice'] ?? 1);
+        return 1; // return in quote curr
     }
 }

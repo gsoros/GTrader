@@ -72,7 +72,7 @@ abstract class Exchange extends Base
             Auth::id();
         //Log::debug('checking user config opts for ', $this->getName(), $user_id);
         if (!$user_id) {
-            Log::error('could not find user_id');
+            //Log::debug('could not find user_id');
             return [];
         }
         $cache_key = 'user_options';
@@ -84,7 +84,7 @@ abstract class Exchange extends Base
             ->where('exchange_id', $this->getId())
             ->value('options');
         if (!is_array($options)) {
-            Log::debug('no user config opts for ', $this->getName(), $user_id);
+            //Log::debug('no user config opts for ', $this->getName(), $user_id);
             return [];
         }
         $this->cache($cache_key, $options);

@@ -167,6 +167,13 @@ class Supported extends DefaultExchange
                     $c_options[$param] = $r_options[$param];
                 }
             }
+            foreach (['position_size'] as $param) {
+                if (isset($r_options[$param])) {
+                    $c_options[$param] = $r_options[$param]
+                        ? intval($r_options[$param])
+                        : 0;
+                }
+            }
         }
         $config->options = $c_options;
         return parent::handleSaveRequest($request, $config);
@@ -247,15 +254,10 @@ class Supported extends DefaultExchange
             throw new \Exception('takePosition() requires user_id to be set');
             return $this;
         }
-        if (!$markets = $this->getMarkets()) {
-            throw new \Exception('could not get markets');
+        if (!$market = $this->getMarket($symbol)) {
+            throw new \Exception('could not get market');
             return $this;
         }
-        if (!isset($markets[$symbol])) {
-            throw new \Exception('could not find symbol in markets', $symbol);
-            return $this;
-        }
-        $market = $markets[$symbol];
         /*
         // https://github.com/ccxt/ccxt/wiki/Manual#markets
         // "The active flag is not yet supported and/or implemented by all markets."
@@ -265,42 +267,131 @@ class Supported extends DefaultExchange
             return $this;
         }
         */
-        if (!$base_curr = $market['base']) {
+        if (!$currency = $market['base']) {
             throw new \Exception('could not get base currency');
             return $this;
         }
-        dump($this->getFreeBalance($base_curr));
+        if (!$balance = $this->getTotalBalance($currency)) {
+            Log::info('no balance');
+            return $this;
+        }
+        if (!$position_size = $this->getUserOption('position_size')) {
+            Log::info('position size not set by the user');
+            return $this;
+        }
+        if (!$contract_value = $this->getContractValue($symbol)) {
+            Log::info('could not get contract value for', $symbol);
+            return $this;
+        }
+        $leverage = intval($this->getUserOption('leverage', 1));
+        $target_position = $balance * $position_size / 100;
+        $target_contracts = floor($target_position * $price / $contract_value / $leverage);
+        $current_contracts = $this->getPositionSum($symbol);
+        dump($target_contracts, $current_contracts, $target_position, $price, $contract_value, $leverage);
         return $this;
     }
 
 
-    public function getBalance()
+    public function fetchBalance(): array
     {
-        return $this->ccxt()->fetchBalance();
+        $balance = $this->ccxt()->fetchBalance();
+        return is_array($balance) ? $balance : [];
     }
 
 
-    public function getFreeBalance(string $currency): float
+    public function getBalanceField(string $field, string $currency, $balance_arr = null): float
     {
-        if (!$balance = $this->getBalance()) {
-            throw new \Exception('could not get balance');
-            return 0.0;
+        if (!is_array($balance_arr)) {
+            if (!$balance_arr = $this->fetchBalance()) {
+                throw new \Exception('could not get balance');
+                return 0.0;
+            }
         }
-        if (!isset($balance[$currency]) ||
-            !is_array($balance[$currency])) {
+        if (!isset($balance_arr[$currency]) ||
+            !is_array($balance_arr[$currency])) {
             throw new \Exception('could not get balance of', $currency);
             return 0.0;
         }
-        if (!isset($balance[$currency]['free'])) {
-            Log::info('no balance in', $currency);
+        if (!isset($balance_arr[$currency][$field])) {
+            Log::info('no such field', $field, $currency);
             return 0.0;
         }
-        return $balance[$currency]['free'];
+        return $balance_arr[$currency][$field];
     }
 
 
-    public function getMarkets()
+    public function getFreeBalance(string $currency, $balance_arr = null): float
     {
-        return $this->getCCXTProperty('markets');
+        return $this->getBalanceField('free', $currency, $balance_arr);
+    }
+
+
+    public function getTotalBalance(string $currency, $balance_arr = null): float
+    {
+        return $this->getBalanceField('total', $currency, $balance_arr);
+    }
+
+
+    public function fetchPositions(string $symbol): array
+    {
+        $this->methodNotImplemented();
+        return [];
+    }
+
+
+    public function getPositionSum(string $symbol): float
+    {
+        $this->methodNotImplemented();
+        return 0.0;
+    }
+
+
+    public function getMarkets(): array
+    {
+        return is_array($markets = $this->getCCXTProperty('markets')) ? $markets : [];
+    }
+
+
+    public function getMarket(string $symbol): array
+    {
+        $markets = $this->getMarkets();
+        return isset($markets[$symbol])
+            ? is_array($markets[$symbol])
+                ? $markets[$symbol]
+                : []
+            : [];
+    }
+
+
+    public function getRemoteSymbol(string $symbol): string
+    {
+        return strval($this->getSymbol($symbol)['id']) ?? '';
+    }
+
+
+    public function getContractValue(string $symbol): float
+    {
+        $this->methodNotImplemented();
+        return 0.0;
+    }
+
+    public function isFutures(string $symbol): bool
+    {
+        $market = $this->getMarket($symbol);
+        return isset($market['future']) ? boolval($market['future']) : false;
+    }
+
+
+    public function isSpot(string $symbol): bool
+    {
+        $market = $this->getMarket($symbol);
+        return isset($market['spot']) ? boolval($market['spot']) : false;
+    }
+
+
+    public function isSwap(string $symbol): bool
+    {
+        $market = $this->getMarket($symbol);
+        return isset($market['swap']) ? boolval($market['swap']) : false;
     }
 }

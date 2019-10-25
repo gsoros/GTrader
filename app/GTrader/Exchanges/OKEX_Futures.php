@@ -84,8 +84,9 @@ class OKEX_Futures extends OKCoin
 
         $currency = strtolower(substr($remote_symbol, 0, 3));
 
-        $position_size = $userinfo->info->$currency->rights *
-                            $this->getUserOption('position_size') / 100;
+        $position_size =
+            $userinfo->info->$currency->rights *
+            $this->getUserOption('position_size') / 100;
         //if ($position_size > $userinfo->info->$currency->balance) return null;
         $position_contracts = floor($position_size * $price /
                                     $contract_value *
@@ -127,7 +128,7 @@ class OKEX_Futures extends OKCoin
             }
             // open long position
             if ($long_contracts_open < $position_contracts
-                                    && $position_contracts - $long_contracts_open > 0) {
+                && $position_contracts - $long_contracts_open > 0) {
                 $reply = $this->trade(
                     'open_long',
                     $price,
@@ -249,7 +250,7 @@ class OKEX_Futures extends OKCoin
 
         $exchange_id = $this->getId();
         if (!($symbol_id = self::getSymbolIdByExchangeSymbolName(
-            $this->getName(), 
+            $this->getName(),
             $symbol
         ))) {
             throw new \Exception('Could not find symbol ID for '.$symbol);
