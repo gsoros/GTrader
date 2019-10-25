@@ -71,7 +71,7 @@ class Supported extends DefaultExchange
             Log::error('markets not array in '.$this->getName(), $markets);
             return [];
         }
-        $active = in_array('active', Arr::get($options, 'get', []));
+        $active = in_array('active', $options['get'] ?? []);
         $symbols = [];
         foreach ($markets as $market) {
             if (!isset($market['symbol'])) {
