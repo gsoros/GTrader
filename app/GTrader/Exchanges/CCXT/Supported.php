@@ -167,7 +167,7 @@ class Supported extends DefaultExchange
         $r_options = $request->options ?? [];
         $c_options = $config->options ?? [];
         if ($this->has('privateAPI')) {
-            foreach (['apiKey', 'secret'] as $param) {
+            foreach (['apiKey', 'secret', 'order_type'] as $param) {
                 if (isset($r_options[$param])) {
                     $c_options[$param] = $r_options[$param];
                 }
@@ -255,6 +255,10 @@ class Supported extends DefaultExchange
         int $bot_id = null
     )
     {
+        if (!in_array($signal, ['long', 'neutral', 'short'])) {
+            Log::error('invalid signal', $signal);
+            return $this;
+        }
         if (!$user_id = $this->getParam('user_id')) {
             throw new \Exception('takePosition() requires user_id to be set');
             return $this;
@@ -263,8 +267,8 @@ class Supported extends DefaultExchange
             throw new \Exception('could not get market');
             return $this;
         }
-        if ($this->marketActive($symbol)) {
-            throw new \Exception('market is not active', $symbol);
+        if (!$this->marketActive($symbol)) {
+            throw new \Exception('market is not active');
             return $this;
         }
         if (!$currency = $market['base']) {
@@ -283,13 +287,69 @@ class Supported extends DefaultExchange
             Log::info('could not get contract value for', $symbol);
             return $this;
         }
-        $leverage = intval($this->getUserOption('leverage', 1));
-        $target_position = $balance * $position_size / 100;
+
+        if ('neutral' === $signal) {
+            $target_position = 0;
+        } else {
+            $target_position = $balance * $position_size / 100;
+            if ('short' === $signal) {
+                $target_position = 0 - $target_position;
+            }
+        }
+
+        $leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
         $target_contracts = floor($target_position * $price / $contract_value / $leverage);
         $current_contracts = $this->getPositionSum($symbol);
-        $new_contracts = $target_contracts + $current_contracts;
-        dump($new_contracts, $target_contracts, $current_contracts, $target_position, $price, $contract_value, $leverage);
+        $new_contracts = $target_contracts - $current_contracts;
+        //dump($target_contracts, $current_contracts, $new_contracts, $leverage);
+
+        if (!$new_contracts) {
+            Log::info('nothing to buy or sell', $symbol);
+            return $this;
+        }
+        $side = 0 < $new_contracts ? 'buy' : 'sell';
+        $new_contracts = abs($new_contracts);
+        $order_type =
+            in_array($order_type = $this->getUserOption('order_type'), ['market', 'limit'])
+            ? $order_type
+            : 'limit';
+        $price = $this->formatNumber($price, $symbol, 'price');
+        $new_contracts = $this->formatNumber($new_contracts, $symbol, 'amount');
+        //$this->createOrder($symbol, $order_type, $side, $new_contracts, $price);
+        dump('createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
         return $this;
+    }
+
+
+    protected function formatNumber(float $number, string $symbol, string $type): float
+    {
+        if (!in_array($type, ['price', 'amount'])) {
+            Log::error('invalid type', $type);
+            return $number;
+        }
+        if (!$market = $this->getMarket($symbol)) {
+            Log::error('could not get market for', $symbol);
+        } else {
+            if (!$limits = $market['limits'] ?? false) {
+                //Log::info('could not get limits for', $symbol);
+            } elseif (!$limits = $limits[$type] ?? false) {
+                //Log::info('could not get limits for', $symbol, $type);
+            } else {
+                if (!$min = $limits['min'] ?? false) {
+                    //Log::info('could not get min for', $symbol, $type);
+                } elseif ($number < $min) {
+                    Log::warning('conversion to min', $symbol, $type, $number, $min);
+                    $number = $min;
+                }
+                if (!$max = $limits['max'] ?? false) {
+                    //Log::info('could not get max for', $symbol, $type);
+                } elseif ($number > $max) {
+                    Log::warning('conversion to max', $symbol, $type, $number, $max);
+                    $number = $max;
+                }
+            }
+        }
+        return $this->ccxt()->{$type.'ToPrecision'}($symbol, $number);
     }
 
 

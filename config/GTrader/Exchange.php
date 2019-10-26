@@ -2,7 +2,7 @@
 
 return [
 
-    'schedule_frequency' => env('EXCHANGE_SCHEDULE_FREQ', 3),               // Fetch new candles once every # of minutes
+    'schedule_frequency' => env('EXCHANGE_SCHEDULE_FREQ', 1),               // Fetch new candles once every # of minutes
     'children_ns'           => 'Exchanges',
     'default_child'         => env('EXCHANGE_DEFAULT', 'DefaultExchange'),
     'available_exchanges'   => [                                            // list of installed exchange classes
@@ -18,7 +18,7 @@ return [
 
     'delete_candle_age'         => env('DELETE_CANDLE_AGE', 0),             // delete candles older than this # of days, 0 to disable
     'aggregator_delay'          => env('AGGREGATOR_DELAY', 500000),         // sleep this # of microseconds between requests
-    'aggregator_chunk_size'     => env('AGGREGATOR_CHUNK_SIZE', 100),      // # of candles to fetch at a time
+    'aggregator_chunk_size'     => env('AGGREGATOR_CHUNK_SIZE', 300),      // # of candles to fetch at a time
 
     'resolution_map'    => [
         '1m'    =>  60,

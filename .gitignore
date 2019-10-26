@@ -25,4 +25,5 @@ storage/dumps/
 .nano
 .bash*
 .*_history
+.selected_editor
 php-meminfo-analyzer/

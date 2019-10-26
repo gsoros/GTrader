@@ -4,3 +4,4 @@ node_modules
 .nano
 .bash*
 .*_history
+.selected_editor
