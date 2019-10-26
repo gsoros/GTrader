@@ -13,21 +13,30 @@ abstract class Exchange extends Base
 
     protected $last_error;
 
-    abstract public function getTicker(string $symbol);
-    abstract public function fetchCandles(
+    public function getTicker(string $symbol)
+    {$this->methodNotImplemented();}
+
+    public function fetchCandles(
         string $symbol,
         int $resolution,
         int $since = 0,
         int $size = 0
-    );
-    abstract public function takePosition(
+    )
+    {$this->methodNotImplemented();}
+
+    public function takePosition(
         string $symbol,
         string $signal,
         float $price,
         int $bot_id = null
-    );
-    abstract public function cancelOpenOrders(string $symbol, int $before_timestamp = 0);
-    abstract public function saveFilledOrders(string $symbol, int $bot_id = null);
+    )
+    {$this->methodNotImplemented();}
+
+    public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
+    {$this->methodNotImplemented();}
+
+    public function saveFilledOrders(string $symbol, int $bot_id = null)
+    {$this->methodNotImplemented();}
 
 
     public static function make(string $class = null, array $params = [])
@@ -188,23 +197,26 @@ abstract class Exchange extends Base
 
     public static function getDefault(string $param)
     {
-        $exchange = Exchange::singleton();
+        $exchange = Exchange::make();
         if ('exchange' === $param) {
             return $exchange->getName();
         }
         if ('symbol' === $param) {
-            $symbols = $exchange->getSymbols();
+            if (!count($symbols = $exchange->getSymbols())) {
+                Log::error('no first symbol for '.$exchange->getName());
+                return null;
+            }
             $first_symbol = reset($symbols);
-            return $first_symbol['name'];
+            return $first_symbol['symbol'] ?? null;
         }
         if ('resolution' === $param) {
             $symbols = $exchange->getSymbols();
             $first_symbol = reset($symbols);
-            if (!$first_symbol['name']) {
+            if (!$first_symbol['symbol']) {
                 Log::error('no first symbol for '.$exchange->getName());
                 return null;
             }
-            if (!count($resolutions = $exchange->getResolutions($first_symbol['name']))) {
+            if (!count($resolutions = $exchange->getResolutions($first_symbol['symbol']))) {
                 Log::error('no resolutions for '.$exchange->getName());
                 return null;
             }

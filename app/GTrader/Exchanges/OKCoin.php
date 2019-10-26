@@ -2,7 +2,7 @@
 
 namespace GTrader\Exchanges;
 
-use GTrader\Exchanges\DefaultExchange;
+use GTrader\Exchange;
 use GTrader\Trade;
 use GTrader\Log;
 use GuzzleHttp\Client as HttpClient;
@@ -10,7 +10,7 @@ use OKCoinWrapper;
 
 /* deprecated class */
 
-class OKCoin extends DefaultExchange
+class OKCoin extends Exchange
 {
     protected function getConfiguredSymbols(array $options = []): array
     {

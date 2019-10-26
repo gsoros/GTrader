@@ -102,12 +102,12 @@ trait HasCCXT
 
     protected function &getCCXTTargetProp($prop)
     {
-        if (!is_object($ccxt = $this->ccxt())) {
-            Log::debug('ccxt not obj, wanted ', $prop);
-            return null;
-        }
         $nil = null;
         $target = null;
+        if (!is_object($ccxt = $this->ccxt())) {
+            Log::debug('ccxt not obj, wanted ', $prop);
+            return $nil;
+        }
         if (is_array($prop)) {
             $key = array_shift($prop);
             if (!isset($ccxt->$key)) {

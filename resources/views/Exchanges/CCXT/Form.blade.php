@@ -28,7 +28,7 @@
                         id="position_size"
                         name="options[position_size]"
                         title="How much of the available balance will be used to open a position"
-                        value="{{ $options['position_size'] ?? 0}}">
+                        value="{{ $options['position_size'] ?? 1 }}">
             </div>
             <div class="col-sm-3 editable form-group">
                 <label for="options[order_type]">Order Type</label>

@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use GTrader\UserExchangeConfig;
-use GTrader\Exchanges\DefaultExchange;
+use GTrader\Exchange;
 use GTrader\Log;
 
-class Supported extends DefaultExchange
+class Supported extends Exchange
 {
     use HasCCXT;
 

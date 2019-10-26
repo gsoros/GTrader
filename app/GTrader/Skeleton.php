@@ -20,7 +20,7 @@
 
 namespace GTrader;
 
-use GTrader\Indicator;
+//use GTrader\Indicator; //?? why ??
 
 trait Skeleton
 {

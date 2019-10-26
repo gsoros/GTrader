@@ -100,17 +100,21 @@ $(function() {
                     }
                 },
                 error: function(response) {
+                    if (401  == response.status || 403 == response.status) {
+                        console.log('Session expired, redirecting to login.');
+                        window.location.href = '/login';
+                    }
                     if (0 == response.status && 'abort' === response.statusText) {
                         return;
                     }
                     console.log(response);
                     window.GTrader.setLoading(target, false);
-                    window.GTrader.errorBubble(
-                        target,
-                        response.status + ': ' +
-                        response.statusText + '<br>' +
-                        response.responseText
-                    );
+                    var msg =
+                        (response.status ? response.status + ': ' : '') +
+                        (response.statusText ? response.statusText + '<br>' : '') +
+                        (response.responseText ? response.responseText : '');
+                    msg = msg.length ? msg : 'Unknown error';
+                    window.GTrader.errorBubble(target, msg);
                 }
             });
         },

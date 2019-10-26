@@ -6,12 +6,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 
 use GTrader\UserExchangeConfig;
-use GTrader\Exchanges\DefaultExchange;
+use GTrader\Exchange;
 use GTrader\Trade;
 use GTrader\Log;
 use ccxt\Exchange as CCXTlib;
 
-class Wrapper extends DefaultExchange
+class Wrapper extends Exchange
 {
     use HasCCXT;
 

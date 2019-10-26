@@ -100,6 +100,7 @@ class Aggregator extends Base
                         $candle->symbol_id = $symbol_id;
                         $candle->resolution = $resolution;
                         try {
+                            $candle = Series::sanitizeCandle($candle);
                             Series::saveCandle($candle);
                         } catch (\Exception $e) {
                             echo PHP_EOL.'Error: '.$e->getMessage();

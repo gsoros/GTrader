@@ -518,6 +518,17 @@ class Series extends Collection
     }
 
 
+    public static function sanitizeCandle($candle)
+    {
+        if ($candle->high < ($max = max($candle->open, $candle->low, $candle->close))) {
+            $candle->high = $max;
+        }
+        if ($candle->low < ($min = min($candle->open, $candle->high, $candle->close))) {
+            $candle->low = $min;
+        }
+        return $candle;
+    }
+
     public function getEpoch($resolution = null, $symbol = null, $exchange = null)
     {
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param) {
