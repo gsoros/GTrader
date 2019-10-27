@@ -55,7 +55,7 @@ class Util
     }
 
 
-    public static function iterate(array $array, callable $callback)
+    public static function iterate(array $array, Callable $callback)
     {
         reset($array);
         foreach ($array as $index => $value) {

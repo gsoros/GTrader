@@ -63,7 +63,11 @@ class Wrapper extends Exchange
 
         if ($all || $configured) {
             $CCXTlib = new CCXTlib;
+            $blacklist = $this->getParam('blacklist', []);
             foreach ($CCXTlib::$exchanges as $ccxt_id) {
+                if (in_array($ccxt_id, $blacklist)) {
+                    continue;
+                }
                 //Log::debug('making '.self::CLASS_PREFIX.$ccxt_id);
                 $exchange = self::make(self::CLASS_PREFIX.$ccxt_id, ['ccxt_id' => $ccxt_id]);
                 if ($configured) {

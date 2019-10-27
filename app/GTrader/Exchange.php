@@ -659,4 +659,43 @@ abstract class Exchange extends Base
         }
         return false;
     }
+
+
+    public function globalOptions(array $new_options = null): array
+    {
+        $key = 'global_options';
+        if (is_array($new_options)) {
+            DB::table('exchanges')->
+                where('id', $this->getId())->
+                update([$key => serialize($new_options)]);
+            $this->cache($key, $new_options);
+            return $new_options;
+        }
+        if ($cached = $this->cached($key)) {
+            return $cached;
+        }
+        $serialized = DB::table('exchanges')->
+            where('id', $this->getId())->
+            value($key);
+        $options = is_string($serialized) && strlen($serialized)
+            ? unserialize($serialized)
+            : [];
+        $this->cache($key, $options);
+        return $options;
+    }
+
+
+    public function getGlobalOption(string $key)
+    {
+        return Arr::get($this->globalOptions(), $key);
+    }
+
+
+    public function setGlobalOption(string $key, $value)
+    {
+        $options = $this->globalOptions();
+        Arr::set($options, $key, $value);
+        $this->globalOptions($options);
+        return $this;
+    }
 }

@@ -18,7 +18,7 @@ return [
 
     'delete_candle_age'         => env('DELETE_CANDLE_AGE', 0),             // delete candles older than this # of days, 0 to disable
     'aggregator_delay'          => env('AGGREGATOR_DELAY', 500000),         // sleep this # of microseconds between requests
-    'aggregator_chunk_size'     => env('AGGREGATOR_CHUNK_SIZE', 300),      // # of candles to fetch at a time
+    'aggregator_chunk_size'     => env('AGGREGATOR_CHUNK_SIZE', 30),      // # of candles to fetch at a time
 
     'resolution_map'    => [
         '1m'    =>  60,

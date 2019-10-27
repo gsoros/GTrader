@@ -212,10 +212,7 @@ class Supported extends Exchange
         );
         //Log::debug($candles);
 
-        if (!is_array($candles)) {
-            return [];
-        }
-        if (!count($candles)) {
+        if (!is_array($candles) || !count($candles)) {
             return [];
         }
 

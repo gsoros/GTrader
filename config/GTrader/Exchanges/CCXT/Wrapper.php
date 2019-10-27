@@ -6,4 +6,7 @@ return [
     'children_ns'   => 'Exchanges',
     'default_child' => 'CCXT\\Supported',
     'user_options'  => [],
+    'blacklist'     => [
+        'kucoin2',          // deprecated
+    ],
 ];

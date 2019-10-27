@@ -18,6 +18,7 @@ class CreateExchangesSymbolsCandlesTables extends Migration
             $table->string('name')->index();
             $table->string('long_name');
         });
+        DB::statement('ALTER TABLE exchanges ADD global_options MEDIUMBLOB NULL DEFAULT NULL');
 
         Schema::create('symbols', function (Blueprint $table) {
             $table->increments('id');

@@ -1,5 +1,6 @@
 @php
     $version = $exchange->getCCXTProperty('version');
+    $ccxt_id = $exchange->getCCXTProperty('id');
     $symbol_ids = array_keys($exchange->getSymbols());
     $symbol_names = [];
     foreach ($symbol_ids as $symbol_id) {
@@ -8,15 +9,16 @@
     $timeframes = $exchange->getTimeframes();
 @endphp
 <div class="container">
-    @if (is_string($version))
-        <div class="row">
-            <div class="col-sm-12 editable">
-                <p>
-                    Version: {{ $version }}
-                </p>
-            </div>
+    <div class="row">
+        <div class="col-sm-12 editable">
+            <p>
+                CCXT ID: {{ $ccxt_id }}
+                @if (is_string($version))
+                    <span class="float-right">API Version: {{ $version }}</span>
+                @endif
+            </p>
         </div>
-    @endif
+    </div>
     @if ($error = $exchange->lastError())
         <div class="row">
             <div class="col-sm-12 alert alert-warning alert-dismissible fade show" role="alert">

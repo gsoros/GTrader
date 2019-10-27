@@ -38,21 +38,16 @@ class Aggregator extends Base
             $exchange = $this->getExchange($exchange_class);
             $exchange_id = $exchange->getId();
             $symbols = $exchange->getSymbols(['get' => ['configured']]);
-            if (!is_array($symbols)) {
+            if (!is_array($symbols) || !count($symbols)) {
                 continue;
             }
-            if (!count($symbols)) {
-                continue;
-            }
+            $chunk_size = $exchange->getParam('aggregator_chunk_size', 100);
             $delay = $exchange->getParam('aggregator_delay', 0);
             echo PHP_EOL.$exchange->getName().': ';
 
             foreach ($symbols as $symbol_name => $symbol) {
                 //dump($exchange->getName(), $symbols);
-                if (!isset($symbol['resolutions'])) {
-                    continue;
-                }
-                if (!is_array($symbol['resolutions'])) {
+                if (!isset($symbol['resolutions']) || !is_array($symbol['resolutions'])) {
                     continue;
                 }
                 if (!isset($symbol['long_name'])) {
@@ -66,32 +61,74 @@ class Aggregator extends Base
                 echo $symbol_name.': ';
 
                 foreach ($symbol['resolutions'] as $resolution => $res_name) {
-                    $time = $this->getLastCandleTime(
-                        $exchange->getParam('id'),
+                    $last = $this->getCandleTime(
+                        $exchange_id,
                         $symbol_id,
-                        $resolution
+                        $resolution,
+                        'last'
                     );
-                    $since = $time - $resolution;
+                    $since = $last - $resolution;
                     $since = $since > 0 ? $since : 0;
 
                     echo $res_name.' ('.date('Y-m-d H:i', $since).'): ';
                     flush();
 
-                    try {
-                        $candles = $exchange->fetchCandles(
+                    $candles = $this->fetchCandles(
+                        $exchange,
+                        $symbol_name,
+                        $resolution,
+                        $since,
+                        $chunk_size
+                    );
+                    $count = count($candles);
+
+                    $epoch_key = 'epochs.'.str_replace('.', '_', $symbol_name);
+                    $epoch = $exchange->getGlobalOption($epoch_key);
+                    $first = $this->getCandleTime(
+                        $exchange_id,
+                        $symbol_id,
+                        $resolution,
+                        'first'
+                    );
+                    $ancient_count = 0;
+                    if (!$epoch || $epoch < $first) {
+                        usleep($delay);
+                        $fetch_last = $first ? $first : time();
+                        $ancient_candles = $this->fetchCandles(
+                            $exchange,
                             $symbol_name,
                             $resolution,
-                            $since,
-                            $exchange->getParam('aggregator_chunk_size', 1000)
+                            $fetch_last - $chunk_size * $resolution,
+                            $chunk_size
                         );
-                    } catch (\Exception $e) {
-                        $msg = str_replace("\n", '', strip_tags($e->getMessage()));
-                        $msg = 197 < strlen($msg) ? substr($msg, 0, 197).'...' : $msg;
-                        echo PHP_EOL.'Error: '.$msg;
-                        Log::error('fetchCandles', $exchange->getName(), $symbol_name, $msg);
+                        if ($ancient_count = count($ancient_candles)) {
+                            echo $ancient_count;
+                            $ancient_exists = 0;
+                            foreach ($ancient_candles as $key => $candle) {
+                                if (DB::table('candles')->where([
+                                        ['time', $candle->time],
+                                        ['exchange_id', $exchange_id],
+                                        ['symbol_id', $symbol_id],
+                                        ['resolution', $resolution],
+                                    ])->exists()) {
+                                    $ancient_exists++;
+                                    unset($ancient_candles[$key]);
+                                }
+                            }
+                            if ($ancient_exists) {
+                                echo ' ['.$ancient_exists.']';
+                                if ($ancient_exists === $ancient_count) {
+                                    $exchange->setGlobalOption($epoch_key, $first);
+                                }
+                            }
+                            echo '<->';
+                            $candles = array_merge($ancient_candles, $candles);
+                        } elseif ($first) {
+                            $exchange->setGlobalOption($epoch_key, $first);
+                        }
                     }
 
-                    if (!isset($candles) || !is_array($candles) || !count($candles)) {
+                    if (!$count && !$ancient_count) {
                         echo '0, ';
                         continue;
                     }
@@ -107,7 +144,7 @@ class Aggregator extends Base
                             Log::error($e->getMessage());
                         }
                     }
-                    echo count($candles).', ';
+                    echo $count.', ';
                     usleep($delay);
                 }
             }
@@ -139,6 +176,30 @@ class Aggregator extends Base
     }
 
 
+    protected function fetchCandles(
+        $exchange,
+        $symbol_name,
+        $resolution,
+        $since,
+        $chunk_size
+    ) {
+        $candles = null;
+        try {
+            $candles = $exchange->fetchCandles(
+                $symbol_name,
+                $resolution,
+                $since,
+                $chunk_size
+            );
+        } catch (\Exception $e) {
+            $msg = str_replace("\n", '', strip_tags($e->getMessage()));
+            $msg = 197 < strlen($msg) ? substr($msg, 0, 197).'...' : $msg;
+            echo PHP_EOL.'Error: '.$msg;
+            Log::error('fetchCandles', $exchange->getName(), $symbol_name, $msg);
+        }
+        return $candles;
+    }
+
     /**
      * Checks if the DB is ready and exchanges table exists
      * @return bool
@@ -159,26 +220,36 @@ class Aggregator extends Base
 
 
     /**
-     * Get last candle time
+     * Get first/last candle time
      * @param  int    $exchange_id
      * @param  int    $symbol_id
      * @param  int    $resolution
+     * @param string  $get
      * @return int
      */
-    protected function getLastCandleTime(
+    protected function getCandleTime(
         int $exchange_id,
         int $symbol_id,
-        int $resolution
-    ) {
-        $time = DB::table('candles')
+        int $resolution,
+        string $get = 'first'
+    ): int {
+        $query = DB::table('candles')
             ->select('time')
             ->where('exchange_id', $exchange_id)
             ->where('symbol_id', $symbol_id)
-            ->where('resolution', $resolution)
-            ->latest('time')
-            ->first();
-        return is_object($time) ? $time->time : 0;
+            ->where('resolution', $resolution);
+        if ('first' === $get) {
+            $query->orderBy('time');
+        } elseif ('last' === $get) {
+            $query->latest('time');
+        } else {
+            Log::error('unsupported parameter', $get);
+            return 0;
+        }
+        $time = $query->first();
+        return is_object($time) ? (int)$time->time : 0;
     }
+
 
     protected function getExchanges()
     {
@@ -186,6 +257,7 @@ class Aggregator extends Base
             'get' => ['configured']
         ]);
     }
+
 
     /**
      * returns the Exhange object
