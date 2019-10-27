@@ -99,34 +99,29 @@ class Bot extends Model
         $symbol = Exchange::getSymbolNameById($this->symbol_id);
 
         // Set up our Exchange object
-        $exchange_name = Exchange::getNameById($this->exchange_id);
-        $exchange = Exchange::make($exchange_name);
-
         // Tell the exchange which user's settings should be loaded
-        $exchange->setParam('user_id', $this->user_id);
-
-        // Check if we got the correct exchange
-        // TODO this will fail with CCXT
-        if ($exchange->getShortClass() !== $exchange_name) {
-            throw new \Exception('Wanted '.$exchange_name.' got '.$exchange->getShortClass());
-        }
+        $exchange_name = Exchange::getNameById($this->exchange_id);
+        $exchange = Exchange::make($exchange_name, ['user_id' => $this->user_id]);
 
         // Save a record of any filled orders into local db
-        $exchange->saveFilledOrders($symbol, $this->id);
+        $exchange->saveFilledTrades($symbol, $this->id);
 
         // Cancel unfilled orders
+        /*
         if ($unfilled_max = intval(Arr::get($this->options, 'unfilled_max'))) {
             $exchange->cancelOpenOrders(
                 $symbol,
                 time() - $unfilled_max * $this->resolution
             );
         }
+        */
+        $exchange->cancelOpenOrders($symbol);
 
 
         // Set up our series
         $candles_limit = 200;
         $candles = new Series([
-            'exchange' => Exchange::getNameById($this->exchange_id),
+            'exchange' => $exchange->getName(),
             'symbol' => $symbol,
             'resolution' => $this->resolution,
             'limit' => $candles_limit,
@@ -143,7 +138,7 @@ class Bot extends Model
         //Log::debug('signals:', $signals);
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
-        if (! $last_signal = array_pop($signals)) {
+        if (!$last_signal = array_pop($signals)) {
             echo "No signals\n";
             Lock::release($lock);
             return $this;
@@ -291,6 +286,6 @@ class Bot extends Model
 
     public function getExchangeName()
     {
-        return Exchange::getNameById($this->exchange_id);
+        return Exchange::getLongNameById($this->exchange_id);
     }
 }

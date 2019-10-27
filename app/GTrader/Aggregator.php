@@ -67,6 +67,7 @@ class Aggregator extends Base
                         $resolution,
                         'last'
                     );
+                    $last = $last ? $last : time();
                     $since = $last - $resolution;
                     $since = $since > 0 ? $since : 0;
 
@@ -81,6 +82,7 @@ class Aggregator extends Base
                         $chunk_size
                     );
                     $count = count($candles);
+                    $this->saveCandles($candles, $exchange_id, $symbol_id, $resolution);
 
                     $epoch_key = 'epochs.'.str_replace('.', '_', $symbol_name);
                     $epoch = $exchange->getGlobalOption($epoch_key);
@@ -121,8 +123,10 @@ class Aggregator extends Base
                                     $exchange->setGlobalOption($epoch_key, $first);
                                 }
                             }
+                            $remaining = count($ancient_candles);
                             if ($first &&
-                                    ($ancient_candles[count($ancient_candles) - 1]->time
+                                    isset($ancient_candles[$remaining - 1]) &&
+                                    ($ancient_candles[$remaining - 1]->time
                                         < ($first - $resolution))
                                 ) {
                                 Log::error('Gap detected at '.$first.
@@ -133,7 +137,8 @@ class Aggregator extends Base
                             }
                             else {
                                 echo '<->';
-                                $candles = array_merge(array_reverse($ancient_candles), $candles);
+                                $this->saveCandles(array_reverse($ancient_candles),
+                                    $exchange_id, $symbol_id, $resolution);
                             }
                         } elseif ($first) {
                             $exchange->setGlobalOption($epoch_key, $first);
@@ -144,18 +149,7 @@ class Aggregator extends Base
                         echo '0, ';
                         continue;
                     }
-                    foreach ($candles as $candle) {
-                        $candle->exchange_id = $exchange_id;
-                        $candle->symbol_id = $symbol_id;
-                        $candle->resolution = $resolution;
-                        try {
-                            $candle = Series::sanitizeCandle($candle);
-                            Series::saveCandle($candle);
-                        } catch (\Exception $e) {
-                            echo PHP_EOL.'Error: '.$e->getMessage();
-                            Log::error($e->getMessage());
-                        }
-                    }
+
                     echo $count.', ';
                     usleep($delay);
                 }
@@ -262,6 +256,27 @@ class Aggregator extends Base
         return is_object($time) ? (int)$time->time : 0;
     }
 
+
+    protected function saveCandles(
+        array $candles,
+        int $exchange_id,
+        int $symbol_id,
+        int $resolution)
+    {
+        foreach ($candles as $candle) {
+            $candle->exchange_id = $exchange_id;
+            $candle->symbol_id = $symbol_id;
+            $candle->resolution = $resolution;
+            try {
+                $candle = Series::sanitizeCandle($candle);
+                Series::saveCandle($candle);
+            } catch (\Exception $e) {
+                echo PHP_EOL.'Error: '.$e->getMessage();
+                Log::error($e->getMessage());
+            }
+        }
+        return $this;
+    }
 
     protected function getExchanges()
     {

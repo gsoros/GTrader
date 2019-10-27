@@ -35,7 +35,7 @@ abstract class Exchange extends Base
     public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
     {$this->methodNotImplemented();}
 
-    public function saveFilledOrders(string $symbol, int $bot_id = null)
+    public function saveFilledTrades(string $symbol, int $bot_id = null)
     {$this->methodNotImplemented();}
 
     public function getFee(string $symbol, string $type = 'taker'): float
@@ -247,18 +247,28 @@ abstract class Exchange extends Base
 
     public static function getNameById(int $id)
     {
-        if ($name = static::statCached('id_'.$id)) {
-            return $name;
+        return static::getFieldById($id, 'name');
+    }
+
+
+    public static function getLongNameById(int $id)
+    {
+        return static::getFieldById($id, 'long_name');
+    }
+
+
+    public static function getFieldById(int $id, string $field = 'name')
+    {
+        $cache_key = 'id_'.$id.'_'.$field;
+        if ($value = static::statCached($cache_key)) {
+            return $value;
         }
-        $query = DB::table('exchanges')
-                    ->select('name')
-                    ->where('id', $id)
-                    ->first();
-        if (is_object($query)) {
-            static::statCache('id_'.$id, $query->name);
-            return $query->name;
-        }
-        return null;
+        $value = DB::table('exchanges')
+            ->select($field)
+            ->where('id', $id)
+            ->value($field);
+        static::statCache($cache_key, $value);
+        return $value;
     }
 
 
@@ -332,18 +342,6 @@ abstract class Exchange extends Base
         return [];
     }
 
-
-    public function getSymbolIdByRemoteName(string $remote_name)
-    {
-        foreach ($this->getParam('symbols') as $symbol) {
-            if ($symbol['remote_name'] === $remote_name) {
-                return self::getSymbolIdByExchangeSymbolName(
-                    $this->getName(),
-                    $symbol['name']
-                );
-            }
-        }
-    }
 
 
     public static function getSymbolNameById(int $id)
@@ -583,6 +581,41 @@ abstract class Exchange extends Base
         return $symbols[$symbol_name];
     }
 
+
+    public function getSymbolId(string $symbol): int
+    {
+        $cache_key = $symbol.'_id';
+        if ($id = $this->cached($cache_key)) {
+            return $id;
+        }
+        $id = intval(
+            DB::table('symbols')->
+                where([
+                    ['exchange_id', $this->getId()],
+                    ['name', $symbol],
+                ])->value('id')
+            );
+        $this->cache($cache_key, $id);
+        return $id;
+    }
+
+
+    public function getLastSavedTradeTime(): int
+    {
+        if (!$user_id = $this->getParam('user_id')) {
+            Log::error('need user_id');
+            return 0;
+        }
+        return intval(
+            DB::table('trades')->
+                where([
+                    ['exchange_id', $this->getId()],
+                    ['user_id', $user_id],
+                ])->
+                orderBy('time', 'desc')->
+                value('time')
+        );
+    }
 
 
     public static function resolutionName(int $resolution): string

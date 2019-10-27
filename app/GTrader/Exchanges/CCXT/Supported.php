@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
 use GTrader\Log;
+use GTrader\Trade;
 
 class Supported extends Exchange
 {
@@ -325,14 +326,17 @@ class Supported extends Exchange
         }
         $side = 0 < $new_contracts ? 'buy' : 'sell';
         $new_contracts = abs($new_contracts);
-        $order_type =
-            in_array($order_type = $this->getUserOption('order_type'), ['market', 'limit'])
-            ? $order_type
-            : 'limit';
-        $price = $this->formatNumber($price, $symbol, 'price');
+        $order_type = $this->getUserOption('order_type');
+        if ('market' === $order_type) {
+            $price = null;
+        }
+        else {
+            $order_type = 'limit';
+            $price = $this->formatNumber($price, $symbol, 'price');
+        }
         $new_contracts = $this->formatNumber($new_contracts, $symbol, 'amount');
-        //$this->createOrder($symbol, $order_type, $side, $new_contracts, $price);
-        dump('createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
+        $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
+        //dump('createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
         return $this;
     }
 
@@ -383,6 +387,7 @@ class Supported extends Exchange
 
     public function cancelOpenOrders(string $symbol, int $before_timestamp = 0)
     {
+        //dump($symbol, date('Y-m-d H:i:s', $before_timestamp));
         foreach ($this->fetchOrders($symbol, 'open', $before_timestamp) as $order) {
             $this->cancelOrder($order['id'] ?? '', $order['symbol'] ?? $symbol);
         }
@@ -424,6 +429,7 @@ class Supported extends Exchange
             Log::info($e->getMessage());
         }
         if (0 < $before_timestamp) {
+            $before_timestamp *= 1000;
             foreach ($orders as $id => $order) {
                 if (!isset($order['timestamp'])) {
                     continue;
@@ -584,5 +590,51 @@ class Supported extends Exchange
     public function getFee(string $symbol, string $type = 'taker'): float
     {
         return floatval($this->getMarketPropery($symbol, $type));
+    }
+
+
+    public function saveFilledTrades(string $symbol, int $bot_id = null)
+    {
+        if (!$user_id = $this->getParam('user_id')) {
+            throw new \Exception('need user id');
+        }
+        if (!$this->has('fetchClosedOrders')) {
+            Log::error('exchange does not support fetchClosedOrders', $this->getName());
+            return $this;
+        }
+        $since = $this->getLastSavedTradeTime();
+        $orders = [];
+        try {
+            $orders = $this->ccxt()->fetchClosedOrders(null, $since);
+        } catch (\Exception $e) {
+            Log::error('could not fetch closed orders', $this->getName(), $e->getMessage());
+        }
+        if (!is_array($orders) || !count($orders)) {
+            return $this;
+        }
+        $leverage = $this->getUserOption('leverage', 1);
+        foreach ($orders as $order) {
+            //dump($order);
+            $trade = Trade::firstOrNew(['remote_id' => $order['id']]);
+            $trade->time = intval($order['timestamp']);
+            $trade->remote_id = $order['id'];
+            $trade->exchange_id = $this->getId();
+            $trade->symbol_id = $this->getSymbolId(strval($order['symbol']));
+            $trade->user_id = $user_id;
+            $trade->bot_id = $bot_id;
+            $trade->amount_ordered = $order['amount'];
+            $trade->amount_filled = $order['filled'];
+            $trade->price = $order['price'];
+            $trade->avg_price = $order['cost'];
+            $trade->action = $order['side'];
+            $trade->type = $order['type'];
+            $trade->fee = $order['fee']['cost'];
+            $trade->fee_currency = $order['fee']['currency'];
+            $trade->status = $order['status'];
+            $trade->leverage = $leverage;
+            $trade->contract = '';
+            $trade->save();
+        }
+        return $this;
     }
 }

@@ -6,7 +6,7 @@
             @endphp
             <div class="col-sm-6 editable">
                 <div class="row">
-                    <div class="col-sm-8">
+                    <div class="col-sm-8" title="Bot ID: {{ $id }}">
                         @if ('active' === $bot->status)
                             <span class="editable">
                                 Active on {{ $bot->getExchangeName() }}

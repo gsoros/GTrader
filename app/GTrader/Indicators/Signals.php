@@ -211,7 +211,10 @@ class Signals extends HasInputs
 
         $previous_candle = null;
 
-        $first_display_time = $candles->byKey($candles->getFirstKeyForDisplay())->time;
+        $first_display_time = is_object(
+            $c = $candles->byKey($candles->getFirstKeyForDisplay()))
+            ? $c->time
+            : 0;
 
         $actions = ['open', 'close'];
         $directions = ['long', 'short'];

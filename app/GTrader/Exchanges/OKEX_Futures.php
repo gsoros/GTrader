@@ -10,7 +10,7 @@ use GTrader\Trade;
 
 class OKEX_Futures extends OKCoin
 {
-    public function saveFilledOrders(string $symbol, int $bot_id = null)
+    public function saveFilledTrades(string $symbol, int $bot_id = null)
     {
         $order_types = $this->getParam('order_types');
         $statuscodes = $this->getParam('order_statuscodes');
