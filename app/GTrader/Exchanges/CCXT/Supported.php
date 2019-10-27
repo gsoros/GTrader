@@ -324,6 +324,10 @@ class Supported extends Exchange
             Log::info('nothing to buy or sell', $symbol);
             return $this;
         }
+        if ($new_contracts < $current_contracts / 100) {
+            Log::info('Less than 1% to change, aborting', $symbol);
+            return $this;
+        }
         $side = 0 < $new_contracts ? 'buy' : 'sell';
         $new_contracts = abs($new_contracts);
         $order_type = $this->getUserOption('order_type');
