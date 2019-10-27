@@ -103,7 +103,7 @@ class Aggregator extends Base
                         );
                         if ($ancient_count = count($ancient_candles)) {
                             echo $ancient_count;
-                            $ancient_exists = 0;
+                            $ancient_duplicates = 0;
                             foreach ($ancient_candles as $key => $candle) {
                                 if (DB::table('candles')->where([
                                         ['time', $candle->time],
@@ -111,18 +111,30 @@ class Aggregator extends Base
                                         ['symbol_id', $symbol_id],
                                         ['resolution', $resolution],
                                     ])->exists()) {
-                                    $ancient_exists++;
+                                    $ancient_duplicates++;
                                     unset($ancient_candles[$key]);
                                 }
                             }
-                            if ($ancient_exists) {
-                                echo ' ['.$ancient_exists.']';
-                                if ($ancient_exists === $ancient_count) {
+                            if ($ancient_duplicates) {
+                                echo ' ['.$ancient_duplicates.']';
+                                if ($ancient_duplicates === $ancient_count) {
                                     $exchange->setGlobalOption($epoch_key, $first);
                                 }
                             }
-                            echo '<->';
-                            $candles = array_merge($ancient_candles, $candles);
+                            if ($first &&
+                                    ($ancient_candles[count($ancient_candles) - 1]->time
+                                        < ($first - $resolution))
+                                ) {
+                                Log::error('Gap detected at '.$first.
+                                    ', chunk size of '.$chunk_size.
+                                    ' might be too high for '.$exchange->getName()
+                                );
+                                echo '[GAP] ';
+                            }
+                            else {
+                                echo '<->';
+                                $candles = array_merge(array_reverse($ancient_candles), $candles);
+                            }
                         } elseif ($first) {
                             $exchange->setGlobalOption($epoch_key, $first);
                         }
