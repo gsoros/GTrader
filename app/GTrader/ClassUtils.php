@@ -6,10 +6,11 @@ trait ClassUtils
 {
     protected static function getClassConf(string $class, $key = null)
     {
-        //Log::debug('getClassConf('.$class.', '.$key.')');
+        //echo PHP_EOL.'getClassConf('.$class.', '.$key.')';
         if (!is_null($key)) {
             $key = '.'.$key;
         }
+        //echo PHP_EOL.'config('.str_replace('\\', '.', $class).$key.')';
         $conf = config(str_replace('\\', '.', $class).$key);
         return $conf;
     }

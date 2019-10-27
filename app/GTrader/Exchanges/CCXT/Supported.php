@@ -4,6 +4,7 @@ namespace GTrader\Exchanges\CCXT;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 
 use GTrader\UserExchangeConfig;
 use GTrader\Exchange;
@@ -21,6 +22,17 @@ class Supported extends Exchange
         //$this->setParam('ccxt_id', $this->getShortClass());
         //Log::debug($this->oid().' __construct()', $params, $this->getParams());
         parent::__construct($params);
+
+        if ($testnet = $this->getParam('has.testnet')) {
+            if ($this->getUserOption('use_testnet')) {
+                if (!$testnet_url = $this->getCCXTProperty(['urls', $testnet['urlKey'] ?? null]) ?? null) {
+                    throw new \Exception('Could not obtain testnet API URL');
+                }
+                if (!$this->setCCXTProperty(['urls', 'api'], $testnet_url)) {
+                    throw new \Exception('Could not set API URL to testnet API URL');
+                }
+            }
+        }
 
         foreach (
             ['apiKey' => 'apiKey', 'secret' => 'secret']
@@ -166,6 +178,13 @@ class Supported extends Exchange
     {
         $r_options = $request->options ?? [];
         $c_options = $config->options ?? [];
+        if ($testnet = $this->getParam('has.testnet')) {
+            foreach (['use_testnet'] as $param) {
+                if (isset($r_options[$param])) {
+                    $c_options[$param] = $r_options[$param] ? 1 : 0;
+                }
+            }
+        }
         if ($this->has('privateAPI')) {
             foreach (['apiKey', 'secret', 'order_type'] as $param) {
                 if (isset($r_options[$param])) {
@@ -420,27 +439,37 @@ class Supported extends Exchange
 
     public function fetchBalance(): array
     {
-        $balance = $this->ccxt()->fetchBalance();
+        try {
+            //$this->ccxt()->loadMarkets();
+            //$this->setCCXTProperty('verbose', true);
+            $balance = $this->ccxt()->fetchBalance();
+        } catch (\Exception $e) {
+            Log::info('fetchBalance() failed', $e->getMessage());
+            return [];
+        }
         return is_array($balance) ? $balance : [];
     }
 
 
     public function getBalanceField(string $field, string $currency, $balance_arr = null): float
     {
+        $nil = 0.0;
         if (!is_array($balance_arr)) {
-            if (!$balance_arr = $this->fetchBalance()) {
-                throw new \Exception('could not get balance');
-                return 0.0;
+            if (!count($balance_arr = $this->fetchBalance())) {
+                Log::info('could not get balance for', $this->getName());
+                //throw new \Exception('could not get balance for '.$this->getName());
+                return $nil;
             }
         }
         if (!isset($balance_arr[$currency]) ||
             !is_array($balance_arr[$currency])) {
-            throw new \Exception('could not get balance of', $currency);
-            return 0.0;
+            Log::info('could not get balance for', $this->getName(), $currency);
+            //throw new \Exception('could not get balance for '.$this->getName().', '.$currency);
+            return $nil;
         }
         if (!isset($balance_arr[$currency][$field])) {
-            Log::info('no such field', $field, $currency);
-            return 0.0;
+            Log::info('no such field', $this->getName(), $field, $currency);
+            return $nil;
         }
         return $balance_arr[$currency][$field];
     }
@@ -520,5 +549,40 @@ class Supported extends Exchange
     {
         $market = $this->getMarket($symbol);
         return isset($market['swap']) ? boolval($market['swap']) : false;
+    }
+
+
+    public function isLive()
+    {
+        return 'ok' === $this->getStatus()['status'];
+    }
+
+
+    public function getStatus(): array
+    {
+        if ($cached = $this->cached('status')) {
+            $status = $cached;
+        } else {
+            if (!is_array($status = $this->ccxt()->fetchStatus())
+                || !array_key_exists('status', $status)) {
+                Log::info('wrong status received', $this->getName(), $status);
+                return ['status' => 'error'];
+            }
+            $this->cache('status', $status);
+        }
+        return $status;
+    }
+
+
+    public function getMarketPropery(string $symbol, string $key)
+    {
+        $market = $this->getMarket($symbol);
+        return Arr::get($market, $key);
+    }
+
+
+    public function getFee(string $symbol, string $type = 'taker'): float
+    {
+        return floatval($this->getMarketPropery($symbol, $type));
     }
 }

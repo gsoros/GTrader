@@ -59,6 +59,7 @@ class Balance extends HasInputs
         $this->runInputIndicators($force_rerun);
 
         $candles = $this->getCandles();
+        $symbol = $candles->getParam('symbol');
 
         //dump('Balance->calc '.date($f = 'Y-m-d H:i', $candles->first()->time).' - '.date($f, $candles->last()->time));
 
@@ -108,7 +109,7 @@ class Balance extends HasInputs
         $capital = floatval($this->getParam('indicator.capital'));
         $upl = 0;
         $stake = $capital * $position_size / 100;
-        $fee_multiplier = $exchange->getParam('fee_multiplier');
+        $fee_multiplier = $exchange->getFee($symbol);
         $liquidated = false;
         $signal = null;
         $prev_signal = null;

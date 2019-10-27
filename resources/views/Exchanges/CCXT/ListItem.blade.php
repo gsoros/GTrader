@@ -1,6 +1,6 @@
 <div class="col-sm-3 editable container">
     <div class="row">
-        <div class="col-sm-8">
+        <div class="col-sm-8" title="CCXT ID: {{ $exchange->getParam('ccxt_id') ?? '' }}">
             @php
                 $name = $exchange->getLongName();
                 $logo = is_array($urls = $exchange->getCCXTProperty('urls'))

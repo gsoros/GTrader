@@ -38,6 +38,12 @@ abstract class Exchange extends Base
     public function saveFilledOrders(string $symbol, int $bot_id = null)
     {$this->methodNotImplemented();}
 
+    public function getFee(string $symbol, string $type = 'taker'): float
+    {
+        $this->methodNotImplemented();
+        return 0.0;
+    }
+
 
     public static function make(string $class = null, array $params = [])
     {

@@ -42,7 +42,7 @@
                     $ccxt_id = $supported->getParam('ccxt_id');
                 @endphp
                 <div class="card trans">
-                    <div id="ccxt_card_{{ $ccxt_id }}" class="card-title">
+                    <div id="ccxt_card_{{ $ccxt_id }}" class="card-title" title="CCXT ID: {{ $ccxt_id ?? '' }}">
                         @php
                             $name = $supported->getLongName();
                             $logo = is_array($urls = $supported->getCCXTProperty('urls'))

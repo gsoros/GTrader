@@ -51,6 +51,34 @@
         </div>
     @endif
 
+    @if ($exchange->getParam('has.testnet'))
+        @php
+            $label = $exchange->getParam('has.testnet.label', 'Testnet');
+        @endphp
+        <div class="row bdr-rad">
+            <div class="col-sm-12 editable form-group">
+                <label for="options[use_testnet]">
+                    Use {{ $label }} or Live API
+                </label>
+                <select class="btn-primary form-control form-control-sm"
+                        id="use_testnet"
+                        name="options[use_testnet]"
+                        title="Use Testnet">
+                    @foreach ([0 => 'Use Live API', 1 => 'Use '.$label.' API'] as $val => $label)
+                        <option value="{{ $val }}"
+                        @if ($val == ($options['use_testnet'] ?? false))
+                            selected
+                        @endif
+                        >{{ $label }}</option>
+                    @endforeach
+                </select>
+                <script>
+                    $('#use_testnet').select2();
+                </script>
+            </div>
+        </div>
+    @endif
+
     @if ($ccxt_id = $exchange->getParam('ccxt_id'))
         @includeif(
             'Exchanges.CCXT.'.$ccxt_id.'Form',
