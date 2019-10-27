@@ -629,7 +629,7 @@ class Supported extends Exchange
             $trade->amount_ordered = $order['amount'];
             $trade->amount_filled = $order['filled'];
             $trade->price = $order['price'];
-            $trade->avg_price = 0;
+            $trade->avg_price = $order['cost'] / $order['amount'];
             $trade->action = $order['side'];
             $trade->type = $order['type'];
             $trade->fee = $order['fee']['cost'];
