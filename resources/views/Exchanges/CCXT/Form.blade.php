@@ -36,7 +36,11 @@
                         id="order_type"
                         name="options[order_type]"
                         title="Order Type">
-                    @foreach (['limit' => 'Limit', 'market' => 'Market'] as $val => $label)
+                    @foreach ([
+                            'limit' => 'Limit with price from signal',
+                            'limit_best' => 'Limit, try to get best price',
+                            'market' => 'Market'
+                        ] as $val => $label)
                         <option value="{{ $val }}"
                         @if ($val == ($options['order_type'] ?? null))
                             selected
@@ -46,6 +50,32 @@
                 </select>
                 <script>
                     $('#order_type').select2();
+                </script>
+            </div>
+        </div>
+    @endif
+
+    @if ($exchange->getParam('has.leverage'))
+        @php
+            $levels = $exchange->getParam('has.leverage.levels', [1]);
+        @endphp
+        <div class="row bdr-rad">
+            <div class="col-sm-12 editable form-group">
+                <label for="options[leverage]">Leverage</label>
+                <select class="btn-primary form-control form-control-sm"
+                        id="leverage"
+                        name="options[leverage]"
+                        title="Leverage">
+                    @foreach ($levels as $val)
+                        <option value="{{ $val }}"
+                        @if ($val == ($options['leverage'] ?? 1))
+                            selected
+                        @endif
+                        >{{ $val }}X</option>
+                    @endforeach
+                </select>
+                <script>
+                    $('#leverage').select2();
                 </script>
             </div>
         </div>

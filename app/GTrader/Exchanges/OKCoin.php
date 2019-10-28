@@ -107,8 +107,7 @@ class OKCoin extends Exchange
 
     public function takePosition(
         string $symbol,
-        string $signal,
-        float $price,
+        array $signal,
         int $bot_id = null
     ) {
         if (!($symbol_arr = $this->getParam('symbols.'.$symbol))) {

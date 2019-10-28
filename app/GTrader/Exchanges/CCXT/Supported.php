@@ -267,11 +267,13 @@ class Supported extends Exchange
 
     public function takePosition(
         string $symbol,
-        string $signal,
-        float $price,
+        array $signal,
         int $bot_id = null
     )
     {
+        $signal_time = intval($signal['time'] ?? 0);
+        $price = floatval($signal['price'] ?? 0);
+        $signal = strval($signal['signal'] ?? 'neutral');
         if (!in_array($signal, ['long', 'neutral', 'short'])) {
             Log::error('invalid signal', $signal);
             return $this;
@@ -339,8 +341,32 @@ class Supported extends Exchange
             $price = $this->formatNumber($price, $symbol, 'price');
         }
         $new_contracts = $this->formatNumber($new_contracts, $symbol, 'amount');
-        $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
+        $order_id = $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
         //dump('createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
+
+        $order_id = strval($order_id);
+        $trade = Trade::firstOrNew(['remote_id' => $order_id]);
+        $trade->time                = intval(time());
+        $trade->remote_id           = $order_id;
+        $trade->exchange_id         = $this->getId();
+        $trade->symbol_id           = $this->getSymbolId($symbol);
+        $trade->user_id             = $user_id;
+        $trade->bot_id              = $bot_id;
+        $trade->amount_ordered      = $new_contracts;
+        $trade->amount_filled       = 0;
+        $trade->price               = floatval($price);
+        $trade->avg_price           = null;
+        $trade->action              = $side;
+        $trade->type                = $order_type;
+        $trade->fee                 = null;
+        $trade->fee_currency        = null;
+        $trade->status              = 'open';
+        $trade->leverage            = $leverage;
+        $trade->contract            = '';
+        $trade->signal_time         = $signal_time;
+        $trade->signal_position     = $target_contracts;
+        $trade->save();
+
         return $this;
     }
 

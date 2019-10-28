@@ -159,9 +159,8 @@ class Bot extends Model
         // Tell the exchange to take the position
         $exchange->takePosition(
             $symbol,
-            $last_signal['signal'],
-            $last_signal['price'],
-            $this->id
+            $last_signal,
+            $this->id,
         );
 
         // Release our lock
