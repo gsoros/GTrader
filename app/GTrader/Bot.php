@@ -106,15 +106,6 @@ class Bot extends Model
         // Save a record of any filled orders into local db
         $exchange->saveFilledTrades($symbol, $this->id);
 
-        // Cancel unfilled orders
-        /*
-        if ($unfilled_max = intval(Arr::get($this->options, 'unfilled_max'))) {
-            $exchange->cancelOpenOrders(
-                $symbol,
-                time() - $unfilled_max * $this->resolution
-            );
-        }
-        */
         $exchange->cancelOpenOrders($symbol);
 
 
@@ -148,11 +139,6 @@ class Bot extends Model
             ['time' => $last_signal_time]
         );
         //Log::debug('last_signal:', $last_signal);
-
-        // See if signal is recent enough
-        if ($last_signal['time'] < $t - $this->getParam('signal_lifetime') * $this->resolution) {
-            return $this;
-        }
 
         // Looks like we have a valid signal
         echo 'Bot ['.$this->name.'] taking '.$last_signal['signal'].' position at '.$last_signal['price']."\n";

@@ -599,7 +599,7 @@ abstract class Exchange extends Base
     }
 
 
-    public function getLastSavedTradeTime(): int
+    public function getLastClosedTradeTime(): int
     {
         if (!$user_id = $this->getParam('user_id')) {
             Log::error('need user_id');
@@ -610,6 +610,7 @@ abstract class Exchange extends Base
                 where([
                     ['exchange_id', $this->getId()],
                     ['user_id', $user_id],
+                    ['status', 'closed'],
                 ])->
                 orderBy('time', 'desc')->
                 value('time')

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddTradesSignal extends Migration
+class AddTradesSignalBalance extends Migration
 {
     /**
      * Run the migrations.
@@ -17,6 +17,8 @@ class AddTradesSignal extends Migration
             $table->bigInteger('signal_time')->unsigned()->nullable()->index();
             $comment = 'Spot markets: percentage. Futures and Swap: # of contracts. Signed to indicate direction.';
             $table->bigInteger('signal_position')->nullable()->comment($comment);
+            $table->decimal('open_balance', 16, 8)->nullable();
+            $table->decimal('close_balance', 16, 8)->nullable();
         });
     }
 
@@ -31,6 +33,8 @@ class AddTradesSignal extends Migration
         Schema::table('trades', function (Blueprint $table) {
             $table->dropColumn('signal_time');
             $table->dropColumn('signal_position');
+            $table->dropColumn('open_balance');
+            $table->dropColumn('close_balance');
         });
     }
 }

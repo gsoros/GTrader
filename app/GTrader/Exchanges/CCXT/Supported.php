@@ -282,6 +282,10 @@ class Supported extends Exchange
             throw new \Exception('takePosition() requires user_id to be set');
             return $this;
         }
+        if (!$symbol_id = $this->getSymbolId($symbol)) {
+            throw new \Exception('could not get symbol_id for '.$symbol);
+            return $this;
+        }
         if (!$market = $this->getMarket($symbol)) {
             throw new \Exception('could not get market');
             return $this;
@@ -290,7 +294,7 @@ class Supported extends Exchange
             throw new \Exception('market is not active');
             return $this;
         }
-        if (!$currency = $market['base']) {
+        if (!$currency = $this->getCurrency($symbol)) {
             throw new \Exception('could not get base currency');
             return $this;
         }
@@ -307,27 +311,45 @@ class Supported extends Exchange
             return $this;
         }
 
-        if ('neutral' === $signal) {
-            $target_position = 0;
-        } else {
-            $target_position = $balance * $position_size / 100;
-            if ('short' === $signal) {
-                $target_position = 0 - $target_position;
-            }
+        $trade = null;
+        try {
+            $trade = Trade::where([
+                ['symbol_id', $symbol_id],
+                ['bot_id', $bot_id],
+                ['signal_time', $signal_time],
+            ])->firstOrFail();
+        } catch (\Exception $e) {
+            Log::debug('trade does not exist in the db', $symbol_id, $bot_id, $signal_time);
         }
 
         $leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
-        $target_contracts = floor($target_position * $price / $contract_value / $leverage);
+
+        if ('neutral' === $signal) {
+            $target_position = $target_contracts = 0;
+        } else {
+            if ($trade && $trade->signal_position) {
+                $target_contracts = $trade->signal_position;
+                Log::debug('target set from trade', $target_contracts);
+            } else {
+                $target_position = $balance * $position_size / 100;
+                if ('short' === $signal) {
+                    $target_position = 0 - $target_position;
+                }
+                $target_contracts = floor($target_position * $price / $contract_value / $leverage);
+                Log::debug('target calculated from balance', $target_position, $target_contracts);
+            }
+        }
+
         $current_contracts = $this->getPositionSum($symbol);
         $new_contracts = $target_contracts - $current_contracts;
         //dump($target_contracts, $current_contracts, $new_contracts, $leverage);
 
         if (!$new_contracts) {
-            Log::info('nothing to buy or sell', $symbol);
+            Log::info('Nothing to buy or sell', $symbol);
             return $this;
         }
-        if ($new_contracts < $current_contracts / 100) {
-            Log::info('Less than 1% to change, aborting', $symbol);
+        if (abs($new_contracts) < abs($current_contracts / 100)) {
+            Log::info('Less than 1% to change, aborting', $symbol, $current_contracts, $new_contracts);
             return $this;
         }
         $side = 0 < $new_contracts ? 'buy' : 'sell';
@@ -335,39 +357,77 @@ class Supported extends Exchange
         $order_type = $this->getUserOption('order_type');
         if ('market' === $order_type) {
             $price = null;
-        }
-        else {
+        } else {
+            if ('limit_best' === $order_type) {
+                $best_side = 'buy' === $side ? 'ask' : 'bid';
+                if ($best_price = $this->getBestPrice($symbol, $best_side)) {
+                    Log::debug('Best price', $best_price);
+                    $price = $best_price;
+                } else {
+                    Log::error('Could not get best price', $symbol, $side);
+                }
+            }
             $order_type = 'limit';
             $price = $this->formatNumber($price, $symbol, 'price');
         }
         $new_contracts = $this->formatNumber($new_contracts, $symbol, 'amount');
-        $order_id = $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
-        //dump('createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
 
-        $order_id = strval($order_id);
+        Log::info($this->getName().'::createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
+        //die();
+        $order = null;
+        try {
+            $order = $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
+        } catch (\Exception $e) {
+            Log::error($this->getName().'could not createOrder()', $e->getMessage());
+        }
+
+        $order_id = strval($order['id'] ?? null);
+        $order['filled'] = $order['filled'] ?? 0 ? floatval($order['filled']) : 0;
         $trade = Trade::firstOrNew(['remote_id' => $order_id]);
-        $trade->time                = intval(time());
+        $trade->time                = time();
         $trade->remote_id           = $order_id;
         $trade->exchange_id         = $this->getId();
-        $trade->symbol_id           = $this->getSymbolId($symbol);
+        $trade->symbol_id           = $symbol_id;
         $trade->user_id             = $user_id;
         $trade->bot_id              = $bot_id;
         $trade->amount_ordered      = $new_contracts;
-        $trade->amount_filled       = 0;
+        $trade->amount_filled       = $order['filled'] ?? null;
         $trade->price               = floatval($price);
-        $trade->avg_price           = null;
+        $trade->avg_price           = $order['cost'] ?? 0 /  $order['filled'] ?? 1;
         $trade->action              = $side;
         $trade->type                = $order_type;
-        $trade->fee                 = null;
-        $trade->fee_currency        = null;
+        $trade->fee                 = $order['fee']['cost'] ?? 0;
+        $trade->fee_currency        = $order['fee']['currency'] ?? '';
+        //$trade->status              = $order['status'] ?? '';
         $trade->status              = 'open';
         $trade->leverage            = $leverage;
         $trade->contract            = '';
         $trade->signal_time         = $signal_time;
         $trade->signal_position     = $target_contracts;
+        $trade->open_balance        = $balance;
         $trade->save();
 
         return $this;
+    }
+
+
+    public function getBestPrice(string $symbol, string $side): float
+    {
+        $nil = 0.0;
+        if (!in_array($side, ['bid', 'ask'])) {
+            Log::error('invalid side', $side);
+            return $nil;
+        }
+        try {
+            $book = $this->ccxt()->fetchOrderBook($symbol);
+            assert(is_array($book));
+        } catch (\Exception $e) {
+            Log::info('fetchOrderBook failed', $this->getName(), $symbol, $e->getMessage());
+            return $nil;
+        }
+        Log::debug('best prices: ['.reset($book['bids'])[0].' <--bid  ask--> '.reset($book['asks'])[0].']');
+        $orders = $book[$side.'s'] ?? [];
+        return floatval(reset($orders)[0] ?? 0);
     }
 
 
@@ -470,6 +530,24 @@ class Supported extends Exchange
             }
         }
         return $orders;
+    }
+
+
+    public function getCurrency(string $symbol, string $type = 'base'): string
+    {
+        if (!in_array($type, ['base', 'quote'])) {
+            throw new \Exception('invalid type: '.$type);
+            return '';
+        }
+        if (!$market = $this->getMarket($symbol)) {
+            throw new \Exception('could not get market');
+            return '';
+        }
+        if (!$currency = ($market[$type] ?? null)) {
+            throw new \Exception('could not get '.$type.' currency');
+            return '';
+        }
+        return strval($currency);
     }
 
 
@@ -632,37 +710,40 @@ class Supported extends Exchange
             Log::error('exchange does not support fetchClosedOrders', $this->getName());
             return $this;
         }
-        $since = $this->getLastSavedTradeTime();
+        $since = ($this->getLastClosedTradeTime() + 1) * 1000;
         $orders = [];
         try {
             $orders = $this->ccxt()->fetchClosedOrders(null, $since);
+            assert(is_array($orders));
         } catch (\Exception $e) {
             Log::error('could not fetch closed orders', $this->getName(), $e->getMessage());
         }
-        if (!is_array($orders) || !count($orders)) {
+        if (!is_array($orders) || ! $count = count($orders)) {
             return $this;
         }
+        Log::info('Saving '.$count.' order(s)', $this->getName(), $symbol);
         $leverage = $this->getUserOption('leverage', 1);
         foreach ($orders as $order) {
-            //dump($order);
-            $trade = Trade::firstOrNew(['remote_id' => $order['id']]);
-            $trade->time = intval($order['timestamp']);
-            $trade->remote_id = $order['id'];
-            $trade->exchange_id = $this->getId();
-            $trade->symbol_id = $this->getSymbolId(strval($order['symbol']));
-            $trade->user_id = $user_id;
-            $trade->bot_id = $bot_id;
-            $trade->amount_ordered = $order['amount'];
-            $trade->amount_filled = $order['filled'];
-            $trade->price = $order['price'];
-            $trade->avg_price = $order['cost'] / $order['amount'];
-            $trade->action = $order['side'];
-            $trade->type = $order['type'];
-            $trade->fee = $order['fee']['cost'];
-            $trade->fee_currency = $order['fee']['currency'];
-            $trade->status = $order['status'];
-            $trade->leverage = $leverage;
-            $trade->contract = '';
+            $time = intval(intval($order['timestamp'] ?? 0) / 1000);
+            $trade = Trade::firstOrNew(['remote_id' => $order['id'] ?? '']);
+            $trade->time            = $time;
+            $trade->remote_id       = $order['id'] ?? '';
+            $trade->exchange_id     = $this->getId();
+            $trade->symbol_id       = $this->getSymbolId(strval($order['symbol'] ?? ''));
+            $trade->user_id         = $user_id;
+            $trade->bot_id          = $bot_id;
+            $trade->amount_ordered  = $order['amount'] ?? 0;
+            $trade->amount_filled   = $order['filled'] ?? 0;
+            $trade->price           = $order['price'] ?? 0;
+            $trade->avg_price       = $order['cost'] ?? 0 / $order['filled'] ?? 1;
+            $trade->action          = $order['side'] ?? '';
+            $trade->type            = $order['type'] ?? '';
+            $trade->fee             = $order['fee']['cost'] ?? 0;
+            $trade->fee_currency    = $order['fee']['currency'] ?? '';
+            $trade->status          = $order['status'] ?? '';
+            $trade->leverage        = $leverage;
+            $trade->contract        = '';
+            $trade->close_balance   = $this->getTotalBalance($this->getCurrency($symbol));
             $trade->save();
         }
         return $this;
