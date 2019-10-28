@@ -393,7 +393,7 @@ class Supported extends Exchange
         $trade->amount_ordered      = $new_contracts;
         $trade->amount_filled       = $order['filled'] ?? null;
         $trade->price               = floatval($price);
-        $trade->avg_price           = $order['cost'] ?? 0 /  $order['filled'] ?? 1;
+        $trade->cost                = $order['cost'] ?? 0;
         $trade->action              = $side;
         $trade->type                = $order_type;
         $trade->fee                 = $order['fee']['cost'] ?? 0;
@@ -735,7 +735,7 @@ class Supported extends Exchange
             $trade->amount_ordered  = $order['amount'] ?? 0;
             $trade->amount_filled   = $order['filled'] ?? 0;
             $trade->price           = $order['price'] ?? 0;
-            $trade->avg_price       = $order['cost'] ?? 0 / $order['filled'] ?? 1;
+            $trade->cost            = $order['cost'] ?? 0;
             $trade->action          = $order['side'] ?? '';
             $trade->type            = $order['type'] ?? '';
             $trade->fee             = $order['fee']['cost'] ?? 0;
