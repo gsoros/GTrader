@@ -175,7 +175,7 @@ abstract class Strategy extends Base
         $default = self::singleton();
         return $return_array ?
             $strategies :
-            view('StrategyList', [
+            view('Strategies.List', [
                 'available' => $default->getParam('available'),
                 'default' => config('GTrader.Strategy.default_child'),
                 'strategies' => $strategies,
@@ -212,7 +212,7 @@ abstract class Strategy extends Base
         int $user_id,
         int $selected_strategy = null
     ) {
-        return view('StrategySelectorOptions', [
+        return view('Strategies.SelectorOptions', [
             'selected_strategy' => $selected_strategy,
             'strategies' => self::getStrategiesOfUser($user_id),
         ]);

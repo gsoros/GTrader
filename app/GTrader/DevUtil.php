@@ -42,7 +42,7 @@ class DevUtil
      * backtrace
      * @return string
      */
-    public static function backtrace()
+    public static function backtrace(bool $log = false)
     {
         $e = new \Exception();
         $trace = explode("\n", $e->getTraceAsString());
@@ -53,6 +53,12 @@ class DevUtil
         $result = [];
         for ($i = 0; $i < $length; $i++) {
             $result[] = ($i + 1).')'.substr($trace[$i], strpos($trace[$i], ' '));
+        }
+        if ($log) {
+            foreach ($result as $line) {
+                Log::sparse($line);
+            }
+            return true;
         }
         return implode("\n", $result);
     }

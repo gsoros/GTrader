@@ -533,7 +533,7 @@ abstract class Exchange extends Base
 
     public static function getESRSelector(string $name, array $options = [])
     {
-        return view('ESRSelector', ['name' => $name, 'options' => $options]);
+        return view('Exchanges.ESRSelector', ['name' => $name, 'options' => $options]);
     }
 
 

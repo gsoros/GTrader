@@ -84,7 +84,7 @@ abstract class Training extends Model
         if ($class = $strategy->getParam('training_class')) {
             $prefs = Auth::user()->getPreference($class, $prefs);
         }
-        return view('TrainingForm', [
+        return view('Strategies.TrainingForm', [
             'training' => $this,
             'strategy' => $strategy,
             'preferences' => $prefs,
@@ -132,7 +132,7 @@ abstract class Training extends Model
             ->where('status', 'training')->first();
         if (is_object($training)) {
             Log::info('Strategy id('.$strategy->getParam('id').') is already being trained.');
-            $html = view('TrainingProgress', [
+            $html = view('Strategies.TrainingProgress', [
                 'strategy' => $strategy,
                 'training' => $training
             ]);
@@ -202,7 +202,7 @@ abstract class Training extends Model
         $this->save();
 
         return response(
-            view('TrainingProgress', [
+            view('Strategies.TrainingProgress', [
                 'strategy' => $strategy,
                 'training' => $this
             ]),

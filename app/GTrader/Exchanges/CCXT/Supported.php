@@ -697,7 +697,17 @@ class Supported extends Exchange
 
     public function getFee(string $symbol, string $type = 'taker'): float
     {
-        return floatval($this->getMarketPropery($symbol, $type));
+        $key = 'fee_'.$this->getParam('ccxt_id').'_'.$symbol.'_'.$type;
+        if ($cached = $this->cached($key)) {
+            return $cached;
+        }
+        if ($cached = $this->pCached($key)) {
+            $this->cache($key, $cached);
+            return $cached;
+        }
+        $this->pCache($key, $val = floatval($this->getMarketPropery($symbol, $type)));
+        $this->cache($key, $val);
+        return $val;
     }
 
 
