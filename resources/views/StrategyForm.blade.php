@@ -1,9 +1,28 @@
 <form class="form-horizontal container-fluid" id="strategyForm">
     <input type="hidden" name="id" value="{{ $strategy->getParam('id') }}">
     <div class="row bdr-rad">
-        <div class="col-sm-12">
+        <div class="col-sm-8">
             Common Strategy Settings
         </div>
+
+        <div class="col-sm-4 text-right">
+            @section('buttons')
+                <button onClick="window.GTrader.request('strategy', 'list')"
+                        type="button"
+                        class="btn btn-primary btn-mini trans"
+                        title="Discard Changes">
+                    <span class="fas fa-ban"></span> Discard Changes
+                </button>
+                <button onClick="window.GTrader.request('strategy', 'save', $('#strategyForm').serialize(), 'POST')"
+                        id="strategySaveButton"
+                        type="button"
+                        class="btn btn-primary btn-mini trans"
+                        title="Save Strategy">
+                    <span class="fas fa-check"></span> Save Strategy
+                </button>
+            @show
+        </div>
+
         <div class="col-sm-12 container">
             <div class="form-group editable row">
                 <label class="col-sm-3 control-label npl" for="name">Name</label>
@@ -30,20 +49,10 @@
     {!! $injected !!}
 
     <div class="col-sm-12 container">
-        <div class="editable bdr-rad row float-right">
-            <button onClick="window.GTrader.request('strategy', 'list')"
-                    type="button"
-                    class="btn btn-primary btn-mini trans"
-                    title="Discard Changes">
-                <span class="fas fa-ban"></span> Discard Changes
-            </button>
-            <button onClick="window.GTrader.request('strategy', 'save', $('#strategyForm').serialize(), 'POST')"
-                    id="strategySaveButton"
-                    type="button"
-                    class="btn btn-primary btn-mini trans"
-                    title="Save Strategy">
-                <span class="fas fa-check"></span> Save Strategy
-            </button>
+        <div class="row">
+            <div class="col-sm-12 text-right">
+                @yield('buttons')
+            </div>
         </div>
     </div>
 </form>

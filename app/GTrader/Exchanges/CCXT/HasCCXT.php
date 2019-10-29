@@ -153,7 +153,7 @@ trait HasCCXT
                 return null;
             }
             try {
-                Log::debug('loadMarkets() for '.$this->getParam('ccxt_id'));
+                Log::debug('loadMarkets() for '.$this->getParam('ccxt_id'), $prop);
                 $ccxt->loadMarkets();
             } catch (\Exception $e) {
                 Log::debug('loadMarkets() failed for '.$this->getParam('ccxt_id'), $e->getMessage());

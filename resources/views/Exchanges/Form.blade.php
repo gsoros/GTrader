@@ -28,15 +28,15 @@
             <label class="col-sm-12">Symbols / Resolutions to Track</label>
             <div id="exchange_{{ $exchange->getId() }}_symbols" class="col-sm-12"></div>
         </div>
-        @yield('child_rows', '')
-    </div>
 
-    <div class="row bdr-rad">
-        <div class="col-sm-12">
-            <div class="float-right">
+        @yield('child_rows', '')
+
+        <div class="row">
+            <div class="col-sm-12 text-right">
                 @yield('buttons')
             </div>
         </div>
+
     </div>
 </form>
 <script>

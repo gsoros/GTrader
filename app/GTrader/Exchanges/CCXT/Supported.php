@@ -291,7 +291,7 @@ class Supported extends Exchange
             return $this;
         }
         if (!$this->marketActive($symbol)) {
-            throw new \Exception('market is not active');
+            throw new \Exception($this->getName().' Market is not active', $symbol);
             return $this;
         }
         if (!$currency = $this->getCurrency($symbol)) {
@@ -299,7 +299,7 @@ class Supported extends Exchange
             return $this;
         }
         if (!$balance = $this->getTotalBalance($currency)) {
-            Log::info('no balance');
+            Log::info($this->getName().' No balance');
             return $this;
         }
         if (!$position_size = $this->getUserOption('position_size')) {
@@ -319,7 +319,7 @@ class Supported extends Exchange
                 ['signal_time', $signal_time],
             ])->firstOrFail();
         } catch (\Exception $e) {
-            Log::debug('trade does not exist in the db', $symbol_id, $bot_id, $signal_time);
+            Log::debug($this->getName().' Trade does not exist in the db', $symbol_id, $bot_id, $signal_time);
         }
 
         $leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
@@ -329,14 +329,14 @@ class Supported extends Exchange
         } else {
             if ($trade && $trade->signal_position) {
                 $target_contracts = $trade->signal_position;
-                Log::debug('target set from trade', $target_contracts);
+                Log::debug($this->getName().' Target set from trade', $target_contracts);
             } else {
                 $target_position = $balance * $position_size / 100;
                 if ('short' === $signal) {
                     $target_position = 0 - $target_position;
                 }
                 $target_contracts = floor($target_position * $price / $contract_value / $leverage);
-                Log::debug('target calculated from balance', $target_position, $target_contracts);
+                Log::debug($this->getName().' Target calculated from balance', $target_position, $target_contracts);
             }
         }
 
@@ -345,11 +345,11 @@ class Supported extends Exchange
         //dump($target_contracts, $current_contracts, $new_contracts, $leverage);
 
         if (!$new_contracts) {
-            Log::info('Nothing to buy or sell', $symbol);
+            Log::info($this->getName().' Nothing to buy or sell', $symbol);
             return $this;
         }
         if (abs($new_contracts) < abs($current_contracts / 100)) {
-            Log::info('Less than 1% to change, aborting', $symbol, $current_contracts, $new_contracts);
+            Log::info($this->getName().' Less than 1% to change, aborting', $symbol, $current_contracts, $new_contracts);
             return $this;
         }
         $side = 0 < $new_contracts ? 'buy' : 'sell';
@@ -361,10 +361,10 @@ class Supported extends Exchange
             if ('limit_best' === $order_type) {
                 $best_side = 'buy' === $side ? 'ask' : 'bid';
                 if ($best_price = $this->getBestPrice($symbol, $best_side)) {
-                    Log::debug('Best price', $best_price);
+                    Log::debug($this->getName().' Best price', $best_price);
                     $price = $best_price;
                 } else {
-                    Log::error('Could not get best price', $symbol, $side);
+                    Log::error($this->getName().' Could not get best price', $symbol, $side);
                 }
             }
             $order_type = 'limit';
