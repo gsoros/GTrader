@@ -127,7 +127,7 @@ abstract class Strategy extends Base
 
     public function toHTML(string $content = null)
     {
-        return view('StrategyForm', [
+        return view('Strategies.Form', [
             'strategy' => $this,
             'injected' => $content,
         ]);

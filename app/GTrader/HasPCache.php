@@ -38,11 +38,11 @@ trait HasPCache
     public function pCache(string $key, $value = null)
     {
         $table = $this->getPCacheTable();
-        if (0 < $this->pcache_max_size) {
+        if (0 < $max = $this->pcache_max_size) {
             $total = $table->selectRaw('count(*) as total')->first()->total;
-            if ($total >= $this->pcache_max_size) {
-                $this->logPCache('full', $this->pcache_max_size);
-                $table->orderBy('time', 'desc')->limit(1)->delete();
+            if ($total >= $max) {
+                $this->logPCache('full', $max);
+                $table->orderBy('cache_time')->limit($total - $max)->delete();
             }
         }
         if ($table

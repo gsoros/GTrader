@@ -701,7 +701,7 @@ class Supported extends Exchange
         if ($cached = $this->cached($key)) {
             return $cached;
         }
-        if ($cached = $this->pCached($key)) {
+        if ($cached = $this->pCached($key, null, 3600 * 24)) {
             $this->cache($key, $cached);
             return $cached;
         }

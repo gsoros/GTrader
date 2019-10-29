@@ -914,6 +914,7 @@ abstract class Indicator extends Base implements Gene
                 // if (.5 < Rand::floatNormal(0, 1, 1, $weight)) {
                 //     return $param;
                 // }
+                $options = []; // stop complaining, Stan
                 if ('source' == $type) {
                     if (!$owner = $this->getOwner()) {
                         return $param;

@@ -208,7 +208,7 @@ trait HasIndicators
             return $this;
         }
         $sig = $indicator->getSignature();
-        $target = null;
+        $target = $key = null;
         foreach ($owner->indicators as $key => $existing) {
             if ($indicator === $existing) {
                 $target = $existing;
