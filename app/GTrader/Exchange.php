@@ -372,7 +372,7 @@ abstract class Exchange extends Base
         $get = Arr::get($options, 'get', ['all']);
         $all = in_array('all', $get);
         $configured = in_array('configured', $get);
-        $user_id = Arr::get($options, 'user_id');
+        //$user_id = Arr::get($options, 'user_id');
 
         if ($all) {
             return $this->getAllSymbols($options);
@@ -394,6 +394,8 @@ abstract class Exchange extends Base
     {
         $user_id = Arr::get($options, 'user_id');
         $active = in_array('active', Arr::get($options, 'get', []));
+        $single_name = Arr::get($options, 'name');
+        $single_resolution = intval(Arr::get($options, 'resolution'));
         $config = UserExchangeConfig::select('options');
         if ($user_id) {
             $config->where('user_id', $user_id);
@@ -408,6 +410,9 @@ abstract class Exchange extends Base
                 continue;
             }
             foreach ($config->options['symbols'] as $cosk => $cosv) {
+                if ($single_name && ($single_name !== $cosk)) {
+                    continue;
+                }
                 if ($active && !$this->marketActive($cosk)) {
                     continue;
                 }
@@ -422,6 +427,9 @@ abstract class Exchange extends Base
                 }
                 $new_resolutions = [];
                 foreach ($cosv['resolutions'] as $res) {
+                    if ($single_resolution && ($single_resolution !== $res)) {
+                        continue;
+                    }
                     $new_resolutions[$res] = self::resolutionName($res);
                 }
                 $configured_symbols[$cosk]['resolutions'] = array_replace(

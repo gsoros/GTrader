@@ -12,14 +12,20 @@ class FetchCandles extends Command
      *
      * @var string
      */
-    protected $signature = 'candles:fetch';
+    protected $signature = 'candles:fetch
+                           {--e|exchange= : fetch candlestick data from a single exchange}
+                           {--s|symbol= : fetch a single symbol}
+                           {--r|resolution= : fetch a single resolution}
+                           {--d|direction= : direction: left|rev | right|fwd | both}
+                           ';
+
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Gets fresh candles from the Exchange and stores them.';
+    protected $description = 'Downloads candlestick data from the exchanges.';
 
     /**
      * Create a new command instance.
@@ -38,7 +44,13 @@ class FetchCandles extends Command
      */
     public function handle()
     {
+        //dd($this->options());
         $a = new Aggregator();
-        $a->aggregate();
+        $a->aggregate([
+            'exchange' => $this->option('exchange'),
+            'symbol' => $this->option('symbol'),
+            'resolution' => $this->option('resolution'),
+            'direction' => $this->option('direction') ?? 'both',
+        ]);
     }
 }

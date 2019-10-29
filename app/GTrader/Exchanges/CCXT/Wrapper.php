@@ -54,6 +54,7 @@ class Wrapper extends Exchange
         $configured = in_array('configured', $get);
         $active = in_array('active', $get);
         $user_id = Arr::get($options, 'user_id');
+        $name = Arr::get($options, 'name');
 
         //Log::debug($options, $all, $self, $configured, $user_id);
 
@@ -68,8 +69,12 @@ class Wrapper extends Exchange
                 if (in_array($ccxt_id, $blacklist)) {
                     continue;
                 }
+                $class_name = self::CLASS_PREFIX.$ccxt_id;
+                if ($name && ($name !== $class_name)) {
+                    continue;
+                }
                 //Log::debug('making '.self::CLASS_PREFIX.$ccxt_id);
-                $exchange = self::make(self::CLASS_PREFIX.$ccxt_id, ['ccxt_id' => $ccxt_id]);
+                $exchange = self::make($class_name, ['ccxt_id' => $ccxt_id]);
                 if ($configured) {
                     $config = UserExchangeConfig::select('options');
                     if ($user_id) {

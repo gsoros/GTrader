@@ -378,7 +378,7 @@ class Supported extends Exchange
         try {
             $order = $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
         } catch (\Exception $e) {
-            Log::error($this->getName().'could not createOrder()', $e->getMessage());
+            Log::error($this->getName().' Could not createOrder()', $e->getMessage());
         }
 
         $order_id = strval($order['id'] ?? null);
