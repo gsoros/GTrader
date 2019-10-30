@@ -373,9 +373,13 @@ class Supported extends Exchange
             Log::debug($this->getName().' Target balance is '.$env->target_balance.' because signal is neutral');
         } else {
             if ($env->trade && $env->trade->signal_position) {
-                $env->target_position = $env->trade->signal_position;
-                Log::debug($this->getName().' Target set from trade', $env->target_position);
-                return true;
+                Log::debug($this->getName().' Target set from trade', $env->trade->signal_position);
+                if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+                    $env->target_position = $env->trade->signal_position;
+                    return true; // do not tradeCalculateTarget, we already have target_position
+                }
+                // spot
+                $env->target_balance = $env->trade->signal_position;
             } else {
                 if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
                     $env->target_balance = $env->balance * $env->position_size / 100;
@@ -410,7 +414,7 @@ class Supported extends Exchange
         } else {
             // spot
             Log::debug($this->getName().' '.$env->symbol.' detected as spot');
-            $env->target_position = $env->target_balance / $env->unit_value / $env->leverage;
+            $env->target_position = $env->balance - $env->target_balance / $env->unit_value / $env->leverage;
         }
         Log::debug($this->getName().' calculated target position', $env->target_position);
         return true;
@@ -430,11 +434,11 @@ class Supported extends Exchange
     {
         $env = $this->trade_environment;
         if (!$env->new_position) {
-            Log::info($env->error = 'Nothing to buy or sell', $env->symbol);
+            $env->error = 'Nothing to buy or sell on '.$env->symbol;
             return false;
         }
         if (abs($env->new_position) < abs($env->current_position / 100)) {
-            Log::info($env->error = 'Less than 1% to change, aborting', $env->symbol, $env->current_position, $env->new_position);
+            $env->error = 'Less than 1% to change, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
             return false;
         }
         return true;
@@ -507,7 +511,9 @@ class Supported extends Exchange
         $trade->leverage            = $env->leverage;
         $trade->contract            = '';
         $trade->signal_time         = $env->signal_time;
-        $trade->signal_position     = $env->target_position;
+        $trade->signal_position     = ($this->isFutures($env->symbol) || $this->isSwap($env->symbol))
+                                        ? $env->target_position
+                                        : $env->target_balance;
         $trade->open_balance        = $env->balance;
         $trade->save();
         return true;
@@ -867,7 +873,9 @@ class Supported extends Exchange
         }
         $since = ($since = $this->getLastClosedTradeTime())
             ? $since + 1
-            : time() - 3600 * 24 * 30; // TODO put this in config
+            : time() - 3600 * 24 * 6;   // TODO put this in exchange config
+                                        // e.g. for kucoin it should be < 7 days,
+                                        // otherwise no rows are returned
         $since *= 1000;
         $orders = [];
         try {
