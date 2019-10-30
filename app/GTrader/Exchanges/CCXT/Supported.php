@@ -542,6 +542,7 @@ class Supported extends Exchange
             if (!$this->{'trade'.$task}()) {
                 //throw new \Exception($task.' returned false'.($env->error ? ': '.$env->error : ''));
                 Log::info($task.' returned false', $this->getName(), $env->error);
+                return $this;
             }
         }
         return $this;
