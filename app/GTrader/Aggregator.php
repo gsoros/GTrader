@@ -127,8 +127,10 @@ class Aggregator extends Base
                                 $left_result_last = $left_candles[$left_count - 1];
                                 $left_result_end = $left_result_last->time;
                                 $left_duplicates = 0;
-                                $duplicate_times = [];
+                                $left_times = $left_duplicate_times = [];
                                 foreach ($left_candles as $key => $candle) {
+                                    $sequence = $candle->time / $resolutionM;
+                                    $left_times[] = $sequence;
                                     if (DB::table('candles')->where([
                                             ['time', $candle->time],
                                             ['exchange_id', $exchange_id],
@@ -136,7 +138,7 @@ class Aggregator extends Base
                                             ['resolution', $resolution],
                                         ])->exists()) {
                                         $left_duplicates++;
-                                        $duplicate_times[] = $candle->time;
+                                        $left_duplicate_times[] = $sequence;
                                         unset($left_candles[$key]);
                                     }
                                 }
@@ -153,11 +155,14 @@ class Aggregator extends Base
                                 ) {
                                     Log::error('Gap detected at '.$first,
                                         $exchange->getName(), $symbol_name,
-                                        $resolution, $chunk_size, $first,
-                                        $left_candles[$remaining - 1]->time,
-                                        $left_request_first,
-                                        $left_result_start, $left_result_end,
-                                        $duplicate_times
+                                        $resolution, $chunk_size,
+                                        $first / $resolution,
+                                        $left_candles[$remaining - 1]->time / $resolution,
+                                        $left_request_first / $resolution,
+                                        $left_result_start / $resolution,
+                                        $left_result_end / $resolution,
+                                        $left_duplicate_times,
+                                        $left_times
                                     );
                                     echo '[GAP] ';
                                 }
