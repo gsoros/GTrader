@@ -127,8 +127,8 @@ class Aggregator extends Base
                                 $left_result_last = $left_candles[$left_count - 1];
                                 $left_result_end = $left_result_last->time;
                                 $left_duplicates = 0;
+                                $duplicate_times = [];
                                 foreach ($left_candles as $key => $candle) {
-                                    $duplicate_times = [];
                                     if (DB::table('candles')->where([
                                             ['time', $candle->time],
                                             ['exchange_id', $exchange_id],
