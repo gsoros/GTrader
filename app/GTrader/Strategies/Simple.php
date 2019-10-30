@@ -138,7 +138,7 @@ class Simple extends Strategy
     public function getSignalsIndicator(array $options = [])
     {
         if ($sig = $this->cached('signals_sig')) {
-            Log::debug('cached '.$sig);
+            //Log::debug('cached '.$sig);
             return $this->getOrAddIndicator($sig);
         }
         if (!$ind = $this->getFirstIndicatorByClass('Signals')) {
