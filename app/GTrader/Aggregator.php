@@ -113,12 +113,12 @@ class Aggregator extends Base
                         if (!$epoch || $epoch < $first) {
                             usleep($delay);
                             $fetch_last = $first ? $first : time();
-                            $request_first = $fetch_last - $chunk_size * $resolution;
+                            $left_request_first = $fetch_last - $chunk_size * $resolution;
                             $left_candles = $this->fetchCandles(
                                 $exchange,
                                 $symbol_name,
                                 $resolution,
-                                $request_first,
+                                $left_request_first,
                                 $chunk_size
                             );
                             if ($left_count = count($left_candles)) {
@@ -153,6 +153,7 @@ class Aggregator extends Base
                                         $exchange->getName(), $symbol_name,
                                         $resolution, $chunk_size, $first,
                                         $left_candles[$remaining - 1]->time,
+                                        $left_request_first,
                                         $left_result_start, $left_result_end
                                     );
                                     echo '[GAP] ';
