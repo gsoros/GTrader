@@ -113,14 +113,19 @@ class Aggregator extends Base
                         if (!$epoch || $epoch < $first) {
                             usleep($delay);
                             $fetch_last = $first ? $first : time();
+                            $request_first = $fetch_last - $chunk_size * $resolution;
                             $left_candles = $this->fetchCandles(
                                 $exchange,
                                 $symbol_name,
                                 $resolution,
-                                $fetch_last - $chunk_size * $resolution,
+                                $request_first,
                                 $chunk_size
                             );
                             if ($left_count = count($left_candles)) {
+                                $left_result_first = reset($left_candles);
+                                $left_result_start = $left_result_first->time;
+                                $left_result_last = $left_candles[$left_count - 1];
+                                $left_result_end = $left_result_last->time;
                                 $left_duplicates = 0;
                                 foreach ($left_candles as $key => $candle) {
                                     if (DB::table('candles')->where([
@@ -146,7 +151,9 @@ class Aggregator extends Base
                                 ) {
                                     Log::error('Gap detected at '.$first,
                                         $exchange->getName(), $symbol_name,
-                                        $resolution, $chunk_size, $first, $left_candles[$remaining - 1]->time
+                                        $resolution, $chunk_size, $first,
+                                        $left_candles[$remaining - 1]->time,
+                                        $left_result_start, $left_result_end
                                     );
                                     echo '[GAP] ';
                                 }
