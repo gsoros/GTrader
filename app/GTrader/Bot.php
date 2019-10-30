@@ -101,7 +101,10 @@ class Bot extends Model
         // Set up our Exchange object
         // Tell the exchange which user's settings should be loaded
         $exchange_name = Exchange::getNameById($this->exchange_id);
-        $exchange = Exchange::make($exchange_name, ['user_id' => $this->user_id]);
+        $exchange = Exchange::make($exchange_name, [
+            'user_id' => $this->user_id,
+            'bot_id' => $this->id,
+        ]);
 
         // Save a record of any filled orders into local db
         $exchange->saveFilledTrades($symbol, $this->id);
@@ -146,7 +149,6 @@ class Bot extends Model
         $exchange->takePosition(
             $symbol,
             $last_signal,
-            $this->id,
         );
 
         // Release our lock

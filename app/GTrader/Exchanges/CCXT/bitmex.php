@@ -52,12 +52,14 @@ class bitmex extends Supported
     }
 
 
-    public function getPositionSum(string $symbol): float
+    public function tradeGetPosition(): bool
     {
+        $env = $this->trade_environment;
         $sum = 0.0;
-        foreach ($this->fetchPositions($symbol) as $pos) {
+        foreach ($this->fetchPositions($env->symbol) as $pos) {
             $sum += floatval($pos['currentQty'] ?? 0);
         }
-        return $sum;
+        $env->current_position = $sum;
+        return true;
     }
 }

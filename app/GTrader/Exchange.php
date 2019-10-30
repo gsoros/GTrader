@@ -26,8 +26,7 @@ abstract class Exchange extends Base
 
     public function takePosition(
         string $symbol,
-        array $signal,
-        int $bot_id = null
+        array $signal
     )
     {$this->methodNotImplemented();}
 

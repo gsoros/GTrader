@@ -15,7 +15,9 @@ class Supported extends Exchange
 {
     use HasCCXT;
 
+
     protected const CLASS_PREFIX = 'CCXT\\';
+    protected $trade_environment;
 
 
     public function __construct(array $params = [])
@@ -265,148 +267,268 @@ class Supported extends Exchange
     }
 
 
-    public function takePosition(
-        string $symbol,
-        array $signal,
-        int $bot_id = null
-    )
+    protected function tradeExtractSignal(): bool
     {
-        $signal_time = intval($signal['time'] ?? 0);
-        $price = floatval($signal['price'] ?? 0);
-        $signal = strval($signal['signal'] ?? 'neutral');
-        if (!in_array($signal, ['long', 'neutral', 'short'])) {
-            Log::error('invalid signal', $signal);
-            return $this;
+        $env = $this->trade_environment;
+        $env->signal_time = intval($env->signal['time'] ?? 0);
+        $env->price = floatval($env->signal['price'] ?? 0);
+        $env->signal = strval($env->signal['signal'] ?? 'neutral');
+        if (!in_array($env->signal, ['long', 'neutral', 'short'])) {
+            Log::error($env->error = 'invalid signal', $env->signal);
+            return false;
         }
-        if (!$user_id = $this->getParam('user_id')) {
-            throw new \Exception('takePosition() requires user_id to be set');
-            return $this;
-        }
-        if (!$symbol_id = $this->getSymbolId($symbol)) {
-            throw new \Exception('could not get symbol_id for '.$symbol);
-            return $this;
-        }
-        if (!$market = $this->getMarket($symbol)) {
-            throw new \Exception('could not get market');
-            return $this;
-        }
-        if (!$this->marketActive($symbol)) {
-            throw new \Exception($this->getName().' Market is not active', $symbol);
-            return $this;
-        }
-        if (!$currency = $this->getCurrency($symbol)) {
-            throw new \Exception('could not get base currency');
-            return $this;
-        }
-        if (!$balance = $this->getTotalBalance($currency)) {
-            Log::info($this->getName().' No balance');
-            return $this;
-        }
-        if (!$position_size = $this->getUserOption('position_size')) {
-            Log::info('position size not set by the user');
-            return $this;
-        }
-        if (!$contract_value = $this->getContractValue($symbol)) {
-            Log::info('could not get contract value for', $symbol);
-            return $this;
-        }
+        return true;
+    }
 
-        $trade = null;
+
+    protected function tradeSetupEnvironment(): bool
+    {
+        $env = $this->trade_environment;
+        if (!$env->user_id = $this->getParam('user_id')) {
+            throw new \Exception($env->error = 'user_id required');
+            return false;
+        }
+        if (!$env->symbol_id = $this->getSymbolId($env->symbol)) {
+            throw new \Exception($env->error = 'could not get symbol_id for '.$env->symbol);
+            return false;
+        }
+        /*
+        if (!$env->market = $this->getMarket($env->symbol)) {
+            throw new \Exception($env->error = 'could not get market '.$env->symbol);
+            return false;
+        }
+        */
+        if (!$this->marketActive($env->symbol)) {
+            throw new \Exception($env->error = $this->getName().' '.$env->symbol.' is not active ');
+            return false;
+        }
+        if (!$env->position_size = $this->getUserOption('position_size')) {
+            Log::info($env->eror = 'position size not set by the user');
+            return false;
+        }
+        if (!$env->unit_value = $this->getUnitValue($env->symbol)) {
+            Log::info($env->error = 'could not get unit value for '.$env->symbol);
+            return false;
+        }
+        $env->trade = null;
         try {
-            $trade = Trade::where([
-                ['symbol_id', $symbol_id],
-                ['bot_id', $bot_id],
-                ['signal_time', $signal_time],
+            $env->trade = Trade::where([
+                ['symbol_id', $env->symbol_id],
+                ['bot_id', $this->getParam('bot_id')],
+                ['signal_time', $env->signal_time],
             ])->firstOrFail();
         } catch (\Exception $e) {
-            Log::debug($this->getName().' Trade does not exist in the db', $symbol_id, $bot_id, $signal_time);
+            Log::debug($this->getName().' Trade does not exist in the db');
         }
+        $env->leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
+        return true;
+    }
 
-        $leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
 
-        if ('neutral' === $signal) {
-            $target_position = $target_contracts = 0;
+    protected function tradeGetCurrency(): bool
+    {
+        $env = $this->trade_environment;
+        if (!$env->currency = $this->getCurrency($env->symbol)) {
+            throw new \Exception($env->error = 'could not get base currency');
+            return false;
+        }
+        if (!$env->quote_currency = $this->getCurrency($env->symbol, 'quote')) {
+            throw new \Exception($env->error = 'could not get quote currency');
+            return false;
+        }
+        return true;
+    }
+
+
+    protected function tradeGetBalance(): bool
+    {
+        $env = $this->trade_environment;
+        if (!$env->balance = $this->getTotalBalance($env->currency)) {
+            Log::info($env->error = 'No '.$env->currency.' balance on '.$this->getName());
+        }
+        if (!$env->quote_balance = $this->getTotalBalance($env->quote_currency)) {
+            Log::info($env->error = 'No '.$env->quote_currency.' balance on '.$this->getName());
+        }
+        return true;
+    }
+
+
+    public function tradeGetPosition(): bool
+    {
+        $env = $this->trade_environment;
+        $env->current_position = $env->balance - $env->quote_balance / $env->price;
+        return true;
+    }
+
+
+    protected function tradeSetTarget(): bool
+    {
+        $env = $this->trade_environment;
+        if ('neutral' === $env->signal) {
+            $env->target_balance = $env->target_position = 0;
+            Log::debug($this->getName().' Target is zero because signal is neutral');
         } else {
-            if ($trade && $trade->signal_position) {
-                $target_contracts = $trade->signal_position;
-                Log::debug($this->getName().' Target set from trade', $target_contracts);
+            if ($env->trade && $env->trade->signal_position) {
+                $env->target_position = $env->trade->signal_position;
+                Log::debug($this->getName().' Target set from trade', $env->target_position);
             } else {
-                $target_position = $balance * $position_size / 100;
-                if ('short' === $signal) {
-                    $target_position = 0 - $target_position;
+                $env->target_balance = $env->balance * $env->position_size / 100;
+                if ('short' === $env->signal) {
+                    $env->target_balance = 0 - $env->target_balance;
                 }
-                $target_contracts = floor($target_position * $price / $contract_value / $leverage);
-                Log::debug($this->getName().' Target calculated from balance', $target_position, $target_contracts);
+                if (!$this->tradeCalculateTarget()) {
+                    $env->error = 'tradeCalculateTarget failed';
+                    return false;
+                }
+                Log::debug($this->getName().' Target calculated from balance', $env->target_balance, $env->target_position);
             }
         }
+        return true;
+    }
 
-        $current_contracts = $this->getPositionSum($symbol);
-        $new_contracts = $target_contracts - $current_contracts;
-        //dump($target_contracts, $current_contracts, $new_contracts, $leverage);
 
-        if (!$new_contracts) {
-            Log::info($this->getName().' Nothing to buy or sell', $symbol);
-            return $this;
+    protected function tradeCalculateTarget(): bool
+    {
+        $env = $this->trade_environment;
+        if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+            Log::debug($this->getName().' '.$env->symbol.' detected as futures or swap');
+            $env->target_position = floor($env->target_balance * $env->price / $env->unit_value / $env->leverage);
+            return true;
         }
-        if (abs($new_contracts) < abs($current_contracts / 100)) {
-            Log::info($this->getName().' Less than 1% to change, aborting', $symbol, $current_contracts, $new_contracts);
-            return $this;
+        // spot
+        Log::debug($this->getName().' '.$env->symbol.' detected as spot');
+        $env->target_position = $env->target_balance / $env->unit_value / $env->leverage;
+        return true;
+    }
+
+
+    protected function tradeSetNewPosition(): bool
+    {
+        $env = $this->trade_environment;
+        $env->new_position = $env->target_position - $env->current_position;
+        //dump($env->target_position, $env->current_position, $env->new_position);
+        return true;
+    }
+
+
+    protected function tradeTransactionRequired(): bool
+    {
+        $env = $this->trade_environment;
+        if (!$env->new_position) {
+            Log::info($env->error = 'Nothing to buy or sell', $env->symbol);
+            return false;
         }
-        $side = 0 < $new_contracts ? 'buy' : 'sell';
-        $new_contracts = abs($new_contracts);
-        $order_type = $this->getUserOption('order_type');
-        if ('market' === $order_type) {
-            $price = null;
+        if (abs($env->new_position) < abs($env->current_position / 100)) {
+            Log::info($env->error = 'Less than 1% to change, aborting', $env->symbol, $env->current_position, $env->new_position);
+            return false;
+        }
+        return true;
+    }
+
+
+    protected function tradePrepareTransaction(): bool
+    {
+        $env = $this->trade_environment;
+        $env->side = 0 < $env->new_position ? 'buy' : 'sell';
+        $env->new_position = abs($env->new_position);
+        $env->order_type = $this->getUserOption('order_type');
+        if ('market' === $env->order_type) {
+            $env->price = null;
         } else {
-            if ('limit_best' === $order_type) {
-                $best_side = 'buy' === $side ? 'ask' : 'bid';
-                if ($best_price = $this->getBestPrice($symbol, $best_side)) {
+            if ('limit_best' === $env->order_type) {
+                $best_side = 'buy' === $env->side ? 'ask' : 'bid';
+                if ($best_price = $this->getBestPrice($env->symbol, $best_side)) {
                     Log::debug($this->getName().' Best price', $best_price);
-                    $price = $best_price;
+                    $env->price = $best_price;
                 } else {
-                    Log::error($this->getName().' Could not get best price', $symbol, $side);
+                    Log::error($this->getName().' Could not get best price', $env->symbol, $env->side);
                 }
             }
-            $order_type = 'limit';
-            $price = $this->formatNumber($price, $symbol, 'price');
+            $env->order_type = 'limit';
+            $env->price = $this->formatNumber($env->price, $env->symbol, 'price');
         }
-        $new_contracts = $this->formatNumber($new_contracts, $symbol, 'amount');
+        $env->new_position = $this->formatNumber($env->new_position, $env->symbol, 'amount');
+        return true;
+    }
 
-        Log::info($this->getName().'::createOrder()', $symbol, $order_type, $side, $new_contracts, $price);
-        //die();
-        $order = null;
+
+    protected function tradeExecuteTransaction(): bool
+    {
+        $env = $this->trade_environment;
+        Log::info($this->getName().'::createOrder()', $env->symbol, $env->order_type, $env->side, $env->new_position, $env->price);
+        dd($env);
+        $env->order = null;
         try {
-            $order = $this->ccxt()->createOrder($symbol, $order_type, $side, $new_contracts, $price);
+            $env->order = $this->ccxt()->createOrder($env->symbol, $env->order_type, $env->side, $env->new_position, $env->price);
         } catch (\Exception $e) {
             Log::error($this->getName().' Could not createOrder()', $e->getMessage());
         }
+        return true;
+    }
 
-        $order_id = strval($order['id'] ?? null);
-        $order['filled'] = $order['filled'] ?? 0 ? floatval($order['filled']) : 0;
-        $trade = Trade::firstOrNew(['remote_id' => $order_id]);
+
+    protected function tradeSaveTransaction(): bool
+    {
+        $env = $this->trade_environment;
+        $env->order_id = strval($env->order['id'] ?? null);
+        $env->order['filled'] = $env->order['filled'] ?? 0 ? floatval($env->order['filled']) : 0;
+        $trade = Trade::firstOrNew(['remote_id' => $env->order_id]);
         $trade->time                = time();
-        $trade->remote_id           = $order_id;
+        $trade->remote_id           = $env->order_id;
         $trade->exchange_id         = $this->getId();
-        $trade->symbol_id           = $symbol_id;
-        $trade->user_id             = $user_id;
-        $trade->bot_id              = $bot_id;
-        $trade->amount_ordered      = $new_contracts;
-        $trade->amount_filled       = $order['filled'] ?? null;
-        $trade->price               = floatval($price);
-        $trade->cost                = $order['cost'] ?? 0;
-        $trade->action              = $side;
-        $trade->type                = $order_type;
-        $trade->fee                 = $order['fee']['cost'] ?? 0;
-        $trade->fee_currency        = $order['fee']['currency'] ?? '';
+        $trade->symbol_id           = $env->symbol_id;
+        $trade->user_id             = $env->user_id;
+        $trade->bot_id              = $this->getParam('bot_id');
+        $trade->amount_ordered      = $env->new_position;
+        $trade->amount_filled       = $env->order['filled'] ?? null;
+        $trade->price               = floatval($env->price);
+        $trade->cost                = $env->order['cost'] ?? 0;
+        $trade->action              = $env->side;
+        $trade->type                = $env->order_type;
+        $trade->fee                 = $env->order['fee']['cost'] ?? 0;
+        $trade->fee_currency        = $env->order['fee']['currency'] ?? '';
         //$trade->status              = $order['status'] ?? '';
         $trade->status              = 'open';
-        $trade->leverage            = $leverage;
+        $trade->leverage            = $env->leverage;
         $trade->contract            = '';
-        $trade->signal_time         = $signal_time;
-        $trade->signal_position     = $target_contracts;
-        $trade->open_balance        = $balance;
+        $trade->signal_time         = $env->signal_time;
+        $trade->signal_position     = $env->target_position;
+        $trade->open_balance        = $env->balance;
         $trade->save();
+        return true;
+    }
 
+
+    public function takePosition(
+        string $symbol,
+        array $signal
+    )
+    {
+        $this->trade_environment = (object)[
+            'error' => null,
+            'symbol' => $symbol,
+            'signal' => $signal,
+        ];
+        $env = $this->trade_environment;
+
+        foreach ([
+            'ExtractSignal',
+            'SetupEnvironment',
+            'GetCurrency',
+            'GetBalance',
+            'GetPosition',
+            'SetTarget',
+            'SetNewPosition',
+            'TransactionRequired',
+            'PrepareTransaction',
+            'ExecuteTransaction',
+            'SaveTansaction'
+        ] as $task) {
+            if (!$this->{'trade'.$task}()) {
+                //throw new \Exception($task.' failed'.($env->error ? ': '.$env->error : ''));
+                Log::info($task.' failed', $this->getName(), $env->error);
+            }
+        }
         return $this;
     }
 
@@ -426,8 +548,9 @@ class Supported extends Exchange
             return $nil;
         }
         Log::debug('best prices: ['.reset($book['bids'])[0].' <--bid  ask--> '.reset($book['asks'])[0].']');
-        $orders = $book[$side.'s'] ?? [];
-        return floatval(reset($orders)[0] ?? 0);
+        $orders = is_array($entries = ($book[$side.'s'] ?? [])) ? $entries : [];
+        $orders = reset($orders);
+        return floatval($orders[0] ?? 0);
     }
 
 
@@ -551,8 +674,14 @@ class Supported extends Exchange
     }
 
 
-    public function fetchBalance(): array
+    public function fetchBalance(bool $use_cache = true): array
     {
+        $cache_key = 'balance';
+        if ($use_cache
+            && ($cached = $this->cached($cache_key))
+            && is_array($cached)) {
+            return $cached;
+        }
         try {
             //$this->ccxt()->loadMarkets();
             //$this->setCCXTProperty('verbose', true);
@@ -561,7 +690,8 @@ class Supported extends Exchange
             Log::info('fetchBalance() failed', $e->getMessage());
             return [];
         }
-        return is_array($balance) ? $balance : [];
+        $this->cache($cache_key, $balance = is_array($balance) ? $balance : []);
+        return $balance;
     }
 
 
@@ -589,7 +719,6 @@ class Supported extends Exchange
     }
 
 
-
     public function getFreeBalance(string $currency, $balance_arr = null): float
     {
         return $this->getBalanceField('free', $currency, $balance_arr);
@@ -606,13 +735,6 @@ class Supported extends Exchange
     {
         $this->methodNotImplemented();
         return [];
-    }
-
-
-    public function getPositionSum(string $symbol): float
-    {
-        $this->methodNotImplemented();
-        return 0.0;
     }
 
 
@@ -639,7 +761,7 @@ class Supported extends Exchange
     }
 
 
-    public function getContractValue(string $symbol): float
+    public function getUnitValue(string $symbol): float
     {
         return 1.0;
     }
@@ -663,6 +785,13 @@ class Supported extends Exchange
     {
         $market = $this->getMarket($symbol);
         return isset($market['swap']) ? boolval($market['swap']) : false;
+    }
+
+
+    public function marketType(string $symbol): string
+    {
+        $market = $this->getMarket($symbol);
+        return isset($market['type']) ? strval($market['type']) : '';
     }
 
 
