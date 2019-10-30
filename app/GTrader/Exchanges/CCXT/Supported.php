@@ -456,7 +456,7 @@ class Supported extends Exchange
     {
         $env = $this->trade_environment;
         Log::info($this->getName().'::createOrder()', $env->symbol, $env->order_type, $env->side, $env->new_position, $env->price);
-        dd($env);
+        //dd($env);
         $env->order = null;
         try {
             $env->order = $this->ccxt()->createOrder($env->symbol, $env->order_type, $env->side, $env->new_position, $env->price);
@@ -522,7 +522,7 @@ class Supported extends Exchange
             'TransactionRequired',
             'PrepareTransaction',
             'ExecuteTransaction',
-            'SaveTansaction'
+            'SaveTransaction'
         ] as $task) {
             if (!$this->{'trade'.$task}()) {
                 //throw new \Exception($task.' failed'.($env->error ? ': '.$env->error : ''));
