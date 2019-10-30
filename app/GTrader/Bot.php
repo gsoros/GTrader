@@ -133,7 +133,7 @@ class Bot extends Model
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
         if (!$last_signal = array_pop($signals)) {
-            echo "No signals\n";
+            echo "Bot ['.$this->name.'] No signals\n";
             Lock::release($lock);
             return $this;
         }
