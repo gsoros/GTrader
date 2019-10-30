@@ -41,9 +41,9 @@ abstract class Strategy extends Base
     }
 
 
-    public static function load(int $id)
+    public static function load(int $id, bool $use_cache = true)
     {
-        if ($strategy = static::statCached('id_'.$id)) {
+        if ($use_cache && $strategy = static::statCached('id_'.$id)) {
             return $strategy;
         }
         $query = DB::table('strategies')

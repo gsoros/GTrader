@@ -268,7 +268,7 @@ class Bot extends Model
 
     public function getStrategy()
     {
-        return Strategy::load($this->strategy_id);
+        return Strategy::load($this->strategy_id, false);
     }
 
     public function getExchangeName()
