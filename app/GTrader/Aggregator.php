@@ -128,6 +128,7 @@ class Aggregator extends Base
                                 $left_result_end = $left_result_last->time;
                                 $left_duplicates = 0;
                                 foreach ($left_candles as $key => $candle) {
+                                    $duplicate_times = [];
                                     if (DB::table('candles')->where([
                                             ['time', $candle->time],
                                             ['exchange_id', $exchange_id],
@@ -135,6 +136,7 @@ class Aggregator extends Base
                                             ['resolution', $resolution],
                                         ])->exists()) {
                                         $left_duplicates++;
+                                        $duplicate_times[] = $candle->time;
                                         unset($left_candles[$key]);
                                     }
                                 }
@@ -154,7 +156,8 @@ class Aggregator extends Base
                                         $resolution, $chunk_size, $first,
                                         $left_candles[$remaining - 1]->time,
                                         $left_request_first,
-                                        $left_result_start, $left_result_end
+                                        $left_result_start, $left_result_end,
+                                        $duplicate_times
                                     );
                                     echo '[GAP] ';
                                 }
