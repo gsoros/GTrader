@@ -142,11 +142,11 @@ class Aggregator extends Base
                                 $remaining = count($left_candles);
                                 if ($first
                                     && isset($left_candles[$remaining - 1])
-                                    && ($left_candles[$remaining - 1]->time < ($first - $resolution))
+                                    && ($gap = ($left_candles[$remaining - 1]->time < ($first - $resolution)))
                                 ) {
                                     Log::error('Gap detected at '.$first,
                                         $exchange->getName(), $symbol_name,
-                                        $resolution, $chunk_size
+                                        $resolution, $chunk_size, $gap / $resolution
                                     );
                                     echo '[GAP] ';
                                 }
