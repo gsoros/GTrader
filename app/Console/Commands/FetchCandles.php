@@ -17,6 +17,7 @@ class FetchCandles extends Command
                            {--s|symbol= : fetch a single symbol}
                            {--r|resolution= : fetch a single resolution}
                            {--d|direction= : direction: left|rev | right|fwd | both}
+                           {--c|chunk_size= : chunk size}
                            ';
 
 
@@ -51,6 +52,7 @@ class FetchCandles extends Command
             'symbol' => $this->option('symbol'),
             'resolution' => $this->option('resolution'),
             'direction' => $this->option('direction') ?? 'both',
+            'chunk_size' => $this->option('chunk_size') ? intval($this->option('chunk_size')) : null,
         ]);
     }
 }

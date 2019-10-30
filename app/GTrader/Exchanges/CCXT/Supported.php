@@ -364,24 +364,38 @@ class Supported extends Exchange
     protected function tradeSetTarget(): bool
     {
         $env = $this->trade_environment;
+        $neutral_balance = ($this->isFutures($env->symbol) || $this->isSwap($env->symbol))
+            ? 0
+            : ($env->balance + $env->quote_balance / ($env->price ?? 1)) / 2; // spot
+        Log::debug('neutral balance: '.$neutral_balance);
         if ('neutral' === $env->signal) {
-            $env->target_balance = $env->target_position = 0;
-            Log::debug($this->getName().' Target is zero because signal is neutral');
+            $env->target_balance = $neutral_balance;
+            Log::debug($this->getName().' Target balance is '.$env->target_balance.' because signal is neutral');
         } else {
             if ($env->trade && $env->trade->signal_position) {
                 $env->target_position = $env->trade->signal_position;
                 Log::debug($this->getName().' Target set from trade', $env->target_position);
+                return true;
             } else {
-                $env->target_balance = $env->balance * $env->position_size / 100;
-                if ('short' === $env->signal) {
-                    $env->target_balance = 0 - $env->target_balance;
+                if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+                    $env->target_balance = $env->balance * $env->position_size / 100;
+                    if ('short' === $env->signal) {
+                        $env->target_balance = 0 - $env->target_balance;
+                    }
+                } else {
+                    // spot
+                    $change = $neutral_balance * $env->position_size / 100;
+                    if ('short' === $env->signal) {
+                        $change = 0 - $change;
+                    }
+                    $env->target_balance = $neutral_balance + $change;
                 }
-                if (!$this->tradeCalculateTarget()) {
-                    $env->error = 'tradeCalculateTarget failed';
-                    return false;
-                }
-                Log::debug($this->getName().' Target calculated from balance', $env->target_balance, $env->target_position);
+                Log::debug($this->getName().' Target calculated from balance', $env->target_balance);
             }
+        }
+        if (!$this->tradeCalculateTarget()) {
+            $env->error = 'tradeCalculateTarget failed';
+            return false;
         }
         return true;
     }
@@ -393,11 +407,12 @@ class Supported extends Exchange
         if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
             Log::debug($this->getName().' '.$env->symbol.' detected as futures or swap');
             $env->target_position = floor($env->target_balance * $env->price / $env->unit_value / $env->leverage);
-            return true;
+        } else {
+            // spot
+            Log::debug($this->getName().' '.$env->symbol.' detected as spot');
+            $env->target_position = $env->target_balance / $env->unit_value / $env->leverage;
         }
-        // spot
-        Log::debug($this->getName().' '.$env->symbol.' detected as spot');
-        $env->target_position = $env->target_balance / $env->unit_value / $env->leverage;
+        Log::debug($this->getName().' calculated target position', $env->target_position);
         return true;
     }
 
@@ -411,7 +426,7 @@ class Supported extends Exchange
     }
 
 
-    protected function tradeTransactionRequired(): bool
+    protected function tradeTransactionNeccessary(): bool
     {
         $env = $this->trade_environment;
         if (!$env->new_position) {
@@ -519,14 +534,14 @@ class Supported extends Exchange
             'GetPosition',
             'SetTarget',
             'SetNewPosition',
-            'TransactionRequired',
+            'TransactionNeccessary',
             'PrepareTransaction',
             'ExecuteTransaction',
             'SaveTransaction'
         ] as $task) {
             if (!$this->{'trade'.$task}()) {
-                //throw new \Exception($task.' failed'.($env->error ? ': '.$env->error : ''));
-                Log::info($task.' failed', $this->getName(), $env->error);
+                //throw new \Exception($task.' returned false'.($env->error ? ': '.$env->error : ''));
+                Log::info($task.' returned false', $this->getName(), $env->error);
             }
         }
         return $this;
@@ -849,10 +864,16 @@ class Supported extends Exchange
             Log::error('exchange does not support fetchClosedOrders', $this->getName());
             return $this;
         }
-        $since = ($this->getLastClosedTradeTime() + 1) * 1000;
+        $since = ($since = $this->getLastClosedTradeTime())
+            ? $since + 1
+            : time() - 3600 * 24 * 30; // TODO put this in config
+        $since *= 1000;
         $orders = [];
         try {
+            //$this->ccxt()->loadMarkets();
+            //$this->setCCXTProperty('verbose', true);
             $orders = $this->ccxt()->fetchClosedOrders(null, $since);
+            //$this->setCCXTProperty('verbose', false);
             assert(is_array($orders));
         } catch (\Exception $e) {
             Log::error('could not fetch closed orders', $this->getName(), $e->getMessage());

@@ -523,7 +523,7 @@ class Series extends Collection
         if ($candle->high < ($max = max($candle->open, $candle->low, $candle->close))) {
             $candle->high = $max;
         }
-        if ($candle->low < ($min = min($candle->open, $candle->high, $candle->close))) {
+        if ($candle->low > ($min = min($candle->open, $candle->high, $candle->close))) {
             $candle->low = $min;
         }
         return $candle;

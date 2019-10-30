@@ -37,6 +37,7 @@ class Aggregator extends Base
         $single_symbol = Arr::get($options, 'symbol');
         $single_resolution = Arr::get($options, 'resolution');
         $direction = Arr::get($options, 'direction') ?? 'both';
+        $requested_chunk_size = Arr::get($options, 'chunk_size');
 
         echo '['.date('Y-m-d H:i:s').'] '.__METHOD__;
 
@@ -52,7 +53,7 @@ class Aggregator extends Base
             if (!is_array($symbols) || !count($symbols)) {
                 continue;
             }
-            $chunk_size = $exchange->getParam('aggregator_chunk_size', 100);
+            $chunk_size = $requested_chunk_size ?? $exchange->getParam('aggregator_chunk_size', 100);
             $delay = $exchange->getParam('aggregator_delay', 0);
             echo PHP_EOL.$exchange->getName();
 
