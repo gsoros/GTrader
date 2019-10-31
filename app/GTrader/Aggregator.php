@@ -149,6 +149,7 @@ class Aggregator extends Base
                                     }
                                 }
                                 if ($left_count < $chunk_size) {
+                                    Log::debug('Less recived: ', $left_count);
                                     //$exchange->setGlobalOption($epoch_key, $left_result_start);
                                 }
                                 $remaining = count($left_candles);
