@@ -437,6 +437,7 @@ class Supported extends Exchange
             $env->error = 'Nothing to buy or sell on '.$env->symbol;
             return false;
         }
+        Log::debug('Positions: current, new', $env->current_position, $env->new_position);
         if (abs($env->new_position) < abs($env->current_position / 100)) {
             $env->error = 'Less than 1% to change, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
             return false;
