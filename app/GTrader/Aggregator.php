@@ -83,7 +83,7 @@ class Aggregator extends Base
                             $resolution,
                             'last'
                         );
-                        $last = $last ? $last : time();
+                        $last = $last ? $last : floor(time() / $resolution) * $resolution + $resolution;
                         $since = $last - $resolution;
                         $since = $since > 0 ? $since : 0;
 
@@ -112,7 +112,7 @@ class Aggregator extends Base
                         );
                         if (!$epoch || $epoch < $first) {
                             usleep($delay);
-                            $fetch_last = $first ? $first : time();
+                            $fetch_last = $first ? $first : floor(time() / $resolution) * $resolution;
                             $left_request_first = $fetch_last - $chunk_size * $resolution;
                             $left_candles = $this->fetchCandles(
                                 $exchange,
@@ -126,6 +126,7 @@ class Aggregator extends Base
                                 $left_result_start = $left_result_first->time;
                                 $left_result_last = $left_candles[$left_count - 1];
                                 $left_result_end = $left_result_last->time;
+                                //dump($left_request_first, $left_result_start, $left_request_first + $chunk_size * $resolution, $left_result_end);
                                 $left_duplicates = 0;
                                 $left_times = $left_duplicate_times = [];
                                 foreach ($left_candles as $key => $candle) {
@@ -142,9 +143,11 @@ class Aggregator extends Base
                                         unset($left_candles[$key]);
                                     }
                                 }
+                                //dump($left_times);
                                 if ($left_duplicates) {
                                     echo ' ['.$left_duplicates.']';
                                     if ($left_duplicates === $left_count) {
+                                        Log::debug('All duplicates, setting '.$exchange->getName().' '.$symbol_name.' epoch to '.$first);
                                         $exchange->setGlobalOption($epoch_key, $first);
                                     }
                                 }
@@ -157,7 +160,8 @@ class Aggregator extends Base
                                     && isset($left_candles[$remaining - 1])
                                     && ($left_candles[$remaining - 1]->time < ($first - $resolution))
                                 ) {
-                                    Log::error('Gap detected at '.$first,
+                                    $gap = $first - $resolution - $left_candles[$remaining - 1]->time;
+                                    Log::error('Gap of '.$gap.'s detected at '.$first,
                                         $exchange->getName(), $symbol_name,
                                         $resolution, $chunk_size,
                                         $first / $resolution,
@@ -177,6 +181,7 @@ class Aggregator extends Base
                                     $resolution
                                 );
                             } elseif ($first) {
+                                Log::debug('Setting '.$exchange->getName().' '.$symbol_name.' epoch to '.$first);
                                 $exchange->setGlobalOption($epoch_key, $first);
                             }
                         }

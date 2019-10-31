@@ -92,7 +92,7 @@ class FannPrediction extends Indicator
             return $this;
         }
         if (!$strategy->isClass('GTrader\\Strategies\\Fann')) {
-            Log::error('Not a fann strategy');
+            //Log::info('Not a fann strategy');
             $candles->setValues($this->getSignature(), [], 'open');
             return $this;
         }
