@@ -430,7 +430,7 @@ class Supported extends Exchange
     }
 
 
-    protected function tradeTransactionNeccessary(): bool
+    protected function tradeTransactionNecessary(): bool
     {
         $env = $this->trade_environment;
         if (!$env->new_position) {
@@ -541,7 +541,7 @@ class Supported extends Exchange
             'GetPosition',
             'SetTarget',
             'SetNewPosition',
-            'TransactionNeccessary',
+            'TransactionNecessary',
             'PrepareTransaction',
             'ExecuteTransaction',
             'SaveTransaction'
