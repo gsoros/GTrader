@@ -18,16 +18,16 @@
     "lodash": "^4.17.15",
     "popper.js": "^1.16.0",
     "resolve-url-loader": "^3.1.0",
-    "sass": "^1.23.1",
+    "sass": "^1.23.2",
     "sass-loader": "^8.0.0",
     "select2": "^4.0.11",
+    "vis-network": "^6.3.1",
     "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.11.2",
     "fscreen": "^1.0.2",
     "jquery-touchswipe": "^1.6.19",
-    "nouislider": "^9.2.0",
-    "vis-network": "^6.1.2"
+    "nouislider": "^9.2.0"
   }
 }
