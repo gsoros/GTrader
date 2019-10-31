@@ -148,6 +148,9 @@ class Aggregator extends Base
                                         $exchange->setGlobalOption($epoch_key, $first);
                                     }
                                 }
+                                if ($left_count < $chunk_size) {
+                                    $exchange->setGlobalOption($epoch_key, $left_result_start);
+                                }
                                 $remaining = count($left_candles);
                                 if ($first
                                     && isset($left_candles[$remaining - 1])
