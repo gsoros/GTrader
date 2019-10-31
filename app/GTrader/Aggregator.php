@@ -166,10 +166,12 @@ class Aggregator extends Base
                                     );
                                     echo '[GAP] ';
                                 }
-                                else {
-                                    $this->saveCandles(array_reverse($left_candles),
-                                        $exchange_id, $symbol_id, $resolution);
-                                }
+                                $this->saveCandles(
+                                    array_reverse($left_candles),
+                                    $exchange_id,
+                                    $symbol_id,
+                                    $resolution
+                                );
                             } elseif ($first) {
                                 $exchange->setGlobalOption($epoch_key, $first);
                             }
