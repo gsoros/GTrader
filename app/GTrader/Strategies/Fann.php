@@ -511,13 +511,17 @@ class Fann extends Strategy
             $fann.'.train',
             storage_path('logs/'.$this->getParam('training_log_prefix').$this->getParam('id').'.log')
         ] as $file) {
-            Log::info('Checking to delete '.$file);
+            $msg = 'Checking to delete '.$file.'... ';
             if (is_file($file)) {
                 if (!is_writable($file)) {
-                    Log::error($file.' not writable');
+                    Log::error($msg.'not writable.');
                     continue;
                 }
-                unlink($file);
+                if (!unlink($file)) {
+                    Log::error($msg.'failed.');
+                } else {
+                    Log::info($msg.'deleted.');
+                }
             }
         }
         return $this;

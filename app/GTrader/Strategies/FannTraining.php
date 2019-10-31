@@ -61,12 +61,12 @@ class FannTraining extends Training
                     $this->getProgress('no_improvement') + 1
                 );
 
-            if ($this->acceptable('test', 10)) {
+            if ($this->acceptable('test', 5)) {
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
                     ->saveHistory('verify', $verify, 'train');
-                if ($this->acceptable('verify', 80)) {
+                if ($this->acceptable('verify', 90)) {
                     $this->brake(50);
                 }
                 if ($this->acceptable('verify')) {
