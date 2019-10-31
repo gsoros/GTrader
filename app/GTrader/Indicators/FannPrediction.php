@@ -123,15 +123,24 @@ class FannPrediction extends Indicator
             // }
         }
 
-        $candles->reset();
+        $scaler = $strategy->getParam('output_scaling') / 100;
+        $ema_length = (1 < ($ema_length = $strategy->getParam('prediction_ema'))) ? $ema_length : 0;
+        $prev_ema = null;
 
+        $candles->reset();
         while ($candle = $candles->next()) {
             $val = $prediction[$candle->time] ?? 0;
-            //Log::debug('P:'.$val);
             //$price = series::ohlc4($candle);
             $price = $candle->open;
-            $candle->$key = $price + $price * $val * $strategy->getParam('output_scaling') / 100;
-            //$candles->set($candle);
+            $candle->$key = $price + $price * $val * $scaler;
+
+            if ($ema_length) {
+                if (null === $prev_ema) {
+                    $prev_ema = $candle->$key;
+                }
+                $candle->$key = ($candle->$key - $prev_ema) * (2 / ($ema_length + 1)) + $prev_ema;
+                $prev_ema = $candle->$key;
+            }
         }
         return $this;
     }

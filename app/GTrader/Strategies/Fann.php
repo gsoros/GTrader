@@ -278,24 +278,28 @@ class Fann extends Strategy
             $this->deleteFiles();
         }
 
-        foreach (['target_distance', 'min_trade_distance'] as $param) {
+        foreach ([
+            'target_distance',
+            'min_trade_distance',
+            'prediction_ema',
+        ] as $param) {
             if (isset($request->$param)) {
                 $this->setParam($param, intval($request->$param));
             }
         }
 
-        foreach (['long_threshold', 'short_threshold'] as $param) {
+        foreach (['long', 'short'] as $dir) {
+            foreach (['open', 'close'] as $action) {
+                $param = $action.'_'.$dir.'_threshold';
+                if (isset($request->$param)) {
+                    $this->setParam($param, floatval($request->$param));
+                }
+            }
+            $param = $dir.'_source';
             if (isset($request->$param)) {
-                $this->setParam($param, floatval($request->$param));
+                $this->setParam($param, strval($request->$param));
             }
         }
-
-        foreach (['long_source', 'short_source'] as $param) {
-            if (isset($request->$param)) {
-                $this->setParam($param, $request->$param);
-            }
-        }
-
         parent::handleSaveRequest($request);
         return $this;
     }
@@ -1215,17 +1219,20 @@ class Fann extends Strategy
         $pred->setStrategy($this);
         $pred->addRef('root');
 
+        /*
         if (1 < ($ema_len = $this->getParam('prediction_ema'))) {
             $ema = $candles->getOrAddIndicator('Ema', [
-                'indicator' => [
-                    'input_source' => $pred->getSignature($pred->getOutput()),
-                    'length' => $ema_len,
-                ],
+                'display' => ['visible' => true],
+                'input_source' => $pred->getSignature(),
+                'length' => $ema_len,
             ]);
             $ema->addRef($pred);
             $ema->addRef('root');
             $pred = $ema;
+            Log::debug('Pred Ema', $pred->getSignature());
         }
+        */
+
         $this->cache($cache_key, $pred);
         return $pred;
     }
@@ -1255,49 +1262,104 @@ class Fann extends Strategy
         }
         $pred_sig = $pred->getSignature();
 
-        $long_thresh = $candles->getOrAddIndicator('Constant', [
-            'value' => 100 + $this->getParam('long_threshold', 0.5)]);
-        $long_ind = $candles->getOrAddIndicator('Operator', [
+        $indicator_params = [];
+
+        foreach (['open' => 0.5, 'close' => 0.3] as $action => $thresh) {
+            foreach ([
+                'long'  => ['open' => '<=', 'close' => '>='],
+                'short' => ['open' => '>=', 'close' => '<=']
+            ] as $dir => $cond) {
+                $a_d = $action.'_'.$dir;
+                ${$a_d.'_thresh'} = $candles->getOrAddIndicator('Constant', [
+                    'value' => 100 + $this->getParam($a_d.'_threshold', $thresh)]);
+                ${$a_d.'_ind'} = $candles->getOrAddIndicator('Operator', [
+                    'input_a'   => 'open',
+                    'operation' => 'perc',
+                    'input_b'   => ${$a_d.'_thresh'}->getSignature(),
+                ]);
+                ${$a_d.'_sig'} = ${$a_d.'_ind'}->getSignature();
+                $indicator_params = array_merge($indicator_params, [
+                    'input_'.$a_d.'_a'      => ${$a_d.'_sig'},
+                    $a_d.'_cond'            => $cond[$action],
+                    'input_'.$a_d.'_b'      => $pred_sig,
+                    'input_'.$a_d.'_source' => $this->getParam($dir.'_source', 'open'),
+                ]);
+            }
+        }
+
+        if (!$signals = $candles->getOrAddIndicator('Signals', array_merge([
+                'strategy_id'               => 0, // Custom Settings
+                'min_trade_distance'        => $this->getParam('min_trade_distance', 1),
+            ], $indicator_params
+        ))) {
+            Log::error('Could not add Signals');
+            return null;
+        }
+
+
+        /*
+        $open_long_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 + $this->getParam('open_long_threshold', 0.5)]);
+        $open_long_ind = $candles->getOrAddIndicator('Operator', [
             'input_a'   => 'open',
             'operation' => 'perc',
-            'input_b'   => $long_thresh->getSignature(),
+            'input_b'   => $open_long_thresh->getSignature(),
         ]);
 
-        $short_thresh = $candles->getOrAddIndicator('Constant', [
-            'value' => 100 - $this->getParam('short_threshold', 0.5)]);
-        $short_ind = $candles->getOrAddIndicator('Operator', [
+        $close_long_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 + $this->getParam('close_long_threshold', 0.3)]);
+        $close_long_ind = $candles->getOrAddIndicator('Operator', [
             'input_a'   => 'open',
             'operation' => 'perc',
-            'input_b'   => $short_thresh->getSignature(),
+            'input_b'   => $close_long_thresh->getSignature(),
         ]);
 
-        $long_sig = $long_ind->getSignature();
-        $short_sig = $short_ind->getSignature();
+        $open_short_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 - $this->getParam('open_short_threshold', 0.5)]);
+        $open_short_ind = $candles->getOrAddIndicator('Operator', [
+            'input_a'   => 'open',
+            'operation' => 'perc',
+            'input_b'   => $open_short_thresh->getSignature(),
+        ]);
+
+        $close_short_thresh = $candles->getOrAddIndicator('Constant', [
+            'value' => 100 - $this->getParam('close_short_threshold', 0.5)]);
+        $close_short_ind = $candles->getOrAddIndicator('Operator', [
+            'input_a'   => 'open',
+            'operation' => 'perc',
+            'input_b'   => $close_short_thresh->getSignature(),
+        ]);
+
+        $open_long_sig = $open_long_ind->getSignature();
+        $close_long_sig = $close_long_ind->getSignature();
+        $open_short_sig = $open_short_ind->getSignature();
+        $close_short_sig = $close_short_ind->getSignature();
 
         if (!$signals = $candles->getOrAddIndicator('Signals',
             [
                 'strategy_id'               => 0, // Custom Settings
-                'input_open_long_a'         => $long_sig,
-                'open_long_cond'            => '<',
+                'input_open_long_a'         => $open_long_sig,
+                'open_long_cond'            => '<=',
                 'input_open_long_b'         => $pred_sig,
                 'input_open_long_source'    => $this->getParam('long_source', 'open'),
-                'input_close_long_a'        => $long_sig,
+                'input_close_long_a'        => $close_long_sig,
                 'close_long_cond'           => '>=',
                 'input_close_long_b'        => $pred_sig,
                 'input_close_long_source'   => $this->getParam('long_source', 'open'),
-                'input_open_short_a'        => $short_sig,
-                'open_short_cond'           => '>',
+                'input_open_short_a'        => $open_short_sig,
+                'open_short_cond'           => '>=',
                 'input_open_short_b'        => $pred_sig,
                 'input_open_short_source'   =>  $this->getParam('short_source', 'open'),
-                'input_close_short_a'        => $short_sig,
-                'close_short_cond'           => '<=',
-                'input_close_short_b'        => $pred_sig,
-                'input_close_short_source'   =>  $this->getParam('short_source', 'open'),
+                'input_close_short_a'       => $close_short_sig,
+                'close_short_cond'          => '<=',
+                'input_close_short_b'       => $pred_sig,
+                'input_close_short_source'  =>  $this->getParam('short_source', 'open'),
                 'min_trade_distance'        =>  $this->getParam('min_trade_distance', 1),
             ])) {
             Log::error('Could not add Signals');
             return null;
         }
+        */
         $signals->addRef('root');
         $this->cache($cache_key, $signals);
         return $signals;

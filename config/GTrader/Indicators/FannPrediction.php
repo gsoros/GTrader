@@ -17,5 +17,4 @@ return [
         'name' => 'Prediction',
         'y-axis' => 'left',
     ],
-
 ];

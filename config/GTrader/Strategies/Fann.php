@@ -17,10 +17,14 @@ return [
     'long_source'                   => 'open',
     // short signal price source
     'short_source'                  => 'open',
-    // trigger long signal if prediction exeeds price by this percentage
-    'long_threshold'                => 0.5,
-    // trigger short signal if prediction is lower than price minus this percentage
-    'short_threshold'               => 0.5,
+    // trigger open_long signal if prediction >= price by this percentage
+    'open_long_threshold'           => 0.5,
+    // trigger close_long signal if prediction <= price plus this percentage
+    'close_long_threshold'          => 0.3,
+    // trigger open_short signal if prediction <= price minus this percentage
+    'open_short_threshold'          => 0.5,
+    // trigger close_short signal if prediction >= price plus this percentage
+    'close_short_threshold'         => 0.3,
     // do not trade if last trade was more recent than this value
     'min_trade_distance'            => 1,
     // compensate for the bias of the null sample

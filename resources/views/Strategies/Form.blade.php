@@ -14,7 +14,6 @@
                     <span class="fas fa-ban"></span> Discard Changes
                 </button>
                 <button onClick="window.GTrader.request('strategy', 'save', $('#strategyForm').serialize(), 'POST')"
-                        id="strategySaveButton"
                         type="button"
                         class="btn btn-primary btn-mini trans"
                         title="Save Strategy">
