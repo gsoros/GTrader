@@ -143,7 +143,7 @@ class StrategyController extends Controller
             })
             ->first();
         if (is_object($training)) {
-            $html = view('TrainingProgress', [
+            $html = view('Strategies.TrainingProgress', [
                 'strategy' => $strategy,
                 'training' => $training
             ]);
@@ -259,7 +259,7 @@ class StrategyController extends Controller
         }
         $training->status = 'paused';
         $training->save();
-        $html = view('TrainingProgress', [
+        $html = view('Strategies.TrainingProgress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
@@ -281,7 +281,7 @@ class StrategyController extends Controller
         }
         $training->status = 'training';
         $training->save();
-        $html = view('TrainingProgress', [
+        $html = view('Strategies.TrainingProgress', [
             'strategy' => $strategy,
             'training' => $training
         ]);
