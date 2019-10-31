@@ -129,7 +129,7 @@ class Aggregator extends Base
                                 $left_duplicates = 0;
                                 $left_times = $left_duplicate_times = [];
                                 foreach ($left_candles as $key => $candle) {
-                                    $sequence = $candle->time / $resolutionM;
+                                    $sequence = $candle->time / $resolution;
                                     $left_times[] = $sequence;
                                     if (DB::table('candles')->where([
                                             ['time', $candle->time],
