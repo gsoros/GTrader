@@ -149,7 +149,7 @@ class Aggregator extends Base
                                     }
                                 }
                                 if ($left_count < $chunk_size) {
-                                    $exchange->setGlobalOption($epoch_key, $left_result_start);
+                                    //$exchange->setGlobalOption($epoch_key, $left_result_start);
                                 }
                                 $remaining = count($left_candles);
                                 if ($first
