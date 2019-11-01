@@ -67,11 +67,12 @@ class FannTraining extends Training
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
                     ->saveHistory('verify', $verify, 'train');
-                if ($this->acceptable('verify', 90)) {
-                    $this->brake(50);
-                }
+                //if ($this->acceptable('verify', 90)) {
+                //    $this->brake(50);
+                //}
                 if ($this->acceptable('verify', $this->options['max_regression']['verify'])) {
-                    $this->setProgress('test_max', $test)
+                    $this->brake(50)
+                        ->setProgress('test_max', $test)
                         ->setProgress('verify_max', $verify)
                         ->setProgress(
                             'last_improvement_epoch',

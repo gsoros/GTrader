@@ -398,6 +398,7 @@ abstract class Training extends Model
         return true;
     }
 
+
     protected function increaseEpoch()
     {
         $this->setProgress(
@@ -406,6 +407,7 @@ abstract class Training extends Model
         );
         return $this;
     }
+
 
     protected function obtainLock()
     {
