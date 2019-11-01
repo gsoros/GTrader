@@ -364,31 +364,34 @@ class Supported extends Exchange
     protected function tradeSetTarget(): bool
     {
         $env = $this->trade_environment;
-        $neutral_balance = ($this->isFutures($env->symbol) || $this->isSwap($env->symbol))
+        $futures_or_swap = $this->isFutures($env->symbol) || $this->isSwap($env->symbol);
+        $neutral_balance = $futures_or_swap
             ? 0
             : ($env->balance + $env->quote_balance / ($env->price ?? 1)) / 2; // spot
         Log::debug('neutral balance: '.$neutral_balance);
-        if ('neutral' === $env->signal) {
+        if ($futures_or_swap && ('neutral' === $env->signal)) {
             $env->target_balance = $neutral_balance;
             Log::debug($this->getName().' Target balance is '.$env->target_balance.' because signal is neutral');
         } else {
             if ($env->trade && $env->trade->signal_position) {
                 Log::debug($this->getName().' Target set from trade', $env->trade->signal_position);
-                if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+                if ($futures_or_swap) {
                     $env->target_position = $env->trade->signal_position;
                     return true; // do not tradeCalculateTarget, we already have target_position
                 }
                 // spot
                 $env->target_balance = $env->trade->signal_position;
             } else {
-                if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+                if ($futures_or_swap) {
                     $env->target_balance = $env->balance * $env->position_size / 100;
                     if ('short' === $env->signal) {
                         $env->target_balance = 0 - $env->target_balance;
                     }
                 } else {
                     // spot
-                    $change = $neutral_balance * $env->position_size / 100;
+                    $change = ('neutral' === $env->signal) ?
+                        0 :
+                        $neutral_balance * $env->position_size / 100;
                     if ('short' === $env->signal) {
                         $change = 0 - $change;
                     }
@@ -414,7 +417,7 @@ class Supported extends Exchange
         } else {
             // spot
             Log::debug($this->getName().' '.$env->symbol.' detected as spot');
-            $env->target_position = $env->balance - $env->target_balance / $env->unit_value / $env->leverage;
+            $env->target_position =  $env->target_balance / $env->unit_value / $env->leverage - $env->balance;
         }
         Log::debug($this->getName().' calculated target position', $env->target_position);
         return true;
@@ -424,8 +427,12 @@ class Supported extends Exchange
     protected function tradeSetNewPosition(): bool
     {
         $env = $this->trade_environment;
-        $env->new_position = $env->target_position - $env->current_position;
-        //dump($env->target_position, $env->current_position, $env->new_position);
+        if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
+            $env->new_position = $env->target_position - $env->current_position;
+        } else {
+            $env->new_position = $env->target_position;
+        }
+        Log::debug($this->getName().' calculated new position', $env->new_position);
         return true;
     }
 
