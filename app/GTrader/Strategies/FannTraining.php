@@ -4,6 +4,7 @@ namespace GTrader\Strategies;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -61,7 +62,7 @@ class FannTraining extends Training
                     $this->getProgress('no_improvement') + 1
                 );
 
-            if ($this->acceptable('test', 5)) {
+            if ($this->acceptable('test', $this->options['max_regression']['test'])) {
                 $this->copyFann('train', 'verify');
                 $verify = $this->test('verify');
                 $this->setProgress('verify', $verify)
@@ -69,7 +70,7 @@ class FannTraining extends Training
                 if ($this->acceptable('verify', 90)) {
                     $this->brake(50);
                 }
-                if ($this->acceptable('verify')) {
+                if ($this->acceptable('verify', $this->options['max_regression']['verify'])) {
                     $this->setProgress('test_max', $test)
                         ->setProgress('verify_max', $verify)
                         ->setProgress(
@@ -311,24 +312,26 @@ class FannTraining extends Training
 
     protected function acceptable(string $type, int $allowed_regression_percent = 0)
     {
-        $progress = $this->getProgress($type);
+        $progress = $this->getProgress($type, 0);
         return
-            $progress > 0 &&
-            $progress >=
-            $this->getProgress($type.'_max') *
-            (100 - $allowed_regression_percent) / 100;
+            ($progress > 0) &&
+            ($progress >= (
+                $this->getProgress($type.'_max')
+                * (100 - $allowed_regression_percent)
+                / 100)
+            );
     }
 
 
     protected function increaseJump()
     {
-        if ($this->getProgress('no_improvement') > $this->getParam('max_boredom')) {
+        if ($this->getProgress('no_improvement') > $this->options['max_boredom']) {
             // Increase jump size to fly over valleys faster, possibly missing some narrow peaks
             $this->setProgress('epoch_jump', $this->getProgress('epoch_jump') + 1);
 
             // Limit jumps
-            if ($this->getProgress('epoch_jump') >= $this->getParam('epoch_jump_max')) {
-                $this->setProgress('epoch_jump', $this->getParam('epoch_jump_max'));
+            if ($this->getProgress('epoch_jump') >= $this->options['max_epoch_jump']) {
+                $this->setProgress('epoch_jump', $this->options['max_epoch_jump']);
             }
             $this->setProgress('no_improvement', 0);
         }
@@ -339,8 +342,15 @@ class FannTraining extends Training
     public function getPreferences()
     {
         $prefs = [];
-        foreach (['crosstrain', 'reset_after'] as $item) {
-            $prefs[$item] = $this->getParam($item);
+        foreach ([
+            'crosstrain',
+            'reset_after',
+            'max_boredom',
+            'max_epoch_jump',
+            'max_regression.test',
+            'max_regression.verify',
+        ] as $item) {
+            Arr::set($prefs, $item, $this->getParam($item));
         }
         return array_replace_recursive(
             parent::getPreferences(),
@@ -358,8 +368,18 @@ class FannTraining extends Training
 
         $options = $this->options ?? [];
 
-        foreach (['crosstrain', 'reset_after'] as $item) {
-            $prefs[$item] = $options[$item] = $request->$item ?? 0;
+        foreach ([
+            'crosstrain',
+            'reset_after',
+            'max_boredom',
+            'max_epoch_jump',
+            'max_regression.test',
+            'max_regression.verify',
+        ] as $item) {
+            $value = Arr::get($request, $item, $this->getParam($item, 0));
+            Arr::set($prefs, $item, $value);
+            Arr::set($options, $item, $value);
+            //$prefs[$item] = $options[$item] = $request->$item ?? 0;
         }
 
         if ($options['crosstrain'] < 2) {
@@ -369,14 +389,12 @@ class FannTraining extends Training
             $options['crosstrain'] = 10000;
         }
 
-        $options['reset_after'] = $request->reset_after ?? 0;
         if ($options['reset_after'] < 100) {
             $options['reset_after'] = 0;
         }
         if ($options['reset_after'] > 10000) {
             $options['reset_after'] = 10000;
         }
-
         $this->options = $options;
 
         Auth::user()->setPreference(

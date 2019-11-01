@@ -3,9 +3,12 @@
 return [
     'reset_after'           => 0,
     'suffix'                => '.train',
-    'max_boredom'           => 10,   // increase jump size after this number of uneventful epochs
-    'epoch_jump_max'        => 100,  // max amount of epochs between tests
-    'test_regression'       => .95,  // allow this amount of regression to test max
+    'max_boredom'           => 10,   // increase number of epochs between tests after this number of epochs without improvement
+    'max_epoch_jump'        => 100,  // max number of epochs between tests
+    'max_regression' => [            // allow this percentage of regression from max
+        'test' => 5,
+        'verify' => 5,
+    ],
     'crosstrain'            => 0,
     'ranges' => [
         'train' => [
