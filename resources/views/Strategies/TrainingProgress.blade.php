@@ -1,10 +1,11 @@
 @php
     $chart = $strategy->getTrainingProgressChart($training);
+    $strategy_id = $strategy->getParam('id');
 @endphp
 <div class="row bdr-rad">
     <div class="col-sm-12 npl npr">
         <h4>Training Progress for
-            <span title="Strategy ID: {{ $strategy->getParam('id') }} Training ID: {{ $training->id }}">
+            <span title="Strategy ID: {{ $strategy_id }} Training ID: {{ $training->id }}">
                 {{ $strategy->getParam('name') }}
             </span>
         </h4>
@@ -44,10 +45,11 @@
             verify_max = 0,
             last_epoch = 0;
         function pollStatus() {
-            console.log('pollStatus() ' + $('#trainProgress').length);
+            //console.log('pollStatus() ' + $('#trainProgress').length);
             $.ajax({
-                url: '/strategy.trainProgress?id={{ $strategy->getParam('id') }}',
+                url: '/strategy.trainProgress?id={{ $strategy_id }}',
                 success: function(data) {
+                    //console.log('pollStatus() success');
                     try {
                         reply = JSON.parse(data);
                     }
@@ -64,7 +66,11 @@
                     $('#trainProgressTrainMSER').html(reply.train_mser);
                     $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
                     $('#trainProgressSignals').html(reply.signals);
-                    $('#trainProgressNoImprovement').html(11 - parseInt(reply.no_improvement));
+                    @php
+                        $max_boredom = intval($training->options['max_boredom'] ?? 10);
+                    @endphp
+                    //console.log('max_boredom: ' + {{ $max_boredom }});
+                    $('#trainProgressNoImprovement').html({{ $max_boredom }} + 1 - parseInt(reply.no_improvement));
                     $('#trainProgressEpochJump').html(reply.epoch_jump);
                     var new_epoch = parseInt(reply.epoch);
                     if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {
@@ -73,7 +79,7 @@
                             'strategy',
                             'trainHistory',
                             {
-                                id: {{ $strategy->getParam('id') }},
+                                id: {{ $strategy_id }},
                                 width: $('#trainHistory').width(),
                                 height: 200
                             },
@@ -93,6 +99,7 @@
                     }
                 },
                 complete: function() {
+                    //console.log('pollStatus() complete');
                     if ($('#trainProgress').length) {
                         pollTimeout = setTimeout(pollStatus, 3000);
                     }
@@ -113,12 +120,12 @@
 @endif
 <div class="row bdr-rad">
     <div class="col-sm-12 float-right">
-        <div class="float-right">
+        <span class="float-right">
             @if ('paused' === $training->status)
                 <button onClick="window.GTrader.request(
                                         'strategy',
                                         'trainResume',
-                                        'id={{ $strategy->getParam('id') }}'
+                                        'id={{ $strategy_id }}'
                                         )"
                         type="button"
                         class="btn btn-primary btn-mini trans"
@@ -130,7 +137,7 @@
                                     window.GTrader.request(
                                         'strategy',
                                         'trainPause',
-                                        'id={{ $strategy->getParam('id') }}'
+                                        'id={{ $strategy_id }}'
                                         )"
                         type="button"
                         class="btn btn-primary btn-mini trans"
@@ -141,7 +148,7 @@
             <button onClick="window.GTrader.request(
                                 'strategy',
                                 'trainStop',
-                                'id={{ $strategy->getParam('id') }}'
+                                'id={{ $strategy_id }}'
                                 )"
                     type="button"
                     class="btn btn-primary btn-mini trans"
@@ -154,6 +161,6 @@
                     title="Back to the List of Strategies">
                 <span class="fas fa-arrow-left"></span> Back
             </button>
-        </div>
+        </span>
     </div>
 </div>

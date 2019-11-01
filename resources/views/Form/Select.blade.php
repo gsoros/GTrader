@@ -3,9 +3,10 @@
         name="{{ $key }}_{{ $uid }}"
         {{ ($description ?? null) ? 'title="'.$description.'"' : ''}}
         >
-    @foreach (
-        ($options ? (is_array($options) ? $options : []) : [])
-    ) as $opt_k => $opt_v)
+    @php
+        $options = is_array($options) ? $options : [];
+    @endphp
+    @foreach ($options as $opt_k => $opt_v)
         <option
         {{ $opt_k == ($value ?? null) ? 'selected' : '' }}
         value="{{ $opt_k }}">{{ $opt_v }}</option>
