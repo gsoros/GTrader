@@ -5,18 +5,6 @@ namespace GTrader;
 class DevUtil
 {
     /**
-     * jsonPrint
-     * @param  string $json
-     * @return string
-     */
-    public static function jsonPrint(string $json): string
-    {
-        $printer = new \Localheinz\Json\Printer\Printer();
-        return $printer->print($json, '  ');
-    }
-
-
-    /**
      * backtrace
      * @return string
      */
@@ -72,13 +60,13 @@ class DevUtil
      */
     public static function memdump(string $path = '/tmp/memdump.json')
     {
-        if (!function_exists('meminfo_dump')) {
-            Log::debug('php_meminfo extension not installed');
+        if (function_exists('meminfo_dump')) {
+            $fd = fopen($path, 'w');
+            meminfo_dump($fd);
+            fclose($fd);
             return;
         }
-        $fd = fopen($path, 'w');
-        meminfo_dump($fd);
-        fclose($fd);
+        Log::debug('php_meminfo extension not installed');
     }
 
 

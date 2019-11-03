@@ -58,7 +58,7 @@ class Debug extends Command
      */
     public function handle()
     {
-        if ('local' !== \Config::get('app.env')) {
+        if ('local' !== config('app.env')) {
             $msg = 'This command cannot be called in a non-local environment.';
             dump($msg);
             Log::error($msg);

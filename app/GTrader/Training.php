@@ -301,12 +301,12 @@ abstract class Training extends Model
     }
 
 
-    protected function getProgress($key)
+    protected function getProgress($key, $default = 0)
     {
         if (!is_array($this->progress)) {
-            return 0;
+            return $default;
         }
-        return $this->progress[$key] ?? 0;
+        return $this->progress[$key] ?? $default;
     }
 
 
