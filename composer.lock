@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "37211d9207753660fd856b2af3b0f054",
+    "content-hash": "f582cde49dd560c7372d628b0ca8232a",
     "packages": [
         {
             "name": "ccxt/ccxt",
@@ -273,50 +273,6 @@
                 "zerocoin"
             ],
             "time": "2019-10-31T13:00:12+00:00"
-        },
-        {
-            "name": "codedruids/simple-diff",
-            "version": "v1.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/CodeDruids/simple-diff.git",
-                "reference": "1fe7e9a4530f21f7b50e9338cc2fc53be0890097"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/CodeDruids/simple-diff/zipball/1fe7e9a4530f21f7b50e9338cc2fc53be0890097",
-                "reference": "1fe7e9a4530f21f7b50e9338cc2fc53be0890097",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "4.2.*",
-                "squizlabs/php_codesniffer": "3.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "CodeDruids\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Zlib"
-            ],
-            "authors": [
-                {
-                    "name": "Leith Caldwell",
-                    "email": "leith@codedruids.com"
-                },
-                {
-                    "name": "Paul Butler",
-                    "email": "paulgb@gmail.com"
-                }
-            ],
-            "description": "PHP class wrapper for simple diff operation.",
-            "time": "2018-01-31T03:50:26+00:00"
         },
         {
             "name": "davefx/phplot",

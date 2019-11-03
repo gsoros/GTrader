@@ -7,7 +7,6 @@
     "require": {
         "php": ">=7.2",
         "ccxt/ccxt": "^1.18",
-        "codedruids/simple-diff": "1.*",
         "davefx/phplot": "^6.2",
         "doctrine/dbal": "^2.9",
         "gburtini/distributions": "dev-master",
