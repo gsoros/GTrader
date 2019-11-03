@@ -10,9 +10,7 @@
         "codedruids/simple-diff": "1.*",
         "davefx/phplot": "^6.2",
         "doctrine/dbal": "^2.9",
-        "doublebit/okcoin": "master@dev",
         "gburtini/distributions": "dev-master",
-        "jfcherng/php-diff": "^6.1",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^1.0"
     },

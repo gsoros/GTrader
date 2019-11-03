@@ -2,30 +2,8 @@
 
 namespace GTrader;
 
-use Jfcherng\Diff\Differ;
-use Jfcherng\Diff\DiffHelper;
-use Jfcherng\Diff\Factory\RendererFactory;
-
 class DevUtil
 {
-    /**
-     * diff
-     * @param  mixed $old
-     * @param  mixed $new
-     * @return string
-     */
-    public static function diff($old, $new): string
-    {
-        return DiffHelper::calculate(
-            print_r($old, true),
-            print_r($new, true),
-            'SideBySide',
-            [],
-            ['detailLevel' => 'char', 'spacesToNbsp' => true]
-        );
-    }
-
-
     /**
      * jsonPrint
      * @param  string $json

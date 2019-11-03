@@ -177,9 +177,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        // OKCoin REST Api Wrapper
-        DoubleBit\OKCoin\OkcoinServiceProvider::class,
-
     ],
 
     /*
@@ -229,10 +226,6 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        // OKCoin REST Api Wrapper
-        'OKCoinWrapper' => DoubleBit\OKCoin\Okcoin::class,
-
-
     ],
 
 
