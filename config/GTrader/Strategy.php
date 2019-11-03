@@ -7,6 +7,6 @@ return [
         'Fann',
         'Simple',
         'Bbands',
-        //'Tiktaalik',
+        'Tiktaalik',
     ],
 ];
