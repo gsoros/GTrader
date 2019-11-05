@@ -324,7 +324,7 @@ class Beagle extends Training implements Evolution
         $options = $this->options ?? [];
 
         foreach (['population', 'surviviors', 'mutation_rate'] as $item) {
-            $prefs[$item] = $options[$item] = floatval($request->$item) ?? 0;
+            $prefs[$item] = $options[$item] = floatval($request->$item ?? 0);
         }
 
         $this->options = $options;

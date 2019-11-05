@@ -70,6 +70,26 @@ class Debug extends Command
 
     protected function debug()
     {
+        $ref = $nor = 0;
+        for ($i=0; $i<10; $i++) {
+            echo $i;
+            $m = microtime(true);
+            $array = range(1, 100000);
+            foreach ($array as $k => $v) {
+                $array[$k] = 1;
+            }
+            $nor += microtime(true) - $m;
+
+            $m = microtime(true);
+            $array = range(1, 100000);
+            foreach ($array as &$v) {
+                $v = 1;
+            }
+            $ref += microtime(true) - $m;
+        }
+        echo PHP_EOL.$nor.' '.$ref.PHP_EOL;
+        die;
+
 
         for ($i = 10; --$i;) {
             Log::error('Error test', ['key' => [1, 2, 3, 4, 100 => 'haha']]);
