@@ -3,6 +3,8 @@
 namespace GTrader\Strategies;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+
 use GTrader\Strategy;
 use GTrader\Indicator;
 use GTrader\Log;
@@ -44,14 +46,17 @@ class Simple extends Strategy
     }
 
 
-    public function viewIndicatorsList(Request $request = null)
+    public function viewIndicatorsList(Request $request = null, array $options = [])
     {
-        $indicators = $this->getIndicatorsFilteredSorted(
+        $indicators_filters = array_replace_recursive(
             ['display.visible' => true, 'class' => ['not', 'Signals']],
-            ['display.name']
+            Arr::get($options, 'indicators.filters', [])
         );
-        return view(
-            'Indicators/List',
+        $indicators = $this->getIndicatorsFilteredSorted(
+            $indicators_filters,
+            Arr::get($options, 'indicators.sort', ['display.name'])
+        );
+        $view_options = array_replace_recursive(
             [
                 'owner' => $this,
                 'indicators' => $indicators,
@@ -62,7 +67,12 @@ class Simple extends Strategy
                 'display_outputs' => false,
                 'target_element' => 'strategy_indicators_list',
                 'format' => 'long',
-            ]
+            ],
+            Arr::get($options, 'view', [])
+        );
+        return view(
+            'Indicators/List',
+            $view_options
         );
     }
 
@@ -166,7 +176,7 @@ class Simple extends Strategy
     }
 
 
-    public function viewSignalsForm()
+    public function viewSignalsForm(array $options = [])
     {
         if (!$signals = $this->getSignalsIndicator()) {
             Log::error('Could not load signals Indicator');
@@ -174,9 +184,14 @@ class Simple extends Strategy
         }
         $signals->unsetParam('adjustable.strategy_id');
         $signals->setParam('uid', $this->getParam('uid'));
-        return $signals->getForm(['disabled' => [
-            'title', 'form', 'savebutton', 'save'
-        ]]);
+        return $signals->getForm(array_replace_recursive(
+            [
+                'disabled' => [
+                    'title', 'form', 'savebutton', 'save',
+                ],
+            ],
+            Arr::get($options, 'view', [])
+        ));
     }
 
 

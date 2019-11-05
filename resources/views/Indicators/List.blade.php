@@ -41,7 +41,7 @@
                 <span title="{{ $indicator->getParam('display.description') }}">
                     @if ($display_outputs &&  (1 === $num_outputs))
                         @php
-                        $checkbox = array_shift($output_checkboxes);
+                            $checkbox = array_shift($output_checkboxes);
                         @endphp
                         <label>
                             <input type="checkbox"
@@ -58,6 +58,26 @@
                     @endif
                 </span>
                 <div class="form-group editbuttons">
+                    @if ($mutability ?? false)
+                        <button class="locked btn btn-primary btn-mini editbutton trans"
+                                title="Currently immutable, click to enable mutation"
+                                onClick="alert('TODO'); return false; window.GTrader.request(
+                                    'indicator',
+                                    'mutability',
+                                    {
+                                        owner_class: '{{ $owner_class }}',
+                                        owner_id: '{{ $owner_id }}',
+                                        name: '{{ $name }}',
+                                        signature: '{{ urlencode($sig) }}',
+                                        target_element: '{{ $target_element }}',
+                                        new_mutability: 1
+                                    },
+                                    'POST',
+                                    'form_{{ $uid }}'
+                                ); return false">
+                            <span class="fas fa-dice"></span>
+                        </button>
+                    @endif
                     @if ($num_params)
                         <button class="btn btn-primary btn-mini editbutton trans"
                                 title="Edit"
@@ -69,7 +89,8 @@
                                         owner_id: '{{ $owner_id }}',
                                         name: '{{ $name }}',
                                         signature: '{{ urlencode($sig) }}',
-                                        target_element: '{{ $target_element }}'
+                                        target_element: '{{ $target_element }}',
+                                        mutability: {{ boolval($mutability ?? false) }}
                                     },
                                     'POST',
                                     'form_{{ $uid }}'

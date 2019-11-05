@@ -458,7 +458,7 @@ trait HasIndicators
     }
 
 
-    public function viewIndicatorsList(Request $request = null)
+    public function viewIndicatorsList(Request $request = null, array $options = [])
     {
         $format = $this->formatFromRequest($request);
         return view(
@@ -477,14 +477,20 @@ trait HasIndicators
     public function handleIndicatorFormRequest(Request $request)
     {
         $pass_params = [];
-        foreach (['name', 'owner_class', 'owner_id', 'target_element'] as $val) {
+        foreach ([
+            'name',
+            'owner_class',
+            'owner_id',
+            'target_element',
+            'mutability',
+        ] as $val) {
             if (isset($request[$val])) {
                 $pass_params[$val] = $request[$val];
             }
         }
         $sig = urldecode($request->signature);
         if (! $indicator = $this->getIndicator($sig)) {
-            Log::error('Could not find indicator '.$sig);
+            Log::error('Could not find indicator', $sig);
         }
         return $indicator->getForm($pass_params);
     }

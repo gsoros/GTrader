@@ -134,7 +134,7 @@ abstract class Strategy extends Base
     }
 
 
-    public function viewIndicatorsList(Request $request = null)
+    public function viewIndicatorsList(Request $request = null, array $options = [])
     {
         $format = $this->formatFromRequest($request);
         $indicators = $this->getIndicatorsFilteredSorted(

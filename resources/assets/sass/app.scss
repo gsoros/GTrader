@@ -29,6 +29,7 @@ a:hover {
     text-decoration: none;
 }
 
+
 /*
 .container {
     border: 1px solid red !important;
@@ -58,10 +59,11 @@ form {
     // @extend .btn;
 }
 .select2-selection {
+    height: 30px !important;
     @extend .btn-primary;
     @extend .btn-mini;
     @extend .btn;
-    padding: 0;
+    padding: 0 !important;
 }
 
 .select2-selection--multiple {
@@ -198,6 +200,14 @@ h3 {
 
 input.form-control {
     width: 100%;
+}
+
+.btn {
+    padding: 3px 6px;
+}
+
+.btn .fas {
+    font-size: .9rem;
 }
 
 .btn-primary, .btn-group > .btn-secondary {
@@ -432,6 +442,38 @@ pre.debug {
     -moz-transition: all 0.5s ease-in-out;
     -o-transition: all 0.5s ease-in-out;
     transition: all 0.5s ease-in-out;
+}
+
+.locked {
+    color: #9a0000;
+}
+.unlocked {
+    color: #005c00;
+}
+.partially-locked {
+    color: #785600;
+}
+
+div.mutable-control {
+    display: table-cell;
+}
+
+.mutable-control button {
+    border-right: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+div.mutable-content {
+    display: table-cell;
+    width: 100%;
+    padding-right: 3px;
+}
+
+.mutable-content .btn {
+    border-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 #vis {

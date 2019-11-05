@@ -2,6 +2,8 @@
 
 namespace GTrader\Strategies;
 
+use Illuminate\Http\Request;
+
 use GTrader\Evolvable;
 use GTrader\Log;
 
@@ -82,5 +84,21 @@ class Tiktaalik extends Simple implements Evolvable
         }
         $this->setParam('fitness', $set);
         return $this;
+    }
+
+
+    public function viewIndicatorsList(Request $request = null, array $options = [])
+    {
+        return parent::viewIndicatorsList($request, [
+            'view' => ['mutability' => true],
+        ]);
+    }
+
+
+    public function viewSignalsForm(array $options = [])
+    {
+        return parent::viewSignalsForm([
+            'view' => ['mutability' => true],
+        ]);
     }
 }

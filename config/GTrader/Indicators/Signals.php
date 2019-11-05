@@ -56,7 +56,7 @@ $generate_group = function($key, $action) {
         $key.'_cond' => $generate_cond(
             $action.' Condition',
             $action,
-            1
+            2
         ),
         'input_'.$key.'_b' => $generate_input(
             $action.' B',
