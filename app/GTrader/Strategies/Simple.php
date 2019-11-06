@@ -54,7 +54,7 @@ class Simple extends Strategy
         );
         $indicators = $this->getIndicatorsFilteredSorted(
             $indicators_filters,
-            Arr::get($options, 'indicators.sort', ['display.name'])
+            Arr::get($options, 'indicators.sort', ['signature'])
         );
         $view_options = array_replace_recursive(
             [

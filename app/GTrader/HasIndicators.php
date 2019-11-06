@@ -79,6 +79,7 @@ trait HasIndicators
         $indicator->setOwner($owner);
         $indicator->init();
         if ($owner->hasIndicator($sig = $indicator->getSignature())) {
+            //Log::debug('owner has', $owner->oid(), $sig);
             $existing = $owner->getIndicator($sig);
             //$existing->setParams($indicator->getParams());
             return $existing;
@@ -354,13 +355,23 @@ trait HasIndicators
         if (!count($sort)) {
             return $indicators;
         }
+
+        $get_value = function($indicator, $key) {
+            if ('signature' === $key) {
+                return $indicator->getSignature();
+            }
+            return $indicator->getParam($key);
+        };
+
         foreach (array_reverse($sort) as $sort_key => $sort_val) {
             if (is_string($sort_key)) {
                 usort(
                     $indicators,
-                    function (Indicator $ind1, Indicator $ind2) use ($sort_key, $sort_val) {
-                        $val1 = $ind1->getParam($sort_key);
-                        $val2 = $ind2->getParam($sort_key);
+                    function (Indicator $ind1, Indicator $ind2) use (
+                        $sort_key, $sort_val, $get_value
+                    ) {
+                        $val1 = $get_value($ind1, $sort_key);
+                        $val2 = $get_value($ind2, $sort_key);
                         if ($val1 === $sort_val) {
                             return ($val2 === $sort_val) ? 0 : -1;
                         }
@@ -373,9 +384,11 @@ trait HasIndicators
             } else {
                 usort(
                     $indicators,
-                    function (Indicator $ind1, Indicator $ind2) use ($sort_val) {
-                        $val1 = $ind1->getParam($sort_val);
-                        $val2 = $ind2->getParam($sort_val);
+                    function (Indicator $ind1, Indicator $ind2) use (
+                        $sort_val, $get_value
+                    ) {
+                        $val1 = $get_value($ind1, $sort_val);
+                        $val2 = $get_value($ind2, $sort_val);
                         if (is_numeric($val1) && is_numeric($val2)) {
                             $val1 = floatval($val1);
                             $val2 = floatval($val2);
@@ -553,18 +566,18 @@ trait HasIndicators
             }
         }
         $indicator->update($params, $suffix);
-        $indicator->mutable($mutable);
         $indicator->init();
         $this->unsetIndicatorBySig($sig);
         if (!$indicator = $this->addIndicator($indicator)) {
-            Log::error('could not save');
-            $this->viewIndicatorsList($request);
+            Log::error('could not addIndicator');
+            return $this->viewIndicatorsList($request);
         }
         $indicator->visible(true);
         $indicator->addRef('root');
         if (method_exists($indicator, 'createDependencies')) {
             $indicator->createDependencies();
         }
+        $indicator->mutable($mutable);
         return $this->viewIndicatorsList($request);
     }
 

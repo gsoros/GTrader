@@ -969,8 +969,11 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function mutable($key_or_keys, $set = null): bool
+    public function mutable($key_or_keys = null, $set = null)
     {
+        if (is_null($key_or_keys)) {
+            return $this->getParam('mutable', []);
+        }
         if (is_string($key_or_keys)) {
             if (!$this->getParam('adjustable.'.$key_or_keys)) {
                 Log::error('unknown key', $key_or_keys);
@@ -980,10 +983,14 @@ abstract class Indicator extends Base implements Gene
                 $this->setParam('mutable.'.$key_or_keys, $set ? 1 : 0);
                 return true;
             }
-            return boolval($this->getParam('mutable.'.$key_or_keys));
+            return boolval($this->getParam('mutable.'.$key_or_keys, 0));
         }
         if (!is_array($key_or_keys)) {
-            Log::error('need string or array', $key_or_keys);
+            Log::error('need null, string or array', $key_or_keys);
+            return false;
+        }
+        if (!is_null($set)) {
+            Log::error('setting multiple is not implemented', $key_or_keys, $set);
             return false;
         }
         $updated = 0;
