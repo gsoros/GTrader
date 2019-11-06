@@ -235,7 +235,8 @@ input.form-control {
     color: #fff;
     background-color: #4b1414;
     border-color: #280000;
-    box-shadow: 0 0 0 0.5rem rgba(#282828, 0.5);
+    //box-shadow: 0 0 0 0.5rem rgba(#282828, 0.5);
+    box-shadow: none;
 }
 
 .btn-primary:not(:disabled):not(.disabled):hover,
@@ -445,7 +446,8 @@ pre.debug {
 }
 
 .locked, .locked:hover, .locked:active {
-    color: #7e0202 !important;
+    //color: #7e0202 !important;
+    color: #585858 !important;
 }
 .unlocked, .unlocked:hover, .unlocked:active {
     color: #005c00 !important;

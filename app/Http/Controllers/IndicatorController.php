@@ -74,13 +74,22 @@ class IndicatorController extends Controller
 
     public function save(Request $request)
     {
-        if (! $owner = $this->loadOwner($request)) {
+        if (!$owner = $this->loadOwner($request)) {
             return response('Could not load owner.', 403);
         }
         $form = $owner->handleIndicatorSaveRequest($request);
-
         $this->saveOwner($owner);
+        return response($form, 200);
+    }
 
+
+    public function toggleMutable(Request $request)
+    {
+        if (!$owner = $this->loadOwner($request)) {
+            return response('Could not load owner.', 403);
+        }
+        $form = $owner->handleIndicatorToggleMutableRequest($request);
+        $this->saveOwner($owner);
         return response($form, 200);
     }
 

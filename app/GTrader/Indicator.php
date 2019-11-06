@@ -972,14 +972,16 @@ abstract class Indicator extends Base implements Gene
     public function mutable($key_or_keys = null, $set = null)
     {
         if (is_null($key_or_keys)) {
-            return $this->getParam('mutable', []);
+            return is_array($mutable = $this->getParam('mutable', []))
+                ? $mutable
+                : [];
         }
         if (is_string($key_or_keys)) {
             if (!$this->getParam('adjustable.'.$key_or_keys)) {
                 Log::error('unknown key', $key_or_keys);
                 return false;
             }
-            if (!is_null($set)) {
+            if (!is_null($set) && !$this->getParam('adjustable.'.$key_or_keys.'.immutable')) {
                 $this->setParam('mutable.'.$key_or_keys, $set ? 1 : 0);
                 return true;
             }
@@ -1007,7 +1009,7 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function hasPossiblyMutableParams(): bool
+    public function canBeMutable(): bool
     {
         foreach ($this->getParam('adjustable', []) as $param) {
             if (!($param['immutable'] ?? false)) {
@@ -1015,6 +1017,19 @@ abstract class Indicator extends Base implements Gene
             }
         }
         return false;
+    }
+
+
+    public function mutableRatio(): float
+    {
+        $total = $mutable = 0;
+        foreach ($this->getParam('adjustable', []) as $key => $param) {
+            $total++;
+            if ($this->mutable($key)) {
+                $mutable++;
+            }
+        }
+        return (0 < $total) ? $mutable / $total : 0;
     }
 
 

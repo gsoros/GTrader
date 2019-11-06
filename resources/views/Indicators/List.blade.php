@@ -58,24 +58,42 @@
                     @endif
                 </span>
                 <div class="form-group editbuttons">
-                    @if (($mutability ?? false) && $indicator->hasPossiblyMutableParams())
-                        <button class="locked btn btn-primary btn-mini editbutton trans"
-                                title="Currently immutable, click to enable mutation"
-                                onClick="alert('TODO'); return false; window.GTrader.request(
+                    @if (($mutability ?? false) && $indicator->canBeMutable())
+                        @php
+                            $mutable_ratio = $indicator->mutableRatio();
+                            if (0 >= $mutable_ratio) {
+                                $mutable_class = 'locked';
+                                $mutable_title = 'immutable, click to enable';
+                                $mutable_icon = 'lock';
+                                $mutable_action = 1;
+                            } elseif (1 > $mutable_ratio) {
+                                $mutable_class = 'partially-locked';
+                                $mutable_title = 'some parameters are mutable, click to disable';
+                                $mutable_icon = 'dna';
+                                $mutable_action = 0;
+                            } else {
+                                $mutable_class = 'unlocked';
+                                $mutable_title = 'mutable, click to disable';
+                                $mutable_icon = 'dna';
+                                $mutable_action = 0;
+                            }
+                        @endphp
+                        <button class="{{ $mutable_class }} btn btn-primary btn-mini editbutton trans"
+                                title="Currently {{ $mutable_title }} mutation"
+                                onClick="window.GTrader.request(
                                     'indicator',
-                                    'mutability',
+                                    'toggleMutable',
                                     {
                                         owner_class: '{{ $owner_class }}',
                                         owner_id: '{{ $owner_id }}',
                                         name: '{{ $name }}',
                                         signature: '{{ urlencode($sig) }}',
-                                        target_element: '{{ $target_element }}',
-                                        mutable: 1
+                                        mutable: {{ $mutable_action }}
                                     },
                                     'POST',
-                                    'form_{{ $uid }}'
+                                    '{{ $target_element }}'
                                 ); return false">
-                            <span class="fas fa-dna"></span>
+                            <span class="fas fa-{{ $mutable_icon }}"></span>
                         </button>
                     @endif
                     @if ($num_params)
@@ -107,7 +125,8 @@
                                     owner_class: '{{ $owner_class }}',
                                     owner_id: '{{ $owner_id }}',
                                     name: '{{ $name }}',
-                                    signature: '{{ urlencode($sig) }}'
+                                    signature: '{{ urlencode($sig) }}',
+                                    mutability: {{ ($mutability ?? false) ? 1 : 0 }}
                                 },
                                 'POST',
                                 '{{ $target_element }}'

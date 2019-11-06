@@ -582,6 +582,22 @@ trait HasIndicators
     }
 
 
+    public function handleIndicatorToggleMutableRequest(Request $request)
+    {
+        //dump($request->all());
+        $sig = urldecode($request->signature);
+        if (! $indicator = $this->getIndicator($sig)) {
+            Log::error('cannot find indicator', $sig);
+            return $this->viewIndicatorsList($request);
+        }
+        $mutable = boolval($request->mutable ?? false);
+        foreach ($indicator->getParam('adjustable', []) as $key => $param) {
+            $indicator->mutable($key, $mutable);
+        }
+        return $this->viewIndicatorsList($request);
+    }
+
+
     public function getAvailableSources(
         $except_signatures = null,
         array $sources = [],

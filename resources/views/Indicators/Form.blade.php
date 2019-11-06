@@ -85,8 +85,9 @@
                 <button id="mutable_button_{{$key}}_{{ $uid }}"
                         class="{{ $mutable ? 'unlocked' : 'locked' }} btn btn-primary btn-mini trans"
                         title="Currently {{ $mutable ? 'mutable, click to disable' : 'immutable, click to enable' }} mutation"
-                        onClick="return toggleMutability_{{ $uid }}('{{$key}}')">
-                    <span class="fas fa-dna"></span>
+                        onClick="toggleMutability_{{ $uid }}('{{$key}}'); return false">
+                    <span id="mutable_button_icon_{{$key}}_{{ $uid }}"
+                        class="fas fa-{{ $mutable ? 'dna' : 'lock' }}"></span>
                 </button>
             </div>
             <div class="mutable-content">
@@ -305,7 +306,7 @@
                 'save',
                 {
                     @if ($pass_vars ?? false)
-                        @foreach ($pass_vasrs as $k => $v)
+                        @foreach ($pass_vars as $k => $v)
                             {{ $k }}: '{{ $v }}',
                         @endforeach
                     @endif
@@ -328,14 +329,16 @@
     window.toggleMutability_{{ $uid }} = function(key) {
         var hidden = $('#mutable_' + key + '_{{ $uid }}');
         var button = $('#mutable_button_' + key + '_{{ $uid }}');
+        var icon = $('#mutable_button_icon_' + key + '_{{ $uid }}');
         if (0 < hidden.val()) {
             hidden.val(0);
             button.removeClass('unlocked').addClass('locked');
-            return false;
+            icon.removeClass('fa-dna').addClass('fa-lock');
+            return;
         }
         hidden.val(1);
         button.removeClass('locked').addClass('unlocked');
-        return false;
+        icon.removeClass('fa-lock').addClass('fa-dna');
     };
     </script>
 @endif

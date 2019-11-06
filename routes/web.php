@@ -45,6 +45,7 @@ Route::get('/indicator.new',            'IndicatorController@create');
 Route::get('/indicator.delete',         'IndicatorController@delete');
 Route::post('/indicator.delete',        'IndicatorController@delete');
 Route::post('/indicator.save',          'IndicatorController@save');
+Route::post('/indicator.toggleMutable', 'IndicatorController@toggleMutable');
 Route::get('/indicator.sources',        'IndicatorController@sources');
 
 Route::get('/strategy.list',            'StrategyController@list');
