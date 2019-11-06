@@ -838,6 +838,9 @@ abstract class Indicator extends Base implements Gene
     {
         $before = $this->getSignature();
         foreach ($this->getParam('adjustable', []) as $key => $params) {
+            if (!$this->mutable($key)) {
+                continue;
+            }
             $this->setParam('indicator.'.$key,
                 $this->mutateParam(
                     $this->getParam('indicator.'.$key),
@@ -921,7 +924,7 @@ abstract class Indicator extends Base implements Gene
                         $owner->getAvailableSources(
                             [$this->getSignature()],
                             [],
-                            [],
+                            ['display.visible' => true],
                             [],
                             ($max_nesting > 1) ? ($max_nesting - 1) : 1
                         )))) {
