@@ -66,7 +66,7 @@ class Beagle extends Training implements Evolution
                 ->saveHistory('father', $this->getProgress('father'), 'father')
                 ->pruneHistory(0, 0, 0, 'father')
                 ->killGeneration()
-                ->raiseGeneration(100)
+                ->raiseGeneration($this->options['population'])
                 ->selection(1)
                 ;
 
@@ -112,7 +112,7 @@ class Beagle extends Training implements Evolution
             ->saveProgress()
             ->releaseLock();
 
-        \GTrader\Event::dumpSubscriptions();
+        Event::dumpSubscriptions();
         //\GTrader\DevUtil::memdump();
     }
 
@@ -302,7 +302,7 @@ class Beagle extends Training implements Evolution
     public function getPreferences()
     {
         $prefs = [];
-        foreach (['population', 'surviviors', 'mutation_rate'] as $item) {
+        foreach (['population', 'max_nesting', 'mutation_rate'] as $item) {
             $prefs[$item] = $this->getParam($item);
         }
         return array_replace_recursive(
@@ -323,7 +323,7 @@ class Beagle extends Training implements Evolution
 
         $options = $this->options ?? [];
 
-        foreach (['population', 'surviviors', 'mutation_rate'] as $item) {
+        foreach (['population', 'max_nesting', 'mutation_rate'] as $item) {
             $prefs[$item] = $options[$item] = floatval($request->$item ?? 0);
         }
 
@@ -333,6 +333,10 @@ class Beagle extends Training implements Evolution
             $this->getShortClass(),
             $prefs
         )->save();
+
+        $last_epoch = $strategy->getLastTrainingEpoch();
+        Log::info('Continuing training from generation '.$last_epoch);
+        $this->progress = ['epoch' => $last_epoch];
 
         $strategy->setParam(
             'last_training',

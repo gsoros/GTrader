@@ -67,7 +67,7 @@
     </div>
 
     <div class="row bdr-rad">
-        <div class="col-sm-6 editable"
+        <div class="col-sm-3 editable"
             title="Select the indicator to maximise training on">
             <label for="maximize_for">Maximise Strategy For</label>
             <select class="btn-primary btn btn-mini form-control form-control-sm"
@@ -82,9 +82,9 @@
                 @endforeach
             </select>
         </div>
-    </div>
 
-    @includeIf('Strategies/'.$strategy->getParam('training_class').'Form')
+        @includeIf('Strategies/'.$strategy->getParam('training_class').'Form')
+    </div>
 
 </form>
 <div class="row bdr-rad">
