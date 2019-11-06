@@ -863,11 +863,9 @@ abstract class Indicator extends Base implements Gene
             return $param;
         }
 
-        if (isset($params['immutable'])) {
-            if ($params['immutable']) {
-                //Log::debug('Immutable', $this->oid(), $param, $params);
-                return $param;
-            }
+        if ($params['immutable'] ?? false) {
+            //Log::debug('Immutable', $this->oid(), $param, $params);
+            return $param;
         }
 
         // Weight of the current value
@@ -968,6 +966,48 @@ abstract class Indicator extends Base implements Gene
                 Log::error('Unknown type', $type);
                 return $param;
         }
+    }
+
+
+    public function mutable($key_or_keys, $set = null): bool
+    {
+        if (is_string($key_or_keys)) {
+            if (!$this->getParam('adjustable.'.$key_or_keys)) {
+                Log::error('unknown key', $key_or_keys);
+                return false;
+            }
+            if (!is_null($set)) {
+                $this->setParam('mutable.'.$key_or_keys, $set ? 1 : 0);
+                return true;
+            }
+            return boolval($this->getParam('mutable.'.$key_or_keys));
+        }
+        if (!is_array($key_or_keys)) {
+            Log::error('need string or array', $key_or_keys);
+            return false;
+        }
+        $updated = 0;
+        foreach ($this->getParam('adjustable', []) as $key => $param) {
+            if ($param['immutable'] ?? false) {
+                continue;
+            }
+            if (isset($key_or_keys[$key])) {
+                $updated++;
+                $this->setParam('mutable.'.$key, $key_or_keys[$key] ? 1 : 0);
+            }
+        }
+        return boolval($updated);
+    }
+
+
+    public function hasPossiblyMutableParams(): bool
+    {
+        foreach ($this->getParam('adjustable', []) as $param) {
+            if (!($param['immutable'] ?? false)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

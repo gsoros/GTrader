@@ -101,4 +101,23 @@ class Tiktaalik extends Simple implements Evolvable
             'view' => ['mutability' => true],
         ]);
     }
+
+
+    public function handleIndicatorSaveRequest(Request $request)
+    {
+        $uid = $this->getParam('uid');
+        if (!isset($request->{'mutable_'.$uid}) ||
+            !is_array($request->{'mutable_'.$uid}) ||
+            !count($request->{'mutable_'.$uid})) {
+            return parent::handleIndicatorSaveRequest($request);
+        }
+        $mutable = [];
+        foreach ($request->{'mutable_'.$uid} as $key => $val) {
+            $mutable[$key] = intval($val);
+        }
+        $request->merge([
+            'mutable' => json_encode($mutable),
+        ]);
+        return parent::handleIndicatorSaveRequest($request);
+    }
 }

@@ -444,14 +444,14 @@ pre.debug {
     transition: all 0.5s ease-in-out;
 }
 
-.locked {
-    color: #9a0000;
+.locked, .locked:hover, .locked:active {
+    color: #7e0202 !important;
 }
-.unlocked {
-    color: #005c00;
+.unlocked, .unlocked:hover, .unlocked:active {
+    color: #005c00 !important;
 }
-.partially-locked {
-    color: #785600;
+.partially-locked, .partially-locked:hover, .partially-locked:active {
+    color: #785600 !important;
 }
 
 div.mutable-control {

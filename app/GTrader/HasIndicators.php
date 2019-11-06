@@ -539,8 +539,11 @@ trait HasIndicators
         $sig = $indicator->getSignature();
         try {
             $params = json_decode($request->params, true);
+            $mutable = isset($request->mutable)
+                ? json_decode($request->mutable, true)
+                : [];
         } catch (\Exception $e) {
-            Log::error('cannot decode json', $request->params);
+            Log::error('cannot decode json', $request->params, $request->mutable);
             return $this->viewIndicatorsList($request);
         }
         $suffix = '';
@@ -550,6 +553,7 @@ trait HasIndicators
             }
         }
         $indicator->update($params, $suffix);
+        $indicator->mutable($mutable);
         $indicator->init();
         $this->unsetIndicatorBySig($sig);
         if (!$indicator = $this->addIndicator($indicator)) {

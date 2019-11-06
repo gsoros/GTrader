@@ -58,7 +58,7 @@
                     @endif
                 </span>
                 <div class="form-group editbuttons">
-                    @if ($mutability ?? false)
+                    @if (($mutability ?? false) && $indicator->hasPossiblyMutableParams())
                         <button class="locked btn btn-primary btn-mini editbutton trans"
                                 title="Currently immutable, click to enable mutation"
                                 onClick="alert('TODO'); return false; window.GTrader.request(
@@ -70,12 +70,12 @@
                                         name: '{{ $name }}',
                                         signature: '{{ urlencode($sig) }}',
                                         target_element: '{{ $target_element }}',
-                                        new_mutability: 1
+                                        mutable: 1
                                     },
                                     'POST',
                                     'form_{{ $uid }}'
                                 ); return false">
-                            <span class="fas fa-dice"></span>
+                            <span class="fas fa-dna"></span>
                         </button>
                     @endif
                     @if ($num_params)
@@ -90,7 +90,7 @@
                                         name: '{{ $name }}',
                                         signature: '{{ urlencode($sig) }}',
                                         target_element: '{{ $target_element }}',
-                                        mutability: {{ boolval($mutability ?? false) }}
+                                        mutability: {{ ($mutability ?? false) ? 1 : 0 }}
                                     },
                                     'POST',
                                     'form_{{ $uid }}'
