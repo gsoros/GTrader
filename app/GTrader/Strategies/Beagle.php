@@ -205,7 +205,9 @@ class Beagle extends Training implements Evolution
         }
         $this->father()->setCandles($og_candles);
 
-        $clone_candles->unsetIndicators();
+        Log::debug('I statcache: '.\GTrader\Indicator::statCacheSize());
+
+        $clone_candles->kill();
         unset($clone_candles);
         //Log::debug('GC: '.gc_collect_cycles().' '.$og_candles->debug());
 

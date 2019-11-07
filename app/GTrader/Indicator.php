@@ -31,8 +31,8 @@ abstract class Indicator extends Base implements Gene
             $this->setParam('display.y-axis', 'left');
         }
 
-        $this->cacheSetMaxSize(1000);
-        static::statCacheSetMaxSize(1000);
+        //$this->cacheSetMaxSize(1000);
+        //static::statCacheSetMaxSize(1000);
     }
 
 

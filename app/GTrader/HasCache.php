@@ -53,6 +53,12 @@ trait HasCache
     }
 
 
+    public function cacheSize(): int
+    {
+        return count($this->cache);
+    }
+
+
     public function cacheSetMaxSize(int $size = 0)
     {
         $this->logCache('setMaxSize', $this->cache_max_size, $size);
