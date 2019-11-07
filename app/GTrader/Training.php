@@ -197,7 +197,7 @@ abstract class Training extends Model
         $this->symbol_id = $symbol_id;
         $this->resolution = $resolution;
         $this->options = $options;
-        $this->progress = [];
+        $this->progress = $this->progress ?? [];
 
         $this->save();
 

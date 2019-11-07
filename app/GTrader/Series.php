@@ -20,6 +20,7 @@ class Series extends Collection
     protected $_iter = 0;
     protected $_map = [];
 
+
     public function __construct(array $params = [])
     {
         $this->setParams(self::loadConfRecursive(get_class($this)));
@@ -192,6 +193,7 @@ class Series extends Collection
         return $this->_map;
     }
 
+
     public function getCandles()
     {
         $this->_load();
@@ -205,6 +207,7 @@ class Series extends Collection
         $this->items = $candles->items;
         return $this;
     }
+
 
     public function byKey($key)
     {
@@ -244,6 +247,7 @@ class Series extends Collection
     //return $this->items[$this->size()-1];
     //}
 
+
     public function set($candle = null)
     {
         $this->_load();
@@ -281,6 +285,7 @@ class Series extends Collection
         return $this;
     }
 
+
     public function reset(bool $reset_to_display_start = false)
     {
         $this->_load();
@@ -310,17 +315,20 @@ class Series extends Collection
         return $this;
     }
 
+
     public function first(callable $callback = null, $default = null)
     {
         $this->_load();
         return parent::first($callback, $default);
     }
 
+
     public function firstAfter(int $time)
     {
         $this->resetTo($time);
         return $this->next();
     }
+
 
     public function clean()
     {
@@ -332,6 +340,7 @@ class Series extends Collection
         //dump('cleaned', $this);
         return $this;
     }
+
 
     protected function getStartEndLimit(bool $apply_padding = true)
     {
@@ -529,6 +538,7 @@ class Series extends Collection
         return $candle;
     }
 
+
     public function getEpoch($resolution = null, $symbol = null, $exchange = null)
     {
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param) {
@@ -632,7 +642,6 @@ class Series extends Collection
     }
 
 
-
     public function setValues(string $field, array $values, $fill_value = null)
     {
         $key = $this->key($field);
@@ -652,7 +661,6 @@ class Series extends Collection
         }
         return $this;
     }
-
 
 
     public function realSlice(int $offset, int $length = null, bool $preserve_keys = false)

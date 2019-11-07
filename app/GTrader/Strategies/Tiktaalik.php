@@ -5,6 +5,7 @@ namespace GTrader\Strategies;
 use Illuminate\Http\Request;
 
 use GTrader\Evolvable;
+use GTrader\Indicator;
 use GTrader\Log;
 
 class Tiktaalik extends Simple implements Evolvable
@@ -119,5 +120,72 @@ class Tiktaalik extends Simple implements Evolvable
             'mutable' => json_encode($mutable),
         ]);
         return parent::handleIndicatorSaveRequest($request);
+    }
+
+
+    protected function createDefaultIndicators()
+    {
+        $ohlc       = $this->getOrAddIndicator('Ohlc');
+        $ohlc_open  = $ohlc->getSignature('open');
+
+        $ema1 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 9]);
+        $ema2 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 29]);
+        $ema3 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 49]);
+        $mid  = $this->getOrAddIndicator('Mid');
+
+        $ema1_sig = $ema1->getSignature();
+        $ema2_sig = $ema2->getSignature();
+        $ema3_sig = $ema3->getSignature();
+        $mid_sig  = $mid->getSignature();
+
+        $signals = Indicator::make(
+            'Signals',
+            [
+                'indicator' => [
+                    'strategy_id'               => 0,           // Custom Settings
+                    'input_open_long_a'         => $ema1_sig,
+                    'open_long_cond'            => '>',
+                    'input_open_long_b'         => $ema3_sig,
+                    'input_open_long_source'    => $mid_sig,
+                    'input_close_long_a'        => $ema1_sig,
+                    'close_long_cond'           => '<',
+                    'input_close_long_b'        => $ema2_sig,
+                    'input_close_long_source'   => $mid_sig,
+                    'input_open_short_a'        => $ema1_sig,
+                    'open_short_cond'           => '<',
+                    'input_open_short_b'        => $ema3_sig,
+                    'input_open_short_source'   => $mid_sig,
+                    'input_close_short_a'       => $ema1_sig,
+                    'close_short_cond'          => '>',
+                    'input_close_short_b'       => $ema2_sig,
+                    'input_close_short_source'  => $mid_sig,
+                ],
+            ]
+        );
+        $signals->addAllowedOwner($this);
+        $signals = $this->addIndicator($signals);
+        $signals->addRef('root');
+
+        $ema1->visible(true);
+        $ema2->visible(true);
+        $ema3->visible(true);
+
+        $ema1->mutable('length', true);
+        $ema2->mutable('length', true);
+        $ema3->mutable('length', true);
+        $signals->mutable('input_open_long_a', true);
+        $signals->mutable('open_long_cond', true);
+        $signals->mutable('input_open_long_b', true);
+        $signals->mutable('input_close_long_a', true);
+        $signals->mutable('close_long_cond', true);
+        $signals->mutable('input_close_long_b', true);
+        $signals->mutable('input_open_short_a', true);
+        $signals->mutable('open_short_cond', true);
+        $signals->mutable('input_open_short_b', true);
+        $signals->mutable('input_close_short_a', true);
+        $signals->mutable('close_short_cond', true);
+        $signals->mutable('input_close_short_b', true);
+
+        return $this;
     }
 }

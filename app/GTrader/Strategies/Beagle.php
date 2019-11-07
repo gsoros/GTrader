@@ -71,7 +71,7 @@ class Beagle extends Training implements Evolution
                 ;
 
             $gen_best = $this->generation()[0]->fitness();
-            dump('E: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
+            dump('G: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
 
             $this->setProgress('generation_best', $gen_best)
                 ->saveHistory('generation_best', $gen_best, 'father')
@@ -137,11 +137,12 @@ class Beagle extends Training implements Evolution
             'limit' => 0
         ]);
         $candles->first(); // load
+        Log::debug('Candles loaded', $candles->size());
 
         $father = Strategy::load($this->strategy_id);
         $father->setCandles($candles);
-        $father->setParam('mutation_rate', .999);
-        $father->setParam('max_nesting', 3);
+        $father->setParam('mutation_rate', $this->options['mutation_rate'] / 100 ?? 1);
+        $father->setParam('max_nesting', $this->options['max_nesting'] ?? 3);
         $this->father($father);
 
         // workaround
@@ -322,6 +323,7 @@ class Beagle extends Training implements Evolution
         }
 
         $options = $this->options ?? [];
+        $prefs = [];
 
         foreach (['population', 'max_nesting', 'mutation_rate'] as $item) {
             $prefs[$item] = $options[$item] = floatval($request->$item ?? 0);
@@ -334,9 +336,10 @@ class Beagle extends Training implements Evolution
             $prefs
         )->save();
 
-        $last_epoch = $strategy->getLastTrainingEpoch();
-        Log::info('Continuing training from generation '.$last_epoch);
-        $this->progress = ['epoch' => $last_epoch];
+        if ($last_epoch = $strategy->getLastTrainingEpoch()) {
+            Log::info('Continuing training from epoch '.$last_epoch);
+            $this->progress = ['epoch' => $last_epoch];
+        }
 
         $strategy->setParam(
             'last_training',

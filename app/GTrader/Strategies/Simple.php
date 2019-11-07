@@ -197,15 +197,13 @@ class Simple extends Strategy
 
     protected function createDefaultIndicators()
     {
-
         $ohlc       = $this->getOrAddIndicator('Ohlc');
         $ohlc_open  = $ohlc->getSignature('open');
-        $ohlc_close = $ohlc->getSignature('close');
 
         $ema9  = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 9]);
         $ema29 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 29]);
         $ema49 = $this->getOrAddIndicator('Ema', ['input_source' => $ohlc_open, 'length'  => 49]);
-        $mid  = $this->getOrAddIndicator('Mid');
+        $mid   = $this->getOrAddIndicator('Mid');
 
         $ema9_sig  = $ema9->getSignature();
         $ema29_sig = $ema29->getSignature();

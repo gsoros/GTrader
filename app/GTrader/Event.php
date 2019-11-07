@@ -42,15 +42,16 @@ class Event
         return 0;
     }
 
+
     public static function dispatch($object, string $key, array $event): int
     {
         //dump('Event::dispatch('.$object->oid().', '.$key.')', $event);
-        if (!static::$enabled) {
-            return 0;
-        }
         $dispatched = 0;
+        if (!static::$enabled) {
+            return $dispatched;
+        }
         if (!count($subs = static::subscriptions($key))) {
-            return 0;
+            return $dispatched;
         }
         foreach ($subs as $sub) {
             if (!is_callable($sub)) {

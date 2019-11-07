@@ -31,9 +31,9 @@
             id="mutation_rate"
             name="mutation_rate"
             type="number"
-            min=".01"
+            min="1"
             max="100"
-            step=".01"
-            value="{{ $preferences['mutation_rate'] ?? '1.00' }}">
+            step="1"
+            value="{{ $preferences['mutation_rate'] ?? 10 }}">
     </select>
 </div>

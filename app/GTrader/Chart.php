@@ -69,6 +69,7 @@ abstract class Chart extends Plot
         if (!($strategy_id = $this->getParam('strategy_id'))) {
             return;
         }
+        //Log::debug('Chart::__wakeup', $this->getParam('name'));
         if (!($strategy = Strategy::load($strategy_id))) {
             return;
         }
