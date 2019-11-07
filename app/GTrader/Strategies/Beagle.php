@@ -89,6 +89,7 @@ class Beagle extends Training implements Evolution
                 //$this->generation()[0]->setCandles(clone $og_candles)->save();
                 //$this->father()->kill();
                 //$this->father(clone $this->generation()[0]);
+                $this->father()->save();
                 $this->father()->visReset()->visualize();
                 \GTrader\DevUtil::fdump(
                     $this->father()->visGetJSON(),
