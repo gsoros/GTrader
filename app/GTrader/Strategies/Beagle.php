@@ -63,7 +63,7 @@ class Beagle extends Training implements Evolution
 
             $this->increaseEpoch()
                 ->setProgress('father', $this->father()->fitness())
-                ->saveHistory('father', $this->getProgress('father'), 'father')
+                ->saveHistory('father', $this->getProgress('best'), 'father')
                 ->pruneHistory(0, 0, 0, 'father')
                 ->killGeneration()
                 ->raiseGeneration($this->options['population'])
@@ -80,11 +80,15 @@ class Beagle extends Training implements Evolution
                     $this->getProgress('no_improvement') + 1
                 );
 
-            if ($gen_best > $this->father()->fitness()) {
+            $this->generation()[0]->setCandles(clone $og_candles);
+            $this->father()->kill();
+            $this->father(clone $this->generation()[0]);
+
+            if ($gen_best > $this->getProgress('best')) {
                 dump('New best: '.$gen_best);
-                $this->generation()[0]->setCandles(clone $og_candles)->save();
-                $this->father()->kill();
-                $this->father(clone $this->generation()[0]);
+                //$this->generation()[0]->setCandles(clone $og_candles)->save();
+                //$this->father()->kill();
+                //$this->father(clone $this->generation()[0]);
                 $this->father()->visReset()->visualize();
                 \GTrader\DevUtil::fdump(
                     $this->father()->visGetJSON(),
