@@ -73,7 +73,7 @@ trait HasIndicators
         $owner = $this->getIndicatorOwner();
 
         if (!$indicator->canBeOwnedBy($owner)) {
-            Log::error($indicator->getShortClass().' cannot be owned by '.$owner->getShortClass());
+            throw new \Exception($indicator->getShortClass().' cannot be owned by '.$owner->getShortClass());
             return null;
         }
         $indicator->setOwner($owner);

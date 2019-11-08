@@ -38,6 +38,7 @@ class Beagle extends Training implements Evolution
             'population',
             'max_nesting',
             'mutation_rate',
+            'loss_tolerance',
             'memory_limit',
         ] as $item) {
             if (!isset($options[$item])) {
@@ -91,7 +92,7 @@ class Beagle extends Training implements Evolution
                 $this->setProgress('last_error', 'generation is empty');
                 dump('Generation '.$generation.' is empty');
                 //\GTrader\Indicator::statCacheDump();
-                break;
+                continue;
             }
             $gen_best = $champ->fitness();
             dump('G: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
@@ -107,7 +108,7 @@ class Beagle extends Training implements Evolution
             $this->father()->kill();
             $this->father(clone $champ);
 
-            if ($this->getProgress('generation_best') > $this->getProgress('best')) {
+            if ($this->generationImproved()) {
                 dump('New best: '.$this->getProgress('generation_best'));
                 //$this->generation()[0]->setCandles(clone $og_candles)->save();
                 //$this->father()->kill();
@@ -279,11 +280,13 @@ class Beagle extends Training implements Evolution
             try {
                 $offspring = clone $father;
                 $offspring->mutate();
-                //$offspring->setCandles($candles);
                 $this->evaluate($offspring);
-                //$offspring->unsetCandles();
+                if (($loss_tolerance = $this->lossTolerance())
+                    && ($offspring->getMaxLoss() > $loss_tolerance)) {
+                    dump('offspring #'.$i.' max loss: '.$offspring->getMaxLoss());
+                    continue;
+                }
                 $this->introduce($offspring);
-                //Log::debug('GC: '.gc_collect_cycles().' CC: '.$clone_candles->debug());
             } catch (MemoryLimitException $e) {
                 dump('Mem limit reached at offspring #'.$i);
                 break;
@@ -337,31 +340,51 @@ class Beagle extends Training implements Evolution
     }
 
 
-
-    public function selection(int $survivors = 2): Evolution
+    protected function generationImproved(): bool
     {
-        if ($survivors < 1) {
+        return $this->getProgress('generation_best') > $this->getProgress('best');
+    }
+
+    /*
+    returns 0 if disabled
+     */
+    protected function lossTolerance(): int
+    {
+        if (($lt = intval($this->options['loss_tolerance'] ?? 0))
+            && (0 <= $lt)
+            && (100 > $lt)
+        ) {
+            return $lt;
+        }
+        return 0;
+    }
+
+
+    public function selection(int $num_survivors = 2): Evolution
+    {
+        if ($num_survivors < 1) {
             $this->iterateGeneration(function ($i, $s) {
                 $this->killIndividual($i);
             });
             return $this;
         }
-        $a = [];
-        $this->iterateGeneration(function ($i, $s) use (&$a) {
-            $a[$i] = $s->fitness();
+
+        $fitnesses = [];
+        $this->iterateGeneration(function ($index, $strategy) use (&$fitnesses) {
+            $fitnesses[$index] = $strategy->fitness();
         });
-        arsort($a);
-        $new = [];
-        $a = array_keys(array_slice($a, 0, $survivors, true));
-        $this->iterateGeneration(function ($i, $s) use ($a, &$new) {
-            if (in_array($i, $a)) {
-                $new[] = $s;
+        arsort($fitnesses);
+
+        $survivors = [];
+        foreach ($fitnesses as $index => $fitness) {
+            if (count($survivors) >= $num_survivors) {
+                $this->killIndividual($index);
+                continue;
             }
-            else {
-                $this->killIndividual($i);
-            }
-        });
-        $this->generation = $new;
+            $survivors[] = $this->generation()[$index];
+        }
+        $this->generation = $survivors;
+
         return $this;
     }
 
@@ -403,7 +426,13 @@ class Beagle extends Training implements Evolution
     public function getPreferences()
     {
         $prefs = [];
-        foreach (['population', 'max_nesting', 'mutation_rate'] as $item) {
+        foreach ([
+            'population',
+            'max_nesting',
+            'mutation_rate',
+            'loss_tolerance',
+            'memory_limit',
+        ] as $item) {
             $prefs[$item] = $this->getParam($item);
         }
         return array_replace_recursive(
@@ -429,6 +458,7 @@ class Beagle extends Training implements Evolution
             'population',
             'max_nesting',
             'mutation_rate',
+            'loss_tolerance',
             'memory_limit',
         ] as $item) {
             $prefs[$item] = $options[$item] = floatval($request->$item ?? 0);

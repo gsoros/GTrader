@@ -297,6 +297,28 @@ abstract class Strategy extends Base
     }
 
 
+    public function getMaxLoss(bool $force_rerun = false)
+    {
+        $balance_sig = $this->getBalanceIndicator()->getSignature();
+        return $this->getCandles()->getOrAddIndicator([
+            'class' => 'GainLoss',
+            'params' => [
+                'input_a' => $balance_sig,
+                'mode' => 'loss',
+                'maximum' => true,
+            ],
+        ])->getLastValue($force_rerun);
+
+        /*
+        return $this->getIndicatorLastValue('GainLoss', [
+            'input_a' => $balance_sig,
+            'mode' => 'loss',
+            'maximum' => true,
+        ], $force_rerun);
+        */
+    }
+
+
     public function fromScratch()
     {
         Log::debug('.');
