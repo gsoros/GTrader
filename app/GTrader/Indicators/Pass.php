@@ -11,6 +11,7 @@ class Pass extends HasInputs
         return $this->getOwner()->getOrAddIndicator($signature);
     }
 
+
     protected function getInputNormParams(string $source = 'source')
     {
         $norm = parent::getNormalizeParams();
@@ -54,6 +55,7 @@ class Pass extends HasInputs
         // TODO handle more possible scenarios
         return $norm;
     }
+
 
     public function getDisplaySignature(
       string $format = 'long',
@@ -114,10 +116,11 @@ class Pass extends HasInputs
             );
     }
 
+
     public function calculate(bool $force_rerun = false)
     {
         $this->beforeCalculate();
-        
+
         $this->runInputIndicators($force_rerun);
 
         if (!($candles = $this->getCandles())) {

@@ -443,7 +443,11 @@ trait HasIndicators
                     continue;
                 }
                 if ($indicator->canBeOwnedBy($owner)) {
-                    $available[$class] = $indicator->getParam('display.name');
+                    //$available[$class] = $indicator->getParam('display.name');
+                    $available[$class] = [
+                        'name' => $indicator->getParam('display.name'),
+                        'description' => $indicator->getParam('display.description'),
+                    ];
                 }
                 $indicator->kill();
                 unset($indicator);

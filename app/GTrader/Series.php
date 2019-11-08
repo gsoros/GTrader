@@ -316,6 +316,18 @@ class Series extends Collection
     }
 
 
+    public function resetToKey(int $key)
+    {
+        $this->_load();
+        if (is_null($this->byKey($key))) {
+            Log::error('could not reset to key', $key);
+            return $this;
+        }
+        $this->_iter = $key;
+        return $this;
+    }
+
+
     public function first(callable $callback = null, $default = null)
     {
         $this->_load();

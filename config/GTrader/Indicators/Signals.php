@@ -115,6 +115,7 @@ return [
     ),
     'display' =>  [
         'name' => 'Signals',
+        'description' => 'Displays the signals from a strategy',
         'mode' => 'linepoints',
         'top_level' => false,
         'y-axis' => 'left',

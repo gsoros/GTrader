@@ -36,4 +36,6 @@ return [
     'Mvwap'             => ['allow_multiple' => true],
     'Mid'               => ['allow_multiple' => true],
     'Abs'               => ['allow_multiple' => true],
+    'MinMax'            => ['allow_multiple' => true],
+    'GainLoss'          => ['allow_multiple' => true],
 ];

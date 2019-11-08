@@ -162,7 +162,10 @@
                 id="new_indicator_{{ $uid }}"
                 title="Select the type of indicator">
             @foreach ($available as $class => $indicator)
-            <option value="{{ $class }}">{{ $indicator }}</option>
+                <option
+                    value="{{ $class }}"
+                    title="{{ $indicator['description'] ?? 'no description' }}"
+                    >{{ $indicator['name'] ?? 'unnamed' }}</option>
             @endforeach
         </select>
         <script>

@@ -22,6 +22,7 @@ return [
     ],
     'display' => [
         'name' => 'Winners vs. losers',
+        'description' => 'Displays the ratio of winning and losing trades',
         'y-axis' => 'right',
     ],
 ];

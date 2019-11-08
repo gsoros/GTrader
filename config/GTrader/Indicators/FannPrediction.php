@@ -15,6 +15,7 @@ return [
     ],
     'display' =>  [
         'name' => 'Prediction',
+        'description' => 'Displays Prediction of a FANN Strategy',
         'y-axis' => 'left',
     ],
 ];
