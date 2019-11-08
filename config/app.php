@@ -260,6 +260,6 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'memory_limit' => env('APP_MEMORY_LIMIT', '512M'),
+    'memory_limit' => env('APP_MEMORY_LIMIT', '1024M'),
 
 ];
