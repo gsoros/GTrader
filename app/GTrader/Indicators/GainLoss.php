@@ -49,7 +49,8 @@ class GainLoss extends HasInputs
                 $min_max = $val;
             }
             $min_max = floatval($func($min_max, $val));
-            $current_gain_loss_percent = (0 === $min_max) ? 0 :  ($min_max - $val) / $min_max * 100;
+            $numerator = ('gain' === $mode) ? ($val - $min_max) : ($min_max - $val);
+            $current_gain_loss_percent = (0 === $min_max) ? 0 : $numerator / $min_max * 100;
             if (!$this->getParam('indicator.maximum')) {
                 $candle->$key_out = $current_gain_loss_percent;
                 continue;
