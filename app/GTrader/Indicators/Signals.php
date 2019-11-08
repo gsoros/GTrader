@@ -180,6 +180,8 @@ class Signals extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->beforeCalculate();
+        
         //dump('sc force '.$force_rerun.' for '.$this->oid());
         $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);

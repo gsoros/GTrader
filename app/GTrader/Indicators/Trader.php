@@ -21,8 +21,10 @@ abstract class Trader extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->beforeCalculate();
+        
         if (!($candles = $this->getCandles())) {
-            Log::error('Trader::calculate() could not getCandles()');
+            Log::error('could not getCandles()');
             return $this;
         }
 

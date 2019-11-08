@@ -28,6 +28,8 @@ class Constant extends Indicator
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->beforeCalculate();
+        
         if (!($candles = $this->getCandles())) {
             return $this;
         }

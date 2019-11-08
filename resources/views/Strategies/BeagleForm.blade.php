@@ -37,3 +37,16 @@
             value="{{ $preferences['mutation_rate'] ?? 10 }}">
     </select>
 </div>
+<div class="col-sm-3 editable"
+    title="Limit memory usage">
+    <label for="memory_limit">Memory Limit (MB)</label>
+    <input class="btn-primary btn btn-mini form-control form-control-sm"
+            id="memory_limit"
+            name="memory_limit"
+            type="number"
+            min="64"
+            max="65536"
+            step="8"
+            value="{{ $preferences['memory_limit'] ?? 512 }}">
+    </select>
+</div>

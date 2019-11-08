@@ -29,6 +29,8 @@ class Profitability extends HasInputs
 
     public function calculate(bool $force_rerun = false)
     {
+        $this->beforeCalculate();
+        
         $candles = $this->getCandles();
 
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
@@ -62,13 +64,10 @@ class Profitability extends HasInputs
         $candles->reset();
 
         while ($candle = $candles->next()) {
-            if (isset($candle->$signal_key) &&
-                isset($candle->$signal_price_key)) {
-                if (($signal = $candle->$signal_key) &&
-                    ($signal_price = $candle->$signal_price_key)) {
-                    if (in_array($signal, ['long', 'short'])) {
-                        if ($prev_signal &&
-                            $prev_signal['signal'] !== $signal) {
+            if (isset($candle->$signal_key) && isset($candle->$signal_price_key)) {
+                if (($signal = $candle->$signal_key) && ($signal_price = $candle->$signal_price_key)) {
+                    if (in_array($signal, ['long', 'short', 'neutral'])) {
+                        if ($prev_signal && $prev_signal['signal'] !== $signal) {
                             if (isset($candle->$balance_key)) {
                                 if ($candle->$balance_key > $prev_balance) {
                                     $winners++;

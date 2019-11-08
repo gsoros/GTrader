@@ -31,12 +31,19 @@ abstract class Indicator extends Base implements Gene
             $this->setParam('display.y-axis', 'left');
         }
 
-        //$this->cacheSetMaxSize(1000);
+        //$this->cacheSetMaxSize(10);
         //static::statCacheSetMaxSize(1000);
     }
 
 
     abstract public function calculate(bool $force_rerun = false);
+
+
+    protected function beforeCalculate()
+    {
+        Event::dispatch($this, 'indicator.beforeCalculate', []);
+        //Log::debug($this->oid());
+    }
 
 
     public function calculated($set = null)
@@ -312,8 +319,8 @@ abstract class Indicator extends Base implements Gene
 
     public static function decodeSignature(string $sig)
     {
-        if ($cached = static::statCached('decoded: '.$sig)) {
-            //Log::debug('Cache hit for '.$sig);
+        if (static::decodeCacheEnabled()
+            && $cached = static::statCached('decoded: '.$sig)) {
             return $cached;
         }
         if (!strlen($sig) ||
@@ -332,8 +339,20 @@ abstract class Indicator extends Base implements Gene
             'params' => Arr::get($a, 'params', []),
             'output' => Arr::get($a, 'output', ''),
         ];
-        static::statCache('decoded: '.$sig, $decoded);
+        if (static::decodeCacheEnabled()) {
+            static::statCache('decoded: '.$sig, $decoded);
+        }
         return $decoded;
+    }
+
+
+    public static function decodeCacheEnabled(bool $set = null): bool
+    {
+        static $enabled = true;
+        if (!is_null($set)) {
+            $enabled = $set;
+        }
+        return $enabled;
     }
 
 

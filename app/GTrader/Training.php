@@ -319,7 +319,6 @@ abstract class Training extends Model
     }
 
 
-
     protected function saveHistory(
         string $name,
         $value,
@@ -365,7 +364,7 @@ abstract class Training extends Model
 
     protected function logMemoryUsage()
     {
-        dump('Memory used: '.Util::getMemoryUsage());
+        dump('Peak memory used: '.Util::getMemoryUsage(false, true));
         return $this;
     }
 

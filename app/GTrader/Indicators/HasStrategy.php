@@ -9,6 +9,7 @@ trait HasStrategy
 {
     use \GTrader\HasStrategy;
 
+
     public function getStrategyOwner()
     {
         if (!$owner = $this->getOwner()) {
@@ -17,6 +18,7 @@ trait HasStrategy
         }
         return $owner;
     }
+
 
     public function getParamString(
         array $except_keys = [],

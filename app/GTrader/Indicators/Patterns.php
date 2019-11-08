@@ -62,6 +62,15 @@ class Patterns extends Trader
         if ($this->cached('available_set')) {
             return $this;
         }
+        if ($funcs = static::statCached('available_funcs')){
+            $this->setParam('adjustable.use_functions.items', $funcs);
+            $this->cache('available_set', true);
+            return $this;
+        }
+
+        //dd(\GTrader\Util::backtrace());
+        //dump('Patterns::setAvailableFunctions()');
+
         $f = get_defined_functions();
         $funcs = [];
         $prefix = $this->getParam('trader_func_prefix');
@@ -91,6 +100,7 @@ class Patterns extends Trader
         }
         $this->setParam('adjustable.use_functions.items', $funcs);
 
+        static::statCache('available_funcs', $funcs);
         $this->cache('available_set', true);
         return $this;
     }

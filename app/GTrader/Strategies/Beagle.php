@@ -13,10 +13,14 @@ use GTrader\Exchange;
 use GTrader\Series;
 use GTrader\Strategy;
 use GTrader\Training;
+use GTrader\Indicator;
 
 use GTrader\Evolution;
 use GTrader\Evolvable;
 use GTrader\Strategies\Tiktaalik;
+
+use GTrader\Exceptions\MemoryLimitException;
+
 
 class Beagle extends Training implements Evolution
 {
@@ -28,6 +32,19 @@ class Beagle extends Training implements Evolution
     {
         $this->default_strategy = 'father';
         parent::__construct($params);
+
+        $options = $this->options ?? [];
+        foreach ([
+            'population',
+            'max_nesting',
+            'mutation_rate',
+            'memory_limit',
+        ] as $item) {
+            if (!isset($options[$item])) {
+                $options[$item] = $this->getParam($item);
+            }
+        }
+        $this->options = $options;
     }
 
 
@@ -61,7 +78,8 @@ class Beagle extends Training implements Evolution
 
             $generation++;
 
-            $this->increaseEpoch()
+            $this->subscribeEvents()
+                ->increaseEpoch()
                 ->setProgress('father', $this->father()->fitness())
                 ->saveHistory('father', $this->getProgress('best'), 'father')
                 ->pruneHistory(0, 0, 0, 'father')
@@ -70,7 +88,13 @@ class Beagle extends Training implements Evolution
                 ->selection(1)
                 ;
 
-            $gen_best = $this->generation()[0]->fitness();
+            if (!$champ = $this->generation()[0] ?? null) {
+                $this->setProgress('last_error', 'generation is empty');
+                dump('Generation '.$generation.' is empty');
+                \GTrader\Indicator::statCacheDump();
+                break;
+            }
+            $gen_best = $champ->fitness();
             dump('G: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
 
             $this->setProgress('generation_best', $gen_best)
@@ -80,12 +104,12 @@ class Beagle extends Training implements Evolution
                     $this->getProgress('no_improvement') + 1
                 );
 
-            $this->generation()[0]->setCandles(clone $og_candles);
+            $champ->setCandles(clone $og_candles);
             $this->father()->kill();
-            $this->father(clone $this->generation()[0]);
+            $this->father(clone $champ);
 
-            if ($gen_best > $this->getProgress('best')) {
-                dump('New best: '.$gen_best);
+            if ($this->getProgress('generation_best') > $this->getProgress('best')) {
+                dump('New best: '.$this->getProgress('generation_best'));
                 //$this->generation()[0]->setCandles(clone $og_candles)->save();
                 //$this->father()->kill();
                 //$this->father(clone $this->generation()[0]);
@@ -117,13 +141,32 @@ class Beagle extends Training implements Evolution
             ->saveProgress()
             ->releaseLock();
 
-        Event::dumpSubscriptions();
+        //Event::dumpSubscriptions();
         //\GTrader\DevUtil::memdump();
     }
 
 
     protected function init()
     {
+        Indicator::decodeCacheEnabled(false);
+
+        $options = $this->options;
+        $options['memory_limit_bytes'] = ($options['memory_limit'] ?? 0) * 1048576;
+        $this->options = $options;
+
+        $reserve = intval($this->getParam('memory_reserve'));
+        if ((0 <= $reserve) && (100 >= $reserve)) {
+            $limit = intval(
+                $options['memory_limit_bytes']
+                + $options['memory_limit_bytes'] * $reserve / 100
+            );
+            ini_set('memory_limit', $limit);
+            Log::debug(
+                'Mem soft limit: '.\GTrader\Util::humanBytes($options['memory_limit_bytes']).
+                ', hard limit: '.\GTrader\Util::humanBytes($limit)
+            );
+        }
+
         $exchange_name = Exchange::getNameById($this->exchange_id);
         $symbol_name = Exchange::getSymbolNameById($this->symbol_id);
 
@@ -146,12 +189,19 @@ class Beagle extends Training implements Evolution
 
         $father = Strategy::load($this->strategy_id);
         $father->setCandles($candles);
-        $father->setParam('mutation_rate', $this->options['mutation_rate'] / 100 ?? 1);
-        $father->setParam('max_nesting', $this->options['max_nesting'] ?? 3);
+        $father->setParam(
+            'mutation_rate',
+            ($this->options['mutation_rate'] ?? $this->getParam['mutation_rate']) / 100
+        );
+        $father->setParam(
+            'max_nesting',
+            $this->options['max_nesting'] ?? $this->getParam['max_nesting']
+        );
         $this->father($father);
 
         // workaround
         $this->evaluate($father = clone $father)->father()->fitness($father->fitness());
+        $this->setProgress('best', $father->fitness());
         //$this->debug('Start:     ');
         //$this->evaluate($father)->father()->fitness($father->fitness());
         //$this->debug('OG Father: ');
@@ -182,6 +232,26 @@ class Beagle extends Training implements Evolution
     }
 
 
+    protected function subscribeEvents()
+    {
+        Event::subscribe('indicator.beforeCalculate', [$this, 'checkMemoryUsage']);
+        return $this;
+    }
+
+
+    public function checkMemoryUsage()
+    {
+        if (!$limit = $this->options['memory_limit_bytes'] ?? 0) {
+            return;
+        }
+        //$hb = function($b) { return \GTrader\Util::humanBytes($b); };
+        //Log::debug($hb(memory_get_usage()), $hb($limit));
+        if (memory_get_usage() >= $limit) {
+            throw new MemoryLimitException();
+        }
+    }
+
+
     public function introduce(Evolvable $strategy): Evolution
     {
         $this->generation[] = $strategy;
@@ -191,25 +261,34 @@ class Beagle extends Training implements Evolution
 
     public function raiseGeneration(int $size): Evolution
     {
+        $gccc = gc_collect_cycles();
+        //Log::debug('GC: '.$gccc);
+
         //$this->father()->getCandles()->purgeIndicators(['root', 'visible']);
         $og_candles = clone $this->father()->getCandles();
         $clone_candles = clone $og_candles;
         $this->father()->setCandles($clone_candles);
         for ($i = 0; $i < $size; $i++) {
-            $offspring = clone $this->father();
-            $offspring->mutate();
-            //$offspring->setCandles($candles);
-            $this->evaluate($offspring);
-            //$offspring->unsetCandles();
-            $this->introduce($offspring);
+            try {
+                $offspring = clone $this->father();
+                $offspring->mutate();
+                //$offspring->setCandles($candles);
+                $this->evaluate($offspring);
+                //$offspring->unsetCandles();
+                $this->introduce($offspring);
+                //Log::debug('GC: '.gc_collect_cycles().' CC: '.$clone_candles->debug());
+            } catch (MemoryLimitException $e) {
+                dump('Mem limit reached at offspring #'.$i);
+                break;
+            }
         }
         $this->father()->setCandles($og_candles);
 
-        Log::debug('I statcache: '.\GTrader\Indicator::statCacheSize());
+        //Log::debug('I statcache: '.\GTrader\Indicator::statCacheSize());
 
         $clone_candles->kill();
         unset($clone_candles);
-        //Log::debug('GC: '.gc_collect_cycles().' '.$og_candles->debug());
+        //Log::debug('OG: '.$og_candles->debug());
 
         return $this;
     }
@@ -246,7 +325,7 @@ class Beagle extends Training implements Evolution
         $sig = $this->getMaximizeSig($strategy); //dump($sig);
         $candles = $this->father()->getCandles();
         $ind = $candles->getOrAddIndicator($sig);
-        $sig = $ind->getSignature();
+        //$sig = $ind->getSignature();
         //dump('Beagle:evaluate('.$strategy->getParam('name').') ...'.substr($sig, strpos($sig, 'length'), 20).'...');
         $bal = $ind->calculated(false)->getLastValue();
         //$candles->unsetIndicator($ind);
@@ -332,7 +411,12 @@ class Beagle extends Training implements Evolution
         $options = $this->options ?? [];
         $prefs = [];
 
-        foreach (['population', 'max_nesting', 'mutation_rate'] as $item) {
+        foreach ([
+            'population',
+            'max_nesting',
+            'mutation_rate',
+            'memory_limit',
+        ] as $item) {
             $prefs[$item] = $options[$item] = floatval($request->$item ?? 0);
         }
 

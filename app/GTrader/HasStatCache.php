@@ -50,6 +50,12 @@ trait HasStatCache
     }
 
 
+    public static function statCacheDump()
+    {
+        dump(static::$stat_cache);
+    }
+
+
     public static function statCacheSetMaxSize(int $size = 0)
     {
         static::logStatCache('setMaxSize', static::$stat_cache_max_size, $size);

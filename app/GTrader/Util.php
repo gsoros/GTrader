@@ -35,23 +35,28 @@ class Util
 
     public static function logTrace()
     {
+        Log::debug(self::backtrace());
+    }
+
+
+    public static function backtrace()
+    {
         $e = new \Exception;
-        Log::debug("-----Backtrace:\n".
-            var_export($e->getTraceAsString(), true).
-            "\n----End Backtrace");
+        return var_export($e->getTraceAsString(), true);
     }
 
 
     public static function humanBytes($bytes)
     {
-        $unit = ['B','kB','MB','GB','TB','PB', 'EB', 'ZB', 'YB'];
+        $unit = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         return @round($bytes / pow(1024, ($i = floor(log($bytes, 1024)))), 2).$unit[$i];
     }
 
 
-    public static function getMemoryUsage(bool $real_usage = false)
+    public static function getMemoryUsage(bool $real_usage = false, bool $peak = false)
     {
-        return self::humanBytes(memory_get_usage($real_usage));
+        $func = $peak ? 'memory_get_peak_usage' : 'memory_get_usage';
+        return self::humanBytes($func($real_usage));
     }
 
 
