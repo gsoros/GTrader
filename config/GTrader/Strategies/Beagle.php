@@ -6,7 +6,7 @@ return [
     'mutation_rate'     => 1,
     'max_nesting'       => 3,
     'memory_limit'      => 512, // MB
-    'memory_reserve'    => 20, // percent
+    'memory_reserve'    => 90, // percent
     'ranges' => [
         'test' => [
             'start_percent' => 50,

@@ -69,7 +69,6 @@ class Beagle extends Training implements Evolution
             ->obtainLock()
             ->setProgress('state', 'evolving')
             ->saveProgress();
-        $og_candles = clone $this->father()->getCandles();
         $this->father()->visualize(15);
         $generation = 0;
         $max_generations = 10000;
@@ -91,7 +90,7 @@ class Beagle extends Training implements Evolution
             if (!$champ = $this->generation()[0] ?? null) {
                 $this->setProgress('last_error', 'generation is empty');
                 dump('Generation '.$generation.' is empty');
-                \GTrader\Indicator::statCacheDump();
+                //\GTrader\Indicator::statCacheDump();
                 break;
             }
             $gen_best = $champ->fitness();
@@ -104,7 +103,7 @@ class Beagle extends Training implements Evolution
                     $this->getProgress('no_improvement') + 1
                 );
 
-            $champ->setCandles(clone $og_candles);
+            $champ->setCandles(clone $this->candles());
             $this->father()->kill();
             $this->father(clone $champ);
 
@@ -187,8 +186,9 @@ class Beagle extends Training implements Evolution
         $candles->first(); // load
         Log::debug('Candles loaded', $candles->size());
 
+        $this->candles($candles);
+
         $father = Strategy::load($this->strategy_id);
-        $father->setCandles($candles);
         $father->setParam(
             'mutation_rate',
             ($this->options['mutation_rate'] ?? $this->getParam['mutation_rate']) / 100
@@ -197,11 +197,13 @@ class Beagle extends Training implements Evolution
             'max_nesting',
             $this->options['max_nesting'] ?? $this->getParam['max_nesting']
         );
+        $father->setCandles(clone $candles);
         $this->father($father);
 
-        // workaround
-        $this->evaluate($father = clone $father)->father()->fitness($father->fitness());
+        $father = clone $father;
+        $this->evaluate($father);
         $this->setProgress('best', $father->fitness());
+        //$this->father()->fitness($father->fitness());
         //$this->debug('Start:     ');
         //$this->evaluate($father)->father()->fitness($father->fitness());
         //$this->debug('OG Father: ');
@@ -265,12 +267,17 @@ class Beagle extends Training implements Evolution
         //Log::debug('GC: '.$gccc);
 
         //$this->father()->getCandles()->purgeIndicators(['root', 'visible']);
-        $og_candles = clone $this->father()->getCandles();
-        $clone_candles = clone $og_candles;
-        $this->father()->setCandles($clone_candles);
+        //$og_candles = clone $this->father()->getCandles();
+        //$clone_candles = clone $og_candles;
+        //$this->father()->setCandles($clone_candles);
+
+        $candles = clone $this->candles();
+        $father = clone $this->father();
+        $father->setCandles($candles);
+
         for ($i = 0; $i < $size; $i++) {
             try {
-                $offspring = clone $this->father();
+                $offspring = clone $father;
                 $offspring->mutate();
                 //$offspring->setCandles($candles);
                 $this->evaluate($offspring);
@@ -282,13 +289,9 @@ class Beagle extends Training implements Evolution
                 break;
             }
         }
-        $this->father()->setCandles($og_candles);
 
-        //Log::debug('I statcache: '.\GTrader\Indicator::statCacheSize());
-
-        $clone_candles->kill();
-        unset($clone_candles);
-        //Log::debug('OG: '.$og_candles->debug());
+        $candles->kill();
+        $father->kill();
 
         return $this;
     }
@@ -383,6 +386,17 @@ class Beagle extends Training implements Evolution
         }
         $this->setStrategy('father', $set);
         return $this;
+    }
+
+
+    protected function candles(Series $set = null): Series
+    {
+        static $candles;
+
+        if (!is_null($set)) {
+            $candles = $set;
+        }
+        return $candles;
     }
 
 
