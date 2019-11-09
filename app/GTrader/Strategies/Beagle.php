@@ -182,7 +182,7 @@ class Beagle extends Training implements Evolution
             'resolution' => $this->resolution,
             'start' => $this->options['test_start'],
             'end' => $this->options['test_end'],
-            'limit' => 0
+            'limit' => 0,
         ]);
         $candles->first(); // load
         Log::debug('Candles loaded', $candles->size());
@@ -190,6 +190,7 @@ class Beagle extends Training implements Evolution
         $this->candles($candles);
 
         $father = Strategy::load($this->strategy_id);
+        $candles->setParam('user_id', $father->getParam('user_id'));
         $father->setParam(
             'mutation_rate',
             ($this->options['mutation_rate'] ?? $this->getParam['mutation_rate']) / 100

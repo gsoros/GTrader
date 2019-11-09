@@ -3,6 +3,7 @@
 namespace GTrader\Indicators;
 
 use Illuminate\Support\Facades\Auth;
+
 use GTrader\Exchange;
 use GTrader\UserExchangeConfig;
 use GTrader\Log;
@@ -70,7 +71,7 @@ class Balance extends HasInputs
             return $this;
         }
 
-        $user_id = Auth::id();
+        $user_id = $this->getUserId();
         $exchange = Exchange::make($candles->getParam('exchange'));
         $exchange_id = $exchange->getId();
 

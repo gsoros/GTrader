@@ -2,6 +2,7 @@
 
 namespace GTrader;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Arr;
 
 abstract class Indicator extends Base implements Gene
@@ -988,6 +989,15 @@ abstract class Indicator extends Base implements Gene
                 Log::error('Unknown type', $type);
                 return $param;
         }
+    }
+
+
+    public function getUserId()
+    {
+        if ($id = Auth::id()) {
+            return $id;
+        }
+        return $this->getOwner()->getParam('user_id');
     }
 
 
