@@ -75,12 +75,13 @@ class Balance extends HasInputs
         $exchange = Exchange::make($candles->getParam('exchange'));
         $exchange_id = $exchange->getId();
 
-        if (!$config = UserExchangeConfig::statCached('user_exchange_config_'.$user_id.'_'.$exchange_id)) {
+        $cache_key = 'user_exchange_config_'.$user_id.'_'.$exchange_id;
+        if (!$config = UserExchangeConfig::statCached($cache_key)) {
             $config = UserExchangeConfig::firstOrNew([
                 'exchange_id' => $exchange_id,
                 'user_id' => $user_id
             ]);
-            UserExchangeConfig::statCache('user_exchange_config_'.$user_id.'_'.$exchange_id, $config);
+            UserExchangeConfig::statCache($cache_key, $config);
         }
 
         // Get defaults from exchange config file
@@ -111,7 +112,7 @@ class Balance extends HasInputs
         $capital = floatval($this->getParam('indicator.capital'));
         $upl = 0;
         $stake = $capital * $position_size / 100;
-        $fee_multiplier = $exchange->getFee($symbol);
+        $fee = $exchange->getFee($symbol);
         $liquidated = false;
         $signal = null;
         $prev_signal = null;
@@ -152,7 +153,7 @@ class Balance extends HasInputs
                                     ($prev_signal['price'] - $signal_price) *
                                     $leverage;
                                 // closing a position involves a fee
-                                $capital -= $stake * $fee_multiplier;
+                                $capital -= $stake * $fee;
                             }
                             $upl = 0;
                         }
@@ -160,7 +161,7 @@ class Balance extends HasInputs
                             $stake = $capital * $position_size / 100;
                         }
                         // open long: opening a position involves a fee
-                        $capital -= $stake * $fee_multiplier;
+                        $capital -= $stake * $fee;
                     } elseif ($signal == 'short' && $capital > 0) {
                         // go short
                         if ($prev_signal && $prev_signal['signal'] == 'long') {
@@ -172,7 +173,7 @@ class Balance extends HasInputs
                                     ($signal_price - $prev_signal['price']) *
                                     $leverage;
                                 // closing a position involves a fee
-                                $capital -= $stake * $fee_multiplier;
+                                $capital -= $stake * $fee;
                             }
                             $upl = 0;
                         }
@@ -180,7 +181,7 @@ class Balance extends HasInputs
                             $stake = $capital * $position_size / 100;
                         }
                         // open short: opening a position involves a fee
-                        $capital -= $stake * $fee_multiplier;
+                        $capital -= $stake * $fee;
                     } elseif ($signal == 'neutral') {
                         // close last position
                         if ($prev_signal && $prev_signal['signal'] == 'long') {
@@ -192,7 +193,7 @@ class Balance extends HasInputs
                                     ($signal_price - $prev_signal['price']) *
                                     $leverage;
                                 // closing a position involves a fee
-                                $capital -= $stake * $fee_multiplier;
+                                $capital -= $stake * $fee;
                             }
                             $upl = 0;
                         }
@@ -205,7 +206,7 @@ class Balance extends HasInputs
                                     ($prev_signal['price'] - $signal_price) *
                                     $leverage;
                                 // closing a position involves a fee
-                                $capital -= $stake * $fee_multiplier;
+                                $capital -= $stake * $fee;
                             }
                             $upl = 0;
                         }

@@ -17,7 +17,7 @@ class CreateTrainingHistoryTable extends Migration
             $table->integer('strategy_id')->unsigned()->index();
             $table->integer('epoch')->unsigned()->index();
             $table->string('name')->index();
-            $table->decimal('value', 11, 4);
+            $table->decimal('value', 19, 4);
         });
     }
 

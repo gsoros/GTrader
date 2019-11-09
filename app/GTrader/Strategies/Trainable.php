@@ -211,6 +211,8 @@ trait Trainable
      */
     public function saveHistory(int $epoch, string $name, float $value)
     {
+        $cap = 999999999999999;
+        $value = $value > $cap ? $cap : $value;
         DB::table($this->getParam('history_table'))
             ->insert([
                 'strategy_id' => $this->getParam('id'),
