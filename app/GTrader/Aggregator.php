@@ -308,6 +308,10 @@ class Aggregator extends Base
             $candle->resolution = $resolution;
             try {
                 $candle = Series::sanitizeCandle($candle);
+                if (!Series::candleValid($candle)) {
+                    throw new \Exception('invalid candle: '.json_encode($candle));
+                    continue;
+                }
                 Series::saveCandle($candle);
             } catch (\Exception $e) {
                 echo PHP_EOL.'Error: '.$e->getMessage();

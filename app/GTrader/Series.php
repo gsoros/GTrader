@@ -551,6 +551,12 @@ class Series extends Collection
     }
 
 
+    public static function candleValid($candle)
+    {
+        return $candle->time && $candle->open && $candle->low && $candle->high && $candle->close;
+    }
+
+
     public function getEpoch($resolution = null, $symbol = null, $exchange = null)
     {
         foreach ([ 'resolution', 'symbol', 'exchange'] as $param) {
