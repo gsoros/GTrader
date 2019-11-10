@@ -95,6 +95,8 @@ class Bot extends Model
             throw new \Exception('Could not obtain lock for '.$this->id);
         }
 
+        echo gmdate('Y-m-d H:i:s').' ['.$this->name.']';
+
         // Get the symbol's local name
         $symbol = Exchange::getSymbolNameById($this->symbol_id);
 
@@ -133,7 +135,7 @@ class Bot extends Model
         $signal_times = array_keys($signals);
         $last_signal_time = array_pop($signal_times);
         if (!$last_signal = array_pop($signals)) {
-            echo 'Bot ['.$this->name."] No signals\n";
+            echo ' no signals';
             Lock::release($lock);
             return $this;
         }
@@ -144,12 +146,15 @@ class Bot extends Model
         //Log::debug('last_signal:', $last_signal);
 
         // Looks like we have a valid signal
-        echo 'Bot ['.$this->name.'] taking '.$last_signal['signal'].' position at '.$last_signal['price']."\n";
+        echo ' '.$last_signal['signal'].' @ '.$last_signal['price'];
+        
         // Tell the exchange to take the position
         $exchange->takePosition(
             $symbol,
             $last_signal,
         );
+
+        echo PHP_EOL;
 
         // Release our lock
         Lock::release($lock);
