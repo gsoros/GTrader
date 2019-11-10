@@ -889,7 +889,7 @@ class Supported extends Exchange
         try {
             //$this->ccxt()->loadMarkets();
             //$this->setCCXTProperty('verbose', true);
-            $orders = $this->ccxt()->fetchClosedOrders(null, $since);
+            $orders = $this->fetchClosedOrders($symbol, $since);
             //$this->setCCXTProperty('verbose', false);
             assert(is_array($orders));
         } catch (\Exception $e) {
@@ -924,5 +924,11 @@ class Supported extends Exchange
             $trade->save();
         }
         return $this;
+    }
+
+
+    protected function fetchClosedOrders(string $symbol = null, int $since = null)
+    {
+        return  $this->ccxt()->fetchClosedOrders(null, $since);
     }
 }

@@ -36,4 +36,10 @@ class okex3 extends Supported
         $config->options = $c_options;
         return parent::handleSaveRequest($request, $config);
     }
+
+
+    protected function fetchClosedOrders(string $symbol = null, int $since = null)
+    {
+        return  $this->ccxt()->fetchClosedOrders($symbol, $since);
+    }
 }
