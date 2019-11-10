@@ -445,8 +445,9 @@ class Supported extends Exchange
             return false;
         }
         Log::debug('Positions: current, new', $env->current_position, $env->new_position);
-        if (abs($env->new_position) < abs($env->current_position / 100)) {
-            $env->error = 'Less than 1% to change, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
+        $min_change = $this->getParam('min_position_change', 1);
+        if (abs($env->new_position) < abs($env->current_position / 100 * $min_change)) {
+            $env->error = 'Less than '.$min_change.'% to change, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
             return false;
         }
         return true;
