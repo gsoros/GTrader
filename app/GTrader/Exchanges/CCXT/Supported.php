@@ -375,6 +375,7 @@ class Supported extends Exchange
         } else {
             if ($env->trade && $env->trade->signal_position) {
                 Log::debug($this->getName().' Target set from trade', $env->trade->signal_position);
+                echo ' (target from trade: '.$env->trade->signal_position.')';
                 if ($futures_or_swap) {
                     $env->target_position = $env->trade->signal_position;
                     return true; // do not tradeCalculateTarget, we already have target_position
@@ -398,6 +399,7 @@ class Supported extends Exchange
                     $env->target_balance = $neutral_balance + $change;
                 }
                 Log::debug($this->getName().' Target calculated from balance', $env->target_balance);
+                echo ' (target from balance: '.$env->target_balance.')';
             }
         }
         if (!$this->tradeCalculateTarget()) {
@@ -448,6 +450,7 @@ class Supported extends Exchange
         $min_change = $this->getParam('min_position_change', 1);
         if (abs($env->new_position) < abs($env->current_position / 100 * $min_change)) {
             $env->error = 'Change of '.abs($env->new_position).'% is less than min '.$min_change.'%, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
+            echo ' /small change/';
             return false;
         }
         return true;
