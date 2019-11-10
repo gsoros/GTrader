@@ -447,7 +447,7 @@ class Supported extends Exchange
         Log::debug('Positions: current, new', $env->current_position, $env->new_position);
         $min_change = $this->getParam('min_position_change', 1);
         if (abs($env->new_position) < abs($env->current_position / 100 * $min_change)) {
-            $env->error = 'Less than '.$min_change.'% to change, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
+            $env->error = 'Change of '.abs($env->new_position).'% is less than min '.$min_change.'%, aborting. '.$env->symbol.' '.$env->current_position.' '.$env->new_position;
             return false;
         }
         return true;
