@@ -92,7 +92,11 @@ class Beagle extends Training implements Evolution
                 $this->setProgress('last_error', 'generation is empty')
                     ->saveProgress()
                     ->killGeneration();
-                    Event::clearSubscriptions();
+                Event::clearSubscriptions();
+                $new_father = clone $this->father();
+                $new_father->setCandles(clone $this->candles());
+                $this->father()->kill();
+                $this->father(clone $new_father);
                 dump('Generation '.$generation.' is empty');
                 //\GTrader\Indicator::statCacheDump();
                 continue;
