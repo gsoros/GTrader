@@ -285,26 +285,26 @@ class Beagle extends Training implements Evolution
         $candles = clone $this->candles();
         $father = clone $this->father();
         $father->setCandles($candles);
-
-        for ($i = 0; $i < $size; $i++) {
+        $loss_tolerance = $this->lossTolerance();
+        while (count($this->generation()) <= $size) {
             if (!$this->shouldRun()) {
                 break;
             }
+            echo '.';
             try {
                 $offspring = clone $father;
                 $offspring->mutate();
                 $this->evaluate($offspring);
-                if ($loss_tolerance = $this->lossTolerance()) {
+                if ($loss_tolerance) {
                     $loss = $offspring->getMaxLoss();
                     $offspring->setParam('last_max_loss', $loss);
                     if ($loss > $loss_tolerance) {
-                        dump('offspring #'.$i.' max loss: '.$offspring->getMaxLoss());
                         continue;
                     }
                 }
                 $this->introduce($offspring);
             } catch (MemoryLimitException $e) {
-                dump('Mem limit reached at offspring #'.$i);
+                dump('Mem limit reached at offspring #'.count($this->generation()));
                 break;
             }
         }
