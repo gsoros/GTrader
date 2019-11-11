@@ -93,7 +93,7 @@ class Ohlc extends HasInputs
     public function calculate(bool $force_rerun = false)
     {
         $this->beforeCalculate();
-        
+
         if ('ha' !== $mode = $this->getParam('indicator.mode', 'candlestick')) {
             $this->setParam('display.mode', $mode);
             return $this;
@@ -131,7 +131,6 @@ class Ohlc extends HasInputs
 
         return $this;
     }
-
 
 
     protected function candle2arr($c, $key_open, $key_high, $key_low, $key_close)

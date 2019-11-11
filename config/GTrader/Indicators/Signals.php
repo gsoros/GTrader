@@ -43,6 +43,13 @@ $generate_group = function($key, $action) {
             'type' => 'source',
             'immutable' => true,   // do not mutate this setting
             'description' => $desc,
+            'display' => [
+                'group' => [
+                    'hide' => ['label'],
+                    'label' => $name,
+                    'cols' => 8,
+                ],
+            ],
         ];
     };
 
@@ -65,7 +72,7 @@ $generate_group = function($key, $action) {
             4
         ),
         'input_'.$key.'_source' => $generate_source(
-            $action.' Source',
+            'Source',
             'Source for the \''.$action.'\' signal price. Used in back-testing and if the exchange is configured to use limit orders.'
         ),
     ];
@@ -91,27 +98,53 @@ return [
         'input_close_short_b'       => 'open',
         'input_close_short_source'  => 'open',
         'min_trade_distance'        => 1,
+        'use_incomplete_candle'    => false,
     ],
     'adjustable' => array_merge(
-        ['strategy_id' => [
-            'name' => 'Strategy',
-            'type' => 'select',
-            'options' => [
-                -1 => 'Automatic From Parent',
-                0 => 'Custom Settings',
+        [
+            'strategy_id' => [
+                'name' => 'Strategy',
+                'type' => 'select',
+                'options' => [
+                    -1 => 'Automatic From Parent',
+                    0 => 'Custom Settings',
+                ],
+                'immutable' => true,      // do not mutate this setting
             ],
-            'immutable' => true,      // do not mutate this setting
-        ],],
+        ],
         $generate_group('open_long','Open Long'),
         $generate_group('close_long','Close Long'),
         $generate_group('open_short','Open Short'),
         $generate_group('close_short','Close Short'),
-        ['min_trade_distance' => [
-            'name' => 'Minimum Trade Distance',
-            'type' => 'int',
-            'min' => 1,
-            'max' => 100,
-        ],],
+        [
+            'min_trade_distance' => [
+                'name' => 'Min Trade Distance',
+                'type' => 'int',
+                'min' => 1,
+                'max' => 100,
+                'display' => [
+                    'label_cols' => 3,
+                    'group' => [
+                        'hide' => ['label'],
+                        'label' => 'Misc. options',
+                        'cols' => 2,
+                    ],
+                ],
+            ],
+            'use_incomplete_candle' => [
+                'name' => 'Use incomplete candle',
+                'description' => 'When checked, the conditions will be evaluated using the most recent and probably incomplete candle. Warning: this will skew the backtesting, use only if all input is from open.',
+                'type' => 'bool',
+                'immutable' => true,      // do not mutate this setting
+                'display' => [
+                    'hide' => ['label'],
+                    'group' => [
+                        'label' => 'Misc. options',
+                        'cols' => 5,
+                    ],
+                ],
+            ],
+        ],
     ),
     'display' =>  [
         'name' => 'Signals',

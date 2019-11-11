@@ -36,12 +36,15 @@
         $desc = $param['description'] ?? '';
         $display = $param['display'] ?? [];
         $hide = $display['hide'] ?? [];
+        $label_cols = $display['label_cols'] ?? 2;
         $prev_group = $group ?? null;
         $group = isset($display['group']) ? $display['group']['label'] ?? null : null;
-        $cols = isset($display['group']) ? $display['group']['cols'] ?? 3 : 9;
+        $group_hide = Arr::get($display, 'group.hide', []);
+        $cols = isset($display['group']) ? $display['group']['cols'] ?? 3 : 10;
         $group_desc = isset($display['group']) ? $display['group']['description'] ?? $param['name'] : $param['name'];
         $show_mutability = ($mutability ?? false) && !($param['immutable'] ?? false);
         //GTrader\Log::debug($param['name'], $prev_group, $group, $cols, $group_desc);
+        //GTrader\Log::sparse($param['name'], $hide, $group, $group_hide);
     @endphp
     @if (!$group || ($group && ($prev_group !== $group)))
         @if ($prev_group || (!$prev_group && !$first))
@@ -60,22 +63,30 @@
     @if (!in_array('label', $hide))
         <label class="col-sm-2 control-label npl" for="{{ $key }}_{{ $uid }}">
             @if ('bool' !== $param['type'])
-                {{ $param['name'] }}
+                @if (!$group || ($group && !in_array('label', $group_hide)))
+                    {{ $param['name'] }}
+                @endif
             @endif
         </label>
+        @if ($group && in_array('label', $group_hide))
+            <label class="col-sm-{{ $label_cols }} control-label npl" for="{{ $key }}_{{ $uid }}">
+                @if ('bool' !== $param['type'])
+                    {{ $param['name'] }}
+                @endif
+            </label>
+        @endif
     @else
         @php
             $desc = $desc ?? $param['name'];
         @endphp
         @if ($group && ($prev_group !== $group))
-            <label class="col-sm-2 control-label npl"
-                for="{{ $key }}_{{ $uid }}"
+            <label class="col-sm-{{ $label_cols }} control-label npl" for="{{ $key }}_{{ $uid }}"
                 title="{{ $group_desc }}">
                 {{ $group }}
             </label>
         @endif
     @endif
-    <div class="col-sm-{{ $cols }} np">
+    <div class="col-sm-{{ $cols }} @if ('bool' !== $param['type']) np @endif">
 
         @if ($show_mutability)
             @php

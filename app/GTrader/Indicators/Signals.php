@@ -53,7 +53,8 @@ class Signals extends HasInputs
         }
         // Get Strategy from Parent
         if (0 > $strategy_id) {
-            if (!$strategy = $owner->getStrategy()) {
+            if (!method_exists($owner, 'getStrategy') ||
+                !$strategy = $owner->getStrategy()) {
                 Log::error('could not get strat from owner');
                 return $this;
             }
@@ -190,6 +191,8 @@ class Signals extends HasInputs
         $candles = $this->getCandles();
         $resolution = $candles->getParam('resolution');
         $min_trade_distance = $this->getParam('indicator.min_trade_distance', 1);
+        $use_incomplete_candle = $this->getParam('indicator.use_incomplete_candle', false);
+        //if ($use_incomplete_candle) Log::debug('using incomplete candle');
 
         $output_keys = [
             'signal' => $candles->key($this->getSignature('signal')),
@@ -272,20 +275,25 @@ class Signals extends HasInputs
                         }
                     }
 
+                    $condition_candle = $use_incomplete_candle ? $candle : $previous_candle;
+
                     $met = array_merge_recursive($met, [
                         $action => [
                             $direction =>
                                 Util::conditionMet(
+                                    $condition_candle->{$input_keys[$input_key.'a']},
+                                    $conditions[$action.'_'.$direction],
+                                    $condition_candle->{$input_keys[$input_key.'b']}
                                     /*
                                     $candle->{$input_keys[$input_key.'a']},
                                     $conditions[$action.'_'.$direction],
                                     $candle->{$input_keys[$input_key.'b']}
                                     */
-
+                                    /*
                                     $previous_candle->{$input_keys[$input_key.'a']},
                                     $conditions[$action.'_'.$direction],
                                     $previous_candle->{$input_keys[$input_key.'b']}
-                                    
+                                    */
                                 )
                             ],
                         ]
