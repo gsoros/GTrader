@@ -89,8 +89,10 @@ class Beagle extends Training implements Evolution
                 ;
 
             if (!$champ = $this->generation()[0] ?? null) {
-                $this->setProgress('last_error', 'generation is empty');
+                $this->setProgress('last_error', 'generation is empty')
+                    ->saveProgress();
                 dump('Generation '.$generation.' is empty');
+                Event::clearSubscriptions();
                 //\GTrader\Indicator::statCacheDump();
                 continue;
             }
