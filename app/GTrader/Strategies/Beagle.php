@@ -309,7 +309,7 @@ class Beagle extends Training implements Evolution
                 break;
             }
         }
-
+        echo PHP_EOL;
         $candles->kill();
         $father->kill();
         //Log::debug('signals stc size', \GTrader\Indicators\Signals::statCacheSize());
