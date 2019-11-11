@@ -290,7 +290,6 @@ class Beagle extends Training implements Evolution
             if (!$this->shouldRun()) {
                 break;
             }
-            echo '.';
             try {
                 $offspring = clone $father;
                 $offspring->mutate();
@@ -299,9 +298,11 @@ class Beagle extends Training implements Evolution
                     $loss = $offspring->getMaxLoss();
                     $offspring->setParam('last_max_loss', $loss);
                     if ($loss > $loss_tolerance) {
+                        echo 'x';
                         continue;
                     }
                 }
+                echo '+';
                 $this->introduce($offspring);
             } catch (MemoryLimitException $e) {
                 dump('Mem limit reached at offspring #'.count($this->generation()));
