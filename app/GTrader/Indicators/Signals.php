@@ -276,15 +276,16 @@ class Signals extends HasInputs
                         $action => [
                             $direction =>
                                 Util::conditionMet(
-                                    
+                                    /*
                                     $candle->{$input_keys[$input_key.'a']},
                                     $conditions[$action.'_'.$direction],
                                     $candle->{$input_keys[$input_key.'b']}
-                                    /*
+                                    */
+
                                     $previous_candle->{$input_keys[$input_key.'a']},
                                     $conditions[$action.'_'.$direction],
                                     $previous_candle->{$input_keys[$input_key.'b']}
-                                    */
+                                    
                                 )
                             ],
                         ]
