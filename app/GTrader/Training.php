@@ -350,7 +350,7 @@ abstract class Training extends Model
         $value,
         string $strat_name = 'default')
     {
-        dump('E: '.$this->getProgress('epoch').', '.$name.': '.$value);
+        //dump('SaveHistory E: '.$this->getProgress('epoch').', '.$name.': '.$value);
         $this->getStrategy($strat_name)->saveHistory(
             $this->getProgress('epoch'),
             $name,

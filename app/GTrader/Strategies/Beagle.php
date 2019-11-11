@@ -77,11 +77,13 @@ class Beagle extends Training implements Evolution
         while ($this->shouldRun() && ($generation < $max_generations)) {
 
             $generation++;
+            echo PHP_EOL.'G'.$generation.' E'.$this->getProgress('epoch');
 
             $this->subscribeEvents()
                 ->increaseEpoch()
-                ->setProgress('father', $this->father()->fitness())
-                ->saveHistory('father', $this->getProgress('best'), 'father')
+                ->setProgress('father', $this->father()->fitness());
+            echo "\t{F: ".$this->getProgress('father').'} ';
+                $this->saveHistory('father', $this->getProgress('best'), 'father')
                 ->pruneHistory(0, 0, 0, 'father')
                 ->killGeneration()
                 ->raiseGeneration($this->options['population'])
@@ -97,12 +99,11 @@ class Beagle extends Training implements Evolution
                 $new_father->setCandles(clone $this->candles());
                 $this->father()->kill();
                 $this->father(clone $new_father);
-                dump('Generation '.$generation.' is empty');
+                echo ' [!]';
                 //\GTrader\Indicator::statCacheDump();
                 continue;
             }
             $gen_best = $champ->fitness();
-            dump('G: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
 
             $this->setProgress('generation_best', $gen_best)
                 ->setProgress('max_loss', $champ->getParam('last_max_loss', 0))
@@ -112,12 +113,14 @@ class Beagle extends Training implements Evolution
                     $this->getProgress('no_improvement') + 1
                 );
 
+            echo "\t".$this->getProgress('generation_best');
+
             $champ->setCandles(clone $this->candles());
             $this->father()->kill();
             $this->father(clone $champ);
 
             if ($this->generationImproved()) {
-                dump('New best: '.$this->getProgress('generation_best'));
+                echo '***';
                 //$this->generation()[0]->setCandles(clone $og_candles)->save();
                 //$this->father()->kill();
                 //$this->father(clone $this->generation()[0]);
@@ -139,8 +142,8 @@ class Beagle extends Training implements Evolution
                     ->setProgress('no_improvement', 0);
             }
             $this->setProgress('signals', intval($champ->getNumSignals()))
-                ->logMemoryUsage()
                 ->saveProgress();
+            echo "\t(E: ".Event::subscriptionCount().') (M: '.Util::getMemoryUsage(false, true).')';
             Event::clearSubscriptions();
             //Event::pruneSubscriptions();
         }
@@ -274,6 +277,7 @@ class Beagle extends Training implements Evolution
 
     public function raiseGeneration(int $size): Evolution
     {
+        echo "\t";
         $gccc = gc_collect_cycles();
         //Log::debug('GC: '.$gccc);
 
@@ -305,11 +309,10 @@ class Beagle extends Training implements Evolution
                 echo '+';
                 $this->introduce($offspring);
             } catch (MemoryLimitException $e) {
-                dump('Mem limit reached at offspring #'.count($this->generation()));
+                echo 'ML';
                 break;
             }
         }
-        echo PHP_EOL;
         $candles->kill();
         $father->kill();
         //Log::debug('signals stc size', \GTrader\Indicators\Signals::statCacheSize());
