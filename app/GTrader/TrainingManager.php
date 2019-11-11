@@ -38,7 +38,10 @@ class TrainingManager extends Base
         // Check for any trainings
         try {
             foreach ($this->getParam('classes') as $class) {
-                $trainings = $class::where('status', 'training')->get();
+                $trainings = $class::whereIn('status', [
+                    'training',
+                    'evolving',
+                ])->get();
                 foreach ($trainings as $training) {
                     if ($training->isValid()) {
                         $active_trainings[] = $training;
