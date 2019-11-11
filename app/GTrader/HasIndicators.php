@@ -92,6 +92,7 @@ trait HasIndicators
             return $existing;
         }
         $indicator->setParams($params_if_new);
+        //Log::debug('Adding indicator', substr($indicator->getSignature(), 0, 80));
         $owner->indicators[] = $indicator;
         $indicator->createDependencies();
         //Log::debug('Added '.$indicator->oid().' to '.$owner->oid());

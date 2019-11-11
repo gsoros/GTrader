@@ -14,4 +14,42 @@ return [
             'end_percent' => 100
         ],
     ],
+    'progress' => [
+        'view' => [
+            'epoch' => [
+                'label' => 'Generation',
+                'title' => 'Current generation / Last improvement at',
+                'format' => '{{epoch}} / {{last_improvement_epoch}}',
+                'items' => [
+                    'epoch' => 'int',
+                    'last_improvement_epoch' => 'int',
+                ],
+            ],
+            'test' => [
+                'label' => 'Test',
+                'title' => 'Current / Best',
+                'format' => '{{generation_best}} / {{father}}',
+                'items' => [
+                    'generation_best' => 'float',
+                    'father' => 'float',
+                ],
+            ],
+            'signals' => [
+                'label' => 'Signals',
+                'title' => 'Number of signals in test period',
+                'format' => '{{signals}}',
+                'items' => [
+                    'signals' => 'int',
+                ],
+            ],
+            'no_improvement' => [
+                'label' => 'Last',
+                'title' => 'Current epoch minus last improvement epoch',
+                'format' => '{{no_improvement}}',
+                'items' => [
+                    'no_improvement' => 'int',
+                ],
+            ],
+        ],
+    ],
 ];

@@ -11,6 +11,8 @@ abstract class Exchange extends Base
 {
     use HasCache, HasStatCache;
 
+    protected static $stat_cache = [];
+
     protected $last_error;
 
     public function getTicker(string $symbol)

@@ -204,6 +204,7 @@ input.form-control {
 
 .btn {
     padding: 3px 6px;
+    border-radius: 5px;
 }
 
 .btn .fas {
@@ -254,9 +255,6 @@ input.form-control {
     font-size: 11px;
 }
 
-.btn {
-    border-radius: 7px;
-}
 
 input, select, .select2-selection__rendered, textarea {
     text-align: left !important;

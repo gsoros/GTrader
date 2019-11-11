@@ -321,7 +321,7 @@ abstract class Indicator extends Base implements Gene
     public static function decodeSignature(string $sig)
     {
         if (static::decodeCacheEnabled()
-            && $cached = static::statCached('decoded: '.$sig)) {
+            && $cached = static::statCached('indicator_decoded: '.$sig)) {
             return $cached;
         }
         if (!strlen($sig) ||
@@ -341,7 +341,7 @@ abstract class Indicator extends Base implements Gene
             'output' => Arr::get($a, 'output', ''),
         ];
         if (static::decodeCacheEnabled()) {
-            static::statCache('decoded: '.$sig, $decoded);
+            static::statCache('indicator_decoded: '.$sig, $decoded);
         }
         return $decoded;
     }
@@ -1062,6 +1062,13 @@ abstract class Indicator extends Base implements Gene
             }
         }
         return (0 < $total) ? $mutable / $total : 0;
+    }
+
+
+    public function statCacheKey(string $suffix = null): string
+    {
+        $key = md5($this->getSignature());
+        return $suffix ? $key.'_'.$suffix : $key;
     }
 
 

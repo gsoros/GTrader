@@ -130,7 +130,8 @@ class Beagle extends Training implements Evolution
                     )
                     ->setProgress('no_improvement', 0);
             }
-            $this->logMemoryUsage()
+            $this->setProgress('signals', intval($champ->getNumSignals()))
+                ->logMemoryUsage()
                 ->saveProgress();
             Event::clearSubscriptions();
             //Event::pruneSubscriptions();
@@ -296,7 +297,9 @@ class Beagle extends Training implements Evolution
 
         $candles->kill();
         $father->kill();
-
+        //Log::debug('signals stc size', \GTrader\Indicators\Signals::statCacheSize());
+        //Log::debug('strat stc size', Strategy::statCacheSize());
+        //Strategy::statCacheDump();
         return $this;
     }
 
@@ -329,13 +332,15 @@ class Beagle extends Training implements Evolution
         $bal = $ind->calculated(false)->getLastValue();
         */
 
-        $sig = $this->getMaximizeSig($strategy); //dump($sig);
-        $candles = $this->father()->getCandles();
-        $ind = $candles->getOrAddIndicator($sig);
-        //$sig = $ind->getSignature();
-        //dump('Beagle:evaluate('.$strategy->getParam('name').') ...'.substr($sig, strpos($sig, 'length'), 20).'...');
-        $bal = $ind->calculated(false)->getLastValue();
-        //$candles->unsetIndicator($ind);
+        if (is_null($bal = $strategy::statCachedLastBalance($strategy))) {
+            $sig = $this->getMaximizeSig($strategy); //dump($sig);
+            $candles = $this->father()->getCandles();
+            $ind = $candles->getOrAddIndicator($sig);
+            //$sig = $ind->getSignature();
+            //dump('Beagle:evaluate('.$strategy->getParam('name').') ...'.substr($sig, strpos($sig, 'length'), 20).'...');
+            $bal = $ind->calculated(false)->getLastValue();
+            //$candles->unsetIndicator($ind);
+        }
         $strategy->fitness($bal);
         return $this;
     }
@@ -483,5 +488,14 @@ class Beagle extends Training implements Evolution
         )->save();
 
         return parent::handleStartRequest($request);
+    }
+
+
+    public function getProgressArray(): array
+    {
+        //Log::debug(array_merge(parent::getProgressArray(), ['max' => $this->getProgress('best')]));
+        return array_merge(parent::getProgressArray(), [
+            'max' => $this->getProgress('best'),
+        ]);
     }
 }

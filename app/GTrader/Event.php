@@ -69,7 +69,7 @@ class Event
         if (!static::$enabled) {
             return false;
         }
-        //dump('Subscribed? '.$func[0]->oid());
+        //Log::debug('Subscribed? '.$key.' '.$func[0]->oid());
         if (!count($subs = static::subscriptions($key))) {
             return false;
         }

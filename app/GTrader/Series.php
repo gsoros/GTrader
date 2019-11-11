@@ -164,10 +164,12 @@ class Series extends Collection
         if (in_array($sig, ['time', 'open', 'high', 'low', 'close', 'volume'])) {
             return $sig;
         }
-        if (isset($this->_map[$sig])) {
-            return $this->_map[$sig];
+        $sig_md5 = md5($sig);
+        if (isset($this->_map[$sig_md5])) {
+            return $this->_map[$sig_md5];
         }
         if (in_array($sig, $this->_map)) {
+            Log::debug('sig exists in map', substr($sig, 0, 80));
             return $sig;
         }
         $key = null;
@@ -182,7 +184,7 @@ class Series extends Collection
         if (!$key) {
             $key = $prefix.Rand::uniqId();
         }
-        $this->_map[$sig] = $key;
+        $this->_map[$sig_md5] = $key;
         //dump($sig.' --> '.$key);
         return $key;
     }
@@ -688,6 +690,16 @@ class Series extends Collection
     }
 
 
+    public function statCacheKey(string $suffix = null): string
+    {
+        $key = md5(
+            $this->getParam('exchange').'_'.
+            $this->getParam('symbol').'_'.
+            $this->getParam('resolution').'_'.
+            join('_', $this->getStartEndLimit(true))
+        );
+        return $suffix ? $key.'_'.$suffix : $key;
+    }
 
 
 

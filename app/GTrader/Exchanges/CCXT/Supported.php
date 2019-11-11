@@ -487,7 +487,7 @@ class Supported extends Exchange
     {
         $env = $this->trade_environment;
         Log::info($this->getName().'::createOrder()', $env->symbol, $env->order_type, $env->side, $env->new_position, $env->price);
-        echo $this->getName().'::createOrder('.$env->symbol.', '.$env->order_type.', '.$env->side.', '.$env->new_position.', '.$env->price.')';
+        echo ' '.$this->getName().'::createOrder('.$env->symbol.', '.$env->order_type.', '.$env->side.', '.$env->new_position.', '.$env->price.')';
         //dd($env);
         $env->order = null;
         try {

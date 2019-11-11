@@ -17,107 +17,86 @@
     </div>
 </div>
 <div class="row bdr-rad">
-    <div class="col-sm-12" id="trainProgress">
-        <span class="editable cap" id="trainProgressState">
-        @if ('paused' === $training->status)
-            Paused
-        @endif
-        </span>
-        &nbsp; Epoch:
-        <span class="editable" id="trainProgressEpoch" title="Current epoch / Last improvement at"></span>
-        &nbsp; Test:
-        <span class="editable" id="trainProgressTest" title="Current / Best"></span>
-        &nbsp; Train <span title="Mean Squared Error Recipocal">MSER</span>:
-        <span class="editable" id="trainProgressTrainMSER"></span>
-        &nbsp; Verify:
-        <span class="editable" id="trainProgressVerify" title="Current / Best"></span>
-        &nbsp; Signals:
-        <span class="editable" id="trainProgressSignals"></span>
-        &nbsp; Step Up In:
-        <span class="editable" id="trainProgressNoImprovement"></span>
-        &nbsp; Epochs Between Tests:
-        <span class="editable" id="trainProgressEpochJump"></span>
+    <div class="col-sm editable text-center" title="Status">
+        <button class="btn btn-primary btn-mini trans cap" id="trainProgress_state">...</button>
     </div>
+    @foreach ($training->getParam('progress.view', []) as $key => $field)
+        <div class="col-sm editable text-center" title="{{ $field['title'] ?? '' }}">
+            <label>{{ $field['label'] ?? ''}}</label>
+            @php
+                $field['format'] = str_replace(' ', '&nbsp;', $field['format'] ?? '');
+                foreach ($field['items'] ?? [] as $name => $type) {
+                    $span = '<span id="trainProgress_'.$name.'">...</span>';
+                    $field['format'] = str_replace('{{'.$name.'}}', $span, $field['format']);
+                }
+            @endphp
+            <button class="btn btn-primary btn-mini trans">{!! $field['format'] ?? '' !!}</button>
+        </div>
+    @endforeach
 </div>
-@if ('paused' != $training->status)
-    <script>
-        var pollTimeout,
-            verify_max = 0,
-            last_epoch = 0;
-        function pollStatus() {
-            //console.log('pollStatus() ' + $('#trainProgress').length);
-            $.ajax({
-                url: '/strategy.trainProgress?id={{ $strategy_id }}',
-                success: function(data) {
-                    //console.log('pollStatus() success');
-                    try {
-                        reply = JSON.parse(data);
-                    }
-                    catch (err) {
-                        console.log(err);
-                    }
-                    var state = (undefined === reply.state) ? 'queued' : reply.state;
-                    $('#trainProgressState').html(state);
-                    var epoch = (undefined === reply.epoch) ? 0 : reply.epoch;
-                    var lie = reply.last_improvement_epoch;
-                    lie = (undefined === lie) ? 0 : lie;
-                    $('#trainProgressEpoch').html(epoch + ' / ' + lie);
-                    $('#trainProgressTest').html(reply.test + ' / ' + reply.test_max);
-                    $('#trainProgressTrainMSER').html(reply.train_mser);
-                    $('#trainProgressVerify').html(reply.verify + ' / ' + reply.verify_max);
-                    $('#trainProgressSignals').html(reply.signals);
-                    @php
-                        $max_boredom = intval($training->options['max_boredom'] ?? 10);
-                    @endphp
-                    //console.log('max_boredom: ' + {{ $max_boredom }});
-                    $('#trainProgressNoImprovement').html({{ $max_boredom }} + 1 - parseInt(reply.no_improvement));
-                    $('#trainProgressEpochJump').html(reply.epoch_jump);
-                    var new_epoch = parseInt(reply.epoch);
-                    if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {
-                        last_epoch = new_epoch;
-                        window.GTrader.request(
-                            'strategy',
-                            'trainHistory',
-                            {
-                                id: {{ $strategy_id }},
-                                width: $('#trainHistory').width(),
-                                height: 200
-                            },
-                            'GET',
-                            'trainHistory'
+<script>
+@if ('paused' == $training->status)
+    $('#trainProgress_state').html('paused');
+@else
+    var pollTimeout,
+        prev_max = 0,
+        last_epoch = 0;
+    function pollStatus() {
+        //console.log('pollStatus() ' + $('#trainProgress').length);
+        $.ajax({
+            url: '/strategy.trainProgress?id={{ $strategy_id }}',
+            success: function(data) {
+                //console.log('pollStatus() success');
+                try {
+                    reply = JSON.parse(data);
+                    //console.log(reply);
+                }
+                catch (err) {
+                    console.log(err);
+                }
+                var state = (undefined === reply.state) ? 'queued' : reply.state;
+                $('#trainProgress_state').html(state);
+                @foreach ($training->getParam('progress.view', []) as $key => $field)
+                    @foreach ($field['items'] ?? [] as $name => $type)
+                        $('#trainProgress_{{ $name }}').html(
+                            (undefined === reply.{{ $name }}) ? 0 : reply.{{ $name }}
                         );
-                    }
-                    var new_max = parseFloat(reply.verify_max);
-                    if (new_max > verify_max) {
-                        verify_max = new_max;
-                        if (!window.GTrader.charts.{{ $chart->getParam('name') }}.refresh) {
-                            //console.log('Error: window.GTrader.charts.{{ $chart->getParam('name') }}.refresh is false',
-                            //    window.{{ $chart->getParam('name') }});
-                            return;
-                        }
+                    @endforeach
+                @endforeach
+                var new_epoch = parseInt(reply.epoch);
+                if (new_epoch > last_epoch && $('#trainHistory').is(':visible')) {
+                    last_epoch = new_epoch;
+                    window.GTrader.request(
+                        'strategy',
+                        'trainHistory',
+                        {
+                            id: {{ $strategy_id }},
+                            width: $('#trainHistory').width(),
+                            height: 200
+                        },
+                        'GET',
+                        'trainHistory'
+                    );
+                }
+                var max = parseFloat(reply.max);
+                if (max > prev_max) {
+                    prev_max = max;
+                    if (window.GTrader.charts.{{ $chart->getParam('name') }}.refresh) {
                         window.GTrader.charts.{{ $chart->getParam('name') }}.refresh();
                     }
-                },
-                complete: function() {
-                    //console.log('pollStatus() complete');
-                    if ($('#trainProgress').length) {
-                        pollTimeout = setTimeout(pollStatus, 3000);
-                    }
                 }
-            });
-        }
-        $('#trainProgressState').html('queued');
-        $('#trainProgressEpoch').html(' ... ');
-        $('#trainProgressTest').html(' ... ');
-        $('#trainProgressTrainMSER').html(' ... ');
-        $('#trainProgressVerify').html(' ... ');
-        $('#trainProgressSignals').html(' ... ');
-        $('#trainProgressNoImprovement').html(' ... ');
-        $('#trainProgressEpochJump').html(' ... ');
-        pollStatus();
-
-    </script>
+            },
+            complete: function() {
+                if ($('#trainProgress_state').is(':visible')) {
+                    //console.log('setting timeout for pollStatus');
+                    pollTimeout = setTimeout(pollStatus, 3000);
+                }
+            }
+        });
+    }
+    pollStatus();
 @endif
+</script>
 <div class="row bdr-rad">
     <div class="col-sm-12 float-right">
         <span class="float-right">

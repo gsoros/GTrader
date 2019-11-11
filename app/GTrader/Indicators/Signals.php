@@ -10,6 +10,8 @@ use GTrader\Log;
 
 class Signals extends HasInputs
 {
+    protected static $stat_cache = [];
+
 
     public function __construct(array $params = [])
     {
@@ -181,7 +183,7 @@ class Signals extends HasInputs
     public function calculate(bool $force_rerun = false)
     {
         $this->beforeCalculate();
-        
+
         //dump('sc force '.$force_rerun.' for '.$this->oid());
         $this->copyParamsFromStrategy();
         $this->runInputIndicators($force_rerun);
@@ -221,6 +223,8 @@ class Signals extends HasInputs
         $actions = ['open', 'close'];
         $directions = ['long', 'short'];
         $components = ['a', 'b', 'source'];
+
+        $num_signals = 0;
 
         $candles->reset();
         while ($candle = $candles->next()) {
@@ -308,7 +312,7 @@ class Signals extends HasInputs
             ];
 
             $emit = function($signal)
-                use (&$log, &$candle, &$previous_signal, $input_keys, $output_keys, $source)
+                use (&$log, &$candle, &$previous_signal, $input_keys, $output_keys, $source, &$num_signals)
             {
                 $log['signal'] = $signal;
                 $log['previous_signal'] = $previous_signal['signal'];
@@ -320,6 +324,7 @@ class Signals extends HasInputs
                     'time' => $candle->time,
                     'signal' => $signal,
                 ];
+                $num_signals++;
             };
 
             if (
@@ -349,7 +354,14 @@ class Signals extends HasInputs
             $previous_candle = $candle;
             //Log::debug($log);
         }
+        static::statCache($this->statCacheKey('num_signals'), $num_signals);
         return $this;
+    }
+
+
+    public static function statCachedNumSignals(Signals $indicator)
+    {
+        return static::statCached($indicator->statCacheKey('num_signals'));
     }
 
 

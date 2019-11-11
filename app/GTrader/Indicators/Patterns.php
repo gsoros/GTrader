@@ -3,13 +3,12 @@
 namespace GTrader\Indicators;
 
 use Illuminate\Support\Arr;
-use GTrader\HasCache;
 use GTrader\Log;
 
 /** CDL_* family of patterns from TA-Lib */
 class Patterns extends Trader
 {
-    use HasCache;
+    protected static $stat_cache = [];
 
     public function __construct(array $params = [])
     {
@@ -57,12 +56,13 @@ class Patterns extends Trader
         return $this;
     }
 
+
     public function setAvailableFunctions()
     {
         if ($this->cached('available_set')) {
             return $this;
         }
-        if ($funcs = static::statCached('available_funcs')){
+        if ($funcs = static::statCached('available_funcs')) {
             $this->setParam('adjustable.use_functions.items', $funcs);
             $this->cache('available_set', true);
             return $this;

@@ -9,6 +9,8 @@ class UserExchangeConfig extends Model
 {
     use HasStatCache;
 
+    protected static $stat_cache = [];
+
     /**
      * The table associated with the model.
      *

@@ -310,6 +310,32 @@ abstract class Training extends Model
     }
 
 
+    public function getProgressArray(): array
+    {
+        $progress = $this->progress;
+        if (!is_array($progress)) {
+            $progress = [];
+        }
+        //Log::debug($progress);
+        foreach ($this->getParam('progress.view', []) as $key => $field) {
+            foreach ($field['items'] ?? [] as $name => $type) {
+                $value = $progress[$name] ?? null;
+                switch ($type) {
+                    case 'int':
+                        $progress[$name] = intval($value);
+                        break;
+                    case 'float':
+                        $progress[$name] = number_format(floatval($value), 2, '.', '');
+                        break;
+                    default:
+                        $progress[$name] = $value;
+                }
+            }
+        }
+        return $progress;
+    }
+
+
     protected function saveProgress()
     {
         DB::table($this->table)

@@ -14,4 +14,16 @@ return [
             'end_percent' => 60
         ],
     ],
+    'progress' => [
+        'view' => [
+            'epoch' => [
+                'label' => 'Epoch',
+                'title' => 'Current epoch',
+                'format' => '{{epoch}}',
+                'items' => [
+                    'epoch' => 'int',
+                ],
+            ],
+        ],
+    ],
 ];

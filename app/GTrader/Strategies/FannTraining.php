@@ -360,6 +360,15 @@ class FannTraining extends Training
     }
 
 
+    public function getProgressArray(): array
+    {
+        //Log::debug(array_merge(parent::getProgressArray(), ['max' => $this->getProgress('verify_max')]));
+        return array_merge(parent::getProgressArray(), [
+            'max' => $this->getProgress('verify_max'),
+        ]);
+    }
+
+
     public function handleStartRequest(Request $request)
     {
         if (!$strategy = $this->loadStrategy()) {

@@ -20,6 +20,7 @@ abstract class Strategy extends Base
         HasCandles::visualize as __HasCandles__visualize;
     }
 
+    protected static $stat_cache = [];
     //protected static $stat_cache_log = 'all';
 
 
@@ -114,6 +115,7 @@ abstract class Strategy extends Base
                 'strategy' => serialize($this)
             ]);
         $this->cleanCache();
+        //static::unStatCache('id_'.$id);
         return $this;
     }
 
@@ -249,11 +251,28 @@ abstract class Strategy extends Base
 
     public function getLastBalance(bool $force_rerun = false)
     {
-        if (!$b = $this->getBalanceIndicator()) {
+        if (!$bal_ind = $this->getBalanceIndicator()) {
             Log::error('Could not get balance ind');
             return 0;
         }
-        return $b->getLastValue($force_rerun);
+        $last_balance = $bal_ind->getLastValue($force_rerun);
+        static::statCache($this->statCacheKey('last_balance'), $last_balance);
+        return $last_balance;
+    }
+
+
+    public static function statCachedLastBalance(Strategy $strategy)
+    {
+        return static::statCached($strategy->statCacheKey('last_balance'));
+    }
+
+
+    public function statCacheKey(string $suffix = null): string
+    {
+        $candles = $this->getCandles();
+        $key = $candles->statCacheKey().'_'.
+            $this->getBalanceIndicator()->statCacheKey();
+        return $suffix ? $key.'_'.$suffix : $key;
     }
 
 
@@ -293,6 +312,12 @@ abstract class Strategy extends Base
 
     public function getNumSignals(bool $force_rerun = false)
     {
+        if (!$force_rerun) {
+            $signals_ind = $this->getSignalsIndicator();
+            if (!is_null($cached = $signals_ind::statCachedNumSignals($signals_ind))) {
+                return $cached;
+            }
+        }
         return count($this->getSignals($force_rerun));
     }
 
