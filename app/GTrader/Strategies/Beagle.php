@@ -280,6 +280,9 @@ class Beagle extends Training implements Evolution
         $father->setCandles($candles);
 
         for ($i = 0; $i < $size; $i++) {
+            if (!$this->shouldRun()) {
+                break;
+            }
             try {
                 $offspring = clone $father;
                 $offspring->mutate();
