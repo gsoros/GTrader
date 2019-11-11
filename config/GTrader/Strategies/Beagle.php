@@ -42,6 +42,14 @@ return [
                     'signals' => 'int',
                 ],
             ],
+            'max_loss' => [
+                'label' => 'Loss',
+                'title' => 'Maximum loss percent',
+                'format' => '{{max_loss}}',
+                'items' => [
+                    'max_loss' => 'float',
+                ],
+            ],
             'no_improvement' => [
                 'label' => 'Last',
                 'title' => 'Current epoch minus last improvement epoch',

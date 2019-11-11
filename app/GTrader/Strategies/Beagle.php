@@ -98,6 +98,7 @@ class Beagle extends Training implements Evolution
             dump('G: '.$generation.', Best: '.$gen_best.' EventSubs: '.Event::subscriptionCount());
 
             $this->setProgress('generation_best', $gen_best)
+                ->setProgress('max_loss', $champ->getParam('last_max_loss', 0))
                 ->saveHistory('generation_best', $gen_best, 'father')
                 ->setProgress(
                     'no_improvement',
@@ -283,10 +284,13 @@ class Beagle extends Training implements Evolution
                 $offspring = clone $father;
                 $offspring->mutate();
                 $this->evaluate($offspring);
-                if (($loss_tolerance = $this->lossTolerance())
-                    && ($offspring->getMaxLoss() > $loss_tolerance)) {
-                    dump('offspring #'.$i.' max loss: '.$offspring->getMaxLoss());
-                    continue;
+                if ($loss_tolerance = $this->lossTolerance()) {
+                    $loss = $offspring->getMaxLoss();
+                    $offspring->setParam('last_max_loss', $loss);
+                    if ($loss > $loss_tolerance) {
+                        dump('offspring #'.$i.' max loss: '.$offspring->getMaxLoss());
+                        continue;
+                    }
                 }
                 $this->introduce($offspring);
             } catch (MemoryLimitException $e) {
