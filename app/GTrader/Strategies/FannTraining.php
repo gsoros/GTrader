@@ -59,7 +59,7 @@ class FannTraining extends Training
                 ->saveHistory('test', $test, 'train')
                 ->setProgress(
                     'no_improvement',
-                    $this->getProgress('no_improvement') + 1
+                    $this->getProgress('no_improvement') + $this->getProgress('epoch_jump')
                 );
 
             if ($this->acceptable('test', $this->options['max_regression']['test'])) {
