@@ -88,7 +88,7 @@
             },
             complete: function() {
                 //if ($('#trainProgress_state').is(':visible')) {
-                if ($('#trainProgress').length)) {
+                if ($('#trainProgress').length) {
                     console.log('setting timeout for pollStatus');
                     pollTimeout = setTimeout(pollStatus, 3000);
                 }
