@@ -18,7 +18,7 @@ class Comparison extends HasInputs
         }
         $input_a = $this->getParamString(['operation', 'input_b']);
         $input_b = $this->getParamString(['operation', 'input_a']);
-        return $input_a.' '.$op.' '.$input_b;
+        return '('.$input_a.') '.$op.' ('.$input_b.')';
     }
 
 

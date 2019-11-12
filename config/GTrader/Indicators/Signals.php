@@ -26,6 +26,9 @@ $generate_group = function($key, $action) {
                 '<='    => '<=',
                 '>'     => '>',
                 '>='    => '>=',
+                'and'   => 'AND',
+                '||'    => 'OR',
+                '!='    => 'NOT',
             ],
             'display' => [
                 'hide' => ['label'],

@@ -111,6 +111,15 @@ class Util
             case '>=':
             case 'gte':
                 return $a >= $b;
+
+            case '&&':
+            case 'and':
+                return $a && $b;
+
+            case '||':
+            case 'or':
+                return $a || $b;
+
         }
         Log::error('Unknown condition: '. $cond);
         return null;
