@@ -14,7 +14,7 @@ return [
 
     'fee_multiplier'    => env('EXCHANGE_FEE_MULTIPLIER', 0.005),           // TODO make this configurable in UserExConf
     'position_size'     => env('EXCHANGE_POSITION_SIZE', 10),               // 10% of capital
-    'leverage'          => env('EXCHANGE_LEVERAGE', 10),
+    'leverage'          => env('EXCHANGE_LEVERAGE', 1),
 
     'delete_candle_age'         => env('DELETE_CANDLE_AGE', 0),             // delete candles older than this # of days, 0 to disable
     'aggregator_delay'          => env('AGGREGATOR_DELAY', 500000),         // sleep this # of microseconds between requests
