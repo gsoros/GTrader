@@ -16,7 +16,7 @@
     <div class="col-sm-12 npl npr" id="trainHistory" title="Training History">
     </div>
 </div>
-<div class="row bdr-rad">
+<div class="row bdr-rad" id="trainProgress">
     <div class="col-sm editable text-center" title="Status">
         <button class="btn btn-primary btn-mini trans cap" id="trainProgress_state">...</button>
     </div>
@@ -87,7 +87,8 @@
                 }
             },
             complete: function() {
-                if ($('#trainProgress_state').is(':visible')) {
+                //if ($('#trainProgress_state').is(':visible')) {
+                if ($('#trainProgress').length)) {
                     console.log('setting timeout for pollStatus');
                     pollTimeout = setTimeout(pollStatus, 3000);
                 }
