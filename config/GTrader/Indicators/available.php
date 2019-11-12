@@ -4,6 +4,7 @@ return [
     'Vol'               => ['allow_multiple' => false],
     'Constant'          => ['allow_multiple' => true],
     'Operator'          => ['allow_multiple' => true],
+    'Comparison'        => ['allow_multiple' => true],
     'Pass'              => ['allow_multiple' => true],
     'Roc'               => ['allow_multiple' => true],
     'Balance'           => ['allow_multiple' => true],

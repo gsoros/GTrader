@@ -309,7 +309,7 @@ class Beagle extends Training implements Evolution
                 echo '+';
                 $this->introduce($offspring);
             } catch (MemoryLimitException $e) {
-                echo 'ML';
+                echo 'M';
                 break;
             }
         }

@@ -25,6 +25,7 @@ $(function() {
             console.log('setLoading(' + element + ', ' + (true === loading ? 'true' : 'false') + ')');
             if (true === loading) {
                 var container = $('#' + element);
+                //console.log(element + '.width = ' + container.width());
                 if (0 === $('#loading-' + element).length)
                     container.append('<img id="loading-' + element + '" src="/img/ajax-loader.gif">');
                 $('#loading-' + element).css({
