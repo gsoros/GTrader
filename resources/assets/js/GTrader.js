@@ -237,7 +237,9 @@ $(function() {
                     console.log('ESR is undefined');
                     return;
                 }
-                console.log('Updating ESR');
+                //console.log('Updating ESR');
+                //console.log('chart.esr = ' + chart.exchange + chart.symbol + chart.resolution);
+                //console.log(this.source);
                 // loop through all exchanges
                 this.source.forEach(function(exchange) { // loop through all exchanges
                     opts.exchange += '<option ';
@@ -254,9 +256,11 @@ $(function() {
                                     ||
                                     1 === exchange.symbols.length // or only one symbol
                                     ||
-                                    'exchange' === changed) // or a different exchange was selected, so we select the first symbol
-                                &&
-                                !selected.symbol) { // but we do not yet have a selected symbol
+                                    ('exchange' === changed && !exchange.symbols.find (
+                                        function(s) { return s.name === chart.symbol }
+                                    )) // or a different exchange was selected and it does not have the symbol so we select the first symbol
+                                ) && !selected.symbol // but we do not yet have a selected symbol
+                            ) {
                                 opts.symbol += 'selected '; // found selected symbol
                                 selected.symbol = true;
                                 chart.symbol = symbol.name
@@ -266,11 +270,10 @@ $(function() {
                                             ||
                                             1 === symbol.resolutions.length // or only one resolution
                                             ||
-                                            'exchange' === changed // or a different exchange was selected, so we select the first resolution
-                                            ||
-                                            'symbol' === changed) // or a different symbol was selected, so we select the first resolution
-                                        &&
-                                        !selected.resolution) { // but we do not yet have a selected resoluion
+                                            (('exchange' === changed || 'symbol' === changed)
+                                            && undefined === symbol.resolutions[resolution]) // or a different exchangue or symbol was selected and it does not have the resolution, so we select the first resolution
+                                        ) && !selected.resolution // but we do not yet have a selected resoluion
+                                    ) {
                                         opts.resolution += 'selected '; // found selected resolution
                                         selected.resolution = true;
                                         chart.resolution = resolution;
