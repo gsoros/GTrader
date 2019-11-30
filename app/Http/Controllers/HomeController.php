@@ -50,9 +50,11 @@ class HomeController extends Controller
                 $this->migrateAndSeed();
             } catch (\Exception $e) {
                 try {
+                    Log::error($e->getMessage());
                     $this->migrateAndSeed();
                 } catch (\Exception $f) {
                     echo 'Automigrate attempt '.$tries.' failed<br>';
+                    Log::error($f->getMessage());
                     flush();
                 }
             }
@@ -62,6 +64,7 @@ class HomeController extends Controller
         }
         return false;
     }
+
 
     protected function migrateAndSeed()
     {
