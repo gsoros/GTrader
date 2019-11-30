@@ -11,7 +11,8 @@
         "doctrine/dbal": "^2.9",
         "gburtini/distributions": "dev-master",
         "laravel/framework": "^6.0",
-        "laravel/tinker": "^1.0"
+        "laravel/tinker": "^1.0",
+        "pragmarx/version": "^1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.4",
