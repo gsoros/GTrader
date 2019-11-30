@@ -37,14 +37,13 @@ class HomeController extends Controller
 
     protected function checkDB()
     {
-        $users = 0;
         $max_tries = 10;
         $tries = 0;
         $delay = 3;
-        while ($tries <= $max_tries && !$users) {
+        while ($tries <= $max_tries) {
             $tries++;
             try {
-                if ($users = DB::table('users')->count()) {
+                if (DB::table('users')->count()) {
                     return true;
                 }
                 $this->migrateAndSeed();
@@ -53,8 +52,8 @@ class HomeController extends Controller
                     Log::error($e->getMessage());
                     $this->migrateAndSeed();
                 } catch (\Exception $f) {
-                    echo 'Automigrate attempt '.$tries.' failed<br>';
                     Log::error($f->getMessage());
+                    echo 'Automigrate attempt '.$tries.' failed<br>';
                     flush();
                 }
             }
