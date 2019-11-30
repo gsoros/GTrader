@@ -71,6 +71,7 @@ RUN    echo "############### FILES #########################" \
         do touch /gtrader/storage/logs/$file.log; \
     done \
     && chown -R gtrader:gtrader /gtrader \
+    && mkdir -p /gtrader/storage/cache/data \
     && for dir in /gtrader/storage /gtrader/bootstrap/cache; do \
             chgrp -R www-data $dir; \
             find $dir -type d -exec chmod 775 {} \;; \
