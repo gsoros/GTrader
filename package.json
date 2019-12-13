@@ -21,11 +21,11 @@
     "sass": "^1.23.7",
     "sass-loader": "^8.0.0",
     "select2": "^4.0.12",
-    "vis-network": "^6.4.6",
+    "vis-network": "^6.4.7",
     "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.11.2",
+    "@fortawesome/fontawesome-free": "^5.12.0",
     "fscreen": "^1.0.2",
     "jquery-touchswipe": "^1.6.19",
     "nouislider": "^9.2.0"
