@@ -9,6 +9,7 @@ ENV PAX_NODE "$PAXIFY /usr/bin/nodejs"
 ARG GTRADER_UID
 ENV SUG "su -s /bin/sh -m gtrader -c"
 ENV CACHE /tmp/cache
+ENV PHPVER 7.3
 
 
 RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
@@ -18,17 +19,17 @@ RUN DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 \
     && sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
     && apt-get update && apt-get install -y --no-install-recommends \
                                                 build-essential \
-                                            php-dev \
-                                        php-cli \
-                                    php-fpm \
-                                php-mysql \
-                            php-gd \
-                        php-mcrypt \
-                    php-xml \
-                php-zip \
-            php-mbstring \
-        php-pear php-bcmath php-curl \
-            curl \
+                                            php-mcrypt php-pear \
+                                        php$PHPVER-dev \
+                                    php$PHPVER-cli \
+                                php$PHPVER-fpm \
+                            php$PHPVER-mysql \
+                        php$PHPVER-gd \
+                    php$PHPVER-xml \
+                php$PHPVER-zip \
+            php$PHPVER-mbstring \
+        php$PHPVER-bcmath \
+            php$PHPVER-curl curl \
                 openssl \
                     libpng-dev \
                         git \
@@ -66,6 +67,7 @@ COPY . /gtrader
 RUN cp -Rv /gtrader/docker-fs/etc /
 
 RUN    echo "############### FILES #########################" \
+    && mkdir -p /run/php \
     && useradd -u "${GTRADER_UID:-1001}" -G www-data -d /gtrader -s /bin/bash -M gtrader \
     && for file in GTrader laravel schedule trainingManager bots; \
         do touch /gtrader/storage/logs/$file.log; \
