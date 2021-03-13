@@ -5,6 +5,7 @@ return [
         'mode' => 'fixed',
         'capital' => 100,
         'input_signal' => '', // set in createDependencies()
+        'base_or_quote' => 'base',
     ],
     'adjustable' => [
         'mode' => [
@@ -22,8 +23,8 @@ return [
         ],
         'capital' => [
             'name' => 'Initial Capital',
-            'type' => 'int',
-            'min' => 1,
+            'type' => 'float',
+            'min' => 0.0001,
             'step' => 1,
             'max' => 1000,
         ],
@@ -36,6 +37,16 @@ return [
             'disabled' => [
                 'Constant',
                 'outputs',
+            ],
+        ],
+        'base_or_quote' => [
+            'name' => 'Base or Quote',
+            'description' =>
+                'Display balance in the base or the quote currency.',
+            'type' => 'select',
+            'options' => [
+                'base' => 'Base',
+                'quote' => 'Quote',
             ],
         ],
     ],
