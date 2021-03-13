@@ -71,6 +71,12 @@ class Balance extends HasInputs
             return $this;
         }
 
+        $base_or_quote = $this->getParam('indicator.base_or_quote');
+        if (!in_array($base_or_quote, ['base', 'quote'])) {
+            Log::error('Invalid base or quote setting.');
+            return $this;
+        }
+
         $user_id = $this->getUserId();
         $exchange = Exchange::make($candles->getParam('exchange'));
         $exchange_id = $exchange->getId();
@@ -230,6 +236,11 @@ class Balance extends HasInputs
             elseif (!$prev_signal) {
                 $candle->$output_key = $capital;
             } */
+
+            if ('quote' === $base_or_quote) {
+                $new_balance = $new_balance * $candle->close;
+            }
+
             $candle->$output_key = $new_balance;
             $signal = null;
         }
