@@ -320,7 +320,7 @@ class Supported extends Exchange
         } catch (\Exception $e) {
             Log::debug($this->getName().' Trade does not exist in the db');
         }
-        $env->leverage = (1 <= ($l = intval($this->getUserOption('leverage'))) ? $l : 1);
+        $env->leverage = (1 <= ($l = floatval($this->getUserOption('leverage'))) ? $l : 1);
         return true;
     }
 
