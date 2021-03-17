@@ -7,7 +7,10 @@ return [
             'urlKey' => 'test',
         ],
         'leverage' => [
-            'levels' => [1, 2, 3, 5, 10, 25, 50, 100],
+            'levels' => [1, 1.5, 2, 2.5, 3, 4, 5, 10, 25, 50, 100],
         ],
+    ],
+    'user_options'  => [
+        'leverage' => 1,
     ],
 ];
