@@ -167,6 +167,16 @@ class Supported extends Exchange
     }
 
 
+    public function getSymbolRemoteId(string $symbol_id): string
+    {
+        $symbol = $this->getSymbol($symbol_id);
+        if (!isset($symbol['id'])) {
+            return $symbol_id;
+        }
+        return $symbol['id'];
+    }
+
+
     public function getSymbolLongName(string $symbol_id): string
     {
         $symbol = $this->getSymbol($symbol_id);
@@ -264,6 +274,20 @@ class Supported extends Exchange
             $return[] = $new_candle;
         }
         return $return;
+    }
+
+
+    protected function tradeCreateEnvironment(
+        string $symbol,
+        array $signal
+    ): bool
+    {
+        $this->trade_environment = (object)[
+            'error' => null,
+            'symbol' => $symbol,
+            'signal' => $signal,
+        ];
+        return true;
     }
 
 
@@ -538,11 +562,7 @@ class Supported extends Exchange
         array $signal
     )
     {
-        $this->trade_environment = (object)[
-            'error' => null,
-            'symbol' => $symbol,
-            'signal' => $signal,
-        ];
+        $this->tradeCreateEnvironment($symbol, $signal);
         $env = $this->trade_environment;
 
         foreach ([
@@ -576,10 +596,10 @@ class Supported extends Exchange
             return $nil;
         }
         try {
-            $book = $this->ccxt()->fetchOrderBook($symbol);
+            $book = $this->ccxt()->fetch_order_book($symbol);
             assert(is_array($book));
         } catch (\Exception $e) {
-            Log::info('fetchOrderBook failed', $this->getName(), $symbol, $e->getMessage());
+            Log::info('fetch_order_book failed', $this->getName(), $symbol, $e->getMessage());
             return $nil;
         }
         Log::debug('best prices: ['.reset($book['bids'])[0].' <--bid  ask--> '.reset($book['asks'])[0].']');
@@ -667,8 +687,11 @@ class Supported extends Exchange
             return $orders;
         }
         $method = 'fetch'.$order_types[$order_type].'Orders';
-        if (!$this->has($method) || !method_exists($this->ccxt(), $method)) {
-            Log::info('Exchange has no method', $method, $this->getName());
+        if (
+            !$this->has($method)
+            //|| !method_exists($this->ccxt(), $method)
+        ) {
+            Log::info('Exchange has no', $method, $this->getName());
             return $orders;
         }
         try {
@@ -720,7 +743,7 @@ class Supported extends Exchange
         try {
             //$this->ccxt()->loadMarkets();
             //$this->setCCXTProperty('verbose', true);
-            $balance = $this->ccxt()->fetchBalance();
+            $balance = $this->ccxt()->fetch_balance();
         } catch (\Exception $e) {
             Log::info('fetchBalance() failed', $e->getMessage());
             return [];

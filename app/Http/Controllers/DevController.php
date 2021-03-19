@@ -509,10 +509,21 @@ class DevController extends Controller
 
                 break;
 
+            case 'exc':
+                $exc = Exchange::make('CCXT\bitmex');
+                //dump($exc);
+                //dump($exc->test());
+                //dump($exc->fetchOrders('BTC/USD', 'open'));
+                //dump($exc->fetchOrders('BTC/USD', 'closed'));
+                //$exc->tradeSetupEnvironment();
+                //$exc->tradeSetLeverage();
+                break;
+
             default:
             ?><a href='?mode=mutate'>Mutate</a> <?php
             ?><a href='?mode=form'>Form</a> <?php
             ?><a href='?mode=dist'>Dist</a> <?php
+            ?><a href='?mode=exc'>Exc</a> <?php
         }
     }
 
