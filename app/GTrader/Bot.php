@@ -147,7 +147,7 @@ class Bot extends Model
 
         // Looks like we have a valid signal
         echo ' '.$last_signal['signal'].' @ '.$last_signal['price'];
-        
+
         // Tell the exchange to take the position
         $exchange->takePosition(
             $symbol,
@@ -189,7 +189,9 @@ class Bot extends Model
         }
 
         $sy = 'symbol_bot_'.$this->id;
+        $new_symbol = null;
         if (isset($request->$sy)) {
+            $new_symbol = $request->$sy;
             $this->symbol_id = Exchange::getSymbolIdByExchangeSymbolName(
                 $request->$ex,
                 $request->$sy
@@ -224,8 +226,9 @@ class Bot extends Model
                         // TODO send error msg to UI
                         $this->status = 'disabled';
                         $exchange_name = Exchange::getNameById($this->exchange_id);
-                        Log::error('Tried to activate bot ID '.$this->id.' for '.$exchange_name.
-                                    ' but there are other active bots on this exchange.');
+                        Log::error('Tried to activate bot ID '.$this->id.' for '.
+                            $exchange_name.' '.$new_symbol.
+                            ' but there is an active bot on this exchange and symbol.');
                     }
                 }
             }
@@ -248,6 +251,7 @@ class Bot extends Model
         $active_bots = Bot::where('id', '<>', $this->id)
             ->where('status', 'active')
             ->where('exchange_id', $this->exchange_id)
+            ->where('symbol_id', $this->symbol_id)
             ->count();
         return $active_bots ? false : true;
     }
