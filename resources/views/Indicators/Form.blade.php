@@ -273,6 +273,41 @@
     </div>
 @endif
 
+@if (!in_array('display', $disabled))
+    @php
+        $outputs = $indicator->getOutputs();
+        $display_outputs = $indicator->getParam('display.outputs', []);
+        $display_all = in_array('all', $display_outputs);
+        //echo '$outputs = '.json_encode($outputs).'<br>'.'$display_outputs = '.json_encode($display_outputs);
+    @endphp
+
+    @if (count($outputs))
+        <div class="form-group row">
+            <label class="col-sm-2 control-label npl" for="display_{{ $uid }}">Display</label>
+            <siv class="col-sm-10 container-fluid np">
+                <div class="row" id="display_{{ $uid }}">
+                @foreach ($outputs as $output)
+                    <div class="col-sm-2 form-check form-check-inline">
+                        <label class="form-check-label" title="Show or hide {{ $output }}">
+                            <input class="form-check-input"
+                                id="display_{{ $output }}_{{ $uid }}"
+                                name="display_{{ $output }}_{{ $uid }}"
+                                type="checkbox"
+                                value="1"
+                                @if ($display_all || in_array($output, $display_outputs))
+                                    checked
+                                @endif
+                            >
+                            {{ $output }}
+                        </label>
+                    </div>
+                @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+@endif
+
 @if (!in_array('savebutton', $disabled))
     <div class="row">
         <div class="col-sm-12 text-right">
@@ -311,6 +346,14 @@
                 @endforeach
                 };
             @endif
+            var display = [];
+            @if (!in_array('display', $disabled))
+                @foreach ($outputs as $output)
+                    if ($('#display_{{ $output }}_{{ $uid }}').is(':checked')) {
+                        display.push('{{ $output }}');
+                    }
+                @endforeach
+            @endif
 
             window.GTrader.request(
                 'indicator',
@@ -326,7 +369,8 @@
                     owner_id: '{{ $owner_id }}',
                     signature: '{!! $sig !!}',
                     params: JSON.stringify(params),
-                    mutable: JSON.stringify(mutable)
+                    mutable: JSON.stringify(mutable),
+                    display: JSON.stringify(display)
                 },
                 'POST',
                 '{{ $target_element }}');

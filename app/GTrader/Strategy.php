@@ -155,6 +155,7 @@ abstract class Strategy extends Base
                 'owner_class' => 'Strategy',
                 'owner_id' => $this->getParam('id'),
                 'display_outputs' => true,
+                'disabled' => ['display'],
                 'target_element' => 'strategy_indicators_list',
                 'format' => $format,
             ]

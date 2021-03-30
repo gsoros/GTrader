@@ -8,6 +8,7 @@
         'available' => [],
         'display_outputs' => false,
         'format' => 'short',
+        'disabled' => [],
     ] as $varname => $default) {
         $$varname = isset($$varname) ? $$varname : $default;
     };
@@ -108,7 +109,8 @@
                                         name: '{{ $name }}',
                                         signature: '{{ urlencode($sig) }}',
                                         target_element: '{{ $target_element }}',
-                                        mutability: {{ ($mutability ?? false) ? 1 : 0 }}
+                                        mutability: {{ ($mutability ?? false) ? 1 : 0 }},
+                                        disabled: {{ json_encode($disabled) }}
                                     },
                                     'POST',
                                     'form_{{ $uid }}'

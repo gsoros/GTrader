@@ -501,6 +501,7 @@ trait HasIndicators
             'owner_id',
             'target_element',
             'mutability',
+            'disabled',
         ] as $val) {
             if (isset($request[$val])) {
                 $pass_params[$val] = $request[$val];
@@ -560,8 +561,11 @@ trait HasIndicators
             $mutable = isset($request->mutable)
                 ? json_decode($request->mutable, true)
                 : [];
+            $display = isset($request->display)
+                ? json_decode($request->display, true)
+                : [];
         } catch (\Exception $e) {
-            Log::error('cannot decode json', $request->params, $request->mutable);
+            Log::error('cannot decode json', $request->params, $request->mutable, $request->display);
             return $this->viewIndicatorsList($request);
         }
         $suffix = '';
@@ -583,6 +587,7 @@ trait HasIndicators
             $indicator->createDependencies();
         }
         $indicator->mutable($mutable);
+        $indicator->setParam('display.outputs', $display);
         return $this->viewIndicatorsList($request);
     }
 
