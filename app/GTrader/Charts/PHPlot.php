@@ -173,7 +173,7 @@ class PHPlot extends Chart
 
     public function plot(array $item)
     {
-        //dump('plot ', $item);
+        //Log::debug('plot ', $item);
         if (!is_array($item['values'])) {
             return $this;
         }

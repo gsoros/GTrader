@@ -188,7 +188,7 @@ class Simple extends Strategy
         return $signals->getForm(array_replace_recursive(
             [
                 'disabled' => [
-                    'title', 'form', 'savebutton', 'save',
+                    'title', 'form', 'display', 'savebutton', 'save',
                 ],
             ],
             Arr::get($options, 'view', [])

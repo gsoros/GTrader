@@ -659,9 +659,18 @@ abstract class Indicator extends Base implements Gene
     }
 
 
-    public function getOutputs()
+    public function getOutputs(array $filters = [])
     {
-        return $this->getParam('outputs', ['default']);
+        $outputs = $this->getParam('outputs', ['default']);
+        if (in_array('display', $filters)) {
+            $display_outputs = $this->getParam('display.outputs', ['all']);
+            //Log::debug($this->getDisplaySignature(), $outputs, $display_outputs);
+            if (!in_array('all', $display_outputs)) {
+                $outputs = array_values(array_intersect($outputs, $display_outputs));
+            }
+            //Log::debug('---->', $outputs);
+        }
+        return $outputs;
     }
 
 
@@ -676,7 +685,7 @@ abstract class Indicator extends Base implements Gene
         }
         $this->checkAndRun();
         $r = null;
-        foreach ($this->getOutputs() as $output) {
+        foreach ($this->getOutputs(['display']) as $output) {
             $arr = $candles->extract(
                 $this->getSignature($output),
                 $index_type,

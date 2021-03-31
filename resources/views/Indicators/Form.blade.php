@@ -278,7 +278,13 @@
         $outputs = $indicator->getOutputs();
         $display_outputs = $indicator->getParam('display.outputs', []);
         $display_all = in_array('all', $display_outputs);
-        //echo '$outputs = '.json_encode($outputs).'<br>'.'$display_outputs = '.json_encode($display_outputs);
+        $editable = $indicator->getParam('display.editable_outputs', []);
+        if (!in_array('all', $editable)) {
+            $outputs = array_values(array_intersect($outputs, $editable));
+        }
+        Log::debug('$outputs =', $outputs);
+        Log::debug('$display_outputs =', $display_outputs);
+        Log::debug('$editable =', $editable);
     @endphp
 
     @if (count($outputs))
@@ -346,11 +352,11 @@
                 @endforeach
                 };
             @endif
-            var display = [];
+            var display_outputs = [];
             @if (!in_array('display', $disabled))
                 @foreach ($outputs as $output)
                     if ($('#display_{{ $output }}_{{ $uid }}').is(':checked')) {
-                        display.push('{{ $output }}');
+                        display_outputs.push('{{ $output }}');
                     }
                 @endforeach
             @endif
@@ -370,7 +376,7 @@
                     signature: '{!! $sig !!}',
                     params: JSON.stringify(params),
                     mutable: JSON.stringify(mutable),
-                    display: JSON.stringify(display)
+                    display_outputs: JSON.stringify(display_outputs)
                 },
                 'POST',
                 '{{ $target_element }}');
