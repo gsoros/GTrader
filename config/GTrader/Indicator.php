@@ -13,5 +13,8 @@ return [
         'visible' => false,
         'z-index' => 0,
         'auto-y-axis' => false,
+        'outputs' => ['all'],
+        'editable_outputs' => ['all'],
+        'colors' => [],
     ],
 ];

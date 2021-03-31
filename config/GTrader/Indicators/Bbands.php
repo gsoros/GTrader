@@ -21,14 +21,16 @@ return [
             'max' => 99,
         ],
         'devup' => [
-            'name' => 'Deviation multiplier for upper band',
+            'name' => 'Dev Upper',
+            'description' => 'Deviation multiplier for upper band',
             'type' => 'float',
             'min' => 0,
             'step' => .05,
             'max' => 10,
         ],
         'devdown' => [
-            'name' => 'Deviation multiplier for lower band',
+            'name' => 'Dev Lower',
+            'description' => 'Deviation multiplier for lower band',
             'type' => 'float',
             'min' => 0,
             'step' => .05,

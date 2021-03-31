@@ -501,6 +501,7 @@ trait HasIndicators
             'owner_id',
             'target_element',
             'mutability',
+            'disabled',
         ] as $val) {
             if (isset($request[$val])) {
                 $pass_params[$val] = $request[$val];
@@ -510,6 +511,7 @@ trait HasIndicators
         if (! $indicator = $this->getIndicator($sig)) {
             Log::error('Could not find indicator', $sig);
         }
+        //Log::debug($pass_params);
         return $indicator->getForm($pass_params);
     }
 
@@ -560,8 +562,11 @@ trait HasIndicators
             $mutable = isset($request->mutable)
                 ? json_decode($request->mutable, true)
                 : [];
+            $display_outputs = isset($request->display_outputs)
+                ? json_decode($request->display_outputs, true)
+                : [];
         } catch (\Exception $e) {
-            Log::error('cannot decode json', $request->params, $request->mutable);
+            Log::error('cannot decode json', $request->params, $request->mutable, $request->display_outputs);
             return $this->viewIndicatorsList($request);
         }
         $suffix = '';
@@ -583,6 +588,22 @@ trait HasIndicators
             $indicator->createDependencies();
         }
         $indicator->mutable($mutable);
+        $all_outputs = $indicator->getOutputs();
+        $editable = $indicator->getParam('display.editable_outputs', []);
+        $editable_all = in_array('all', $editable);
+        $new_outputs = [];
+        $changeable = false;
+        foreach ($all_outputs as $output) {
+            if ($editable_all || in_array($output, $editable)) {
+                $changeable = true;
+                if (in_array($output, $display_outputs)) {
+                    $new_outputs[] = $output;
+                }
+            }
+        }
+        if ($changeable) {
+            $indicator->setParam('display.outputs', $new_outputs);
+        }
         return $this->viewIndicatorsList($request);
     }
 

@@ -273,6 +273,47 @@
     </div>
 @endif
 
+@if (!in_array('display', $disabled))
+    @php
+        $outputs = $indicator->getOutputs();
+        $display_outputs = $indicator->getParam('display.outputs', []);
+        $display_all = in_array('all', $display_outputs);
+        $editable = $indicator->getParam('display.editable_outputs', []);
+        if (!in_array('all', $editable)) {
+            $outputs = array_values(array_intersect($outputs, $editable));
+        }
+        Log::debug('$outputs =', $outputs);
+        Log::debug('$display_outputs =', $display_outputs);
+        Log::debug('$editable =', $editable);
+    @endphp
+
+    @if (count($outputs))
+        <div class="form-group row">
+            <label class="col-sm-2 control-label npl" for="display_{{ $uid }}">Display</label>
+            <siv class="col-sm-10 container-fluid np">
+                <div class="row" id="display_{{ $uid }}">
+                @foreach ($outputs as $output)
+                    <div class="col-sm-2 form-check form-check-inline">
+                        <label class="form-check-label" title="Show or hide {{ $output }}">
+                            <input class="form-check-input"
+                                id="display_{{ $output }}_{{ $uid }}"
+                                name="display_{{ $output }}_{{ $uid }}"
+                                type="checkbox"
+                                value="1"
+                                @if ($display_all || in_array($output, $display_outputs))
+                                    checked
+                                @endif
+                            >
+                            {{ $output }}
+                        </label>
+                    </div>
+                @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+@endif
+
 @if (!in_array('savebutton', $disabled))
     <div class="row">
         <div class="col-sm-12 text-right">
@@ -311,6 +352,14 @@
                 @endforeach
                 };
             @endif
+            var display_outputs = [];
+            @if (!in_array('display', $disabled))
+                @foreach ($outputs as $output)
+                    if ($('#display_{{ $output }}_{{ $uid }}').is(':checked')) {
+                        display_outputs.push('{{ $output }}');
+                    }
+                @endforeach
+            @endif
 
             window.GTrader.request(
                 'indicator',
@@ -326,7 +375,8 @@
                     owner_id: '{{ $owner_id }}',
                     signature: '{!! $sig !!}',
                     params: JSON.stringify(params),
-                    mutable: JSON.stringify(mutable)
+                    mutable: JSON.stringify(mutable),
+                    display_outputs: JSON.stringify(display_outputs)
                 },
                 'POST',
                 '{{ $target_element }}');

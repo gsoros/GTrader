@@ -50,15 +50,6 @@ class Ohlc extends HasInputs
     }
 
 
-    public function getOutputs()
-    {
-        // if ('linepoints' === $this->getParam('indicator.mode')) {
-        //     return ['open'];
-        // }
-        return parent::getOutputs();
-    }
-
-
     public function outputDependsOn(array $sigs = [], string $output = null)
     {
         // Pretend that our outputs depend 1:1 on the matching input

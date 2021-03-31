@@ -65,6 +65,7 @@ class Simple extends Strategy
                 'owner_class' => 'Strategy',
                 'owner_id' => $this->getParam('id'),
                 'display_outputs' => false,
+                'disabled' => ['display'],
                 'target_element' => 'strategy_indicators_list',
                 'format' => 'long',
             ],
@@ -187,7 +188,7 @@ class Simple extends Strategy
         return $signals->getForm(array_replace_recursive(
             [
                 'disabled' => [
-                    'title', 'form', 'savebutton', 'save',
+                    'title', 'form', 'display', 'savebutton', 'save',
                 ],
             ],
             Arr::get($options, 'view', [])

@@ -28,6 +28,7 @@ return [
         'description' => 'Open, High, Low, Close',
         'y-axis' => 'left',
         'z-index' => -1, // below indicators
+        'editable_outputs' => ['none'],
     ],
     'normalize' => [
         'mode' => 'ohlc',
