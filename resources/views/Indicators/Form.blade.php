@@ -282,9 +282,9 @@
         if (!in_array('all', $editable)) {
             $outputs = array_values(array_intersect($outputs, $editable));
         }
-        Log::debug('$outputs =', $outputs);
-        Log::debug('$display_outputs =', $display_outputs);
-        Log::debug('$editable =', $editable);
+        //Log::debug('$outputs =', $outputs);
+        //Log::debug('$display_outputs =', $display_outputs);
+        //Log::debug('$editable =', $editable);
     @endphp
 
     @if (count($outputs))
