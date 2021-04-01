@@ -684,7 +684,7 @@ abstract class Indicator extends Base implements Gene
             return [];
         }
         $this->checkAndRun();
-        $r = null;
+        $r = [];
         foreach ($this->getOutputs(['display']) as $output) {
             $arr = $candles->extract(
                 $this->getSignature($output),
@@ -692,7 +692,7 @@ abstract class Indicator extends Base implements Gene
                 $respect_padding,
                 $density_cutoff
             );
-            if (!$output || is_null($r)) {
+            if (!$output || !count($r)) {
                 $r = array_map(function ($v) {
                     return [$v];
                 }, $arr);
