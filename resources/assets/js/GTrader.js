@@ -395,6 +395,19 @@ $(function() {
                 result[this.name] = this.value;
             });
             return result;
+        },
+
+
+        updateClipboardText: function(text) {
+            if (!navigator.clipboard) {
+                Console.log('Clipboard API not available');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                // success
+            }, function() {
+                Console.log('Failed to copy text to clipboard');
+            });
         }
     })
 });

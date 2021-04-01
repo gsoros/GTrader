@@ -97,6 +97,11 @@
                             <span class="fas fa-{{ $mutable_icon }}"></span>
                         </button>
                     @endif
+                    <button class="btn btn-primary btn-mini editbutton trans"
+                            title="Copy to clipboard"
+                            onClick="window.GTrader.updateClipboardText('{{ addslashes($sig) }}'); return false">
+                        <span class="fas fa-clipboard"></span>
+                    </button>
                     @if ($num_params)
                         <button class="btn btn-primary btn-mini editbutton trans"
                                 title="Edit"
