@@ -398,15 +398,27 @@ $(function() {
         },
 
 
-        updateClipboardText: function(text) {
+        clipboardText: async function(text) {
             if (!navigator.clipboard) {
-                Console.log('Clipboard API not available');
+                console.log('Clipboard API not available');
+                return;
+            }
+            if (!text) {
+                console.log('Trying to get clipboard contents');
+                try {
+                    const text = await navigator.clipboard.readText();
+                    console.log('Clipboard:', text);
+                    return text;
+                }
+                catch (e) {
+                    console.log('Failed to paste text from clipboard', e);
+                }
                 return;
             }
             navigator.clipboard.writeText(text).then(function() {
-                // success
+                console.log('Success copying this into clipboard:', text);
             }, function() {
-                Console.log('Failed to copy text to clipboard');
+                console.log('Failed to copy text to clipboard');
             });
         }
     })

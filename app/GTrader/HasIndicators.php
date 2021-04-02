@@ -520,9 +520,9 @@ trait HasIndicators
     {
         if (!$sig = urldecode($request->signature)) {
             Log::error('No signature');
-            return $this->viewIndicatorsList($request);
-        }
-        if ($indicator = $this->addIndicatorBySignature($sig)) {
+        } elseif (!Indicator::getValidChildClass(Indicator::getClassFromSignature($sig))) {
+            Log::error('Invalid class');
+        } elseif ($indicator = $this->addIndicatorBySignature($sig)) {
             $indicator->visible(true);
             $indicator->addRef('root');
         }

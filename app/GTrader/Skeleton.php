@@ -37,17 +37,8 @@ trait Skeleton
     {
         $orig_class = $class;
         $called = get_called_class();
-        if (is_null($class)) {
-            $class = self::getClassConf($called, 'default_child');
-            if (!$class) {
-                $class = $called;
-            }
-        }
-        if ($class !== $called) {
-            $class = __NAMESPACE__.'\\'
-                .self::getClassConf($called, 'children_ns').'\\'.$class;
-        }
-        if (!class_exists($class)) {
+
+        if (!$class = self::getValidChildClass($class)) {
             Log::critical(
                 'Class '.$class.' does not exist.',
                 __NAMESPACE__,
@@ -59,6 +50,26 @@ trait Skeleton
             return null;
         }
         return new $class($params);
+    }
+
+
+    public static function getValidChildClass(string $class = null)
+    {
+        $called = get_called_class();
+        if (is_null($class)) {
+            $class = self::getClassConf($called, 'default_child');
+            if (!$class) {
+                $class = $called;
+            }
+        }
+        if ($class !== $called) {
+            $class = __NAMESPACE__.'\\'
+                .self::getClassConf($called, 'children_ns').'\\'.$class;
+        }
+        if (!class_exists($class)) {
+            return null;
+        }
+        return $class;
     }
 
 
