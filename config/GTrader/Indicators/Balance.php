@@ -54,6 +54,9 @@ return [
         'name' => 'Balance',
         'description' => 'Calculates Balance',
         'y-axis' => 'right',
+        'scale' => [
+            'mode' => 'class',
+        ],
     ],
     'normalize' => [
         'mode' => 'individual',
