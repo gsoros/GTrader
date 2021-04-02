@@ -95,6 +95,7 @@ class PHPlot extends Chart
                 'ymin' => Arr::get($item, 'min', 0),
                 'ymax' => Arr::get($item, 'max', 0),
             ]);
+            //Log::debug($item['class'], Arr::get($item, 'min', 0), Arr::get($item, 'max', 0));
             $this->plot($item);
         }
 
@@ -671,6 +672,8 @@ class PHPlot extends Chart
             ],
         ];
 
+        $class_scaling = [];
+
         $inds = $this->getIndicatorsVisibleSorted();
 
         while ($ind = array_shift($inds)) {
@@ -724,9 +727,19 @@ class PHPlot extends Chart
                 if ('left' === $dir) {
                     $this->data['left']['min'] = $this->min(Arr::get($this->data, 'left.min'), $values_min);
                     $this->data['left']['max'] = $this->max(Arr::get($this->data, 'left.max'), $values_max);
-                } else { // Right Y-axis items need individual min and max
+                } else {
+                    // Right Y-axis items need individual min and max
                     $item['min'] = $values_min;
                     $item['max'] = $values_max;
+
+                    // Class scaling uses one scale per class
+                    if ('class' === $ind->getParam('display.scale.mode')) {
+                        $class_scaling[$item['class']] = [
+                            'min' =>  min($item['min'], $class_scaling[$item['class']]['min'] ?? $item['min']),
+                            'max' =>  max($item['max'], $class_scaling[$item['class']]['max'] ?? $item['max']),
+                        ];
+                        //Log::debug($item['class'], $class_scaling[$item['class']]);
+                    }
                 }
             }
 
@@ -738,6 +751,16 @@ class PHPlot extends Chart
 
             $this->data[$dir]['items'][] = $item;
         }
+
+
+        foreach ($this->data['right']['items'] as $key => $item) {
+            if (isset($class_scaling[$item['class']])) {
+                $this->data['right']['items'][$key]['min'] = $class_scaling[$item['class']]['min'];
+                $this->data['right']['items'][$key]['max'] = $class_scaling[$item['class']]['max'];
+                //Log::debug('Final', $item['class'], $item['min'], $item['max']);
+            }
+        }
+
         //dd($this->data);
         return $this;
     }

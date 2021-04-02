@@ -16,5 +16,8 @@ return [
         'outputs' => ['all'],
         'editable_outputs' => ['all'],
         'colors' => [],
+        'scale' => [
+            'mode' => 'individual',
+        ],
     ],
 ];
