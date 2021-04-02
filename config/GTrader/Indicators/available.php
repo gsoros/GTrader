@@ -39,4 +39,5 @@ return [
     'Abs'               => ['allow_multiple' => true],
     'MinMax'            => ['allow_multiple' => true],
     'GainLoss'          => ['allow_multiple' => true],
+    'FromClipboard'     => ['allow_multiple' => false],
 ];

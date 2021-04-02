@@ -395,6 +395,31 @@ $(function() {
                 result[this.name] = this.value;
             });
             return result;
+        },
+
+
+        clipboardText: async function(text) {
+            if (!navigator.clipboard) {
+                console.log('Clipboard API not available');
+                return;
+            }
+            if (!text) {
+                console.log('Trying to get clipboard contents');
+                try {
+                    const text = await navigator.clipboard.readText();
+                    console.log('Clipboard:', text);
+                    return text;
+                }
+                catch (e) {
+                    console.log('Failed to paste text from clipboard', e);
+                }
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                console.log('Success copying this into clipboard:', text);
+            }, function() {
+                console.log('Failed to copy text to clipboard');
+            });
         }
     })
 });

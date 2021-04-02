@@ -97,6 +97,11 @@
                             <span class="fas fa-{{ $mutable_icon }}"></span>
                         </button>
                     @endif
+                    <button class="btn btn-primary btn-mini editbutton trans"
+                            title="Copy to clipboard"
+                            onClick="window.GTrader.clipboardText('{{ addslashes($sig) }}'); return false">
+                        <span class="fas fa-clipboard"></span>
+                    </button>
                     @if ($num_params)
                         <button class="btn btn-primary btn-mini editbutton trans"
                                 title="Edit"
@@ -172,19 +177,37 @@
         </select>
         <script>
             $('#new_indicator_{{ $uid }}').select2();
-        </script>
-        <button onClick="window.GTrader.request(
+            function indicatorNewRequest(signature) {
+                window.GTrader.request(
                     'indicator',
                     'new',
                     {
                         owner_class: '{{ $owner_class }}',
                         owner_id: '{{ $owner_id }}',
                         name: '{{ $name }}',
-                        signature: $('#new_indicator_{{ $uid }}').val()
+                        signature: signature
                     },
                     'GET',
                     '{{ $target_element }}'
-                ); return false"
+                );
+            }
+        </script>
+        <button onClick="
+            var signature;
+            if ('FromClipboard' == $('#new_indicator_{{ $uid }}').val()) {
+                window.GTrader.clipboardText()
+                .then(function(signature) {
+                    console.log('From clipboard ', signature);
+                    indicatorNewRequest(signature);
+                })
+                .catch(function(e) {
+                    console.log('Clipboard failed', e);
+                });
+            } else {
+                indicatorNewRequest($('#new_indicator_{{ $uid }}').val());
+            }
+
+            return false"
                 class="btn btn-primary btn-mini trans"
                 title="Add new indicator">
             <span class="fas fa-check"></span>
