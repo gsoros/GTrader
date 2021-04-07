@@ -24,7 +24,7 @@
             </div>
 
         </div>
-        <div class="row bdr-rad">
+        <div class="row bdr-rad" style="min-height: 100px">
             <label class="col-sm-12">Symbols / Resolutions to Track</label>
             <div id="exchange_{{ $exchange->getId() }}_symbols" class="col-sm-12"></div>
         </div>

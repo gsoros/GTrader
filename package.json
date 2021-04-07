@@ -29,6 +29,7 @@
     "@fortawesome/fontawesome-free": "^5.15.3",
     "fscreen": "^1.2.0",
     "jquery-touchswipe": "^1.6.19",
+    "js-datepicker": "^5.18.0",
     "nouislider": "^9.2.0"
   }
 }

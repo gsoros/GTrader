@@ -97,6 +97,9 @@ class HomeController extends Controller
         Page::add('stylesheets', '<link href="/css/nouislider.min.css" rel="stylesheet">');
         Page::add('scripts_bottom', '<script src="/js/nouislider.min.js"></script>');
 
+        Page::add('stylesheets', '<link href="/css/datepicker.min.css" rel="stylesheet">');
+        Page::add('scripts_bottom', '<script src="/js/datepicker.min.js"></script>');
+
         if (app()->environment('local')) {
             Page::add('scripts_top', '<script src="/js/vis-network.min.js"></script>');
             Page::add('stylesheets', '<link href="/css/vis-network.min.css" rel="stylesheet">');

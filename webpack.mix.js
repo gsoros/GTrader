@@ -25,6 +25,9 @@ mix
     .copy('node_modules/nouislider/distribute/nouislider.min.js',   'public/js')
     .copy('node_modules/nouislider/distribute/nouislider.min.css',  'public/css')
 
+    .copy('node_modules/js-datepicker/dist/datepicker.min.js',      'public/js')
+    .copy('node_modules/js-datepicker/dist/datepicker.min.css',     'public/css')
+
     .copy('node_modules/vis-network/dist/vis-network.min.js',       'public/js')
     .copy('node_modules/vis-network/dist/vis-network.min.css',      'public/css')
 

@@ -3,6 +3,7 @@
     $symbols_available = $symbols_configured = [];
     foreach (array_keys($exchange->getSymbols()) as $symbol_id) {
         $symbol = [
+            'db_id' => $exchange->getSymbolId($symbol_id),
             'name' => $exchange->getSymbolName($symbol_id),
             'resolutions' => [],
         ];
@@ -50,13 +51,29 @@
                             )"
                             type="button"
                             class="btn btn-primary btn-mini editbutton trans"
-                            title="Delete resolution">
+                            title="Delete {{ $symbol['name'] }}">
                         <span class="fas fa-trash"></span>
                     </button>
                 </label>
                 @foreach ($symbol['resolutions'] as $res_time => $res_name)
                     <span class="editable">
                         {{ $res_name }}
+                        <button onClick="window.GTrader.request(
+                                    'exchange',
+                                    'resRangeForm',
+                                    {
+                                        id: {{ $exchange_id}},
+                                        symbol_id: '{{ $symbol_id }}',
+                                        res: {{ $res_time }}
+                                    },
+                                    'GET',
+                                    'settingsTab'
+                                )"
+                                type="button"
+                                class="btn btn-primary btn-mini editbutton trans"
+                                title="Select the date range to fetch for {{ $res_name }}">
+                            <span class="fas fa-arrows-alt-h"></span>
+                        </button>
                         <button onClick="window.GTrader.request(
                                     'exchange',
                                     'deleteRes',
@@ -70,7 +87,7 @@
                                 )"
                                 type="button"
                                 class="btn btn-primary btn-mini editbutton trans"
-                                title="Delete resolution">
+                                title="Delete {{ $res_name }}">
                             <span class="fas fa-trash"></span>
                         </button>
                     </span>
