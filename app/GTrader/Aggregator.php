@@ -83,37 +83,47 @@ class Aggregator extends Base
                             $resolution,
                             'last'
                         );
-                        $last = $last ? $last : floor(time() / $resolution) * $resolution + $resolution;
+                        //Log::debug('last1', date('Y-m-d H:i:s', $last));
+                        $end = $exchange->globalEnd($symbol_name, $resolution);
+                        //Log::debug('end', date('Y-m-d H:i:s', $end));
+                        $last = ($last ? $last :
+                                ($end ? $end :
+                                (floor(time() / $resolution) * $resolution + $resolution)));
+                        //Log::debug('last2', date('Y-m-d H:i:s', $last));
                         $since = $last - $resolution;
                         $since = $since > 0 ? $since : 0;
+                        //Log::debug('since', date('Y-m-d H:i:s', $since));
 
                         //echo ' ('.date('Y-m-d H:i', $since).'):';
                         //flush();
 
-                        $right_candles = $this->fetchCandles(
-                            $exchange,
-                            $symbol_name,
-                            $resolution,
-                            $since,
-                            $chunk_size
-                        );
-                        $right_count = count($right_candles);
-                        $this->saveCandles($right_candles, $exchange_id, $symbol_id, $resolution);
+                        if (!$end || $last <= $end || !$last) {
+                            //Log::debug('Right', date('Y-m-d H:i:s', $last), date('Y-m-d H:i:s', $end));
+                            $right_candles = $this->fetchCandles(
+                                $exchange,
+                                $symbol_name,
+                                $resolution,
+                                $since,
+                                $chunk_size
+                            );
+                            $right_count = count($right_candles);
+                            $this->saveCandles($right_candles, $exchange_id, $symbol_id, $resolution);
+                        }
                     }
 
                     if (in_array($direction, ['rev', 'left', 'both'])) {
-                        $epoch_key = 'epochs.'.str_replace('.', '_', $symbol_name);
-                        $epoch = $exchange->getGlobalOption($epoch_key);
+                        $epoch = $exchange->globalEpoch($symbol_name, $resolution);
                         $first = $this->getCandleTime(
                             $exchange_id,
                             $symbol_id,
                             $resolution,
                             'first'
                         );
-                        if (!$epoch || $epoch < $first) {
+                        if (!$epoch || $epoch < $first || !$first) {
                             usleep($delay);
                             $fetch_last = $first ? $first : floor(time() / $resolution) * $resolution;
                             $left_request_first = $fetch_last - $chunk_size * $resolution;
+                            //Log::debug('Left', date('Y-m-d H:i:s', $first), date('Y-m-d H:i:s', $epoch));
                             $left_candles = $this->fetchCandles(
                                 $exchange,
                                 $symbol_name,
@@ -147,13 +157,13 @@ class Aggregator extends Base
                                 if ($left_duplicates) {
                                     echo ' ['.$left_duplicates.']';
                                     if ($left_duplicates === $left_count) {
-                                        Log::debug('All duplicates, setting '.$exchange->getName().' '.$symbol_name.' epoch to '.$first);
-                                        $exchange->setGlobalOption($epoch_key, $first);
+                                        Log::debug('All duplicates, setting '.$exchange->getName().' '.$symbol_name.':'.$resolution.' epoch to '.date('Y-m-d H:i:s', $first));
+                                        $exchange->globalEpoch($symbol_name, $resolution, $first);
                                     }
                                 }
                                 if ($left_count < $chunk_size) {
-                                    Log::debug('Less recived: ', $left_count);
-                                    //$exchange->setGlobalOption($epoch_key, $left_result_start);
+                                    Log::info('Expected:', $chunk_size, 'recived:', $left_count);
+                                    $exchange->globalEpoch($symbol_name, $resolution, $left_result_start);
                                 }
                                 $remaining = count($left_candles);
                                 if ($first
@@ -181,8 +191,8 @@ class Aggregator extends Base
                                     $resolution
                                 );
                             } elseif ($first) {
-                                Log::debug('Setting '.$exchange->getName().' '.$symbol_name.' epoch to '.$first);
-                                $exchange->setGlobalOption($epoch_key, $first);
+                                Log::debug('Setting '.$exchange->getName().' '.$symbol_name.':'.$resolution.' epoch to '.date('Y-m-d H:i:s', $first));
+                                $exchange->globalEpoch($symbol_name, $resolution, $first);
                             }
                         }
                     }
@@ -228,6 +238,15 @@ class Aggregator extends Base
         $chunk_size
     ) {
         $candles = null;
+        /*
+        Log::debug(
+            $exchange->getName().' ('.$exchange->getId().')',
+            $symbol_name.' ('.$exchange->getSymbolId($symbol_name).')',
+            $resolution,
+            gmdate('Y-m-d H:i:s', $since),
+            $chunk_size);
+        */
+        //return [];
         try {
             $candles = $exchange->fetchCandles(
                 $symbol_name,

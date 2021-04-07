@@ -741,9 +741,80 @@ abstract class Exchange extends Base
 
     public function setGlobalOption(string $key, $value)
     {
+        Log::debug($key, $value);
         $options = $this->globalOptions();
         Arr::set($options, $key, $value);
         $this->globalOptions($options);
         return $this;
+    }
+
+
+    public function unSetGlobalOption(string $key)
+    {
+        Log::debug($key);
+        $options = $this->globalOptions();
+        Arr::pull($options, $key);
+        $this->globalOptions($options);
+        return $this;
+    }
+
+
+    public function globalEpoch(string $symbol, int $resolution, int $epoch = null)
+    {
+        $key = 'epochs.'.str_replace('.', '_', $symbol).'.'.$resolution;
+        if (!is_null($epoch)) {
+            return 0 < $epoch ?
+                $this->setGlobalOption($key, $epoch) :
+                $this->unSetGlobalOption($key);
+        }
+        return $this->getGlobalOption($key);
+    }
+
+
+    public function globalEnd(string $symbol, int $resolution, int $end = null)
+    {
+        $key = 'ends.'.str_replace('.', '_', $symbol).'.'.$resolution;
+        if (!is_null($end)) {
+            return 0 < $end ?
+                $this->setGlobalOption($key, $end) :
+                $this->unSetGlobalOption($key);
+        }
+        return $this->getGlobalOption($key);
+    }
+
+
+    public function getCandleInfo(string $symbol, int $resolution, string $info): int
+    {
+        $info = in_array($info, ['first', 'last', 'total']) ? $info : 'first';
+        $result = DB::table('candles')
+            ->selectRaw('total' === $info ? 'count(*) as result' : 'time as result')
+            ->where('exchange_id', $this->getId())
+            ->where('symbol_id', $this->getSymbolId($symbol))
+            ->where('resolution', $resolution);
+        if ('total' !== $info) {
+            $result = $result
+                ->orderBy('time', 'first' === $info ? 'asc' : 'desc')
+                ->limit(1);
+        }
+        Log::debug($info, intval($result->first()->result ?? 0));
+        return intval($result->first()->result ?? 0);
+    }
+
+
+    public function getFirstCandleTime(string $symbol, int $resolution): int
+    {
+        return $this->getCandleInfo($symbol, $resolution, 'first');
+    }
+
+
+    public function getLastCandleTime(string $symbol, int $resolution): int
+    {
+        return $this->getCandleInfo($symbol, $resolution, 'last');
+    }
+
+
+    public function getNumCandles(string $symbol, int $resolution): int
+    {
+        return $this->getCandleInfo($symbol, $resolution, 'total');
     }
 }

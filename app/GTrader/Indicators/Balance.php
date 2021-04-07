@@ -65,13 +65,13 @@ class Balance extends HasInputs
 
         //dump('Balance->calc '.date($f = 'Y-m-d H:i', $candles->first()->time).' - '.date($f, $candles->last()->time));
 
-        $mode = $this->getParam('indicator.mode');
+        $mode = $this->getParam('indicator.mode', 'fixed');
         if (!in_array($mode, ['dynamic', 'fixed'])) {
             Log::error('Mode must be either dynamic or fixed.');
             return $this;
         }
 
-        $base_or_quote = $this->getParam('indicator.base_or_quote');
+        $base_or_quote = $this->getParam('indicator.base_or_quote', 'base');
         if (!in_array($base_or_quote, ['base', 'quote'])) {
             Log::error('Invalid base or quote setting.');
             return $this;
