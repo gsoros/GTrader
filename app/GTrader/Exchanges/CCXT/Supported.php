@@ -344,7 +344,7 @@ class Supported extends Exchange
         } catch (\Exception $e) {
             Log::debug($this->getName().' Trade does not exist in the db');
         }
-        $env->leverage = (1 <= ($l = floatval($this->getUserOption('leverage'))) ? $l : 1);
+        $env->leverage = (0 <= ($l = floatval($this->getUserOption('leverage'))) ? $l : 1);
         return true;
     }
 
@@ -437,13 +437,14 @@ class Supported extends Exchange
     protected function tradeCalculateTarget(): bool
     {
         $env = $this->trade_environment;
+        $leverage = 0 < $env->leverage ? $env->leverage : 1;
         if ($this->isFutures($env->symbol) || $this->isSwap($env->symbol)) {
             Log::debug($this->getName().' '.$env->symbol.' detected as futures or swap');
-            $env->target_position = floor($env->target_balance * $env->price / $env->unit_value / $env->leverage);
+            $env->target_position = floor($env->target_balance * $env->price / $env->unit_value / $leverage);
         } else {
             // spot
             Log::debug($this->getName().' '.$env->symbol.' detected as spot');
-            $env->target_position =  $env->target_balance / $env->unit_value / $env->leverage - $env->balance;
+            $env->target_position =  $env->target_balance / $env->unit_value / $leverage - $env->balance;
         }
         Log::debug($this->getName().' calculated target position', $env->target_position);
         return true;
