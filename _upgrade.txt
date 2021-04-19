@@ -1,0 +1,12 @@
+disable bot
+su - gtrader
+git pull
+composer install
+npm install
+php artisan migrate --path=database/migrations/2021_03_17_000000_update_trades_leverage.php
+php artisan config:cache
+php artisan view:cache
+php artisan route:cache
+npm run dev
+enable bot
+tail -f storage/logs/*log
