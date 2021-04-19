@@ -104,6 +104,10 @@ class Balance extends HasInputs
             }
         }
 
+        if ($leverage <= 0) {
+            $leverage = 1;
+        }
+
         if (!($signal_ind = $this->getOwner()->getOrAddIndicator(
             $this->getParam('indicator.input_signal')
         ))) {
